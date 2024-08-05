@@ -14,27 +14,26 @@ namespace TgBot {
  * @ingroup types
  */
 class InaccessibleMessage {
+ public:
+  typedef std::shared_ptr<InaccessibleMessage> Ptr;
 
-public:
-    typedef std::shared_ptr<InaccessibleMessage> Ptr;
+  /**
+   * @brief Chat the message belonged to
+   */
+  Chat::Ptr chat;
 
-    /**
-     * @brief Chat the message belonged to
-     */
-    Chat::Ptr chat;
+  /**
+   * @brief Unique message identifier inside the chat
+   */
+  std::int32_t messageId;
 
-    /**
-     * @brief Unique message identifier inside the chat
-     */
-    std::int32_t messageId;
-
-    /**
-     * @brief Always 0.
-     *
-     * The field can be used to differentiate regular and inaccessible messages.
-     */
-    std::uint8_t date;
+  /**
+   * @brief Always 0.
+   *
+   * The field can be used to differentiate regular and inaccessible messages.
+   */
+  std::uint8_t date;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_INACCESSIBLEMESSAGE_H
+#endif  // TGBOT_INACCESSIBLEMESSAGE_H

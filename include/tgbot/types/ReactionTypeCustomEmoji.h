@@ -14,21 +14,20 @@ namespace TgBot {
  * @ingroup types
  */
 class ReactionTypeCustomEmoji : public ReactionType {
+ public:
+  static const std::string TYPE;
 
-public:
-    static const std::string TYPE;
+  typedef std::shared_ptr<ReactionTypeCustomEmoji> Ptr;
 
-    typedef std::shared_ptr<ReactionTypeCustomEmoji> Ptr;
+  ReactionTypeCustomEmoji() {
+    this->type = TYPE;
+  }
 
-    ReactionTypeCustomEmoji() {
-        this->type = TYPE;
-    }
-
-    /**
-     * @brief Custom emoji identifier
-     */
-    std::string customEmojiId;
+  /**
+   * @brief Custom emoji identifier
+   */
+  std::string customEmojiId;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_REACTIONTYPECUSTOMEMOJI_H
+#endif  // TGBOT_REACTIONTYPECUSTOMEMOJI_H

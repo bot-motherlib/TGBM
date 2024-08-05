@@ -14,31 +14,30 @@ namespace TgBot {
  * @ingroup types
  */
 class TGBOT_API InputFile {
+ public:
+  typedef std::shared_ptr<InputFile> Ptr;
 
-public:
-    typedef std::shared_ptr<InputFile> Ptr;
+  /**
+   * @brief Contents of a file.
+   */
+  std::string data;
 
-    /**
-     * @brief Contents of a file.
-     */
-    std::string data;
+  /**
+   * @brief Mime type of a file.
+   */
+  std::string mimeType;
 
-    /**
-     * @brief Mime type of a file.
-     */
-    std::string mimeType;
+  /**
+   * @brief File name.
+   */
+  std::string fileName;
 
-    /**
-     * @brief File name.
-     */
-    std::string fileName;
-
-    /**
-     * @brief Creates new InputFile::Ptr from an existing file.
-     */
-    static InputFile::Ptr fromFile(const std::string& filePath, const std::string& mimeType);
+  /**
+   * @brief Creates new InputFile::Ptr from an existing file.
+   */
+  static InputFile::Ptr fromFile(const std::string& filePath, const std::string& mimeType);
 };
 
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CPP_INPUTFILE_H
+#endif  // TGBOT_CPP_INPUTFILE_H

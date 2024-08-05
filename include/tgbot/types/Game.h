@@ -19,41 +19,42 @@ namespace TgBot {
  * @ingroup types
  */
 class Game {
-public:
-    typedef std::shared_ptr<Game> Ptr;
+ public:
+  typedef std::shared_ptr<Game> Ptr;
 
-    /**
-     * @brief Title of the game.
-     */
-    std::string title;
+  /**
+   * @brief Title of the game.
+   */
+  std::string title;
 
-    /**
-     * @brief Description of the game.
-     */
-    std::string description;
+  /**
+   * @brief Description of the game.
+   */
+  std::string description;
 
-    /**
-     * @brief Photo that will be displayed in the game message in chats.
-     */
-    std::vector<PhotoSize::Ptr> photo;
+  /**
+   * @brief Photo that will be displayed in the game message in chats.
+   */
+  std::vector<PhotoSize::Ptr> photo;
 
-    /**
-     * @brief Optional. Brief description of the game or high scores included in the game message.
-     *
-     * Can be automatically edited to include current high scores for the game when the bot calls setGameScore, or manually edited using editMessageText. 0-4096 characters.
-     */
-    std::string text;
+  /**
+   * @brief Optional. Brief description of the game or high scores included in the game message.
+   *
+   * Can be automatically edited to include current high scores for the game when the bot calls setGameScore,
+   * or manually edited using editMessageText. 0-4096 characters.
+   */
+  std::string text;
 
-    /**
-     * @brief Optional. Special entities that appear in text, such as usernames, URLs, bot commands, etc.
-     */
-    std::vector<MessageEntity::Ptr> textEntities;
+  /**
+   * @brief Optional. Special entities that appear in text, such as usernames, URLs, bot commands, etc.
+   */
+  std::vector<MessageEntity::Ptr> textEntities;
 
-    /**
-     * @brief Optional. Animation that will be displayed in the game message in chats. Upload via BotFather.
-     */
-    Animation::Ptr animation;
+  /**
+   * @brief Optional. Animation that will be displayed in the game message in chats. Upload via BotFather.
+   */
+  Animation::Ptr animation;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_GAME_H
+#endif  // TGBOT_GAME_H

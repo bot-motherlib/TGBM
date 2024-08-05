@@ -16,19 +16,20 @@ namespace TgBot {
  * @ingroup types
  */
 class ReactionType {
+ public:
+  typedef std::shared_ptr<ReactionType> Ptr;
 
-public:
-    typedef std::shared_ptr<ReactionType> Ptr;
+  ReactionType() {
+  }
 
-    ReactionType() {}
+  virtual ~ReactionType() {
+  }
 
-    virtual ~ReactionType() {}
-
-    /**
-     * @brief Type of the reaction
-     */
-    std::string type;
+  /**
+   * @brief Type of the reaction
+   */
+  std::string type;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_REACTIONTYPE_H
+#endif  // TGBOT_REACTIONTYPE_H

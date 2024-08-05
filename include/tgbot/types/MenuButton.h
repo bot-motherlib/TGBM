@@ -8,7 +8,7 @@ namespace TgBot {
 
 /**
  * @brief This abstract class is base of all bot menu buttons.
- * 
+ *
  * This object describes the bot's menu button in a private chat.
  * If a menu button other than MenuButtonDefault is set for a private chat, then it is applied in the chat.
  * Otherwise the default menu button is applied.
@@ -17,18 +17,20 @@ namespace TgBot {
  * @ingroup types
  */
 class MenuButton {
-public:
-    typedef std::shared_ptr<MenuButton> Ptr;
+ public:
+  typedef std::shared_ptr<MenuButton> Ptr;
 
-    MenuButton() {}
+  MenuButton() {
+  }
 
-    virtual ~MenuButton() {}
+  virtual ~MenuButton() {
+  }
 
-    /**
-     * @brief Type of the button
-     */
-    std::string type;
+  /**
+   * @brief Type of the button
+   */
+  std::string type;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_MENUBUTTON_H
+#endif  // TGBOT_MENUBUTTON_H

@@ -13,15 +13,15 @@ namespace TgBot {
  * @ingroup types
  */
 class MenuButtonDefault : public MenuButton {
-public:
-    static const std::string TYPE;
+ public:
+  static const std::string TYPE;
 
-    typedef std::shared_ptr<MenuButtonDefault> Ptr;
+  typedef std::shared_ptr<MenuButtonDefault> Ptr;
 
-    MenuButtonDefault() {
-        this->type = TYPE;
-    }
+  MenuButtonDefault() {
+    this->type = TYPE;
+  }
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_MENUBUTTONDEFAULT_H
+#endif  // TGBOT_MENUBUTTONDEFAULT_H

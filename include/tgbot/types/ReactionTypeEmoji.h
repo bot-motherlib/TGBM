@@ -14,25 +14,29 @@ namespace TgBot {
  * @ingroup types
  */
 class ReactionTypeEmoji : public ReactionType {
+ public:
+  static const std::string TYPE;
 
-public:
-    static const std::string TYPE;
+  typedef std::shared_ptr<ReactionTypeEmoji> Ptr;
 
-    typedef std::shared_ptr<ReactionTypeEmoji> Ptr;
+  ReactionTypeEmoji() {
+    this->type = TYPE;
+  }
 
-    ReactionTypeEmoji() {
-        this->type = TYPE;
-    }
-
-    /**
-     * @brief Reaction emoji.
-     *
-     * Currently, it can be one of "👍", "👎", "❤", "🔥", "🥰", "👏", "😁", "🤔", "🤯", "😱", "🤬", "😢", "🎉", "🤩", "🤮", "💩", "🙏", "👌", "🕊", "🤡", "🥱", "🥴", "😍", "🐳", "❤‍🔥", "🌚", "🌭", "💯", "🤣", "⚡", "🍌", "🏆", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈", "😴", "😭", "🤓", "👻", "👨‍💻", "👀", "🎃", "🙈", "😇", "😨", "🤝", "✍", "🤗", "🫡", "🎅", "🎄", "☃", "💅", "🤪", "🗿", "🆒", "💘", "🙉", "🦄", "😘", "💊", "🙊", "😎", "👾", "🤷‍♂", "🤷", "🤷‍♀", "😡"
-     * 
-     * See https://core.telegram.org/bots/api#reactiontypeemoji
-     */
-    std::string emoji;
+  /**
+   * @brief Reaction emoji.
+   *
+   * Currently, it can be one of "👍", "👎", "❤", "🔥", "🥰", "👏", "😁", "🤔", "🤯", "😱", "🤬", "😢", "🎉",
+   * "🤩", "🤮", "💩", "🙏", "👌", "🕊", "🤡", "🥱", "🥴", "😍", "🐳", "❤‍🔥", "🌚", "🌭", "💯", "🤣",
+   * "⚡",
+   * "🍌", "🏆", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈", "😴", "😭", "🤓", "👻", "👨‍💻",
+   * "👀", "🎃", "🙈", "😇", "😨", "🤝", "✍", "🤗", "🫡", "🎅", "🎄", "☃", "💅", "🤪", "🗿", "🆒", "💘", "🙉",
+   * "🦄", "😘", "💊", "🙊", "😎", "👾", "🤷‍♂", "🤷", "🤷‍♀", "😡"
+   *
+   * See https://core.telegram.org/bots/api#reactiontypeemoji
+   */
+  std::string emoji;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_REACTIONTYPEEMOJI_H
+#endif  // TGBOT_REACTIONTYPEEMOJI_H

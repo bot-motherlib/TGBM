@@ -17,45 +17,45 @@ namespace TgBot {
  * @ingroup types
  */
 class ChatMemberUpdated {
+ public:
+  typedef std::shared_ptr<ChatMemberUpdated> Ptr;
 
-public:
-    typedef std::shared_ptr<ChatMemberUpdated> Ptr;
+  /**
+   * @brief Chat the user belongs to
+   */
+  Chat::Ptr chat;
 
-    /**
-     * @brief Chat the user belongs to
-     */
-    Chat::Ptr chat;
+  /**
+   * @brief Performer of the action, which resulted in the change
+   */
+  User::Ptr from;
 
-    /**
-     * @brief Performer of the action, which resulted in the change
-     */
-    User::Ptr from;
+  /**
+   * @brief Date the change was done in Unix time
+   */
+  std::uint32_t date;
 
-    /**
-     * @brief Date the change was done in Unix time
-     */
-    std::uint32_t date;
+  /**
+   * @brief Previous information about the chat member
+   */
+  ChatMember::Ptr oldChatMember;
 
-    /**
-     * @brief Previous information about the chat member
-     */
-    ChatMember::Ptr oldChatMember;
+  /**
+   * @brief New information about the chat member
+   */
+  ChatMember::Ptr newChatMember;
 
-    /**
-     * @brief New information about the chat member
-     */
-    ChatMember::Ptr newChatMember;
+  /**
+   * @brief Optional. Chat invite link, which was used by the user to join the chat; for joining by invite
+   * link events only.
+   */
+  ChatInviteLink::Ptr inviteLink;
 
-    /**
-     * @brief Optional. Chat invite link, which was used by the user to join the chat; for joining by invite link events only.
-     */
-    ChatInviteLink::Ptr inviteLink;
-
-    /**
-     * @brief Optional. True, if the user joined the chat via a chat folder invite link
-     */
-    bool viaChatFolderInviteLink;
+  /**
+   * @brief Optional. True, if the user joined the chat via a chat folder invite link
+   */
+  bool viaChatFolderInviteLink;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CHATMEMBERUPDATED_H
+#endif  // TGBOT_CHATMEMBERUPDATED_H

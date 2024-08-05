@@ -10,30 +10,31 @@ namespace TgBot {
 
 /**
  * @brief This abstract class is base of all chat members.
- * 
+ *
  * This object contains information about one member of a chat.
  *
  * @ingroup types
  */
 class ChatMember {
+ public:
+  typedef std::shared_ptr<ChatMember> Ptr;
 
-public:
-    typedef std::shared_ptr<ChatMember> Ptr;
+  ChatMember() {
+  }
 
-    ChatMember() {}
+  virtual ~ChatMember() {
+  }
 
-    virtual ~ChatMember() {}
+  /**
+   * @brief The member's status in the chat
+   */
+  std::string status;
 
-    /**
-     * @brief The member's status in the chat
-     */
-    std::string status;
-
-    /**
-     * @brief Information about the user
-     */
-    User::Ptr user;
+  /**
+   * @brief Information about the user
+   */
+  User::Ptr user;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CHATMEMBER_H
+#endif  // TGBOT_CHATMEMBER_H

@@ -13,20 +13,19 @@ namespace TgBot {
  * @ingroup types
  */
 class BusinessOpeningHours {
+ public:
+  typedef std::shared_ptr<BusinessOpeningHours> Ptr;
 
-public:
-    typedef std::shared_ptr<BusinessOpeningHours> Ptr;
+  /**
+   * @brief Unique name of the time zone for which the opening hours are defined
+   */
+  std::string timeZoneName;
 
-    /**
-     * @brief Unique name of the time zone for which the opening hours are defined
-     */
-    std::string timeZoneName;
-
-    /**
-     * @brief List of time intervals describing business opening hours
-     */
-    std::vector<BusinessOpeningHoursInterval::Ptr> openingHours;
+  /**
+   * @brief List of time intervals describing business opening hours
+   */
+  std::vector<BusinessOpeningHoursInterval::Ptr> openingHours;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_BUSINESSOPENINGHOURS_H
+#endif  // TGBOT_BUSINESSOPENINGHOURS_H

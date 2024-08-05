@@ -12,21 +12,18 @@ namespace TgBot {
  * @ingroup net
  */
 class TgWebhookTcpServer : public TgWebhookServer<boost::asio::ip::tcp> {
+ public:
+  TgWebhookTcpServer(unsigned short port, const std::string& path, const EventHandler& eventHandler)
+      : TgWebhookServer<boost::asio::ip::tcp>(
+            boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port), path, eventHandler) {
+  }
 
-public:
-    TgWebhookTcpServer(unsigned short port, const std::string& path, const EventHandler& eventHandler)
-            : TgWebhookServer<boost::asio::ip::tcp>(boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port),
-                                                    path, eventHandler)
-    {
-    }
-
-    TgWebhookTcpServer(unsigned short port, const Bot& bot)
-            : TgWebhookServer<boost::asio::ip::tcp>(boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port),
-                                                    bot)
-    {
-    }
+  TgWebhookTcpServer(unsigned short port, const Bot& bot)
+      : TgWebhookServer<boost::asio::ip::tcp>(
+            boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port), bot) {
+  }
 };
 
-}
+}  // namespace TgBot
 
-#endif //TGBOT_TGWEBHOOKTCPSERVER_H
+#endif  // TGBOT_TGWEBHOOKTCPSERVER_H

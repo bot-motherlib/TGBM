@@ -13,20 +13,20 @@ namespace TgBot {
  * @ingroup types
  */
 class PassportData {
+ public:
+  typedef std::shared_ptr<PassportData> Ptr;
 
-public:
-    typedef std::shared_ptr<PassportData> Ptr;
+  /**
+   * @brief Array with information about documents and other Telegram Passport elements that was shared with
+   * the bot
+   */
+  std::vector<EncryptedPassportElement::Ptr> data;
 
-    /**
-     * @brief Array with information about documents and other Telegram Passport elements that was shared with the bot
-     */
-    std::vector<EncryptedPassportElement::Ptr> data;
-
-    /**
-     * @brief Encrypted credentials required to decrypt the data
-     */
-    EncryptedCredentials::Ptr credentials;
+  /**
+   * @brief Encrypted credentials required to decrypt the data
+   */
+  EncryptedCredentials::Ptr credentials;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CPP_PASSPORTDATA_H
+#endif  // TGBOT_CPP_PASSPORTDATA_H

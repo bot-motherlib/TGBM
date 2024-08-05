@@ -98,7 +98,6 @@
 #include "tgbot/types/WebhookInfo.h"
 #include "tgbot/types/BotCommand.h"
 
-
 /**
  * @defgroup general
  * @defgroup types
@@ -110,4 +109,4 @@
  *
  */
 
-#endif //TGBOT_TGBOT_H
+#endif  // TGBOT_TGBOT_H

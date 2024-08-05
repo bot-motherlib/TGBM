@@ -16,30 +16,29 @@ namespace TgBot {
  * @ingroup types
  */
 class ChatBoostRemoved {
+ public:
+  typedef std::shared_ptr<ChatBoostRemoved> Ptr;
 
-public:
-    typedef std::shared_ptr<ChatBoostRemoved> Ptr;
+  /**
+   * @brief Chat which was boosted
+   */
+  Chat::Ptr chat;
 
-    /**
-     * @brief Chat which was boosted
-     */
-    Chat::Ptr chat;
+  /**
+   * @brief Unique identifier of the boost
+   */
+  std::string boostId;
 
-    /**
-     * @brief Unique identifier of the boost
-     */
-    std::string boostId;
+  /**
+   * @brief Point in time (Unix timestamp) when the boost was removed
+   */
+  std::uint32_t removeDate;
 
-    /**
-     * @brief Point in time (Unix timestamp) when the boost was removed
-     */
-    std::uint32_t removeDate;
-
-    /**
-     * @brief Source of the removed boost
-     */
-    ChatBoostSource::Ptr source;
+  /**
+   * @brief Source of the removed boost
+   */
+  ChatBoostSource::Ptr source;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CHATBOOSTREMOVED_H
+#endif  // TGBOT_CHATBOOSTREMOVED_H

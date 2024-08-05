@@ -13,21 +13,20 @@ namespace TgBot {
  * @ingroup types
  */
 class ChatLocation {
+ public:
+  typedef std::shared_ptr<ChatLocation> Ptr;
 
-public:
-    typedef std::shared_ptr<ChatLocation> Ptr;
+  /**
+   * @brief The location to which the supergroup is connected.
+   * Can't be a live location.
+   */
+  Location::Ptr location;
 
-    /**
-     * @brief The location to which the supergroup is connected.
-     * Can't be a live location.
-     */
-    Location::Ptr location;
-
-    /**
-     * @brief Location address; 1-64 characters, as defined by the chat owner
-     */
-    std::string address;
+  /**
+   * @brief Location address; 1-64 characters, as defined by the chat owner
+   */
+  std::string address;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CPP_CHATLOCATION_H
+#endif  // TGBOT_CPP_CHATLOCATION_H

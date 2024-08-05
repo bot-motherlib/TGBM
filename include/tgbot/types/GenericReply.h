@@ -10,13 +10,13 @@ namespace TgBot {
  * @ingroup types
  */
 class GenericReply {
+ public:
+  typedef std::shared_ptr<GenericReply> Ptr;
 
-public:
-    typedef std::shared_ptr<GenericReply> Ptr;
-
-    virtual ~GenericReply() { }
+  virtual ~GenericReply() {
+  }
 };
 
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CPP_GENERICREPLY_H
+#endif  // TGBOT_CPP_GENERICREPLY_H

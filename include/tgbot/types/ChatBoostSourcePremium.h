@@ -8,21 +8,21 @@
 namespace TgBot {
 
 /**
- * @brief The boost was obtained by subscribing to Telegram Premium or by gifting a Telegram Premium subscription to another user.
+ * @brief The boost was obtained by subscribing to Telegram Premium or by gifting a Telegram Premium
+ * subscription to another user.
  *
  * @ingroup types
  */
 class ChatBoostSourcePremium : public ChatBoostSource {
+ public:
+  static const std::string SOURCE;
 
-public:
-    static const std::string SOURCE;
+  typedef std::shared_ptr<ChatBoostSourcePremium> Ptr;
 
-    typedef std::shared_ptr<ChatBoostSourcePremium> Ptr;
-
-    ChatBoostSourcePremium() {
-        this->source = SOURCE;
-    }
+  ChatBoostSourcePremium() {
+    this->source = SOURCE;
+  }
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CHATBOOSTSOURCEPREMIUM_H
+#endif  // TGBOT_CHATBOOSTSOURCEPREMIUM_H

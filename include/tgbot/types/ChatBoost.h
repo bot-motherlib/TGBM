@@ -15,30 +15,30 @@ namespace TgBot {
  * @ingroup types
  */
 class ChatBoost {
+ public:
+  typedef std::shared_ptr<ChatBoost> Ptr;
 
-public:
-    typedef std::shared_ptr<ChatBoost> Ptr;
+  /**
+   * @brief Unique identifier of the boost
+   */
+  std::string boostId;
 
-    /**
-     * @brief Unique identifier of the boost
-     */
-    std::string boostId;
+  /**
+   * @brief Point in time (Unix timestamp) when the chat was boosted
+   */
+  std::uint32_t addDate;
 
-    /**
-     * @brief Point in time (Unix timestamp) when the chat was boosted
-     */
-    std::uint32_t addDate;
+  /**
+   * @brief Point in time (Unix timestamp) when the boost will automatically expire, unless the booster's
+   * Telegram Premium subscription is prolonged
+   */
+  std::uint32_t expirationDate;
 
-    /**
-     * @brief Point in time (Unix timestamp) when the boost will automatically expire, unless the booster's Telegram Premium subscription is prolonged
-     */
-    std::uint32_t expirationDate;
-
-    /**
-     * @brief Source of the added boost
-     */
-    ChatBoostSource::Ptr source;
+  /**
+   * @brief Source of the added boost
+   */
+  ChatBoostSource::Ptr source;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CHATBOOST_H
+#endif  // TGBOT_CHATBOOST_H

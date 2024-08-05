@@ -14,20 +14,19 @@ namespace TgBot {
  * @ingroup types
  */
 class Story {
+ public:
+  typedef std::shared_ptr<Story> Ptr;
 
-public:
-    typedef std::shared_ptr<Story> Ptr;
+  /**
+   * @brief Chat that posted the story
+   */
+  Chat::Ptr chat;
 
-    /**
-     * @brief Chat that posted the story
-     */
-    Chat::Ptr chat;
-
-    /**
-     * @brief Unique identifier for the story in the chat
-     */
-    std::int32_t id;
+  /**
+   * @brief Unique identifier for the story in the chat
+   */
+  std::int32_t id;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_STORY_H
+#endif  // TGBOT_STORY_H

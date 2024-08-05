@@ -14,25 +14,24 @@ class Message;
  * @ingroup types
  */
 class GiveawayCompleted {
+ public:
+  typedef std::shared_ptr<GiveawayCompleted> Ptr;
 
-public:
-    typedef std::shared_ptr<GiveawayCompleted> Ptr;
+  /**
+   * @brief Number of winners in the giveaway
+   */
+  std::int32_t winnerCount;
 
-    /**
-     * @brief Number of winners in the giveaway
-     */
-    std::int32_t winnerCount;
+  /**
+   * @brief Optional. Number of undistributed prizes
+   */
+  std::int32_t unclaimedPrizeCount;
 
-    /**
-     * @brief Optional. Number of undistributed prizes
-     */
-    std::int32_t unclaimedPrizeCount;
-
-    /**
-     * @brief Optional. Message with the giveaway that was completed, if it wasn't deleted
-     */
-    std::shared_ptr<Message> giveawayMessage;
+  /**
+   * @brief Optional. Message with the giveaway that was completed, if it wasn't deleted
+   */
+  std::shared_ptr<Message> giveawayMessage;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_GIVEAWAYCOMPLETED_H
+#endif  // TGBOT_GIVEAWAYCOMPLETED_H

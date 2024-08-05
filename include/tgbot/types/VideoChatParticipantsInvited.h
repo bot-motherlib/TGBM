@@ -14,15 +14,14 @@ namespace TgBot {
  * @ingroup types
  */
 class VideoChatParticipantsInvited {
+ public:
+  typedef std::shared_ptr<VideoChatParticipantsInvited> Ptr;
 
-public:
-    typedef std::shared_ptr<VideoChatParticipantsInvited> Ptr;
-
-    /**
-     * @brief New members that were invited to the video chat
-     */
-    std::vector<User::Ptr> users;
+  /**
+   * @brief New members that were invited to the video chat
+   */
+  std::vector<User::Ptr> users;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_VIDEOCHATPARTICIPANTSINVITED_H
+#endif  // TGBOT_VIDEOCHATPARTICIPANTSINVITED_H

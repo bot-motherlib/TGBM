@@ -15,44 +15,44 @@ namespace TgBot {
  * @ingroup types
  */
 class Document {
+ public:
+  typedef std::shared_ptr<Document> Ptr;
 
-public:
-    typedef std::shared_ptr<Document> Ptr;
+  /**
+   * @brief Identifier for this file, which can be used to download or reuse the file
+   */
+  std::string fileId;
 
-    /**
-     * @brief Identifier for this file, which can be used to download or reuse the file
-     */
-    std::string fileId;
+  /**
+   * @brief Unique identifier for this file, which is supposed to be the same over time and for different
+   * bots. Can't be used to download or reuse the file.
+   */
+  std::string fileUniqueId;
 
-    /**
-     * @brief Unique identifier for this file, which is supposed to be the same over time and for different bots.
-     * Can't be used to download or reuse the file.
-     */
-    std::string fileUniqueId;
+  /**
+   * @brief Optional. Document thumbnail as defined by sender
+   */
+  PhotoSize::Ptr thumbnail;
 
-    /**
-     * @brief Optional. Document thumbnail as defined by sender
-     */
-    PhotoSize::Ptr thumbnail;
+  /**
+   * @brief Optional. Original filename as defined by sender
+   */
+  std::string fileName;
 
-    /**
-     * @brief Optional. Original filename as defined by sender
-     */
-    std::string fileName;
+  /**
+   * @brief Optional. MIME type of the file as defined by sender
+   */
+  std::string mimeType;
 
-    /**
-     * @brief Optional. MIME type of the file as defined by sender
-     */
-    std::string mimeType;
-
-    /**
-     * @brief Optional. File size in bytes.
-     * 
-     * It can be bigger than 2^31 and some programming languages may have difficulty/silent defects in interpreting it.
-     * But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this value.
-     */
-    std::int64_t fileSize;
+  /**
+   * @brief Optional. File size in bytes.
+   *
+   * It can be bigger than 2^31 and some programming languages may have difficulty/silent defects in
+   * interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision
+   * float type are safe for storing this value.
+   */
+  std::int64_t fileSize;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_DOCUMENT_H
+#endif  // TGBOT_DOCUMENT_H

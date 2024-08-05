@@ -12,15 +12,15 @@ namespace TgBot {
  * @ingroup types
  */
 class VideoChatScheduled {
+ public:
+  typedef std::shared_ptr<VideoChatScheduled> Ptr;
 
-public:
-    typedef std::shared_ptr<VideoChatScheduled> Ptr;
-
-    /**
-     * @brief Point in time (Unix timestamp) when the video chat is supposed to be started by a chat administrator
-     */
-    std::int32_t startDate;
+  /**
+   * @brief Point in time (Unix timestamp) when the video chat is supposed to be started by a chat
+   * administrator
+   */
+  std::int32_t startDate;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_VIDEOCHATSCHEDULED_H
+#endif  // TGBOT_VIDEOCHATSCHEDULED_H

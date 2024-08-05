@@ -9,27 +9,28 @@
 namespace TgBot {
 
 /**
- * @brief Represents a chat member that was banned in the chat and can't return to the chat or view chat messages.
+ * @brief Represents a chat member that was banned in the chat and can't return to the chat or view chat
+ * messages.
  *
  * @ingroup types
  */
 class ChatMemberBanned : public ChatMember {
-public:
-    static const std::string STATUS;
+ public:
+  static const std::string STATUS;
 
-    typedef std::shared_ptr<ChatMemberBanned> Ptr;
+  typedef std::shared_ptr<ChatMemberBanned> Ptr;
 
-    ChatMemberBanned() {
-        this->status = STATUS;
-    }
+  ChatMemberBanned() {
+    this->status = STATUS;
+  }
 
-    /**
-     * @brief Date when restrictions will be lifted for this user; Unix time.
-     * 
-     * If 0, then the user is banned forever
-     */
-    std::uint32_t untilDate;
+  /**
+   * @brief Date when restrictions will be lifted for this user; Unix time.
+   *
+   * If 0, then the user is banned forever
+   */
+  std::uint32_t untilDate;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CHATMEMBERBANNED_H
+#endif  // TGBOT_CHATMEMBERBANNED_H

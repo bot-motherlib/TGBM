@@ -15,23 +15,21 @@ namespace TgBot {
  * @ingroup net
  */
 class TgWebhookLocalServer : public TgWebhookServer<boost::asio::local::stream_protocol> {
+ public:
+  TgWebhookLocalServer(const std::string& unixSocketPath, const std::string& path,
+                       const EventHandler& eventHandler)
+      : TgWebhookServer<boost::asio::local::stream_protocol>(
+            boost::asio::local::stream_protocol::endpoint(unixSocketPath), path, eventHandler) {
+  }
 
-public:
-    TgWebhookLocalServer(const std::string& unixSocketPath, const std::string& path, const EventHandler& eventHandler)
-            : TgWebhookServer<boost::asio::local::stream_protocol>(boost::asio::local::stream_protocol::endpoint(unixSocketPath),
-                                                                   path, eventHandler)
-    {
-    }
-
-    TgWebhookLocalServer(const std::string& unixSocketPath, const Bot& bot)
-            : TgWebhookServer<boost::asio::local::stream_protocol>(boost::asio::local::stream_protocol::endpoint(unixSocketPath),
-                                                                   bot)
-    {
-    }
+  TgWebhookLocalServer(const std::string& unixSocketPath, const Bot& bot)
+      : TgWebhookServer<boost::asio::local::stream_protocol>(
+            boost::asio::local::stream_protocol::endpoint(unixSocketPath), bot) {
+  }
 };
 
-}
+}  // namespace TgBot
 
-#endif //BOOST_ASIO_HAS_LOCAL_SOCKETS
+#endif  // BOOST_ASIO_HAS_LOCAL_SOCKETS
 
-#endif //TGBOT_TGWEBHOOKLOCALSERVER_H
+#endif  // TGBOT_TGWEBHOOKLOCALSERVER_H

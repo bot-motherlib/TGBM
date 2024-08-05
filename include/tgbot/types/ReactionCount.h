@@ -14,20 +14,19 @@ namespace TgBot {
  * @ingroup types
  */
 class ReactionCount {
+ public:
+  typedef std::shared_ptr<ReactionCount> Ptr;
 
-public:
-    typedef std::shared_ptr<ReactionCount> Ptr;
+  /**
+   * @brief Type of the reaction
+   */
+  ReactionType::Ptr type;
 
-    /**
-     * @brief Type of the reaction
-     */
-    ReactionType::Ptr type;
-
-    /**
-     * @brief Number of times the reaction was added
-     */
-    std::int32_t totalCount;
+  /**
+   * @brief Number of times the reaction was added
+   */
+  std::int32_t totalCount;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_REACTIONCOUNT_H
+#endif  // TGBOT_REACTIONCOUNT_H

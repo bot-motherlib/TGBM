@@ -15,16 +15,15 @@ namespace TgBot {
  * @ingroup types
  */
 class ChatBoostSourceGiftCode : public ChatBoostSource {
+ public:
+  static const std::string SOURCE;
 
-public:
-    static const std::string SOURCE;
+  typedef std::shared_ptr<ChatBoostSourceGiftCode> Ptr;
 
-    typedef std::shared_ptr<ChatBoostSourceGiftCode> Ptr;
-
-    ChatBoostSourceGiftCode() {
-        this->source = SOURCE;
-    }
+  ChatBoostSourceGiftCode() {
+    this->source = SOURCE;
+  }
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CHATBOOSTSOURCEGIFTCODE_H
+#endif  // TGBOT_CHATBOOSTSOURCEGIFTCODE_H

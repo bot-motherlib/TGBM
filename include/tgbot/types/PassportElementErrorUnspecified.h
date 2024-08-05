@@ -15,20 +15,20 @@ namespace TgBot {
  * @ingroup types
  */
 class PassportElementErrorUnspecified : public PassportElementError {
-public:
-    static const std::string SOURCE;
+ public:
+  static const std::string SOURCE;
 
-    typedef std::shared_ptr<PassportElementErrorUnspecified> Ptr;
+  typedef std::shared_ptr<PassportElementErrorUnspecified> Ptr;
 
-    PassportElementErrorUnspecified() {
-        this->source = SOURCE;
-    }
+  PassportElementErrorUnspecified() {
+    this->source = SOURCE;
+  }
 
-    /**
-     * @brief Base64-encoded element hash
-     */
-    std::string elementHash;
+  /**
+   * @brief Base64-encoded element hash
+   */
+  std::string elementHash;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_PASSPORTELEMENTERRORUNSPECIFIED_H
+#endif  // TGBOT_PASSPORTELEMENTERRORUNSPECIFIED_H

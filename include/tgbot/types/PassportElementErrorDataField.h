@@ -15,25 +15,25 @@ namespace TgBot {
  * @ingroup types
  */
 class PassportElementErrorDataField : public PassportElementError {
-public:
-    static const std::string SOURCE;
+ public:
+  static const std::string SOURCE;
 
-    typedef std::shared_ptr<PassportElementErrorDataField> Ptr;
+  typedef std::shared_ptr<PassportElementErrorDataField> Ptr;
 
-    PassportElementErrorDataField() {
-        this->source = SOURCE;
-    }
+  PassportElementErrorDataField() {
+    this->source = SOURCE;
+  }
 
-    /**
-     * @brief Name of the data field which has the error
-     */
-    std::string fieldName;
+  /**
+   * @brief Name of the data field which has the error
+   */
+  std::string fieldName;
 
-    /**
-     * @brief Base64-encoded data hash
-     */
-    std::string dataHash;
+  /**
+   * @brief Base64-encoded data hash
+   */
+  std::string dataHash;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_PASSPORTELEMENTERRORDATAFILED_H
+#endif  // TGBOT_PASSPORTELEMENTERRORDATAFILED_H

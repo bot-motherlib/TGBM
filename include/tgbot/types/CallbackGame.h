@@ -12,9 +12,9 @@ namespace TgBot {
  * @ingroup types
  */
 class CallbackGame {
-public:
-    typedef std::shared_ptr<CallbackGame> Ptr;
+ public:
+  typedef std::shared_ptr<CallbackGame> Ptr;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CALLBACKGAME_H
+#endif  // TGBOT_CALLBACKGAME_H

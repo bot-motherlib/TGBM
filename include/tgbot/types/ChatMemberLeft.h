@@ -13,15 +13,15 @@ namespace TgBot {
  * @ingroup types
  */
 class ChatMemberLeft : public ChatMember {
-public:
-    static const std::string STATUS;
+ public:
+  static const std::string STATUS;
 
-    typedef std::shared_ptr<ChatMemberLeft> Ptr;
+  typedef std::shared_ptr<ChatMemberLeft> Ptr;
 
-    ChatMemberLeft() {
-        this->status = STATUS;
-    }
+  ChatMemberLeft() {
+    this->status = STATUS;
+  }
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CHATMEMBERLEFT_H
+#endif  // TGBOT_CHATMEMBERLEFT_H

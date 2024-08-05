@@ -18,29 +18,29 @@ namespace TgBot {
  * @ingroup types
  */
 class ShippingQuery {
-public:
-    typedef std::shared_ptr<ShippingQuery> Ptr;
+ public:
+  typedef std::shared_ptr<ShippingQuery> Ptr;
 
-    /**
-     * @brief Unique query identifier.
-     */
-    std::string id;
+  /**
+   * @brief Unique query identifier.
+   */
+  std::string id;
 
-    /**
-     * @brief User who sent the query.
-     */
-    User::Ptr from;
+  /**
+   * @brief User who sent the query.
+   */
+  User::Ptr from;
 
-    /**
-     * @brief Bot specified invoice payload.
-     */
-    std::string invoicePayload;
+  /**
+   * @brief Bot specified invoice payload.
+   */
+  std::string invoicePayload;
 
-    /**
-     * @brief User specified shipping address.
-     */
-    ShippingAddress::Ptr shippingAddress;
+  /**
+   * @brief User specified shipping address.
+   */
+  ShippingAddress::Ptr shippingAddress;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_SHIPPINGQUERY_H
+#endif  // TGBOT_SHIPPINGQUERY_H

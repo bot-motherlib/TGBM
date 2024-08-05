@@ -14,20 +14,19 @@ namespace TgBot {
  * @ingroup types
  */
 class ChatBoostUpdated {
+ public:
+  typedef std::shared_ptr<ChatBoostUpdated> Ptr;
 
-public:
-    typedef std::shared_ptr<ChatBoostUpdated> Ptr;
+  /**
+   * @brief Chat which was boosted
+   */
+  Chat::Ptr chat;
 
-    /**
-     * @brief Chat which was boosted
-     */
-    Chat::Ptr chat;
-
-    /**
-     * @brief Information about the chat boost
-     */
-    ChatBoost::Ptr boost;
+  /**
+   * @brief Information about the chat boost
+   */
+  ChatBoost::Ptr boost;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CHATBOOSTUPDATED_H
+#endif  // TGBOT_CHATBOOSTUPDATED_H

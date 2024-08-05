@@ -19,24 +19,25 @@ namespace TgBot {
  * @ingroup types
  */
 class ChatBoostSource {
+ public:
+  typedef std::shared_ptr<ChatBoostSource> Ptr;
 
-public:
-    typedef std::shared_ptr<ChatBoostSource> Ptr;
+  ChatBoostSource() {
+  }
 
-    ChatBoostSource() {}
+  virtual ~ChatBoostSource() {
+  }
 
-    virtual ~ChatBoostSource() {}
+  /**
+   * @brief Source of the boost
+   */
+  std::string source;
 
-    /**
-     * @brief Source of the boost
-     */
-    std::string source;
-
-    /**
-     * @brief User
-     */
-    User::Ptr user;
+  /**
+   * @brief User
+   */
+  User::Ptr user;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CHATBOOSTSOURCE_H
+#endif  // TGBOT_CHATBOOSTSOURCE_H

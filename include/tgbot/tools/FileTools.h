@@ -23,11 +23,10 @@ std::string read(const std::string& filePath);
  * Save file to disk.
  * @param filePath Path to a file
  * @throws exception of type std::ifstream::failure if writing fails
-*/
+ */
 TGBOT_API
 void write(const std::string& content, const std::string& filePath);
 
-}
+}  // namespace FileTools
 
-
-#endif //TGBOT_FILETOOLS_H
+#endif  // TGBOT_FILETOOLS_H

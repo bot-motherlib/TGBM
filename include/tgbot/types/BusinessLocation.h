@@ -12,20 +12,19 @@ namespace TgBot {
  * @ingroup types
  */
 class BusinessLocation {
+ public:
+  typedef std::shared_ptr<BusinessLocation> Ptr;
 
-public:
-    typedef std::shared_ptr<BusinessLocation> Ptr;
+  /**
+   * @brief Address of the business
+   */
+  std::string address;
 
-    /**
-     * @brief Address of the business
-     */
-    std::string address;
-
-    /**
-     * @brief Optional. Location of the business
-     */
-    Location::Ptr location;
+  /**
+   * @brief Optional. Location of the business
+   */
+  Location::Ptr location;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_BUSINESSLOCATION_H
+#endif  // TGBOT_BUSINESSLOCATION_H

@@ -19,24 +19,24 @@ namespace TgBot {
  * @ingroup net
  */
 class TGBOT_API BoostHttpOnlySslClient : public HttpClient {
+ public:
+  BoostHttpOnlySslClient();
+  ~BoostHttpOnlySslClient() override;
 
-public:
-    BoostHttpOnlySslClient();
-    ~BoostHttpOnlySslClient() override;
+  /**
+   * @brief Sends a request to the url.
+   *
+   * If there's no args specified, a GET request will be sent, otherwise a POST request will be sent.
+   * If at least 1 arg is marked as file, the content type of a request will be multipart/form-data, otherwise
+   * it will be application/x-www-form-urlencoded.
+   */
+  std::string makeRequest(const Url& url, const std::vector<HttpReqArg>& args) const override;
 
-    /**
-     * @brief Sends a request to the url.
-     *
-     * If there's no args specified, a GET request will be sent, otherwise a POST request will be sent.
-     * If at least 1 arg is marked as file, the content type of a request will be multipart/form-data, otherwise it will be application/x-www-form-urlencoded.
-     */
-    std::string makeRequest(const Url& url, const std::vector<HttpReqArg>& args) const override;
-
-private:
-    mutable boost::asio::io_service _ioService;
-    const HttpParser _httpParser;
+ private:
+  mutable boost::asio::io_service _ioService;
+  const HttpParser _httpParser;
 };
 
-}
+}  // namespace TgBot
 
-#endif //TGBOT_BOOSTHTTPCLIENT_H
+#endif  // TGBOT_BOOSTHTTPCLIENT_H

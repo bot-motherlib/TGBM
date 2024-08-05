@@ -14,21 +14,20 @@ namespace TgBot {
  * @ingroup types
  */
 class MessageOriginUser : public MessageOrigin {
+ public:
+  static const std::string TYPE;
 
-public:
-    static const std::string TYPE;
+  typedef std::shared_ptr<MessageOriginUser> Ptr;
 
-    typedef std::shared_ptr<MessageOriginUser> Ptr;
+  MessageOriginUser() {
+    this->type = TYPE;
+  }
 
-    MessageOriginUser() {
-        this->type = TYPE;
-    }
-
-    /**
-     * @brief User that sent the message originally
-     */
-    User::Ptr senderUser;
+  /**
+   * @brief User that sent the message originally
+   */
+  User::Ptr senderUser;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_MESSAGEORIGINUSER_H
+#endif  // TGBOT_MESSAGEORIGINUSER_H

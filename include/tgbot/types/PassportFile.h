@@ -13,31 +13,30 @@ namespace TgBot {
  * @ingroup types
  */
 class PassportFile {
+ public:
+  typedef std::shared_ptr<PassportFile> Ptr;
 
-public:
-    typedef std::shared_ptr<PassportFile> Ptr;
+  /**
+   * @brief Identifier for this file, which can be used to download or reuse the file
+   */
+  std::string fileId;
 
-    /**
-     * @brief Identifier for this file, which can be used to download or reuse the file
-     */
-    std::string fileId;
+  /**
+   * @brief Unique identifier for this file, which is supposed to be the same over time and for different
+   * bots. Can't be used to download or reuse the file.
+   */
+  std::string fileUniqueId;
 
-    /**
-     * @brief Unique identifier for this file, which is supposed to be the same over time and for different bots.
-     * Can't be used to download or reuse the file.
-     */
-    std::string fileUniqueId;
+  /**
+   * @brief File size
+   */
+  std::int32_t fileSize;
 
-    /**
-     * @brief File size
-     */
-    std::int32_t fileSize;
-
-    /**
-     * @brief Unix time when the file was uploaded
-     */
-    std::int32_t fileDate;
+  /**
+   * @brief Unix time when the file was uploaded
+   */
+  std::int32_t fileDate;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CPP_PASSPORTFILE_H
+#endif  // TGBOT_CPP_PASSPORTFILE_H

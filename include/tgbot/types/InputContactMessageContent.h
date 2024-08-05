@@ -14,35 +14,35 @@ namespace TgBot {
  * @ingroup types
  */
 class InputContactMessageContent : public InputMessageContent {
-public:
-    static const std::string TYPE;
+ public:
+  static const std::string TYPE;
 
-    typedef std::shared_ptr<InputContactMessageContent> Ptr;
+  typedef std::shared_ptr<InputContactMessageContent> Ptr;
 
-    InputContactMessageContent() {
-        this->type = TYPE;
-    }
+  InputContactMessageContent() {
+    this->type = TYPE;
+  }
 
-    /**
-     * @brief Contact's phone number
-     */
-    std::string phoneNumber;
+  /**
+   * @brief Contact's phone number
+   */
+  std::string phoneNumber;
 
-    /**
-     * @brief Contact's first name
-     */
-    std::string firstName;
+  /**
+   * @brief Contact's first name
+   */
+  std::string firstName;
 
-    /**
-     * @brief Optional. Contact's last name
-     */
-    std::string lastName;
+  /**
+   * @brief Optional. Contact's last name
+   */
+  std::string lastName;
 
-    /**
-     * @brief Optional. Additional data about the contact in the form of a vCard, 0-2048 bytes
-     */
-    std::string vcard;
+  /**
+   * @brief Optional. Additional data about the contact in the form of a vCard, 0-2048 bytes
+   */
+  std::string vcard;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_INPUTCONTACTMESSAGECONTENT_H
+#endif  // TGBOT_INPUTCONTACTMESSAGECONTENT_H

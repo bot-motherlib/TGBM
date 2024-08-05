@@ -10,25 +10,25 @@
 namespace TgBot {
 
 /**
- * @brief This object contains information about the users whose identifiers were shared with the bot using a KeyboardButtonRequestUsers button.
+ * @brief This object contains information about the users whose identifiers were shared with the bot using a
+ * KeyboardButtonRequestUsers button.
  *
  * @ingroup types
  */
 class UsersShared {
+ public:
+  typedef std::shared_ptr<UsersShared> Ptr;
 
-public:
-    typedef std::shared_ptr<UsersShared> Ptr;
+  /**
+   * @brief Identifier of the request
+   */
+  std::int32_t requestId;
 
-    /**
-     * @brief Identifier of the request
-     */
-    std::int32_t requestId;
-
-    /**
-     * @brief Information about users shared with the bot.
-     */
-    std::vector<SharedUser::Ptr> users;
+  /**
+   * @brief Information about users shared with the bot.
+   */
+  std::vector<SharedUser::Ptr> users;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_USERSSHARED_H
+#endif  // TGBOT_USERSSHARED_H

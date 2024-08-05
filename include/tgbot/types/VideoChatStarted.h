@@ -12,10 +12,9 @@ namespace TgBot {
  * @ingroup types
  */
 class VideoChatStarted {
-
-public:
-    typedef std::shared_ptr<VideoChatStarted> Ptr;
+ public:
+  typedef std::shared_ptr<VideoChatStarted> Ptr;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_VIDEOCHATSTARTED_H
+#endif  // TGBOT_VIDEOCHATSTARTED_H

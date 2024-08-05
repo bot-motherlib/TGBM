@@ -17,24 +17,24 @@ namespace TgBot {
  * @ingroup types
  */
 class ShippingOption {
-public:
-    typedef std::shared_ptr<ShippingOption> Ptr;
+ public:
+  typedef std::shared_ptr<ShippingOption> Ptr;
 
-    /**
-     * @brief Shipping option identifier.
-     */
-    std::string id;
+  /**
+   * @brief Shipping option identifier.
+   */
+  std::string id;
 
-    /**
-     * @brief Option title.
-     */
-    std::string title;
+  /**
+   * @brief Option title.
+   */
+  std::string title;
 
-    /**
-     * @brief List of price options.
-     */
-    std::vector<LabeledPrice::Ptr> prices;
+  /**
+   * @brief List of price options.
+   */
+  std::vector<LabeledPrice::Ptr> prices;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_SHIPPINGOPTION_H
+#endif  // TGBOT_SHIPPINGOPTION_H

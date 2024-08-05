@@ -19,24 +19,25 @@ namespace TgBot {
  * @ingroup types
  */
 class MessageOrigin {
+ public:
+  typedef std::shared_ptr<MessageOrigin> Ptr;
 
-public:
-    typedef std::shared_ptr<MessageOrigin> Ptr;
+  MessageOrigin() {
+  }
 
-    MessageOrigin() {}
+  virtual ~MessageOrigin() {
+  }
 
-    virtual ~MessageOrigin() {}
+  /**
+   * @brief Type of the message origin
+   */
+  std::string type;
 
-    /**
-     * @brief Type of the message origin
-     */
-    std::string type;
-
-    /**
-     * @brief Date the message was sent originally in Unix time
-     */
-    std::uint32_t date;
+  /**
+   * @brief Date the message was sent originally in Unix time
+   */
+  std::uint32_t date;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_MESSAGEORIGIN_H
+#endif  // TGBOT_MESSAGEORIGIN_H

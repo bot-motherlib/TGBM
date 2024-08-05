@@ -16,55 +16,55 @@ namespace TgBot {
  * @ingroup types
  */
 class InlineQueryResultArticle : public InlineQueryResult {
-public:
-    static const std::string TYPE;
+ public:
+  static const std::string TYPE;
 
-    typedef std::shared_ptr<InlineQueryResultArticle> Ptr;
+  typedef std::shared_ptr<InlineQueryResultArticle> Ptr;
 
-    InlineQueryResultArticle() {
-        this->type = TYPE;
-    }
+  InlineQueryResultArticle() {
+    this->type = TYPE;
+  }
 
-    /**
-     * @brief Title of the result
-     */
-    std::string title;
+  /**
+   * @brief Title of the result
+   */
+  std::string title;
 
-    /**
-     * @brief Content of the message to be sent
-     */
-    InputMessageContent::Ptr inputMessageContent;
+  /**
+   * @brief Content of the message to be sent
+   */
+  InputMessageContent::Ptr inputMessageContent;
 
-    /**
-     * @brief Optional. URL of the result
-     */
-    std::string url;
+  /**
+   * @brief Optional. URL of the result
+   */
+  std::string url;
 
-    /**
-     * @brief Optional. Pass True if you don't want the URL to be shown in the message.
-     */
-    bool hideUrl;
+  /**
+   * @brief Optional. Pass True if you don't want the URL to be shown in the message.
+   */
+  bool hideUrl;
 
-    /**
-     * @brief Optional. Short description of the result
-     */
-    std::string description;
+  /**
+   * @brief Optional. Short description of the result
+   */
+  std::string description;
 
-    /**
-     * @brief Optional. Url of the thumbnail for the result
-     */
-    std::string thumbnailUrl;
+  /**
+   * @brief Optional. Url of the thumbnail for the result
+   */
+  std::string thumbnailUrl;
 
-    /**
-     * @brief Optional. Thumbnail width
-     */
-    std::int32_t thumbnailWidth;
+  /**
+   * @brief Optional. Thumbnail width
+   */
+  std::int32_t thumbnailWidth;
 
-    /**
-     * @brief Optional. Thumbnail height
-     */
-    std::int32_t thumbnailHeight;
+  /**
+   * @brief Optional. Thumbnail height
+   */
+  std::int32_t thumbnailHeight;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_INLINEQUERYRESULTARTICLE_H
+#endif  // TGBOT_INLINEQUERYRESULTARTICLE_H

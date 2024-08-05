@@ -16,40 +16,39 @@ namespace TgBot {
  * @ingroup net
  */
 class TGBOT_API HttpClient {
+ public:
+  virtual ~HttpClient() = default;
 
-public:
-    virtual ~HttpClient() = default;
+  /**
+   * @brief Sends a request to the url.
+   *
+   * If there's no args specified, a GET request will be sent, otherwise a POST request will be sent.
+   * If at least 1 arg is marked as file, the content type of a request will be multipart/form-data, otherwise
+   * it will be application/x-www-form-urlencoded.
+   */
+  virtual std::string makeRequest(const Url& url, const std::vector<HttpReqArg>& args) const = 0;
 
-    /**
-     * @brief Sends a request to the url.
-     *
-     * If there's no args specified, a GET request will be sent, otherwise a POST request will be sent.
-     * If at least 1 arg is marked as file, the content type of a request will be multipart/form-data, otherwise it will be application/x-www-form-urlencoded.
-     */
-    virtual std::string makeRequest(const Url& url, const std::vector<HttpReqArg>& args) const = 0;
+  std::int32_t _timeout = 25;
 
-    std::int32_t _timeout = 25;
+  /**
+   * @brief Get the maximum number of makeRequest() retries before giving up and throwing an exception.
+   */
+  virtual int getRequestMaxRetries() const {
+    return requestMaxRetries;
+  }
 
-    /**
-      * @brief Get the maximum number of makeRequest() retries before giving up and throwing an exception.
-      */
-    virtual int getRequestMaxRetries() const {
-        return requestMaxRetries;
-    }
+  /**
+   * @brief Get the makeRequest() backoff duration between retries, in seconds.
+   */
+  virtual int getRequestBackoff() const {
+    return requestBackoff;
+  }
 
-    /**
-      * @brief Get the makeRequest() backoff duration between retries, in seconds.
-      */
-    virtual int getRequestBackoff() const {
-        return requestBackoff;
-    }
-
-private:
-    int requestMaxRetries = 3;
-    int requestBackoff = 1;
+ private:
+  int requestMaxRetries = 3;
+  int requestBackoff = 1;
 };
 
-}
+}  // namespace TgBot
 
-
-#endif //TGBOT_HTTPCLIENT_H
+#endif  // TGBOT_HTTPCLIENT_H

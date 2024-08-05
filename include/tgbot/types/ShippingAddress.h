@@ -12,40 +12,39 @@ namespace TgBot {
  * @ingroup types
  */
 class ShippingAddress {
+ public:
+  typedef std::shared_ptr<ShippingAddress> Ptr;
 
-public:
-    typedef std::shared_ptr<ShippingAddress> Ptr;
+  /**
+   * @brief Two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code
+   */
+  std::string countryCode;
 
-    /**
-     * @brief Two-letter [ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2) country code
-     */
-    std::string countryCode;
+  /**
+   * @brief State, if applicable
+   */
+  std::string state;
 
-    /**
-     * @brief State, if applicable
-     */
-    std::string state;
+  /**
+   * @brief City
+   */
+  std::string city;
 
-    /**
-     * @brief City
-     */
-    std::string city;
+  /**
+   * @brief First line for the address
+   */
+  std::string streetLine1;
 
-    /**
-     * @brief First line for the address
-     */
-    std::string streetLine1;
+  /**
+   * @brief Second line for the address
+   */
+  std::string streetLine2;
 
-    /**
-     * @brief Second line for the address
-     */
-    std::string streetLine2;
-
-    /**
-     * @brief Address post code
-     */
-    std::string postCode;
+  /**
+   * @brief Address post code
+   */
+  std::string postCode;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_SHIPPINGADDRESS_H
+#endif  // TGBOT_SHIPPINGADDRESS_H

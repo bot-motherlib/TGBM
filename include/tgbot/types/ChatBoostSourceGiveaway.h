@@ -16,28 +16,28 @@ namespace TgBot {
  * @ingroup types
  */
 class ChatBoostSourceGiveaway : public ChatBoostSource {
+ public:
+  static const std::string SOURCE;
 
-public:
-    static const std::string SOURCE;
+  typedef std::shared_ptr<ChatBoostSourceGiveaway> Ptr;
 
-    typedef std::shared_ptr<ChatBoostSourceGiveaway> Ptr;
+  ChatBoostSourceGiveaway() {
+    this->source = SOURCE;
+  }
 
-    ChatBoostSourceGiveaway() {
-        this->source = SOURCE;
-    }
+  /**
+   * @brief Identifier of a message in the chat with the giveaway; the message could have been deleted
+   * already.
+   *
+   * May be 0 if the message isn't sent yet.
+   */
+  std::int32_t giveawayMessageId;
 
-    /**
-     * @brief Identifier of a message in the chat with the giveaway; the message could have been deleted already.
-     *
-     * May be 0 if the message isn't sent yet.
-     */
-    std::int32_t giveawayMessageId;
-
-    /**
-     * @brief Optional. True, if the giveaway was completed, but there was no user to win the prize
-     */
-    bool isUnclaimed;
+  /**
+   * @brief Optional. True, if the giveaway was completed, but there was no user to win the prize
+   */
+  bool isUnclaimed;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CHATBOOSTSOURCEGIVEAWAY_H
+#endif  // TGBOT_CHATBOOSTSOURCEGIVEAWAY_H

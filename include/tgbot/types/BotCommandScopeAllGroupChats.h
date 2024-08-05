@@ -13,15 +13,15 @@ namespace TgBot {
  * @ingroup types
  */
 class BotCommandScopeAllGroupChats : public BotCommandScope {
-public:
-    static const std::string TYPE;
+ public:
+  static const std::string TYPE;
 
-    typedef std::shared_ptr<BotCommandScopeAllGroupChats> Ptr;
+  typedef std::shared_ptr<BotCommandScopeAllGroupChats> Ptr;
 
-    BotCommandScopeAllGroupChats() {
-        this->type = TYPE;
-    }
+  BotCommandScopeAllGroupChats() {
+    this->type = TYPE;
+  }
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_BOTCOMMANDSCOPEALLGROUPCHATS_H
+#endif  // TGBOT_BOTCOMMANDSCOPEALLGROUPCHATS_H

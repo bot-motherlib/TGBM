@@ -9,21 +9,20 @@
 namespace TgBot {
 
 class PollOption {
+ public:
+  typedef std::shared_ptr<PollOption> Ptr;
 
-public:
-    typedef std::shared_ptr<PollOption> Ptr;
+  /**
+   * @brief Option text, 1-100 characters.
+   */
+  std::string text;
 
-    /**
-     * @brief Option text, 1-100 characters.
-     */
-    std::string text;
-
-    /**
-     * @brief Number of users that voted for this option.
-     */
-    std::int64_t voterCount;
+  /**
+   * @brief Number of users that voted for this option.
+   */
+  std::int64_t voterCount;
 };
 
-}
+}  // namespace TgBot
 
-#endif //TGBOT_POLLOPTION_H
+#endif  // TGBOT_POLLOPTION_H

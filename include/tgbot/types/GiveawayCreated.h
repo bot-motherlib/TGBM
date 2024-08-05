@@ -13,10 +13,9 @@ namespace TgBot {
  * @ingroup types
  */
 class GiveawayCreated {
-
-public:
-    typedef std::shared_ptr<GiveawayCreated> Ptr;
+ public:
+  typedef std::shared_ptr<GiveawayCreated> Ptr;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_GIVEAWAYCREATED_H
+#endif  // TGBOT_GIVEAWAYCREATED_H

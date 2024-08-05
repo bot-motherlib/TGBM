@@ -14,20 +14,21 @@ namespace TgBot {
  * @ingroup types
  */
 class BotCommandScopeChat : public BotCommandScope {
-public:
-    static const std::string TYPE;
+ public:
+  static const std::string TYPE;
 
-    typedef std::shared_ptr<BotCommandScopeChat> Ptr;
+  typedef std::shared_ptr<BotCommandScopeChat> Ptr;
 
-    BotCommandScopeChat() {
-        this->type = TYPE;
-    }
+  BotCommandScopeChat() {
+    this->type = TYPE;
+  }
 
-    /**
-     * @brief Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)
-     */
-    std::int64_t chatId;
+  /**
+   * @brief Unique identifier for the target chat or username of the target supergroup (in the format
+   * @supergroupusername)
+   */
+  std::int64_t chatId;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_BOTCOMMANDSCOPECHAT_H
+#endif  // TGBOT_BOTCOMMANDSCOPECHAT_H

@@ -17,32 +17,31 @@ namespace TgBot {
  * @ingroup types
  */
 class PollAnswer {
+ public:
+  typedef std::shared_ptr<PollAnswer> Ptr;
 
-public:
-    typedef std::shared_ptr<PollAnswer> Ptr;
+  /**
+   * @brief Unique poll identifier
+   */
+  std::string pollId;
 
-    /**
-     * @brief Unique poll identifier
-     */
-    std::string pollId;
+  /**
+   * @brief Optional. The chat that changed the answer to the poll, if the voter is anonymous
+   */
+  Chat::Ptr voterChat;
 
-    /**
-     * @brief Optional. The chat that changed the answer to the poll, if the voter is anonymous
-     */
-    Chat::Ptr voterChat;
+  /**
+   * @brief Optional. The user that changed the answer to the poll, if the voter isn't anonymous
+   */
+  User::Ptr user;
 
-    /**
-     * @brief Optional. The user that changed the answer to the poll, if the voter isn't anonymous
-     */
-    User::Ptr user;
-
-    /**
-     * @brief 0-based identifiers of chosen answer options.
-     * 
-     * May be empty if the vote was retracted.
-     */
-    std::vector<std::int32_t> optionIds;
+  /**
+   * @brief 0-based identifiers of chosen answer options.
+   *
+   * May be empty if the vote was retracted.
+   */
+  std::vector<std::int32_t> optionIds;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_POLLANSWER_H
+#endif  // TGBOT_POLLANSWER_H

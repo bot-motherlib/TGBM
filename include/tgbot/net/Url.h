@@ -13,36 +13,35 @@ namespace TgBot {
  * @ingroup net
  */
 class TGBOT_API Url {
+ public:
+  Url(const std::string& url);
 
-public:
-    Url(const std::string& url);
+  /**
+   * @brief Protocol part of an url. Example: https://
+   */
+  std::string protocol;
 
-    /**
-     * @brief Protocol part of an url. Example: https://
-     */
-    std::string protocol;
+  /**
+   * @brief Host part of an url. Example: www.example.com
+   */
+  std::string host;
 
-    /**
-     * @brief Host part of an url. Example: www.example.com
-     */
-    std::string host;
+  /**
+   * @brief Path part of an url including preceding '/' char. Example: /index.html
+   */
+  std::string path;
 
-    /**
-     * @brief Path part of an url including preceding '/' char. Example: /index.html
-     */
-    std::string path;
+  /**
+   * @brief Query part of an url without '?' char. Example: a=1&b=2&c=3
+   */
+  std::string query;
 
-    /**
-     * @brief Query part of an url without '?' char. Example: a=1&b=2&c=3
-     */
-    std::string query;
-
-    /**
-     * @brief Fragment part of an url without '#' char. Example: section1
-     */
-    std::string fragment;
+  /**
+   * @brief Fragment part of an url without '#' char. Example: section1
+   */
+  std::string fragment;
 };
 
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CPP_URL_H
+#endif  // TGBOT_CPP_URL_H

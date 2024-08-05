@@ -14,23 +14,24 @@ namespace TgBot {
  * @ingroup types
  */
 class BotCommand {
-public:
-    typedef std::shared_ptr<BotCommand> Ptr;
-    BotCommand() { }
+ public:
+  typedef std::shared_ptr<BotCommand> Ptr;
+  BotCommand() {
+  }
 
-    virtual ~BotCommand() { }
+  virtual ~BotCommand() {
+  }
 
-    /**
-     * @brief command label.
-     */
-    std::string command;
+  /**
+   * @brief command label.
+   */
+  std::string command;
 
-    /**
-     * @brief description label.
-     */
-    std::string description;
-
+  /**
+   * @brief description label.
+   */
+  std::string description;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_BOTCOMMAND_H
+#endif  // TGBOT_BOTCOMMAND_H

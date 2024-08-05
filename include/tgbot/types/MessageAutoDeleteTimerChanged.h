@@ -12,15 +12,14 @@ namespace TgBot {
  * @ingroup types
  */
 class MessageAutoDeleteTimerChanged {
+ public:
+  typedef std::shared_ptr<MessageAutoDeleteTimerChanged> Ptr;
 
-public:
-    typedef std::shared_ptr<MessageAutoDeleteTimerChanged> Ptr;
-
-    /**
-     * @brief New auto-delete time for messages in the chat
-     */
-    std::int32_t messageAutoDeleteTime;
+  /**
+   * @brief New auto-delete time for messages in the chat
+   */
+  std::int32_t messageAutoDeleteTime;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CPP_MESSAGEAUTODELETETIMERCHANGED_H
+#endif  // TGBOT_CPP_MESSAGEAUTODELETETIMERCHANGED_H

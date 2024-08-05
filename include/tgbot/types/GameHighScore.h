@@ -16,24 +16,24 @@ namespace TgBot {
  * @ingroup types
  */
 class GameHighScore {
-public:
-    typedef std::shared_ptr<GameHighScore> Ptr;
+ public:
+  typedef std::shared_ptr<GameHighScore> Ptr;
 
-    /**
-     * @brief Position in high score table for the game.
-     */
-    std::string position;
+  /**
+   * @brief Position in high score table for the game.
+   */
+  std::string position;
 
-    /**
-     * @brief User.
-     */
-    User::Ptr user;
+  /**
+   * @brief User.
+   */
+  User::Ptr user;
 
-    /**
-     * @brief Score.
-     */
-    std::int32_t score;
+  /**
+   * @brief Score.
+   */
+  std::int32_t score;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_GAMEHIGHSCORE_H
+#endif  // TGBOT_GAMEHIGHSCORE_H

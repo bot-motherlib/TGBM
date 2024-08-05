@@ -12,21 +12,21 @@ namespace TgBot {
  * @ingroup types
  */
 class WebAppData {
-public:
-    typedef std::shared_ptr<WebAppData> Ptr;
+ public:
+  typedef std::shared_ptr<WebAppData> Ptr;
 
-    /**
-     * @brief The data.
-     * Be aware that a bad client can send arbitrary data in this field.
-     */
-    std::string data;
+  /**
+   * @brief The data.
+   * Be aware that a bad client can send arbitrary data in this field.
+   */
+  std::string data;
 
-    /**
-     * @brief Text of the webApp keyboard button, from which the Web App was opened.
-     * Be aware that a bad client can send arbitrary data in this field.
-     */
-    std::string buttonText;
+  /**
+   * @brief Text of the webApp keyboard button, from which the Web App was opened.
+   * Be aware that a bad client can send arbitrary data in this field.
+   */
+  std::string buttonText;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_WEBAPPMESSAGE_H
+#endif  // TGBOT_WEBAPPMESSAGE_H

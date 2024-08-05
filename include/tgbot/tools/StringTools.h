@@ -30,7 +30,8 @@ TGBOT_API
 bool endsWith(const std::string& str1, const std::string& str2);
 
 /**
- * Splits string to smaller substrings which have between them a delimiter. Resulting substrings won't have delimiter.
+ * Splits string to smaller substrings which have between them a delimiter. Resulting substrings won't have
+ * delimiter.
  * @param str Source string
  * @param delimiter Delimiter
  * @param dest Array to which substrings will be saved.
@@ -64,25 +65,26 @@ std::string urlDecode(const std::string& value);
 
 /**
  * Escapes a string with illegal characters ("\/) for json
- * 
+ *
  * @param value input string
- * 
+ *
  * @return An encoded string
  */
 std::string escapeJsonString(const std::string& value);
 
 /**
- * Splits string to smaller substrings which have between them a delimiter. Resulting substrings won't have delimiter.
+ * Splits string to smaller substrings which have between them a delimiter. Resulting substrings won't have
+ * delimiter.
  * @param str Source string
  * @param delimiter Delimiter
  * @return Array of substrings
  */
 inline std::vector<std::string> split(const std::string& str, char delimiter) {
-    std::vector<std::string> result;
-    split(str, delimiter, result);
-    return result;
+  std::vector<std::string> result;
+  split(str, delimiter, result);
+  return result;
 }
 
-}
+}  // namespace StringTools
 
-#endif //TGBOT_CPP_STRINGTOOLS_H
+#endif  // TGBOT_CPP_STRINGTOOLS_H

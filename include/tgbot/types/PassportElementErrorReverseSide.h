@@ -15,20 +15,20 @@ namespace TgBot {
  * @ingroup types
  */
 class PassportElementErrorReverseSide : public PassportElementError {
-public:
-    static const std::string SOURCE;
+ public:
+  static const std::string SOURCE;
 
-    typedef std::shared_ptr<PassportElementErrorReverseSide> Ptr;
+  typedef std::shared_ptr<PassportElementErrorReverseSide> Ptr;
 
-    PassportElementErrorReverseSide() {
-        this->source = SOURCE;
-    }
+  PassportElementErrorReverseSide() {
+    this->source = SOURCE;
+  }
 
-    /**
-     * @brief Base64-encoded hash of the file with the reverse side of the document
-     */
-    std::string fileHash;
+  /**
+   * @brief Base64-encoded hash of the file with the reverse side of the document
+   */
+  std::string fileHash;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_PASSPORTELEMENTERRORREVERSESIDE_H
+#endif  // TGBOT_PASSPORTELEMENTERRORREVERSESIDE_H

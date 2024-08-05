@@ -33,34 +33,37 @@ namespace TgBot {
  * - InlineQueryResultVideo
  * - InlineQueryResultVoice
  *
- * Note: All URLs passed in inline query results will be available to end users and therefore must be assumed to be public.
+ * Note: All URLs passed in inline query results will be available to end users and therefore must be assumed
+ * to be public.
  *
  * @ingroup types
  */
 class InlineQueryResult {
+ public:
+  typedef std::shared_ptr<InlineQueryResult> Ptr;
 
-public:
-    typedef std::shared_ptr<InlineQueryResult> Ptr;
+  InlineQueryResult() {
+  }
 
-    InlineQueryResult() { }
+  virtual ~InlineQueryResult() {
+  }
 
-    virtual ~InlineQueryResult() { }
+  /**
+   * @brief Type of the result
+   */
+  std::string type;
 
-    /**
-     * @brief Type of the result
-     */
-    std::string type;
+  /**
+   * @brief Unique identifier for this result, 1-64 bytes
+   */
+  std::string id;
 
-    /**
-     * @brief Unique identifier for this result, 1-64 bytes
-     */
-    std::string id;
-
-    /**
-     * @brief Optional. [Inline keyboard](https://core.telegram.org/bots/features#inline-keyboards) attached to the message
-     */
-    InlineKeyboardMarkup::Ptr replyMarkup;
+  /**
+   * @brief Optional. [Inline keyboard](https://core.telegram.org/bots/features#inline-keyboards) attached to
+   * the message
+   */
+  InlineKeyboardMarkup::Ptr replyMarkup;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_INLINEQUERYRESULT_H
+#endif  // TGBOT_INLINEQUERYRESULT_H

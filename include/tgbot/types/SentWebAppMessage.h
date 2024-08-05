@@ -12,15 +12,15 @@ namespace TgBot {
  * @ingroup types
  */
 class SentWebAppMessage {
-public:
-    typedef std::shared_ptr<SentWebAppMessage> Ptr;
+ public:
+  typedef std::shared_ptr<SentWebAppMessage> Ptr;
 
-    /**
-     * @brief Optional. Identifier of the sent inline message.
-     * Available only if there is an inline keyboard attached to the message.
-     */
-    std::string inlineMessageId;
+  /**
+   * @brief Optional. Identifier of the sent inline message.
+   * Available only if there is an inline keyboard attached to the message.
+   */
+  std::string inlineMessageId;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_SENTWEBAPPMESSAGE_H
+#endif  // TGBOT_SENTWEBAPPMESSAGE_H

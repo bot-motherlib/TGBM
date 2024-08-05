@@ -12,15 +12,14 @@ namespace TgBot {
  * @ingroup types
  */
 class VideoChatEnded {
+ public:
+  typedef std::shared_ptr<VideoChatEnded> Ptr;
 
-public:
-    typedef std::shared_ptr<VideoChatEnded> Ptr;
-
-    /**
-     * @brief Video chat duration in seconds
-     */
-    std::int32_t duration;
+  /**
+   * @brief Video chat duration in seconds
+   */
+  std::int32_t duration;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_VIDEOCHATENDED_H
+#endif  // TGBOT_VIDEOCHATENDED_H

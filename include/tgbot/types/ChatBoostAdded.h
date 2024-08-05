@@ -12,15 +12,14 @@ namespace TgBot {
  * @ingroup types
  */
 class ChatBoostAdded {
+ public:
+  typedef std::shared_ptr<ChatBoostAdded> Ptr;
 
-public:
-    typedef std::shared_ptr<ChatBoostAdded> Ptr;
-
-    /**
-     * @brief Number of boosts added by the user
-     */
-    std::int32_t boostCount;
+  /**
+   * @brief Number of boosts added by the user
+   */
+  std::int32_t boostCount;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CHATBOOSTADDED_H
+#endif  // TGBOT_CHATBOOSTADDED_H

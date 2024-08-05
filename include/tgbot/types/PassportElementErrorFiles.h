@@ -16,20 +16,20 @@ namespace TgBot {
  * @ingroup types
  */
 class PassportElementErrorFiles : public PassportElementError {
-public:
-    static const std::string SOURCE;
+ public:
+  static const std::string SOURCE;
 
-    typedef std::shared_ptr<PassportElementErrorFiles> Ptr;
+  typedef std::shared_ptr<PassportElementErrorFiles> Ptr;
 
-    PassportElementErrorFiles() {
-        this->source = SOURCE;
-    }
+  PassportElementErrorFiles() {
+    this->source = SOURCE;
+  }
 
-    /**
-     * @brief List of base64-encoded file hashes
-     */
-    std::vector<std::string> fileHashes;
+  /**
+   * @brief List of base64-encoded file hashes
+   */
+  std::vector<std::string> fileHashes;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_PASSPORTELEMENTERRORFILES_H
+#endif  // TGBOT_PASSPORTELEMENTERRORFILES_H

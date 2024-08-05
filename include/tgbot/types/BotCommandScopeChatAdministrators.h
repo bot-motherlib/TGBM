@@ -9,25 +9,27 @@
 namespace TgBot {
 
 /**
- * @brief Represents the scope of bot commands, covering all administrators of a specific group or supergroup chat.
+ * @brief Represents the scope of bot commands, covering all administrators of a specific group or supergroup
+ * chat.
  *
  * @ingroup types
  */
 class BotCommandScopeChatAdministrators : public BotCommandScope {
-public:
-    static const std::string TYPE;
+ public:
+  static const std::string TYPE;
 
-    typedef std::shared_ptr<BotCommandScopeChatAdministrators> Ptr;
+  typedef std::shared_ptr<BotCommandScopeChatAdministrators> Ptr;
 
-    BotCommandScopeChatAdministrators() {
-        this->type = TYPE;
-    }
+  BotCommandScopeChatAdministrators() {
+    this->type = TYPE;
+  }
 
-    /**
-     * @brief Unique identifier for the target chat or username of the target supergroup (in the format @supergroupusername)
-     */
-    std::int64_t chatId;
+  /**
+   * @brief Unique identifier for the target chat or username of the target supergroup (in the format
+   * @supergroupusername)
+   */
+  std::int64_t chatId;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_BOTCOMMANDSCOPECHATADMINISTRATORS_H
+#endif  // TGBOT_BOTCOMMANDSCOPECHATADMINISTRATORS_H

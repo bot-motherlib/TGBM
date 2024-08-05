@@ -16,30 +16,30 @@ namespace TgBot {
  * @ingroup types
  */
 class OrderInfo {
-public:
-    typedef std::shared_ptr<OrderInfo> Ptr;
+ public:
+  typedef std::shared_ptr<OrderInfo> Ptr;
 
-    /**
-     * @brief Optional. User name.
-     */
-    std::string name;
+  /**
+   * @brief Optional. User name.
+   */
+  std::string name;
 
-    /**
-     * @brief Optional. User's phone number.
-     */
-    std::string phoneNumber;
+  /**
+   * @brief Optional. User's phone number.
+   */
+  std::string phoneNumber;
 
-    /**
-     * @brief Optional. User email.
-     */
-    std::string email;
+  /**
+   * @brief Optional. User email.
+   */
+  std::string email;
 
-    /**
-     * @brief Optional. User shipping address.
-     */
-    ShippingAddress::Ptr shippingAddress;
+  /**
+   * @brief Optional. User shipping address.
+   */
+  ShippingAddress::Ptr shippingAddress;
 };
 
-}
+}  // namespace TgBot
 
-#endif //TGBOT_ORDERINFO_H
+#endif  // TGBOT_ORDERINFO_H

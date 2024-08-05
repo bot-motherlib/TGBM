@@ -11,15 +11,14 @@ namespace TgBot {
  * @ingroup types
  */
 class MessageId {
+ public:
+  typedef std::shared_ptr<MessageId> Ptr;
 
-public:
-    typedef std::shared_ptr<MessageId> Ptr;
-
-    /**
-     * @brief Unique message identifier
-     */
-    std::int32_t messageId;
+  /**
+   * @brief Unique message identifier
+   */
+  std::int32_t messageId;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_CPP_MESSAGEID_H
+#endif  // TGBOT_CPP_MESSAGEID_H

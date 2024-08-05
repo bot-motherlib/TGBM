@@ -15,26 +15,27 @@ namespace TgBot {
  * @ingroup types
  */
 class MenuButtonWebApp : public MenuButton {
-public:
-    static const std::string TYPE;
+ public:
+  static const std::string TYPE;
 
-    typedef std::shared_ptr<MenuButtonWebApp> Ptr;
+  typedef std::shared_ptr<MenuButtonWebApp> Ptr;
 
-    MenuButtonWebApp() {
-        this->type = TYPE;
-    }
+  MenuButtonWebApp() {
+    this->type = TYPE;
+  }
 
-    /**
-     * @brief Text on the button
-     */
-    std::string text;
+  /**
+   * @brief Text on the button
+   */
+  std::string text;
 
-    /**
-     * @brief Description of the Web App that will be launched when the user presses the button.
-     * The Web App will be able to send an arbitrary message on behalf of the user using the method Api::answerWebAppQuery.
-     */
-    WebAppInfo::Ptr webApp;
+  /**
+   * @brief Description of the Web App that will be launched when the user presses the button.
+   * The Web App will be able to send an arbitrary message on behalf of the user using the method
+   * Api::answerWebAppQuery.
+   */
+  WebAppInfo::Ptr webApp;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_MENUBUTTONWEBAPP_H
+#endif  // TGBOT_MENUBUTTONWEBAPP_H

@@ -16,31 +16,30 @@ namespace TgBot {
  * @ingroup types
  */
 class MessageOriginChannel : public MessageOrigin {
+ public:
+  static const std::string TYPE;
 
-public:
-    static const std::string TYPE;
+  typedef std::shared_ptr<MessageOriginChannel> Ptr;
 
-    typedef std::shared_ptr<MessageOriginChannel> Ptr;
+  MessageOriginChannel() {
+    this->type = TYPE;
+  }
 
-    MessageOriginChannel() {
-        this->type = TYPE;
-    }
+  /**
+   * @brief Channel chat to which the message was originally sent
+   */
+  Chat::Ptr chat;
 
-    /**
-     * @brief Channel chat to which the message was originally sent
-     */
-    Chat::Ptr chat;
+  /**
+   * @brief Unique message identifier inside the chat
+   */
+  std::int32_t messageId;
 
-    /**
-     * @brief Unique message identifier inside the chat
-     */
-    std::int32_t messageId;
-
-    /**
-     * @brief Optional. Signature of the original post author
-     */
-    std::string authorSignature;
+  /**
+   * @brief Optional. Signature of the original post author
+   */
+  std::string authorSignature;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_MESSAGEORIGINCHANNEL_H
+#endif  // TGBOT_MESSAGEORIGINCHANNEL_H

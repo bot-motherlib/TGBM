@@ -12,14 +12,14 @@ namespace TgBot {
  * @ingroup types
  */
 class BotShortDescription {
-public:
-    typedef std::shared_ptr<BotShortDescription> Ptr;
+ public:
+  typedef std::shared_ptr<BotShortDescription> Ptr;
 
-    /**
-     * @brief The bot's short description
-     */
-    std::string shortDescription;
+  /**
+   * @brief The bot's short description
+   */
+  std::string shortDescription;
 };
-}
+}  // namespace TgBot
 
-#endif //TGBOT_BOTSHORTDESCRIPTION_H
+#endif  // TGBOT_BOTSHORTDESCRIPTION_H
