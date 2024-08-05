@@ -1,0 +1,29 @@
+{
+    "version": 5,
+    "configurePresets": [
+        {
+            "name": "debug_dev",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build_debug",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "1",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_CXX_STANDARD": "20",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_TOOLCHAIN_FILE": "E:/dev/utils/vcpkg_dir/vcpkg/scripts/buildsystems/vcpkg.cmake"
+            }
+        },
+        {
+            "name": "release_dev",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build_release",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "1",
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_CXX_STANDARD": "20",
+                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_TOOLCHAIN_FILE": "E:/dev/utils/vcpkg_dir/vcpkg/scripts/buildsystems/vcpkg.cmake"
+            }
+        }
+    ]
+}

@@ -1,0 +1,27 @@
+CMakeCache.txt
+CMakeFiles
+CMakeSettings.json
+Makefile
+*.cmake
+install_manifest.txt
+*.cbp
+*.a
+*.so
+*.lnk
+.sw
+doc/
+Thumbs.db
+TgBot_test
+.idea/
+docs/
+cmake-build-*
+
+# Visual Studio
+.vs/
+.vscode/
+build/
+out/
+
+# MacOS dependecies
+.DS_Store
+vcpkg_installed

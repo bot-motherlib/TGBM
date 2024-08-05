@@ -1,0 +1,14 @@
+{
+    "name": "tgbm",
+    "version-string": "1.0.0",
+    "builtin-baseline": "fe1cde61e971d53c9687cf9a46308f8f55da19fa",
+    "dependencies": [
+        {
+            "name": "boost",
+            "version>=": "1.82.0"
+        },
+        "fmt",
+        "openssl",
+        "curl"
+    ]
+}
