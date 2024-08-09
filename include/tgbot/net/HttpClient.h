@@ -8,6 +8,8 @@
 #include <vector>
 #include <cstdint>
 
+#include <kelcoro/task.hpp>
+
 namespace TgBot {
 
 /**
@@ -19,6 +21,8 @@ class TGBOT_API HttpClient {
  public:
   virtual ~HttpClient() = default;
 
+  // TODO add prepare function?
+
   /**
    * @brief Sends a request to the url.
    *
@@ -26,8 +30,12 @@ class TGBOT_API HttpClient {
    * If at least 1 arg is marked as file, the content type of a request will be multipart/form-data, otherwise
    * it will be application/x-www-form-urlencoded.
    */
-  virtual std::string makeRequest(const Url& url, const std::vector<HttpReqArg>& args) const = 0;
-
+  // TODO вот здесь главный асинх должен произойти
+  // TODO? сразу сюда принимать не аргументы, а сгенеренный body?. Крч надо сразу json сделать и положить его
+  // в application/json, вместо сначала создания вектора
+  virtual dd::task<std::string> makeRequest(const Url& url, const std::vector<HttpReqArg>& args) const = 0;
+  // TODO передавать таймаут в makeRequest, количество ретраев вероятно тоже. И std::chrono::seconds вместо
+  // int
   std::int32_t _timeout = 25;
 
   /**

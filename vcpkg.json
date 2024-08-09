@@ -7,8 +7,6 @@
             "name": "boost",
             "version>=": "1.82.0"
         },
-        "fmt",
-        "openssl",
-        "curl"
+        "openssl"
     ]
 }

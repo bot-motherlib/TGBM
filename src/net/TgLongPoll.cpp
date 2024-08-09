@@ -26,17 +26,27 @@ TgLongPoll::TgLongPoll(const Bot& bot, std::int32_t limit, std::int32_t timeout,
     : TgLongPoll(&bot.getApi(), &bot.getEventHandler(), limit, timeout, allowUpdates) {
 }
 
-void TgLongPoll::start() {
-  // handle updates
-  for (Update::Ptr& item : _updates) {
+dd::task<void> TgLongPoll::start() {
+  //// handle updates
+  // for (Update::Ptr& item : _updates) {
+  //   if (item->updateId >= _lastUpdateId) {
+  //     _lastUpdateId = item->updateId + 1;
+  //   }
+  //   _eventHandler->handleUpdate(item);
+  // }
+
+  // confirm handled updates
+  // TODO async (channel...)
+  // TODO это очевидно на одном потоке всегда должно происходить...
+  // почему то не обновляются апдейты, хм... странное что то
+  //_updates
+  auto updates = co_await _api->getUpdates(_lastUpdateId, _limit, _timeout, _allowUpdates);
+  for (Update::Ptr& item : updates) {
     if (item->updateId >= _lastUpdateId) {
       _lastUpdateId = item->updateId + 1;
     }
     _eventHandler->handleUpdate(item);
   }
-
-  // confirm handled updates
-  _updates = _api->getUpdates(_lastUpdateId, _limit, _timeout, _allowUpdates);
 }
 
 }  // namespace TgBot

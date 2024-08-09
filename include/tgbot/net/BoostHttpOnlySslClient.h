@@ -30,11 +30,17 @@ class TGBOT_API BoostHttpOnlySslClient : public HttpClient {
    * If at least 1 arg is marked as file, the content type of a request will be multipart/form-data, otherwise
    * it will be application/x-www-form-urlencoded.
    */
-  std::string makeRequest(const Url& url, const std::vector<HttpReqArg>& args) const override;
+  // TODO понять правильно ли передаются & в ключе и значении x-www-form-urlencoded (должно быть %26 и тд)
+  dd::task<std::string> makeRequest(const Url& url, const std::vector<HttpReqArg>& args) const override;
+
+  [[nodiscard]] boost::asio::io_service& getIoService() noexcept {
+    return _ioService;
+  }
 
  private:
   mutable boost::asio::io_service _ioService;
   const HttpParser _httpParser;
+  // TODO здесь кешировать сокет (или стрим и тд)
 };
 
 }  // namespace TgBot

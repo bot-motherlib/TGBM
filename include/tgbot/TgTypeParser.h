@@ -947,7 +947,7 @@ class TGBOT_API TgTypeParser {
     result += ']';
     return result;
   }
-
+  // TODO охё, ещё и std::function... и тут ещё логичнее делать append чем новую строку
   template <typename T>
   std::string parseArray(std::function<T(const T&)> parseFunc, const std::vector<T>& objects) const {
     if (objects.empty())
@@ -955,9 +955,11 @@ class TGBOT_API TgTypeParser {
     std::string result;
     result += '[';
     for (const T& item : objects) {
-      result += parseFunc(item);
+      result += parseFunc(item);  // TODO чёто неясно а здесь чё, предполагается что T это всегда string?
       result += ',';
     }
+    // TODO это по сути pop back...
+    // да и написание нормальное без удаления лишних запятых уже изобрели (goto..)
     result.erase(result.length() - 1);
     result += ']';
     return result;

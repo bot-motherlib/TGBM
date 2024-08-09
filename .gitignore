@@ -15,7 +15,7 @@ TgBot_test
 .idea/
 docs/
 cmake-build-*
-
+.cache
 # Visual Studio
 .vs/
 .vscode/
@@ -25,3 +25,4 @@ out/
 # MacOS dependecies
 .DS_Store
 vcpkg_installed
+compile_commands.json

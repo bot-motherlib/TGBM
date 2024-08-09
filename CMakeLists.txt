@@ -11,7 +11,6 @@ set(TGBM_SRC_LIST
     src/TgException.cpp
     src/TgTypeParser.cpp
     src/net/BoostHttpOnlySslClient.cpp
-    src/net/CurlHttpClient.cpp
     src/net/HttpParser.cpp
     src/net/TgLongPoll.cpp
     src/net/Url.cpp
@@ -31,21 +30,22 @@ set(TGBM_SRC_LIST
 
 # deps
 
-# TODO 
+add_compile_definitions(BOOST_ASIO_HAS_CO_AWAIT)
+
+# TODO rm unit test framework
 find_package(Boost 1.82 COMPONENTS system unit_test_framework REQUIRED)
 find_package(Threads REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(OpenSSL REQUIRED)
 
-find_package(CURL 7.58.0)
-if (CURL_FOUND)
-    add_definitions(-DHAVE_CURL)
-endif()
+include(FetchContent)
 
-find_package(fmt CONFIG REQUIRED)
-
-# TODO use cmake for finding boost (newer version?)
-# TODO rm unit test framework
+FetchContent_Declare(
+  kelcoro
+  GIT_REPOSITORY https://github.com/kelbon/kelcoro
+  GIT_TAG origin/main
+)
+FetchContent_MakeAvailable(kelcoro)
 
 add_library(tgbmlib ${TGBM_SRC_LIST})
 
@@ -53,16 +53,14 @@ target_include_directories(tgbmlib PUBLIC
                            "${CMAKE_CURRENT_SOURCE_DIR}/include"
                            PRIVATE
                            ${OPENSSL_INCLUDE_DIR}
-                           ${CURL_INCLUDE_DIRS}
                            ${Boost_INCLUDE_DIR})
 
-target_link_libraries(tgbmlib PRIVATE
+target_link_libraries(tgbmlib PUBLIC
+    kelcorolib
     ${CMAKE_THREAD_LIBS_INIT}
     ${ZLIB_LIBRARIES}
     OpenSSL::SSL OpenSSL::Crypto
-    ${Boost_LIBRARIES}
-    CURL::libcurl
-    fmt::fmt)
+    ${Boost_LIBRARIES})
 
 set_target_properties(tgbmlib PROPERTIES
 	CMAKE_CXX_EXTENSIONS OFF

@@ -27,6 +27,8 @@ string HttpParser::generateRequest(const Url& url, const vector<HttpReqArg>& arg
   result += "Host: ";
   result += url.host;
   result += "\r\nConnection: ";
+  // TODO чтобы коннекшны жили нужно видимо делать keep-alive, но это требует ещё проверки закрывает ли тг сам
+  // всегда
   if (isKeepAlive) {
     result += "keep-alive";
   } else {

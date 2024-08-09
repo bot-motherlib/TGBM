@@ -1,7 +1,7 @@
 #include "tgbot/TgTypeParser.h"
 
 namespace TgBot {
-
+// TODO убрать бесконечное число shared_ptr здесь
 Update::Ptr TgTypeParser::parseJsonAndGetUpdate(const boost::property_tree::ptree& data) const {
   auto result(std::make_shared<Update>());
   result->updateId = data.get<std::int32_t>("update_id", 0);
@@ -48,7 +48,7 @@ Update::Ptr TgTypeParser::parseJsonAndGetUpdate(const boost::property_tree::ptre
                                                             data, "removed_chat_boost");
   return result;
 }
-
+// TODO... эээ, это же наоборот serialize?
 std::string TgTypeParser::parseUpdate(const Update::Ptr& object) const {
   if (!object) {
     return "";

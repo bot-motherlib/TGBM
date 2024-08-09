@@ -73,6 +73,8 @@ string generateRandomString(std::size_t length) {
 }
 
 string urlEncode(const string& value, const std::string& additionalLegitChars) {
+  // о господи, уж лучше в json передавать чем вот это
+  // TODO use application/json
   static const string legitPunctuation =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.-~:";
   std::stringstream ss;

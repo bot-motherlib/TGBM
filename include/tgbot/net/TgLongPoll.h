@@ -30,7 +30,7 @@ class TGBOT_API TgLongPoll {
    * @brief Starts long poll. After new update will come, this method will parse it and send to EventHandler
    * which invokes your listeners. Designed to be executed in a loop.
    */
-  void start();
+  dd::task<void> start();
 
  private:
   const Api* _api;
