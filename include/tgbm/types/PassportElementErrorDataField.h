@@ -1,5 +1,4 @@
-#ifndef TGBOT_PASSPORTELEMENTERRORDATAFILED_H
-#define TGBOT_PASSPORTELEMENTERRORDATAFILED_H
+#pragma once
 
 #include "tgbm/types/PassportElementError.h"
 
@@ -35,5 +34,3 @@ class PassportElementErrorDataField : public PassportElementError {
   std::string dataHash;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_PASSPORTELEMENTERRORDATAFILED_H

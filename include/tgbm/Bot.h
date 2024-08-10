@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_BOT_H
-#define TGBOT_CPP_BOT_H
+#pragma once
 
 #include "tgbm/Api.h"
 #include "tgbm/EventHandler.h"
@@ -62,5 +61,3 @@ class TGBOT_API Bot {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_BOT_H

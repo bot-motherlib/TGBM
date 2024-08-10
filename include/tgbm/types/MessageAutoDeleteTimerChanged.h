@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_MESSAGEAUTODELETETIMERCHANGED_H
-#define TGBOT_CPP_MESSAGEAUTODELETETIMERCHANGED_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -21,5 +20,3 @@ class MessageAutoDeleteTimerChanged {
   std::int32_t messageAutoDeleteTime;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_MESSAGEAUTODELETETIMERCHANGED_H

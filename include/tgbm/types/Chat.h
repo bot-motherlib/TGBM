@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHAT_H
-#define TGBOT_CHAT_H
+#pragma once
 
 #include "tgbm/types/ChatPhoto.h"
 #include "tgbm/types/Birthdate.h"
@@ -343,5 +342,3 @@ class Chat {
   ChatLocation::Ptr location;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHAT_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_DOCUMENT_H
-#define TGBOT_DOCUMENT_H
+#pragma once
 
 #include "tgbm/types/PhotoSize.h"
 
@@ -54,5 +53,3 @@ class Document {
   std::int64_t fileSize;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_DOCUMENT_H

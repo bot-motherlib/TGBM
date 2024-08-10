@@ -1,5 +1,4 @@
-#ifndef TGBOT_BOTCOMMANDSCOPEALLCHATADMINISTRATORS_H
-#define TGBOT_BOTCOMMANDSCOPEALLCHATADMINISTRATORS_H
+#pragma once
 
 #include "tgbm/types/BotCommandScope.h"
 
@@ -23,5 +22,3 @@ class BotCommandScopeAllChatAdministrators : public BotCommandScope {
   }
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BOTCOMMANDSCOPEALLCHATADMINISTRATORS_H

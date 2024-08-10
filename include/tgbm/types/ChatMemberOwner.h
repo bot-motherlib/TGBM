@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATMEMBEROWNER_H
-#define TGBOT_CHATMEMBEROWNER_H
+#pragma once
 
 #include "tgbm/types/ChatMember.h"
 
@@ -34,5 +33,3 @@ class ChatMemberOwner : public ChatMember {
   bool isAnonymous;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATMEMBEROWNER_H

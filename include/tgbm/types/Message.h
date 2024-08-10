@@ -1,5 +1,4 @@
-#ifndef TGBOT_MESSAGE_H
-#define TGBOT_MESSAGE_H
+#pragma once
 
 #include "tgbm/types/User.h"
 #include "tgbm/types/Chat.h"
@@ -533,5 +532,3 @@ class Message {
   InlineKeyboardMarkup::Ptr replyMarkup;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_MESSAGE_H

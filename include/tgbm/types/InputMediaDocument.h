@@ -1,5 +1,4 @@
-#ifndef TGBOT_INPUTMEDIADOCUMENT_H
-#define TGBOT_INPUTMEDIADOCUMENT_H
+#pragma once
 
 #include "tgbm/types/InputMedia.h"
 
@@ -40,5 +39,3 @@ class InputMediaDocument : public InputMedia {
   bool disableContentTypeDetection;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INPUTMEDIADOCUMENT_H

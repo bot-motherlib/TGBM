@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEQUERYRESULTCACHEDMPEG4GIF_H
-#define TGBOT_INLINEQUERYRESULTCACHEDMPEG4GIF_H
+#pragma once
 
 #include "tgbm/types/InlineQueryResult.h"
 #include "tgbm/types/MessageEntity.h"
@@ -62,5 +61,3 @@ class InlineQueryResultCachedMpeg4Gif : public InlineQueryResult {
   InputMessageContent::Ptr inputMessageContent;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEQUERYRESULTCACHEDMPEG4GIF_H

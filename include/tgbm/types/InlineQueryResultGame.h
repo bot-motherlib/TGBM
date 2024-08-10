@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEQUERYRESULTGAME_H
-#define TGBOT_INLINEQUERYRESULTGAME_H
+#pragma once
 
 #include "tgbm/types/InlineQueryResult.h"
 
@@ -29,5 +28,3 @@ class InlineQueryResultGame : public InlineQueryResult {
   std::string gameShortName;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEQUERYRESULTGAME_H

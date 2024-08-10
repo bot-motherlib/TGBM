@@ -1,5 +1,4 @@
-#ifndef TGBOT_WEBAPPDATA_H
-#define TGBOT_WEBAPPDATA_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -28,5 +27,3 @@ class WebAppData {
   std::string buttonText;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_WEBAPPMESSAGE_H

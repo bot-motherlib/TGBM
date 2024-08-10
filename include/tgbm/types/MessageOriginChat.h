@@ -1,5 +1,4 @@
-#ifndef TGBOT_MESSAGEORIGINCHAT_H
-#define TGBOT_MESSAGEORIGINCHAT_H
+#pragma once
 
 #include "tgbm/types/MessageOrigin.h"
 #include "tgbm/types/Chat.h"
@@ -36,5 +35,3 @@ class MessageOriginChat : public MessageOrigin {
   std::string authorSignature;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_MESSAGEORIGINCHAT_H

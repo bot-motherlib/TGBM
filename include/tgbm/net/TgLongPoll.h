@@ -1,5 +1,4 @@
-#ifndef TGBOT_TGLONGPOLL_H
-#define TGBOT_TGLONGPOLL_H
+#pragma once
 
 #include "tgbm/Api.h"
 #include "tgbm/export.h"
@@ -44,5 +43,3 @@ class TGBOT_API TgLongPoll {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_TGLONGPOLL_H

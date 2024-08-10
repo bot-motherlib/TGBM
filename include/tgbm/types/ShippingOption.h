@@ -1,5 +1,4 @@
-#ifndef TGBOT_SHIPPINGOPTION_H
-#define TGBOT_SHIPPINGOPTION_H
+#pragma once
 
 #include "tgbm/types/LabeledPrice.h"
 
@@ -36,5 +35,3 @@ class ShippingOption {
   std::vector<LabeledPrice::Ptr> prices;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_SHIPPINGOPTION_H

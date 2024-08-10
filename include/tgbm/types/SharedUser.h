@@ -1,5 +1,4 @@
-#ifndef TGBOT_SHAREDUSER_H
-#define TGBOT_SHAREDUSER_H
+#pragma once
 
 #include "tgbm/types/PhotoSize.h"
 
@@ -52,5 +51,3 @@ class SharedUser {
   std::vector<PhotoSize::Ptr> photo;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_SHAREDUSER_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_URL_H
-#define TGBOT_CPP_URL_H
+#pragma once
 
 #include "tgbm/export.h"
 
@@ -43,5 +42,3 @@ class TGBOT_API Url {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_URL_H

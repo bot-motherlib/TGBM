@@ -1,5 +1,4 @@
-#ifndef TGBOT_GENERALFORUMTOPICUNHIDDEN_H
-#define TGBOT_GENERALFORUMTOPICUNHIDDEN_H
+#pragma once
 
 #include <memory>
 
@@ -17,5 +16,3 @@ class GeneralForumTopicUnhidden {
   typedef std::shared_ptr<GeneralForumTopicUnhidden> Ptr;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_GENERALFORUMTOPICUNHIDDEN_H

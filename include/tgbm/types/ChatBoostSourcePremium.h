@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATBOOSTSOURCEPREMIUM_H
-#define TGBOT_CHATBOOSTSOURCEPREMIUM_H
+#pragma once
 
 #include "tgbm/types/ChatBoostSource.h"
 
@@ -24,5 +23,3 @@ class ChatBoostSourcePremium : public ChatBoostSource {
   }
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATBOOSTSOURCEPREMIUM_H

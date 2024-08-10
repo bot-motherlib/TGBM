@@ -1,5 +1,4 @@
-#ifndef TGBOT_EVENTBROADCASTER_H
-#define TGBOT_EVENTBROADCASTER_H
+#pragma once
 
 #include "tgbm/export.h"
 #include "tgbm/types/Message.h"
@@ -301,5 +300,3 @@ class TGBOT_API EventBroadcaster {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_EVENTBROADCASTER_H

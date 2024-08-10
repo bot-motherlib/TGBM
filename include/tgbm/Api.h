@@ -1,5 +1,4 @@
-#ifndef TGBOT_API_H
-#define TGBOT_API_H
+#pragma once
 
 #include "tgbm/TgException.h"
 #include "tgbm/TgTypeParser.h"
@@ -2621,5 +2620,3 @@ class TGBOT_API Api {
   const std::string _url;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_API_H

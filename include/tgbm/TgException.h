@@ -1,5 +1,4 @@
-#ifndef TGBOT_TGEXCEPTION_H
-#define TGBOT_TGEXCEPTION_H
+#pragma once
 
 #include "tgbm/export.h"
 
@@ -36,5 +35,3 @@ class TGBOT_API TgException : public std::runtime_error {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_TGEXCEPTION_H

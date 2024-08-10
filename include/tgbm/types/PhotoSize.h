@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_PHOTOSIZE_H
-#define TGBOT_CPP_PHOTOSIZE_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -43,5 +42,3 @@ class PhotoSize {
   std::int32_t fileSize;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_PHOTOSIZE_H

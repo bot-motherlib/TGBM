@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEQUERYRESULT_H
-#define TGBOT_INLINEQUERYRESULT_H
+#pragma once
 
 #include "tgbm/types/InlineKeyboardMarkup.h"
 
@@ -65,5 +64,3 @@ class InlineQueryResult {
   InlineKeyboardMarkup::Ptr replyMarkup;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEQUERYRESULT_H

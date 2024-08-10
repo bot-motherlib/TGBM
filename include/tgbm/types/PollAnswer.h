@@ -1,5 +1,4 @@
-#ifndef TGBOT_POLLANSWER_H
-#define TGBOT_POLLANSWER_H
+#pragma once
 
 #include "tgbm/types/Chat.h"
 #include "tgbm/types/User.h"
@@ -43,5 +42,3 @@ class PollAnswer {
   std::vector<std::int32_t> optionIds;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_POLLANSWER_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_BUSINESSCONNECTION_H
-#define TGBOT_BUSINESSCONNECTION_H
+#pragma once
 
 #include "tgbm/types/User.h"
 
@@ -54,5 +53,3 @@ class BusinessConnection {
   bool isEnabled;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BUSINESSCONNECTION_H

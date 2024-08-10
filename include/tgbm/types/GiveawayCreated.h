@@ -1,5 +1,4 @@
-#ifndef TGBOT_GIVEAWAYCREATED_H
-#define TGBOT_GIVEAWAYCREATED_H
+#pragma once
 
 #include <memory>
 
@@ -17,5 +16,3 @@ class GiveawayCreated {
   typedef std::shared_ptr<GiveawayCreated> Ptr;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_GIVEAWAYCREATED_H

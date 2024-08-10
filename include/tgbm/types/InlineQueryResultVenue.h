@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEQUERYRESULTVENUE_H
-#define TGBOT_INLINEQUERYRESULTVENUE_H
+#pragma once
 
 #include "tgbm/types/InlineQueryResult.h"
 #include "tgbm/types/InputMessageContent.h"
@@ -94,5 +93,3 @@ class InlineQueryResultVenue : public InlineQueryResult {
   std::int32_t thumbnailHeight;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEQUERYRESULTVENUE_H

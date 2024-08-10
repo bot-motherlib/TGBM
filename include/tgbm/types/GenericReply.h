@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_GENERICREPLY_H
-#define TGBOT_CPP_GENERICREPLY_H
+#pragma once
 
 #include <memory>
 
@@ -18,5 +17,3 @@ class GenericReply {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_GENERICREPLY_H

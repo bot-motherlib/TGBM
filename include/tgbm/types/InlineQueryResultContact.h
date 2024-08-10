@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEQUERYRESULTCONTACT_H
-#define TGBOT_INLINEQUERYRESULTCONTACT_H
+#pragma once
 
 #include "tgbm/types/InlineQueryResult.h"
 #include "tgbm/types/InputMessageContent.h"
@@ -71,5 +70,3 @@ class InlineQueryResultContact : public InlineQueryResult {
   std::int32_t thumbnailHeight;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEQUERYRESULTCONTACT_H

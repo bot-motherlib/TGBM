@@ -1,5 +1,4 @@
-#ifndef TGBOT_BUSINESSOPENINGHOURSINTERVAL_H
-#define TGBOT_BUSINESSOPENINGHOURSINTERVAL_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -26,5 +25,3 @@ class BusinessOpeningHoursInterval {
   std::int32_t closingMinute;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BUSINESSOPENINGHOURSINTERVAL_H

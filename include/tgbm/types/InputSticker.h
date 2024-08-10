@@ -1,5 +1,4 @@
-#ifndef TGBOT_INPUTSTICKER_H
-#define TGBOT_INPUTSTICKER_H
+#pragma once
 
 #include "tgbm/types/MaskPosition.h"
 
@@ -55,5 +54,3 @@ class InputSticker {
   std::vector<std::string> keywords;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INPUTSTICKER_H

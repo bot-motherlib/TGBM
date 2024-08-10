@@ -1,5 +1,4 @@
-#ifndef TGBOT_PRECHECKOUTQUERY_H
-#define TGBOT_PRECHECKOUTQUERY_H
+#pragma once
 
 #include "tgbm/types/User.h"
 #include "tgbm/types/OrderInfo.h"
@@ -66,5 +65,3 @@ class PreCheckoutQuery {
   OrderInfo::Ptr orderInfo;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_PRECHECKOUTQUERY_H

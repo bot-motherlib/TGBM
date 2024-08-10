@@ -1,5 +1,4 @@
-#ifndef TGBOT_VOICE_H
-#define TGBOT_VOICE_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -47,5 +46,3 @@ class Voice {
   std::int64_t fileSize;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_VOICE_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEQUERY_H
-#define TGBOT_INLINEQUERY_H
+#pragma once
 
 #include "tgbm/types/User.h"
 #include "tgbm/types/Location.h"
@@ -53,5 +52,3 @@ class InlineQuery {
   Location::Ptr location;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEQUERY_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_USERSSHARED_H
-#define TGBOT_USERSSHARED_H
+#pragma once
 
 #include "tgbm/types/SharedUser.h"
 
@@ -30,5 +29,3 @@ class UsersShared {
   std::vector<SharedUser::Ptr> users;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_USERSSHARED_H

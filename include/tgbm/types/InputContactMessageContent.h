@@ -1,5 +1,4 @@
-#ifndef TGBOT_INPUTCONTACTMESSAGECONTENT_H
-#define TGBOT_INPUTCONTACTMESSAGECONTENT_H
+#pragma once
 
 #include "tgbm/types/InputMessageContent.h"
 
@@ -44,5 +43,3 @@ class InputContactMessageContent : public InputMessageContent {
   std::string vcard;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INPUTCONTACTMESSAGECONTENT_H

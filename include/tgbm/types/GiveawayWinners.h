@@ -1,5 +1,4 @@
-#ifndef TGBOT_GIVEAWAYWINNERS_H
-#define TGBOT_GIVEAWAYWINNERS_H
+#pragma once
 
 #include "tgbm/types/Chat.h"
 #include "tgbm/types/User.h"
@@ -78,5 +77,3 @@ class GiveawayWinners {
   std::string prizeDescription;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_GIVEAWAYWINNERS_H

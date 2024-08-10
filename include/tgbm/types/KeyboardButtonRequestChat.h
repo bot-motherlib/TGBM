@@ -1,5 +1,4 @@
-#ifndef TGBOT_KEYBOARDBUTTONREQUESTCHAT_H
-#define TGBOT_KEYBOARDBUTTONREQUESTCHAT_H
+#pragma once
 
 #include "tgbm/types/ChatAdministratorRights.h"
 
@@ -96,5 +95,3 @@ class KeyboardButtonRequestChat {
   bool requestPhoto;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_KEYBOARDBUTTONREQUESTCHAT_H

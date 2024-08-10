@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEQUERYRESULTPHOTO_H
-#define TGBOT_INLINEQUERYRESULTPHOTO_H
+#pragma once
 
 #include "tgbm/types/InlineQueryResult.h"
 #include "tgbm/types/MessageEntity.h"
@@ -85,5 +84,3 @@ class InlineQueryResultPhoto : public InlineQueryResult {
   InputMessageContent::Ptr inputMessageContent;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEQUERYRESULTPHOTO_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_EXPORT_H
-#define TGBOT_EXPORT_H
+#pragma once
 
 #ifndef TGBOT_API
 #ifdef TGBOT_DLL
@@ -24,5 +23,3 @@
 #define TGBOT_API
 #endif
 #endif
-
-#endif  // TGBOT_EXPORT_H

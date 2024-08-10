@@ -1,5 +1,4 @@
-#ifndef TGBOT_GAME_H
-#define TGBOT_GAME_H
+#pragma once
 
 #include "tgbm/types/MessageEntity.h"
 #include "tgbm/types/Animation.h"
@@ -56,5 +55,3 @@ class Game {
   Animation::Ptr animation;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_GAME_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_INPUTTEXTMESSAGECONTENT_H
-#define TGBOT_INPUTTEXTMESSAGECONTENT_H
+#pragma once
 
 #include "tgbm/types/InputMessageContent.h"
 #include "tgbm/types/MessageEntity.h"
@@ -51,5 +50,3 @@ class InputTextMessageContent : public InputMessageContent {
   LinkPreviewOptions::Ptr linkPreviewOptions;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INPUTTEXTMESSAGECONTENT_H

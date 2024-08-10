@@ -1,5 +1,4 @@
-#ifndef TGBOT_VENUE_H
-#define TGBOT_VENUE_H
+#pragma once
 
 #include "tgbm/types/Location.h"
 
@@ -55,5 +54,3 @@ class Venue {
   std::string googlePlaceType;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_VENUE_H

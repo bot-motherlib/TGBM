@@ -1,5 +1,4 @@
-#ifndef TGBOT_TGWEBHOOKLOCALSERVER_H
-#define TGBOT_TGWEBHOOKLOCALSERVER_H
+#pragma once
 
 #ifdef BOOST_ASIO_HAS_LOCAL_SOCKETS
 
@@ -31,5 +30,3 @@ class TgWebhookLocalServer : public TgWebhookServer<boost::asio::local::stream_p
 }  // namespace tgbm
 
 #endif  // BOOST_ASIO_HAS_LOCAL_SOCKETS
-
-#endif  // TGBOT_TGWEBHOOKLOCALSERVER_H

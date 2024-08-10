@@ -1,5 +1,4 @@
-#ifndef TGBOT_PASSPORTELEMENTERROR_H
-#define TGBOT_PASSPORTELEMENTERROR_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -41,5 +40,3 @@ class PassportElementError {
   std::string message;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_PASSPORTELEMENTERROR_H

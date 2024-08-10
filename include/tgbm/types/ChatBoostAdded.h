@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATBOOSTADDED_H
-#define TGBOT_CHATBOOSTADDED_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -21,5 +20,3 @@ class ChatBoostAdded {
   std::int32_t boostCount;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATBOOSTADDED_H

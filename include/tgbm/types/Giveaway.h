@@ -1,5 +1,4 @@
-#ifndef TGBOT_GIVEAWAY_H
-#define TGBOT_GIVEAWAY_H
+#pragma once
 
 #include "tgbm/types/Chat.h"
 
@@ -67,5 +66,3 @@ class Giveaway {
   std::int32_t premiumSubscriptionMonthCount;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_GIVEAWAY_H

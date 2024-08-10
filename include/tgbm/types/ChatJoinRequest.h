@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATJOINREQUEST_H
-#define TGBOT_CHATJOINREQUEST_H
+#pragma once
 
 #include "tgbm/types/Chat.h"
 #include "tgbm/types/User.h"
@@ -57,5 +56,3 @@ class ChatJoinRequest {
   ChatInviteLink::Ptr inviteLink;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATJOINREQUEST_H

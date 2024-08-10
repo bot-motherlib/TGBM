@@ -1,5 +1,4 @@
-#ifndef TGBOT_SHIPPINGADDRESS_H
-#define TGBOT_SHIPPINGADDRESS_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -46,5 +45,3 @@ class ShippingAddress {
   std::string postCode;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_SHIPPINGADDRESS_H

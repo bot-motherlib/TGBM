@@ -1,5 +1,4 @@
-#ifndef TGBOT_MESSAGEORIGIN_H
-#define TGBOT_MESSAGEORIGIN_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -39,5 +38,3 @@ class MessageOrigin {
   std::uint32_t date;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_MESSAGEORIGIN_H

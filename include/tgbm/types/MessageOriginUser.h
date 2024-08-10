@@ -1,5 +1,4 @@
-#ifndef TGBOT_MESSAGEORIGINUSER_H
-#define TGBOT_MESSAGEORIGINUSER_H
+#pragma once
 
 #include "tgbm/types/MessageOrigin.h"
 #include "tgbm/types/User.h"
@@ -29,5 +28,3 @@ class MessageOriginUser : public MessageOrigin {
   User::Ptr senderUser;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_MESSAGEORIGINUSER_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_REACTIONTYPEEMOJI_H
-#define TGBOT_REACTIONTYPEEMOJI_H
+#pragma once
 
 #include "tgbm/types/ReactionType.h"
 
@@ -27,16 +26,15 @@ class ReactionTypeEmoji : public ReactionType {
    * @brief Reaction emoji.
    *
    * Currently, it can be one of "👍", "👎", "❤", "🔥", "🥰", "👏", "😁", "🤔", "🤯", "😱", "🤬", "😢", "🎉",
-   * "🤩", "🤮", "💩", "🙏", "👌", "🕊", "🤡", "🥱", "🥴", "😍", "🐳", "❤‍🔥", "🌚", "🌭",
-   * "💯", "🤣", "⚡", "🍌", "🏆", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈", "😴", "😭", "🤓", "👻",
-   * "👨‍💻", "👀", "🎃", "🙈", "😇", "😨", "🤝", "✍", "🤗", "🫡", "🎅", "🎄", "☃", "💅", "🤪",
-   * "🗿", "🆒", "💘", "🙉", "🦄", "😘", "💊", "🙊", "😎", "👾", "🤷‍♂", "🤷",
-   * "🤷‍♀", "😡"
+   * "🤩", "🤮", "💩", "🙏", "👌", "🕊", "🤡", "🥱", "🥴", "😍", "🐳", "❤‍🔥",
+   * "🌚", "🌭", "💯", "🤣", "⚡", "🍌", "🏆", "💔", "🤨", "😐", "🍓", "🍾", "💋", "🖕", "😈", "😴", "😭",
+   * "🤓", "👻",
+   * "👨‍💻", "👀", "🎃", "🙈", "😇", "😨", "🤝", "✍", "🤗", "🫡", "🎅", "🎄", "☃",
+   * "💅", "🤪", "🗿", "🆒", "💘", "🙉", "🦄", "😘", "💊", "🙊", "😎", "👾",
+   * "🤷‍♂", "🤷", "🤷‍♀", "😡"
    *
    * See https://core.telegram.org/bots/api#reactiontypeemoji
    */
   std::string emoji;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_REACTIONTYPEEMOJI_H

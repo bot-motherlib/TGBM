@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATBOOSTSOURCEGIFTCODE_H
-#define TGBOT_CHATBOOSTSOURCEGIFTCODE_H
+#pragma once
 
 #include "tgbm/types/ChatBoostSource.h"
 
@@ -25,5 +24,3 @@ class ChatBoostSourceGiftCode : public ChatBoostSource {
   }
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATBOOSTSOURCEGIFTCODE_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_REACTIONTYPE_H
-#define TGBOT_REACTIONTYPE_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -31,5 +30,3 @@ class ReactionType {
   std::string type;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_REACTIONTYPE_H

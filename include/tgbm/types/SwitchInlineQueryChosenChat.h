@@ -1,5 +1,4 @@
-#ifndef TGBOT_SWITCHINLINEQUERYCHOSENCHAT_H
-#define TGBOT_SWITCHINLINEQUERYCHOSENCHAT_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -43,5 +42,3 @@ class SwitchInlineQueryChosenChat {
   bool allowChannelChats;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_SWITCHINLINEQUERYCHOSENCHAT_H

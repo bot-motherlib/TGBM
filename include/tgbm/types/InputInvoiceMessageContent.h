@@ -1,5 +1,4 @@
-#ifndef TGBOT_INPUTINVOICEMESSAGECONTENT_H
-#define TGBOT_INPUTINVOICEMESSAGECONTENT_H
+#pragma once
 
 #include "tgbm/types/InputMessageContent.h"
 #include "tgbm/types/LabeledPrice.h"
@@ -139,5 +138,3 @@ class InputInvoiceMessageContent : public InputMessageContent {
   bool isFlexible;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INPUTINVOICEMESSAGECONTENT_H

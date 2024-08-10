@@ -1,5 +1,4 @@
-#ifndef TGBOT_PASSPORTELEMENTERRORREVERSESIDE_H
-#define TGBOT_PASSPORTELEMENTERRORREVERSESIDE_H
+#pragma once
 
 #include "tgbm/types/PassportElementError.h"
 
@@ -30,5 +29,3 @@ class PassportElementErrorReverseSide : public PassportElementError {
   std::string fileHash;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_PASSPORTELEMENTERRORREVERSESIDE_H

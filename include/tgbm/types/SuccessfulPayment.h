@@ -1,5 +1,4 @@
-#ifndef TGBOT_SUCCESSFULPAYMENT_H
-#define TGBOT_SUCCESSFULPAYMENT_H
+#pragma once
 
 #include "tgbm/types/OrderInfo.h"
 
@@ -65,5 +64,3 @@ class SuccessfulPayment {
   std::string providerPaymentChargeId;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_SUCCESSFULPAYMENT_H

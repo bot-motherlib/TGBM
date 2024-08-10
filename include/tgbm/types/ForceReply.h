@@ -1,5 +1,4 @@
-#ifndef TGBOT_FORCEREPLY_H
-#define TGBOT_FORCEREPLY_H
+#pragma once
 
 #include "tgbm/types/GenericReply.h"
 
@@ -51,5 +50,3 @@ class ForceReply : public GenericReply {
   bool selective;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_FORCEREPLY_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_CHATINVITELINK_H
-#define TGBOT_CPP_CHATINVITELINK_H
+#pragma once
 
 #include "tgbm/types/User.h"
 
@@ -67,5 +66,3 @@ class ChatInviteLink {
   std::uint32_t pendingJoinRequestCount;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_CHATINVITELINK_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_INPUTMEDIA_H
-#define TGBOT_INPUTMEDIA_H
+#pragma once
 
 #include "tgbm/types/MessageEntity.h"
 
@@ -59,5 +58,3 @@ class InputMedia {
   std::vector<MessageEntity::Ptr> captionEntities;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INPUTMEDIA_H

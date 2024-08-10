@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEQUERYRESULTCACHEDDOCUMENT_H
-#define TGBOT_INLINEQUERYRESULTCACHEDDOCUMENT_H
+#pragma once
 
 #include "tgbm/types/InlineQueryResult.h"
 #include "tgbm/types/MessageEntity.h"
@@ -69,5 +68,3 @@ class InlineQueryResultCachedDocument : public InlineQueryResult {
   InputMessageContent::Ptr inputMessageContent;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEQUERYRESULTCACHEDDOCUMENT_H

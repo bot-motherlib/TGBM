@@ -1,5 +1,4 @@
-#ifndef TGBOT_BUSINESSINTRO_H
-#define TGBOT_BUSINESSINTRO_H
+#pragma once
 
 #include "tgbm/types/Sticker.h"
 
@@ -31,5 +30,3 @@ class BusinessIntro {
   Sticker::Ptr sticker;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BUSINESSINTRO_H

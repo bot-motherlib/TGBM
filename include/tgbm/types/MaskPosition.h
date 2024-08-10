@@ -1,5 +1,4 @@
-#ifndef TGBOT_MARKPOSITION_H
-#define TGBOT_MARKPOSITION_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -39,5 +38,3 @@ class MaskPosition {
   float scale;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_MARKPOSITION_H

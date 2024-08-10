@@ -1,5 +1,4 @@
-#ifndef TGBOT_BOTCOMMANDSCOPEDEFAULT_H
-#define TGBOT_BOTCOMMANDSCOPEDEFAULT_H
+#pragma once
 
 #include "tgbm/types/BotCommandScope.h"
 
@@ -24,5 +23,3 @@ class BotCommandScopeDefault : public BotCommandScope {
   }
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BOTCOMMANDSCOPEDEFAULT_H

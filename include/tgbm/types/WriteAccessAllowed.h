@@ -1,5 +1,4 @@
-#ifndef TGBOT_WRITEACCESSALLOWED_H
-#define TGBOT_WRITEACCESSALLOWED_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -34,5 +33,3 @@ class WriteAccessAllowed {
   bool fromAttachmentMenu;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_WRITEACCESSALLOWED_H

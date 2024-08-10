@@ -1,5 +1,4 @@
-#ifndef TGBOT_TGTYPEPARSER_H
-#define TGBOT_TGTYPEPARSER_H
+#pragma once
 
 #include "tgbm/export.h"
 #include "tgbm/types/Update.h"
@@ -1064,5 +1063,3 @@ class TGBOT_API TgTypeParser {
   void appendToJson(std::string& json, const std::string& varName, const std::string& value) const;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_TGTYPEPARSER_H

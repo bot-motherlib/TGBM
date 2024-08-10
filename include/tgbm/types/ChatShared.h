@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATSHARED_H
-#define TGBOT_CHATSHARED_H
+#pragma once
 
 #include "tgbm/types/PhotoSize.h"
 
@@ -53,5 +52,3 @@ class ChatShared {
   std::vector<PhotoSize::Ptr> photo;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATSHARED_H

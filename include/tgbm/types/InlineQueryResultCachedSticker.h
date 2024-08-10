@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEQUERYRESULTCACHEDSTICKER_H
-#define TGBOT_INLINEQUERYRESULTCACHEDSTICKER_H
+#pragma once
 
 #include "tgbm/types/InlineQueryResult.h"
 #include "tgbm/types/InputMessageContent.h"
@@ -39,5 +38,3 @@ class InlineQueryResultCachedSticker : public InlineQueryResult {
   InputMessageContent::Ptr inputMessageContent;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEQUERYRESULTCACHEDSTICKER_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEKEYBOARDBUTTON_H
-#define TGBOT_INLINEKEYBOARDBUTTON_H
+#pragma once
 
 #include "tgbm/types/WebAppInfo.h"
 #include "tgbm/types/LoginUrl.h"
@@ -98,5 +97,3 @@ class InlineKeyboardButton {
   bool pay;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEKEYBOARDBUTTON_H

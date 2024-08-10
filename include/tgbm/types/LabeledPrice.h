@@ -1,5 +1,4 @@
-#ifndef TGBOT_LABELEDPRICE_H
-#define TGBOT_LABELEDPRICE_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -35,5 +34,3 @@ class LabeledPrice {
   std::int32_t amount;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_LABELEDPRICE_H

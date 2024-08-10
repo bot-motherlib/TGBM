@@ -1,5 +1,4 @@
-#ifndef TGBOT_INPUTMESSAGECONTENT_H
-#define TGBOT_INPUTMESSAGECONTENT_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -29,5 +28,3 @@ class InputMessageContent {
   std::string type;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INPUTMESSAGECONTENT_H

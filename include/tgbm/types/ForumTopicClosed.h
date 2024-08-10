@@ -1,5 +1,4 @@
-#ifndef TGBOT_FORUMTOPICCLOSED_H
-#define TGBOT_FORUMTOPICCLOSED_H
+#pragma once
 
 #include <memory>
 
@@ -17,5 +16,3 @@ class ForumTopicClosed {
   typedef std::shared_ptr<ForumTopicClosed> Ptr;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_FORUMTOPICCLOSED_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATADMINISTRATORRIGHTS_H
-#define TGBOT_CHATADMINISTRATORRIGHTS_H
+#pragma once
 
 #include <memory>
 
@@ -99,5 +98,3 @@ class ChatAdministratorRights {
   bool canManageTopics;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATADMINISTRATORRIGHTS_H

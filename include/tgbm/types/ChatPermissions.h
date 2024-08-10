@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATPERMISSIONS_H
-#define TGBOT_CHATPERMISSIONS_H
+#pragma once
 
 #include <memory>
 
@@ -92,5 +91,3 @@ class ChatPermissions {
   bool canManageTopics;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATPERMISSIONS_H

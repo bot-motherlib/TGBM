@@ -1,5 +1,4 @@
-#ifndef TGBOT_GAMEHIGHSCORE_H
-#define TGBOT_GAMEHIGHSCORE_H
+#pragma once
 
 #include "tgbm/types/PhotoSize.h"
 #include "tgbm/types/User.h"
@@ -35,5 +34,3 @@ class GameHighScore {
   std::int32_t score;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_GAMEHIGHSCORE_H

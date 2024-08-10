@@ -1,5 +1,4 @@
-#ifndef TGBOT_REPLYKEYBOARDREMOVE_H
-#define TGBOT_REPLYKEYBOARDREMOVE_H
+#pragma once
 
 #include "tgbm/types/GenericReply.h"
 
@@ -39,5 +38,3 @@ class ReplyKeyboardRemove : public GenericReply {
   bool selective;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_REPLYKEYBOARDREMOVE_H

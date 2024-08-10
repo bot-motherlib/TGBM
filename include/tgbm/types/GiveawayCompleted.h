@@ -1,5 +1,4 @@
-#ifndef TGBOT_GIVEAWAYCOMPLETED_H
-#define TGBOT_GIVEAWAYCOMPLETED_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -33,5 +32,3 @@ class GiveawayCompleted {
   std::shared_ptr<Message> giveawayMessage;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_GIVEAWAYCOMPLETED_H

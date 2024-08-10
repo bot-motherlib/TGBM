@@ -1,5 +1,4 @@
-#ifndef TGBOT_FILETOOLS_H
-#define TGBOT_FILETOOLS_H
+#pragma once
 
 #include "tgbm/export.h"
 
@@ -28,5 +27,3 @@ TGBOT_API
 void write(const std::string& content, const std::string& filePath);
 
 }  // namespace FileTools
-
-#endif  // TGBOT_FILETOOLS_H

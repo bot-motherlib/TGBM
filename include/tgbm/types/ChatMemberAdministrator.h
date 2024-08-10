@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATMEMBERADMINISTRATOR_H
-#define TGBOT_CHATMEMBERADMINISTRATOR_H
+#pragma once
 
 #include "tgbm/types/ChatMember.h"
 
@@ -119,5 +118,3 @@ class ChatMemberAdministrator : public ChatMember {
   std::string customTitle;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATMEMBERADMINISTRATOR_H

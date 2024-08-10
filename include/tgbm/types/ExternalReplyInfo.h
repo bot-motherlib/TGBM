@@ -1,5 +1,4 @@
-#ifndef TGBOT_EXTERNALREPLYINFO_H
-#define TGBOT_EXTERNALREPLYINFO_H
+#pragma once
 
 #include "tgbm/types/MessageOrigin.h"
 #include "tgbm/types/Chat.h"
@@ -166,5 +165,3 @@ class ExternalReplyInfo {
   Venue::Ptr venue;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_EXTERNALREPLYINFO_H

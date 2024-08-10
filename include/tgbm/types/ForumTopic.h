@@ -1,5 +1,4 @@
-#ifndef TGBOT_FORUMTOPIC_H
-#define TGBOT_FORUMTOPIC_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -37,5 +36,3 @@ class ForumTopic {
   std::string iconCustomEmojiId;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_FORUMTOPIC_H

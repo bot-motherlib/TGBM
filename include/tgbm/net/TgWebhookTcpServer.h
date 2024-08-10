@@ -1,5 +1,4 @@
-#ifndef TGBOT_TGWEBHOOKTCPSERVER_H
-#define TGBOT_TGWEBHOOKTCPSERVER_H
+#pragma once
 
 #include "tgbm/net/TgWebhookServer.h"
 
@@ -25,5 +24,3 @@ class TgWebhookTcpServer : public TgWebhookServer<boost::asio::ip::tcp> {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_TGWEBHOOKTCPSERVER_H

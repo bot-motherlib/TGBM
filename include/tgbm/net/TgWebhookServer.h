@@ -1,5 +1,4 @@
-#ifndef TGBOT_TGHTTPSERVER_H
-#define TGBOT_TGHTTPSERVER_H
+#pragma once
 
 #include "tgbm/Bot.h"
 #include "tgbm/EventHandler.h"
@@ -49,5 +48,3 @@ class TgWebhookServer : public HttpServer<Protocol> {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_TGHTTPSERVER_H

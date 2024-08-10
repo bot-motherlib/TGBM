@@ -1,5 +1,4 @@
-#ifndef TGBOT_REPLYPARAMETERS_H
-#define TGBOT_REPLYPARAMETERS_H
+#pragma once
 
 #include "tgbm/types/MessageEntity.h"
 
@@ -71,5 +70,3 @@ class ReplyParameters {
   std::int32_t quotePosition;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_REPLYPARAMETERS_H

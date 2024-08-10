@@ -1,5 +1,4 @@
-#ifndef TGBOT_INPUTMEDIAVIDEO_H
-#define TGBOT_INPUTMEDIAVIDEO_H
+#pragma once
 
 #include "tgbm/types/InputMedia.h"
 #include "tgbm/types/InputFile.h"
@@ -63,5 +62,3 @@ class InputMediaVideo : public InputMedia {
   bool hasSpoiler;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INPUTMEDIAVIDEO_H

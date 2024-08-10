@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_STRINGTOOLS_H
-#define TGBOT_CPP_STRINGTOOLS_H
+#pragma once
 
 #include "tgbm/export.h"
 
@@ -70,5 +69,3 @@ inline std::vector<std::string> split(const std::string& str, char delimiter) {
 }
 
 }  // namespace StringTools
-
-#endif  // TGBOT_CPP_STRINGTOOLS_H

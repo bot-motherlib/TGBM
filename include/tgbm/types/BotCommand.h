@@ -1,5 +1,4 @@
-#ifndef TGBOT_BOTCOMMAND_H
-#define TGBOT_BOTCOMMAND_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -33,5 +32,3 @@ class BotCommand {
   std::string description;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BOTCOMMAND_H

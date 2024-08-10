@@ -1,5 +1,4 @@
-#ifndef TGBOT_SHIPPINGQUERY_H
-#define TGBOT_SHIPPINGQUERY_H
+#pragma once
 
 #include "tgbm/types/User.h"
 #include "tgbm/types/ShippingAddress.h"
@@ -42,5 +41,3 @@ class ShippingQuery {
   ShippingAddress::Ptr shippingAddress;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_SHIPPINGQUERY_H

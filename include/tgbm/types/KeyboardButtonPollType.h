@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_KEYBOARDBUTTONPOLLTYPE_H
-#define TGBOT_CPP_KEYBOARDBUTTONPOLLTYPE_H
+#pragma once
 
 #include <string>
 #include <memory>
@@ -24,5 +23,3 @@ class KeyboardButtonPollType {
   std::string type;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_KEYBOARDBUTTONPOLLTYPE_H

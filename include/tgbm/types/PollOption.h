@@ -1,5 +1,4 @@
-#ifndef TGBOT_POLLOPTION_H
-#define TGBOT_POLLOPTION_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -24,5 +23,3 @@ class PollOption {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_POLLOPTION_H

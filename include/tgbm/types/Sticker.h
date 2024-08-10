@@ -1,5 +1,4 @@
-#ifndef TGBOT_STICKER_H
-#define TGBOT_STICKER_H
+#pragma once
 
 #include "tgbm/types/PhotoSize.h"
 #include "tgbm/types/File.h"
@@ -106,5 +105,3 @@ class Sticker {
   std::int32_t fileSize;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_STICKER_H

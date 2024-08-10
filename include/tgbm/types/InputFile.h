@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_INPUTFILE_H
-#define TGBOT_CPP_INPUTFILE_H
+#pragma once
 
 #include "tgbm/export.h"
 
@@ -39,5 +38,3 @@ class TGBOT_API InputFile {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_INPUTFILE_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_LINKPREVIEWOPTIONS_H
-#define TGBOT_LINKPREVIEWOPTIONS_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -46,5 +45,3 @@ class LinkPreviewOptions {
   bool showAboveText;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_LINKPREVIEWOPTIONS_H

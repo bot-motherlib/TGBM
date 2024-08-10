@@ -1,5 +1,4 @@
-#ifndef TGBOT_LOCATION_H
-#define TGBOT_LOCATION_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -54,5 +53,3 @@ class Location {
   std::int32_t proximityAlertRadius;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_LOCATION_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_REPLYKEYBOARDMARKUP_H
-#define TGBOT_REPLYKEYBOARDMARKUP_H
+#pragma once
 
 #include "tgbm/types/GenericReply.h"
 #include "tgbm/types/KeyboardButton.h"
@@ -68,5 +67,3 @@ class ReplyKeyboardMarkup : public GenericReply {
   bool selective;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_REPLYKEYBOARDMARKUP_H

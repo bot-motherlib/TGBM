@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEQUERYRESULTVIDEO_H
-#define TGBOT_INLINEQUERYRESULTVIDEO_H
+#pragma once
 
 #include "tgbm/types/InlineQueryResult.h"
 #include "tgbm/types/MessageEntity.h"
@@ -98,5 +97,3 @@ class InlineQueryResultVideo : public InlineQueryResult {
   InputMessageContent::Ptr inputMessageContent;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEQUERYRESULTVIDEO_H

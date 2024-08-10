@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_MESSAGEID_H
-#define TGBOT_CPP_MESSAGEID_H
+#pragma once
 
 #include <memory>
 
@@ -20,5 +19,3 @@ class MessageId {
   std::int32_t messageId;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_MESSAGEID_H

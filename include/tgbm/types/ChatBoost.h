@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATBOOST_H
-#define TGBOT_CHATBOOST_H
+#pragma once
 
 #include "tgbm/types/ChatBoostSource.h"
 
@@ -40,5 +39,3 @@ class ChatBoost {
   ChatBoostSource::Ptr source;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATBOOST_H

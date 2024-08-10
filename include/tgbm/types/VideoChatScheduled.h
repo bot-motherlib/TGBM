@@ -1,5 +1,4 @@
-#ifndef TGBOT_VIDEOCHATSCHEDULED_H
-#define TGBOT_VIDEOCHATSCHEDULED_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -22,5 +21,3 @@ class VideoChatScheduled {
   std::int32_t startDate;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_VIDEOCHATSCHEDULED_H

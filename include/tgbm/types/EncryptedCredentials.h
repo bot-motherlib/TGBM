@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_ENCRYPTEDCREDENTIALS_H
-#define TGBOT_CPP_ENCRYPTEDCREDENTIALS_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -34,5 +33,3 @@ class EncryptedCredentials {
   std::string secret;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_ENCRYPTEDCREDENTIALS_H

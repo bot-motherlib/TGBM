@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATMEMBER_H
-#define TGBOT_CHATMEMBER_H
+#pragma once
 
 #include "tgbm/types/User.h"
 
@@ -36,5 +35,3 @@ class ChatMember {
   User::Ptr user;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATMEMBER_H

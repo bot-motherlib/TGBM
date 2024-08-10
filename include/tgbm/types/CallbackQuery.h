@@ -1,5 +1,4 @@
-#ifndef TGBOT_CALLBACKQUERY_H
-#define TGBOT_CALLBACKQUERY_H
+#pragma once
 
 #include "tgbm/types/User.h"
 #include "tgbm/types/Message.h"
@@ -56,5 +55,3 @@ class CallbackQuery {
   std::string gameShortName;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CALLBACKQUERY_H

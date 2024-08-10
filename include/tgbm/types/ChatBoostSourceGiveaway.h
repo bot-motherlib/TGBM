@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATBOOSTSOURCEGIVEAWAY_H
-#define TGBOT_CHATBOOSTSOURCEGIVEAWAY_H
+#pragma once
 
 #include "tgbm/types/ChatBoostSource.h"
 
@@ -39,5 +38,3 @@ class ChatBoostSourceGiveaway : public ChatBoostSource {
   bool isUnclaimed;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATBOOSTSOURCEGIVEAWAY_H

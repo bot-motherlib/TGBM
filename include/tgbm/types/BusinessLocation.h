@@ -1,5 +1,4 @@
-#ifndef TGBOT_BUSINESSLOCATION_H
-#define TGBOT_BUSINESSLOCATION_H
+#pragma once
 
 #include "tgbm/types/Location.h"
 
@@ -26,5 +25,3 @@ class BusinessLocation {
   Location::Ptr location;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BUSINESSLOCATION_H

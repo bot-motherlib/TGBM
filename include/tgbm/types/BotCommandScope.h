@@ -1,5 +1,4 @@
-#ifndef TGBOT_BOTCOMMANDSCOPE_H
-#define TGBOT_BOTCOMMANDSCOPE_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -29,5 +28,3 @@ class BotCommandScope {
   std::string type;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BOTCOMMANDSCOPE_H

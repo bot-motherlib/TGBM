@@ -1,5 +1,4 @@
-#ifndef TGBOT_INACCESSIBLEMESSAGE_H
-#define TGBOT_INACCESSIBLEMESSAGE_H
+#pragma once
 
 #include "tgbm/types/Chat.h"
 
@@ -35,5 +34,3 @@ class InaccessibleMessage {
   std::uint8_t date;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INACCESSIBLEMESSAGE_H

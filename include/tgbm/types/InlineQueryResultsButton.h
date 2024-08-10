@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEQUERYRESULTSBUTTON_H
-#define TGBOT_INLINEQUERYRESULTSBUTTON_H
+#pragma once
 
 #include "tgbm/types/WebAppInfo.h"
 
@@ -48,5 +47,3 @@ class InlineQueryResultsButton {
   std::string startParameter;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEQUERYRESULTSBUTTON_H

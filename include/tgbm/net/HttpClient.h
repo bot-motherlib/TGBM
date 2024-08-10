@@ -1,5 +1,4 @@
-#ifndef TGBOT_HTTPCLIENT_H
-#define TGBOT_HTTPCLIENT_H
+#pragma once
 
 #include "tgbm/net/Url.h"
 #include "tgbm/net/HttpReqArg.h"
@@ -58,5 +57,3 @@ class TGBOT_API HttpClient {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_HTTPCLIENT_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_INPUTVENUEMESSAGECONTENT_H
-#define TGBOT_INPUTVENUEMESSAGECONTENT_H
+#pragma once
 
 #include "tgbm/types/InputMessageContent.h"
 
@@ -66,5 +65,3 @@ class InputVenueMessageContent : public InputMessageContent {
   std::string googlePlaceType;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INPUTVENUEMESSAGECONTENT_H

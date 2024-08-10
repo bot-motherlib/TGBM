@@ -1,5 +1,4 @@
-#ifndef TGBOT_WEBAPPINFO_H
-#define TGBOT_WEBAPPINFO_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -24,5 +23,3 @@ class WebAppInfo {
   std::string url;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_WEBAPPINFO_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_PASSPORTELEMENTERRORUNSPECIFIED_H
-#define TGBOT_PASSPORTELEMENTERRORUNSPECIFIED_H
+#pragma once
 
 #include "tgbm/types/PassportElementError.h"
 
@@ -30,5 +29,3 @@ class PassportElementErrorUnspecified : public PassportElementError {
   std::string elementHash;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_PASSPORTELEMENTERRORUNSPECIFIED_H

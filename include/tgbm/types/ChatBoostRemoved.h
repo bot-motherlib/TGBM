@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATBOOSTREMOVED_H
-#define TGBOT_CHATBOOSTREMOVED_H
+#pragma once
 
 #include "tgbm/types/Chat.h"
 #include "tgbm/types/ChatBoostSource.h"
@@ -40,5 +39,3 @@ class ChatBoostRemoved {
   ChatBoostSource::Ptr source;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATBOOSTREMOVED_H

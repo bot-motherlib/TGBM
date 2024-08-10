@@ -1,5 +1,4 @@
-#ifndef TGBOT_KEYBOARDBUTTON_H
-#define TGBOT_KEYBOARDBUTTON_H
+#pragma once
 
 #include "tgbm/types/KeyboardButtonRequestUsers.h"
 #include "tgbm/types/KeyboardButtonRequestChat.h"
@@ -83,5 +82,3 @@ class KeyboardButton {
   WebAppInfo::Ptr webApp;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_KEYBOARDBUTTON_H

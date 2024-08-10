@@ -1,5 +1,4 @@
-#ifndef TGBOT_USER_H
-#define TGBOT_USER_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -92,5 +91,3 @@ class User {
   bool canConnectToBusiness;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_USER_H

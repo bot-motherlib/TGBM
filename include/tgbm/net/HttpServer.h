@@ -1,5 +1,4 @@
-#ifndef TGBOT_HTTPSERVER_H
-#define TGBOT_HTTPSERVER_H
+#pragma once
 
 #include "tgbm/net/HttpParser.h"
 
@@ -168,5 +167,3 @@ class HttpServer {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_HTTPSERVER_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_MESSAGEORIGINHIDDENUSER_H
-#define TGBOT_MESSAGEORIGINHIDDENUSER_H
+#pragma once
 
 #include "tgbm/types/MessageOrigin.h"
 
@@ -29,5 +28,3 @@ class MessageOriginHiddenUser : public MessageOrigin {
   std::string senderUserName;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_MESSAGEORIGINHIDDENUSER_H

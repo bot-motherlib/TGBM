@@ -1,5 +1,4 @@
-#ifndef TGBOT_LOGINURL_H
-#define TGBOT_LOGINURL_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -51,5 +50,3 @@ class LoginUrl {
   bool requestWriteAccess;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_LOGINURL_H

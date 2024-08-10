@@ -1,5 +1,4 @@
-#ifndef TGBOT_MENUBUTTONDEFAULT_H
-#define TGBOT_MENUBUTTONDEFAULT_H
+#pragma once
 
 #include "tgbm/types/MenuButton.h"
 
@@ -23,5 +22,3 @@ class MenuButtonDefault : public MenuButton {
   }
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_MENUBUTTONDEFAULT_H

@@ -2718,6 +2718,7 @@ dd::task<boost::property_tree::ptree> Api::sendRequest(const std::string &method
       if ((max_retries >= 0) && (retries == max_retries)) {
         throw;
       } else {
+        // TODO remove wtf (or smth like...)
         std::this_thread::sleep_for(std::chrono::seconds(requestRetryBackoff));
         retries++;
         continue;

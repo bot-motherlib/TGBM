@@ -1,5 +1,4 @@
-#ifndef TGBOT_REACTIONCOUNT_H
-#define TGBOT_REACTIONCOUNT_H
+#pragma once
 
 #include "tgbm/types/ReactionType.h"
 
@@ -28,5 +27,3 @@ class ReactionCount {
   std::int32_t totalCount;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_REACTIONCOUNT_H

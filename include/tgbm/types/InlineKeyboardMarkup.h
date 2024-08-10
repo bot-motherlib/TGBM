@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEKEYBOARDMARKUP_H
-#define TGBOT_INLINEKEYBOARDMARKUP_H
+#pragma once
 
 #include "tgbm/types/GenericReply.h"
 #include "tgbm/types/InlineKeyboardButton.h"
@@ -26,5 +25,3 @@ class InlineKeyboardMarkup : public GenericReply {
   std::vector<std::vector<InlineKeyboardButton::Ptr>> inlineKeyboard;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEKEYBOARDMARKUP_H

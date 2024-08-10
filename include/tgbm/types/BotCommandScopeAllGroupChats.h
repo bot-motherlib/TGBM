@@ -1,5 +1,4 @@
-#ifndef TGBOT_BOTCOMMANDSCOPEALLGROUPCHATS_H
-#define TGBOT_BOTCOMMANDSCOPEALLGROUPCHATS_H
+#pragma once
 
 #include "tgbm/types/BotCommandScope.h"
 
@@ -23,5 +22,3 @@ class BotCommandScopeAllGroupChats : public BotCommandScope {
   }
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BOTCOMMANDSCOPEALLGROUPCHATS_H

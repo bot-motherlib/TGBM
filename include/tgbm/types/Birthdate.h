@@ -1,5 +1,4 @@
-#ifndef TGBOT_BIRTHDATE_H
-#define TGBOT_BIRTHDATE_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -29,5 +28,3 @@ class Birthdate {
   std::uint16_t year;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BIRTHDATE_H

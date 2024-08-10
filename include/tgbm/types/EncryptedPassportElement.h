@@ -1,5 +1,4 @@
-#ifndef TGBOT_ENCRYPTEDPASSPORTELEMENT_H
-#define TGBOT_ENCRYPTEDPASSPORTELEMENT_H
+#pragma once
 
 #include "tgbm/types/PassportFile.h"
 
@@ -93,5 +92,3 @@ class EncryptedPassportElement {
   std::string hash;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_ENCRYPTEDPASSPORTELEMENT_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATPHOTO_H
-#define TGBOT_CHATPHOTO_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -40,5 +39,3 @@ class ChatPhoto {
   std::string bigFileUniqueId;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATPHOTO_H

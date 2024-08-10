@@ -1,5 +1,4 @@
-#ifndef TGBOT_KEYBOARDBUTTONREQUESTUSERS_H
-#define TGBOT_KEYBOARDBUTTONREQUESTUSERS_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -62,5 +61,3 @@ class KeyboardButtonRequestUsers {
   bool requestPhoto;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_KEYBOARDBUTTONREQUESTUSERS_H

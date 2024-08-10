@@ -1,5 +1,4 @@
-#ifndef TGBOT_ANIMATION_H
-#define TGBOT_ANIMATION_H
+#pragma once
 
 #include "tgbm/types/PhotoSize.h"
 
@@ -69,5 +68,3 @@ class Animation {
   std::int64_t fileSize;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_ANIMATION_H

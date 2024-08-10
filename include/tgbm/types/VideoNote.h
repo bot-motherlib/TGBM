@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_VIDEONOTE_H
-#define TGBOT_CPP_VIDEONOTE_H
+#pragma once
 
 #include "tgbm/types/PhotoSize.h"
 
@@ -50,5 +49,3 @@ class VideoNote {
   std::int32_t fileSize;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_VIDEONOTE_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_VIDEOCHATENDED_H
-#define TGBOT_VIDEOCHATENDED_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -21,5 +20,3 @@ class VideoChatEnded {
   std::int32_t duration;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_VIDEOCHATENDED_H

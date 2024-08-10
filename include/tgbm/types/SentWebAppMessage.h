@@ -1,5 +1,4 @@
-#ifndef TGBOT_SENTWEBAPPMESSAGE_H
-#define TGBOT_SENTWEBAPPMESSAGE_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -22,5 +21,3 @@ class SentWebAppMessage {
   std::string inlineMessageId;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_SENTWEBAPPMESSAGE_H

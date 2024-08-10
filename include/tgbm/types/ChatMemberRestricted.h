@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATMEMBERRESTRICTED_H
-#define TGBOT_CHATMEMBERRESTRICTED_H
+#pragma once
 
 #include "tgbm/types/ChatMember.h"
 
@@ -110,5 +109,3 @@ class ChatMemberRestricted : public ChatMember {
   std::uint32_t untilDate;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATMEMBERRESTRICTED_H

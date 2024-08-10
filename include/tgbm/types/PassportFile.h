@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_PASSPORTFILE_H
-#define TGBOT_CPP_PASSPORTFILE_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -38,5 +37,3 @@ class PassportFile {
   std::int32_t fileDate;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_PASSPORTFILE_H

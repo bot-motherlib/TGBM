@@ -1,5 +1,4 @@
-#ifndef TGBOT_INPUTMEDIAAUDIO_H
-#define TGBOT_INPUTMEDIAAUDIO_H
+#pragma once
 
 #include "tgbm/types/InputMedia.h"
 
@@ -49,5 +48,3 @@ class InputMediaAudio : public InputMedia {
   std::string title;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INPUTMEDIAAUDIO_H

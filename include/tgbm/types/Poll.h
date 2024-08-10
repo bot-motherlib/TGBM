@@ -1,5 +1,4 @@
-#ifndef TGBOT_POLL_H
-#define TGBOT_POLL_H
+#pragma once
 
 #include "tgbm/types/PollOption.h"
 #include "tgbm/types/MessageEntity.h"
@@ -89,5 +88,3 @@ class Poll {
   std::int64_t closeDate;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_POLL_H

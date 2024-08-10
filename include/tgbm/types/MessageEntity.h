@@ -1,5 +1,4 @@
-#ifndef TGBOT_MESSAGEENTITY_H
-#define TGBOT_MESSAGEENTITY_H
+#pragma once
 
 #include "tgbm/types/User.h"
 
@@ -93,5 +92,3 @@ class MessageEntity {
   std::string customEmojiId;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_MESSAGEENTITY_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATMEMBERBANNED_H
-#define TGBOT_CHATMEMBERBANNED_H
+#pragma once
 
 #include "tgbm/types/ChatMember.h"
 
@@ -32,5 +31,3 @@ class ChatMemberBanned : public ChatMember {
   std::uint32_t untilDate;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATMEMBERBANNED_H

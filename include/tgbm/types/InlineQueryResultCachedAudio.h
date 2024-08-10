@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEQUERYRESULTCACHEDAUDIO_H
-#define TGBOT_INLINEQUERYRESULTCACHEDAUDIO_H
+#pragma once
 
 #include "tgbm/types/InlineQueryResult.h"
 #include "tgbm/types/MessageEntity.h"
@@ -59,5 +58,3 @@ class InlineQueryResultCachedAudio : public InlineQueryResult {
   InputMessageContent::Ptr inputMessageContent;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEQUERYRESULTCACHEDAUDIO_H

@@ -1,4 +1,4 @@
-// TODO change tgbot dir name too
+
 #include "tgbm/net/ConnectionPool.h"
 
 #include <iostream>

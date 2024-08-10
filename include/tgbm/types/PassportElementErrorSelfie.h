@@ -1,5 +1,4 @@
-#ifndef TGBOT_PASSPORTELEMENTERRORSELFIE_H
-#define TGBOT_PASSPORTELEMENTERRORSELFIE_H
+#pragma once
 
 #include "tgbm/types/PassportElementError.h"
 
@@ -30,5 +29,3 @@ class PassportElementErrorSelfie : public PassportElementError {
   std::string fileHash;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_PASSPORTELEMENTERRORSELFIE_H

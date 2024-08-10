@@ -1,5 +1,4 @@
-#ifndef TGBOT_CALLBACKGAME_H
-#define TGBOT_CALLBACKGAME_H
+#pragma once
 
 #include <memory>
 
@@ -16,5 +15,3 @@ class CallbackGame {
   typedef std::shared_ptr<CallbackGame> Ptr;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CALLBACKGAME_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_BUSINESSMESSAGESDELETED_H
-#define TGBOT_BUSINESSMESSAGESDELETED_H
+#pragma once
 
 #include "tgbm/types/Chat.h"
 
@@ -37,5 +36,3 @@ class BusinessMessagesDeleted {
   std::vector<std::int32_t> messageIds;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BUSINESSMESSAGESDELETED_H

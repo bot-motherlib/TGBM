@@ -1,5 +1,4 @@
-#ifndef TGBOT_USERCHATBOOSTS_H
-#define TGBOT_USERCHATBOOSTS_H
+#pragma once
 
 #include "tgbm/types/ChatBoost.h"
 
@@ -23,5 +22,3 @@ class UserChatBoosts {
   std::vector<ChatBoost::Ptr> boosts;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_USERCHATBOOSTS_H

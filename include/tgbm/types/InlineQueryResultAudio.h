@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEQUERYRESULTAUDIO_H
-#define TGBOT_INLINEQUERYRESULTAUDIO_H
+#pragma once
 
 #include "tgbm/types/InlineQueryResult.h"
 #include "tgbm/types/MessageEntity.h"
@@ -75,5 +74,3 @@ class InlineQueryResultAudio : public InlineQueryResult {
   InputMessageContent::Ptr inputMessageContent;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEQUERYRESULTAUDIO_H

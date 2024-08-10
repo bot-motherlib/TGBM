@@ -1,5 +1,4 @@
-#ifndef TGBOT_VIDEO_H
-#define TGBOT_VIDEO_H
+#pragma once
 
 #include "tgbm/types/PhotoSize.h"
 
@@ -69,5 +68,3 @@ class Video {
   std::int64_t fileSize;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_VIDEO_H

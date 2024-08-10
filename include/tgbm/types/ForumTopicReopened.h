@@ -1,5 +1,4 @@
-#ifndef TGBOT_FORUMTOPICREOPENED_H
-#define TGBOT_FORUMTOPICREOPENED_H
+#pragma once
 
 #include <memory>
 
@@ -17,5 +16,3 @@ class ForumTopicReopened {
   typedef std::shared_ptr<ForumTopicReopened> Ptr;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_FORUMTOPICREOPENED_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_HTTPPARAMETER_H
-#define TGBOT_HTTPPARAMETER_H
+#pragma once
 
 #include "tgbm/export.h"
 
@@ -55,5 +54,3 @@ class TGBOT_API HttpReqArg {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_HTTPPARAMETER_H

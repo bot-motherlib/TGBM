@@ -1,5 +1,4 @@
-#ifndef TGBOT_MENUBUTTONWEBAPP_H
-#define TGBOT_MENUBUTTONWEBAPP_H
+#pragma once
 
 #include "tgbm/types/MenuButton.h"
 #include "tgbm/types/WebAppInfo.h"
@@ -37,5 +36,3 @@ class MenuButtonWebApp : public MenuButton {
   WebAppInfo::Ptr webApp;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_MENUBUTTONWEBAPP_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_CONTACT_H
-#define TGBOT_CPP_CONTACT_H
+#pragma once
 
 #include <string>
 #include <memory>
@@ -42,5 +41,3 @@ class Contact {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_CONTACT_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_AUDIO_H
-#define TGBOT_AUDIO_H
+#pragma once
 
 #include "tgbm/types/PhotoSize.h"
 
@@ -69,5 +68,3 @@ class Audio {
   PhotoSize::Ptr thumbnail;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_AUDIO_H

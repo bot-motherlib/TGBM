@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_PROXIMITYALERTTRIGGERED_H
-#define TGBOT_CPP_PROXIMITYALERTTRIGGERED_H
+#pragma once
 
 #include "tgbm/types/User.h"
 
@@ -33,5 +32,3 @@ class ProximityAlertTriggered {
   std::int32_t distance;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_PROXIMITYALERTTRIGGERED_H

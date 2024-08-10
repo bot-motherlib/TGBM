@@ -1,5 +1,4 @@
-#ifndef TGBOT_BOTCOMMANDSCOPEALLPRIVATECHATS_H
-#define TGBOT_BOTCOMMANDSCOPEALLPRIVATECHATS_H
+#pragma once
 
 #include "tgbm/types/BotCommandScope.h"
 
@@ -23,5 +22,3 @@ class BotCommandScopeAllPrivateChats : public BotCommandScope {
   }
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BOTCOMMANDSCOPEALLPRIVATECHATS_H

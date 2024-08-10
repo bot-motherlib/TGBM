@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATMEMBERUPDATED_H
-#define TGBOT_CHATMEMBERUPDATED_H
+#pragma once
 
 #include "tgbm/types/Chat.h"
 #include "tgbm/types/User.h"
@@ -57,5 +56,3 @@ class ChatMemberUpdated {
   bool viaChatFolderInviteLink;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATMEMBERUPDATED_H

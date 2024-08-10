@@ -1,5 +1,4 @@
-#ifndef TGBOT_VIDEOCHATSTARTED_H
-#define TGBOT_VIDEOCHATSTARTED_H
+#pragma once
 
 #include <memory>
 
@@ -16,5 +15,3 @@ class VideoChatStarted {
   typedef std::shared_ptr<VideoChatStarted> Ptr;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_VIDEOCHATSTARTED_H

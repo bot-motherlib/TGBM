@@ -1,5 +1,4 @@
-#ifndef TGBOT_MESSAGEREACTIONCOUNTUPDATED_H
-#define TGBOT_MESSAGEREACTIONCOUNTUPDATED_H
+#pragma once
 
 #include "tgbm/types/Chat.h"
 #include "tgbm/types/ReactionCount.h"
@@ -40,5 +39,3 @@ class MessageReactionCountUpdated {
   std::vector<ReactionCount::Ptr> reactions;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_MESSAGEREACTIONCOUNTUPDATED_H

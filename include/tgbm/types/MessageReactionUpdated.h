@@ -1,5 +1,4 @@
-#ifndef TGBOT_MESSAGEREACTIONUPDATED_H
-#define TGBOT_MESSAGEREACTIONUPDATED_H
+#pragma once
 
 #include "tgbm/types/Chat.h"
 #include "tgbm/types/User.h"
@@ -56,5 +55,3 @@ class MessageReactionUpdated {
   std::vector<ReactionType::Ptr> newReaction;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_MESSAGEREACTIONUPDATED_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_PASSPORTDATA_H
-#define TGBOT_CPP_PASSPORTDATA_H
+#pragma once
 
 #include "tgbm/types/EncryptedPassportElement.h"
 #include "tgbm/types/EncryptedCredentials.h"
@@ -28,5 +27,3 @@ class PassportData {
   EncryptedCredentials::Ptr credentials;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_PASSPORTDATA_H

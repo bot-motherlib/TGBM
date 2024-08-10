@@ -1,5 +1,4 @@
-#ifndef TGBOT_BOTNAME_H
-#define TGBOT_BOTNAME_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -21,5 +20,3 @@ class BotName {
   std::string name;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BOTNAME_H

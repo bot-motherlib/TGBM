@@ -1,5 +1,4 @@
-#ifndef TGBOT_BOOSTHTTPCLIENT_H
-#define TGBOT_BOOSTHTTPCLIENT_H
+#pragma once
 
 #include "tgbm/net/HttpClient.h"
 #include "tgbm/net/Url.h"
@@ -44,5 +43,3 @@ class TGBOT_API BoostHttpOnlySslClient : public HttpClient {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_BOOSTHTTPCLIENT_H

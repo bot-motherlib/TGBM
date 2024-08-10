@@ -1,5 +1,4 @@
-#ifndef TGBOT_TEXTQUOTE_H
-#define TGBOT_TEXTQUOTE_H
+#pragma once
 
 #include "tgbm/types/MessageEntity.h"
 
@@ -46,5 +45,3 @@ class TextQuote {
   bool isManual;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_TEXTQUOTE_H

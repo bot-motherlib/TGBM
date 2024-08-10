@@ -1,5 +1,4 @@
-#ifndef TGBOT_BUSINESSOPENINGHOURS_H
-#define TGBOT_BUSINESSOPENINGHOURS_H
+#pragma once
 
 #include "tgbm/types/BusinessOpeningHoursInterval.h"
 
@@ -27,5 +26,3 @@ class BusinessOpeningHours {
   std::vector<BusinessOpeningHoursInterval::Ptr> openingHours;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BUSINESSOPENINGHOURS_H

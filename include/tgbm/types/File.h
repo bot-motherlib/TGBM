@@ -1,5 +1,4 @@
-#ifndef TGBOT_FILE_H
-#define TGBOT_FILE_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -48,5 +47,3 @@ class File {
   std::string filePath;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_FILE_H

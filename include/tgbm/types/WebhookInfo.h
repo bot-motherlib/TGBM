@@ -1,5 +1,4 @@
-#ifndef TGBOT_WEBHOOKINFO_H
-#define TGBOT_WEBHOOKINFO_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -68,5 +67,3 @@ class WebhookInfo {
   std::vector<std::string> allowedUpdates;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_WEBHOOKINFO_H

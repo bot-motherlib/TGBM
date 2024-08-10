@@ -1,5 +1,4 @@
-#ifndef TGBOT_UPDATE_H
-#define TGBOT_UPDATE_H
+#pragma once
 
 #include "tgbm/types/Message.h"
 #include "tgbm/types/BusinessConnection.h"
@@ -194,5 +193,3 @@ class Update {
   ChatBoostRemoved::Ptr removedChatBoost;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_UPDATE_H

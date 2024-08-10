@@ -1,5 +1,4 @@
-#ifndef TGBOT_RESPONSEPARAMETERS_H
-#define TGBOT_RESPONSEPARAMETERS_H
+#pragma once
 
 #include <cstdint>
 #include <memory>
@@ -31,5 +30,3 @@ class ResponseParameters {
   std::int32_t retryAfter;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_RESPONSEPARAMETERS_H

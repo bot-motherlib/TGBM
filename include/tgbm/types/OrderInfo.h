@@ -1,5 +1,4 @@
-#ifndef TGBOT_ORDERINFO_H
-#define TGBOT_ORDERINFO_H
+#pragma once
 
 #include "tgbm/types/ShippingAddress.h"
 
@@ -41,5 +40,3 @@ class OrderInfo {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_ORDERINFO_H

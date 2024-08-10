@@ -1,5 +1,4 @@
-#ifndef TGBOT_TGBOT_H
-#define TGBOT_TGBOT_H
+#pragma once
 
 #include "tgbm/Api.h"
 #include "tgbm/Bot.h"
@@ -95,5 +94,3 @@
 #include "tgbm/types/Voice.h"
 #include "tgbm/types/WebhookInfo.h"
 #include "tgbm/types/BotCommand.h"
-
-#endif  // TGBOT_TGBOT_H

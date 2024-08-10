@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATMEMBERLEFT_H
-#define TGBOT_CHATMEMBERLEFT_H
+#pragma once
 
 #include "tgbm/types/ChatMember.h"
 
@@ -23,5 +22,3 @@ class ChatMemberLeft : public ChatMember {
   }
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATMEMBERLEFT_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_EVENTHANDLER_H
-#define TGBOT_EVENTHANDLER_H
+#pragma once
 
 #include "tgbm/EventBroadcaster.h"
 #include "tgbm/types/Update.h"
@@ -25,5 +24,3 @@ class TGBOT_API EventHandler {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_EVENTHANDLER_H

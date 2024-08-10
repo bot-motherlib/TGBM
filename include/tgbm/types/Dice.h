@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_DICE_H
-#define TGBOT_CPP_DICE_H
+#pragma once
 
 #include <memory>
 
@@ -26,5 +25,3 @@ class Dice {
   std::int32_t value;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_DICE_H

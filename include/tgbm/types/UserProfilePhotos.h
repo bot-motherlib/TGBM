@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_USERPROFILEPHOTOS_H
-#define TGBOT_CPP_USERPROFILEPHOTOS_H
+#pragma once
 
 #include "tgbm/types/PhotoSize.h"
 
@@ -30,5 +29,3 @@ class UserProfilePhotos {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_USERPROFILEPHOTOS_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATBOOSTUPDATED_H
-#define TGBOT_CHATBOOSTUPDATED_H
+#pragma once
 
 #include "tgbm/types/Chat.h"
 #include "tgbm/types/ChatBoost.h"
@@ -28,5 +27,3 @@ class ChatBoostUpdated {
   ChatBoost::Ptr boost;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATBOOSTUPDATED_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEQUERYRESULTGIF_H
-#define TGBOT_INLINEQUERYRESULTGIF_H
+#pragma once
 
 #include "tgbm/types/InlineQueryResult.h"
 #include "tgbm/types/MessageEntity.h"
@@ -90,5 +89,3 @@ class InlineQueryResultGif : public InlineQueryResult {
   InputMessageContent::Ptr inputMessageContent;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEQUERYRESULTGIF_H

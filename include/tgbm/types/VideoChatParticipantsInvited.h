@@ -1,5 +1,4 @@
-#ifndef TGBOT_VIDEOCHATPARTICIPANTSINVITED_H
-#define TGBOT_VIDEOCHATPARTICIPANTSINVITED_H
+#pragma once
 
 #include "tgbm/types/User.h"
 
@@ -23,5 +22,3 @@ class VideoChatParticipantsInvited {
   std::vector<User::Ptr> users;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_VIDEOCHATPARTICIPANTSINVITED_H

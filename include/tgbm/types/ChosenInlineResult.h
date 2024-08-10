@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHOSENINLINERESULT_H
-#define TGBOT_CHOSENINLINERESULT_H
+#pragma once
 
 #include "tgbm/types/User.h"
 #include "tgbm/types/Location.h"
@@ -48,5 +47,3 @@ class ChosenInlineResult {
   std::string query;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHOSENINLINERESULT_H

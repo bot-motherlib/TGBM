@@ -1,5 +1,4 @@
-#ifndef TGBOT_CHATMEMBERMEMBER_H
-#define TGBOT_CHATMEMBERMEMBER_H
+#pragma once
 
 #include "tgbm/types/ChatMember.h"
 
@@ -23,5 +22,3 @@ class ChatMemberMember : public ChatMember {
   }
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CHATMEMBERMEMBER_H

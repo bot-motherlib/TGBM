@@ -3,7 +3,6 @@
 #include <boost/asio/ssl.hpp>
 
 #include <cstddef>
-#include <iostream>  // TODO rm
 #include <vector>
 
 namespace tgbm {
@@ -14,18 +13,21 @@ BoostHttpOnlySslClient::BoostHttpOnlySslClient() : _httpParser() {
 BoostHttpOnlySslClient::~BoostHttpOnlySslClient() {
 }
 
+using io_error_code = boost::system::error_code;
+
 template <typename T, typename CallbackUser>
 struct asio_awaiter {
   static_assert(std::is_same_v<T, std::decay_t<T>>);
   // also should not use its memory after passing callback to asio!
   static_assert(std::is_trivially_destructible_v<CallbackUser>);
 
-  using ec_and_data = std::pair<boost::system::error_code, T>;
   union {
     CallbackUser _cb_user;
-    ec_and_data _data;
+    T _data;
   };
-  explicit asio_awaiter(CallbackUser usr) noexcept : _cb_user(std::move(usr)) {
+  io_error_code& _ec;
+
+  explicit asio_awaiter(CallbackUser usr, io_error_code& ec) noexcept : _cb_user(std::move(usr)), _ec(ec) {
   }
   ~asio_awaiter() {
     // noop, if value exist, it was destroyed in await_resume
@@ -35,19 +37,17 @@ struct asio_awaiter {
   }
 
   void await_suspend(std::coroutine_handle<> handle) noexcept {
-    auto cb = [this, handle](const boost::system::error_code& ec, T data) {
-      std::construct_at(&_data, ec, std::move(data));
-      std::cout << "START AGAIN" << std::this_thread::get_id() << std::endl;
+    auto cb = [this, handle](const io_error_code& ec, T data) {
+      _ec = ec;
+      std::construct_at(std::addressof(_data), std::move(data));
       handle.resume();
     };
-    std::cout << "START 1 " << std::this_thread::get_id() << std::endl;
     // assume does not use its memory after passing callback to asio
     _cb_user(cb);
-    std::cout << "START 2" << std::endl;
   }
-  [[nodiscard]] ec_and_data await_resume() noexcept {
-    auto result = std::move(_data);
-    std::destroy_at(&_data);
+  [[nodiscard]] T await_resume() noexcept {
+    T result = std::move(_data);
+    std::destroy_at(std::addressof(_data));
     return result;  // nrvo
   }
 };
@@ -57,11 +57,9 @@ struct asio_awaiter<void, CallbackUser> {
   // also should not use its memory after passing callback to asio!
   static_assert(std::is_trivially_destructible_v<CallbackUser>);
 
-  union {
-    CallbackUser _cb_user;
-    boost::system::error_code _ec;
-  };
-  explicit asio_awaiter(CallbackUser usr) noexcept : _cb_user(std::move(usr)) {
+  CallbackUser _cb_user;
+  io_error_code& _ec;
+  explicit asio_awaiter(CallbackUser usr, io_error_code& ec) noexcept : _cb_user(std::move(usr)), _ec(ec) {
   }
 
   static bool await_ready() noexcept {
@@ -69,59 +67,56 @@ struct asio_awaiter<void, CallbackUser> {
   }
 
   void await_suspend(std::coroutine_handle<> handle) noexcept {
-    auto cb = [this, handle](const boost::system::error_code& ec) {
-      std::construct_at(&_ec, ec);
-      std::cout << "START AGAIN " << std::this_thread::get_id() << std::endl;
+    auto cb = [this, handle](const io_error_code& ec) {
+      _ec = ec;
       handle.resume();
     };
-    // TODO почему-то как будто не останавливается...
     // assume does not use its memory after passing callback to asio
-    std::cout << "START 1 " << std::this_thread::get_id() << std::endl;
     _cb_user(cb);
-    std::cout << "START 2" << std::endl;
   }
-  [[nodiscard]] boost::system::error_code await_resume() noexcept {
-    return std::move(_ec);
+  static void await_resume() noexcept {
   }
 };
 
 template <typename Protocol>
 KELCORO_CO_AWAIT_REQUIRED auto async_resolve(
     boost::asio::ip::basic_resolver<Protocol>& resolver,
-    std::type_identity_t<boost::asio::ip::basic_resolver_query<Protocol>> query) {
+    std::type_identity_t<boost::asio::ip::basic_resolver_query<Protocol>> query, io_error_code& ec) {
   auto cb_usr = [&]<typename T>(T&& cb) { resolver.async_resolve(std::move(query), std::forward<T>(cb)); };
   using resolve_results_t = typename boost::asio::ip::basic_resolver<Protocol>::results_type;
-  return asio_awaiter<resolve_results_t, decltype(cb_usr)>(cb_usr);
+  return asio_awaiter<resolve_results_t, decltype(cb_usr)>(cb_usr, ec);
 }
 
 template <typename Protocol>
 KELCORO_CO_AWAIT_REQUIRED auto async_connect(
     boost::asio::basic_socket<Protocol>& socket,
-    std::type_identity_t<typename boost::asio::ip::basic_resolver<Protocol>::results_type> endpoints) {
+    std::type_identity_t<typename boost::asio::ip::basic_resolver<Protocol>::results_type> endpoints,
+    io_error_code& ec) {
   auto cb_usr = [&]<typename T>(T&& cb) {
     boost::asio::async_connect(socket, endpoints, std::forward<T>(cb));
   };
-  return asio_awaiter<boost::asio::ip::basic_endpoint<Protocol>, decltype(cb_usr)>(cb_usr);
+  return asio_awaiter<boost::asio::ip::basic_endpoint<Protocol>, decltype(cb_usr)>(cb_usr, ec);
 }
 
 template <typename Stream>
 KELCORO_CO_AWAIT_REQUIRED auto async_handshake(boost::asio::ssl::stream<Stream>& stream,
-                                               boost::asio::ssl::stream_base::handshake_type type) {
+                                               boost::asio::ssl::stream_base::handshake_type type,
+                                               io_error_code& ec) {
   auto cb_usr = [&]<typename T>(T&& cb) { stream.async_handshake(type, std::forward<T>(cb)); };
-  return asio_awaiter<void, decltype(cb_usr)>(cb_usr);
+  return asio_awaiter<void, decltype(cb_usr)>(cb_usr, ec);
 }
 
-KELCORO_CO_AWAIT_REQUIRED auto async_write(auto& stream, const auto& buffer) {
+KELCORO_CO_AWAIT_REQUIRED auto async_write(auto& stream, const auto& buffer, io_error_code& ec) {
   auto cb_usr = [&]<typename T>(T&& cb) { boost::asio::async_write(stream, buffer, std::forward<T>(cb)); };
-  return asio_awaiter<size_t, decltype(cb_usr)>(cb_usr);
+  return asio_awaiter<size_t, decltype(cb_usr)>(cb_usr, ec);
 }
 
 template <typename Buf>
-KELCORO_CO_AWAIT_REQUIRED auto async_read(auto& stream, Buf&& buffer) {
+KELCORO_CO_AWAIT_REQUIRED auto async_read(auto& stream, Buf&& buffer, io_error_code& ec) {
   auto cb_usr = [&]<typename T>(T&& cb) {
     boost::asio::async_read(stream, std::forward<Buf>(buffer), std::forward<T>(cb));
   };
-  return asio_awaiter<size_t, decltype(cb_usr)>(cb_usr);
+  return asio_awaiter<size_t, decltype(cb_usr)>(cb_usr, ec);
 }
 
 dd::task<std::string> BoostHttpOnlySslClient::makeRequest(const Url& url,
@@ -131,23 +126,19 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(const Url& url,
 
   using tcp = asio::ip::tcp;
   tcp::resolver resolver(_ioService);
-  // TODO мне пока нужны минимальные sendMessage и как то получать в ответ сообщения
-  // плюс создавать кнопки и inline query
   ssl::context context(ssl::context::tlsv12_client);
   context.set_default_verify_paths();
-
+  // TODO добавить сюда connection_pool
   ssl::stream<tcp::socket> socket(_ioService, context);
   // TODO ?? (хотя вроде нахуй не нужно, я итак узнаю что оно отвалилось т.к. постоянно посылаю телеграму что
   // то) socket.lowest_layer().set_option(boost::asio::socket_base::keep_alive(true));
-  // TODO (изменил здесь) для коннекта нужен только ? https:// ? api.telegram.org
   tcp::resolver::query query(url.host, "443");
-  boost::system::error_code ec;
+  io_error_code ec;
   auto results = resolver.resolve(std::move(query), ec);
   // auto [ec, results] = co_await async_resolve(resolver, std::move(query));
-  //  ДА КАК Я ОКАЗЫВАЮСЬ ЗДЕСЬ ТО БЛЕТ
   if (ec) {
     // TODO smth ? ? ? exception ? (terminate...)
-    std::cerr << ec.message() << std::endl;
+    // std::cerr << ec.message() << std::endl;
     co_return "";
   }
   asio::connect(socket.lowest_layer(), results, ec);
@@ -155,7 +146,7 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(const Url& url,
   // std::tie(ec, e) = co_await async_connect(socket.lowest_layer(), results);
   if (ec) {
     // TODO smth
-    std::cerr << ec.message() << std::endl;
+    // std::cerr << ec.message() << std::endl;
     co_return "";
   }
 #ifdef TGBOT_DISABLE_NAGLES_ALGORITHM
@@ -171,7 +162,7 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(const Url& url,
   // ec = co_await async_handshake(socket, ssl::stream_base::handshake_type::client);
   if (ec) {
     // TODO smth
-    std::cerr << ec.message() << std::endl;
+    // std::cerr << ec.message() << std::endl;
     co_return "";
   }
   // END SOCKET CREATION (TODO into other function ::prepare or smth)
@@ -180,11 +171,10 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(const Url& url,
   // TODO проверить какой протокол, т.к. в http версии 1.0 соединение завершается сервером
   // а нужно хотя бы 1.1 и в общем надо смотреть тг какие умеет вообще
   std::string requestText = _httpParser.generateRequest(url, args, false);
-  size_t transfered = 0;
-  std::tie(ec, transfered) = co_await async_write(socket, asio::buffer(requestText));
+  size_t transfered = co_await async_write(socket, asio::buffer(requestText), ec);
   if (ec) {
     // TODO smth
-    std::cerr << ec.message() << std::endl;
+    // std::cerr << ec.message() << std::endl;
     co_return "";
   }
   assert(transfered == requestText.size());
@@ -199,7 +189,7 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(const Url& url,
   // TODO нужно возвращать вектор байт вместо строки 1. это выгоднее (sso не нужно)
   // 2. там могут быть \0, т.к. это в том числе загрузка файлов
   while (!ec) {
-    std::tie(ec, transfered) = co_await async_read(socket, asio::buffer(buff));
+    transfered = co_await async_read(socket, asio::buffer(buff), ec);
     response += std::string_view(buff, transfered);
   }
   // TODO как хуёво, тут ещё и копирование строки

@@ -1,5 +1,4 @@
-#ifndef TGBOT_INVOICE_H
-#define TGBOT_INVOICE_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -52,5 +51,3 @@ class Invoice {
   std::int32_t totalAmount;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INVOICE_H

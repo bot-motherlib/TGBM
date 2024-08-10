@@ -1,5 +1,4 @@
-#ifndef TGBOT_STORY_H
-#define TGBOT_STORY_H
+#pragma once
 
 #include "tgbm/types/Chat.h"
 
@@ -28,5 +27,3 @@ class Story {
   std::int32_t id;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_STORY_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_MENUBUTTON_H
-#define TGBOT_MENUBUTTON_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -32,5 +31,3 @@ class MenuButton {
   std::string type;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_MENUBUTTON_H

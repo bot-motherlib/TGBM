@@ -1,5 +1,4 @@
-#ifndef TGBOT_HTTPPARSER_H
-#define TGBOT_HTTPPARSER_H
+#pragma once
 
 #include "tgbm/net/Url.h"
 #include "tgbm/net/HttpReqArg.h"
@@ -26,5 +25,3 @@ class TGBOT_API HttpParser {
 };
 
 }  // namespace tgbm
-
-#endif  // TGBOT_HTTPPARSER_H

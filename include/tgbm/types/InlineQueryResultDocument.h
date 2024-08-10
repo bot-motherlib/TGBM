@@ -1,5 +1,4 @@
-#ifndef TGBOT_INLINEQUERYRESULTDOCUMENT_H
-#define TGBOT_INLINEQUERYRESULTDOCUMENT_H
+#pragma once
 
 #include "tgbm/types/InlineQueryResult.h"
 #include "tgbm/types/MessageEntity.h"
@@ -90,5 +89,3 @@ class InlineQueryResultDocument : public InlineQueryResult {
   std::int32_t thumbnailHeight;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INLINEQUERYRESULTDOCUMENT_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_BOTDESCRIPTION_H
-#define TGBOT_BOTDESCRIPTION_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -21,5 +20,3 @@ class BotDescription {
   std::string description;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BOTDESCRIPTION_H

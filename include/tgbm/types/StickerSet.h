@@ -1,5 +1,4 @@
-#ifndef TGBOT_STICKERSET_H
-#define TGBOT_STICKERSET_H
+#pragma once
 
 #include "tgbm/types/Sticker.h"
 #include "tgbm/types/PhotoSize.h"
@@ -50,5 +49,3 @@ class StickerSet {
   PhotoSize::Ptr thumbnail;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_STICKERSET_H

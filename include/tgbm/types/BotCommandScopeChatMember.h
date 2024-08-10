@@ -1,5 +1,4 @@
-#ifndef TGBOT_BOTCOMMANDSCOPECHATMEMBER_H
-#define TGBOT_BOTCOMMANDSCOPECHATMEMBER_H
+#pragma once
 
 #include "tgbm/types/BotCommandScope.h"
 
@@ -35,5 +34,3 @@ class BotCommandScopeChatMember : public BotCommandScope {
   std::int64_t userId;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BOTCOMMANDSCOPECHATMEMBER_H

@@ -1,5 +1,4 @@
-#ifndef TGBOT_PASSPORTELEMENTERRORTRANSLATIONFILE_H
-#define TGBOT_PASSPORTELEMENTERRORTRANSLATIONFILE_H
+#pragma once
 
 #include "tgbm/types/PassportElementError.h"
 
@@ -30,5 +29,3 @@ class PassportElementErrorTranslationFile : public PassportElementError {
   std::string fileHash;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_PASSPORTELEMENTERRORTRANSLATIONFILE_H

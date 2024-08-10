@@ -1,5 +1,4 @@
-#ifndef TGBOT_INPUTLOCATIONMESSAGECONTENT_H
-#define TGBOT_INPUTLOCATIONMESSAGECONTENT_H
+#pragma once
 
 #include "tgbm/types/InputMessageContent.h"
 
@@ -55,5 +54,3 @@ class InputLocationMessageContent : public InputMessageContent {
   std::int32_t proximityAlertRadius;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_INPUTLOCATIONMESSAGECONTENT_H

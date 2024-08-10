@@ -1,5 +1,4 @@
-#ifndef TGBOT_FORUMTOPICCREATED_H
-#define TGBOT_FORUMTOPICCREATED_H
+#pragma once
 
 #include <cstdint>
 #include <string>
@@ -32,5 +31,3 @@ class ForumTopicCreated {
   std::string iconCustomEmojiId;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_FORUMTOPICCREATED_H

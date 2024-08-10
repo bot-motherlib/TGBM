@@ -1,5 +1,4 @@
-#ifndef TGBOT_BOTCOMMANDSCOPECHATADMINISTRATORS_H
-#define TGBOT_BOTCOMMANDSCOPECHATADMINISTRATORS_H
+#pragma once
 
 #include "tgbm/types/BotCommandScope.h"
 
@@ -31,5 +30,3 @@ class BotCommandScopeChatAdministrators : public BotCommandScope {
   std::int64_t chatId;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_BOTCOMMANDSCOPECHATADMINISTRATORS_H

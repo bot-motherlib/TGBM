@@ -1,5 +1,4 @@
-#ifndef TGBOT_CPP_CHATLOCATION_H
-#define TGBOT_CPP_CHATLOCATION_H
+#pragma once
 
 #include "tgbm/types/Location.h"
 
@@ -28,5 +27,3 @@ class ChatLocation {
   std::string address;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_CPP_CHATLOCATION_H

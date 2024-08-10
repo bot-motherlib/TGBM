@@ -1,5 +1,4 @@
-#ifndef TGBOT_FORUMTOPICEDITED_H
-#define TGBOT_FORUMTOPICEDITED_H
+#pragma once
 
 #include <memory>
 #include <string>
@@ -27,5 +26,3 @@ class ForumTopicEdited {
   std::string iconCustomEmojiId;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_FORUMTOPICEDITED_H

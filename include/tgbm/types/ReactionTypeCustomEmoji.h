@@ -1,5 +1,4 @@
-#ifndef TGBOT_REACTIONTYPECUSTOMEMOJI_H
-#define TGBOT_REACTIONTYPECUSTOMEMOJI_H
+#pragma once
 
 #include "tgbm/types/ReactionType.h"
 
@@ -29,5 +28,3 @@ class ReactionTypeCustomEmoji : public ReactionType {
   std::string customEmojiId;
 };
 }  // namespace tgbm
-
-#endif  // TGBOT_REACTIONTYPECUSTOMEMOJI_H
