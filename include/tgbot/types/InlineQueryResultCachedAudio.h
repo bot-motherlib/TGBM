@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a link to an MP3 audio file stored on the Telegram servers.
@@ -58,6 +58,6 @@ class InlineQueryResultCachedAudio : public InlineQueryResult {
    */
   InputMessageContent::Ptr inputMessageContent;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INLINEQUERYRESULTCACHEDAUDIO_H

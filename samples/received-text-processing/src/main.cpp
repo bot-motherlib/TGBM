@@ -7,7 +7,7 @@
 #include <tgbot/tgbot.h>
 
 using namespace std;
-using namespace TgBot;
+using namespace tgbm;
 
 vector<string> bot_commands = {"start", "test"};
 
@@ -28,7 +28,7 @@ int main() {
     test_text_state = true;
   });
 
-  bot.getEvents().onAnyMessage([&](TgBot::Message::Ptr message) {
+  bot.getEvents().onAnyMessage([&](tgbm::Message::Ptr message) {
     if (test_text_state) {
       bot.getApi().sendMessage(message->chat->id, message->text);
       test_text_state = false;

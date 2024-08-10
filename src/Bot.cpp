@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 Bot::Bot(std::string token, const HttpClient& httpClient, const std::string& url)
     : _token(std::move(token)),
@@ -20,4 +20,4 @@ HttpClient& Bot::_getDefaultHttpClient() {
   return instance;
 }
 
-}  // namespace TgBot
+}  // namespace tgbm

@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This class parses a string with the url
@@ -42,6 +42,6 @@ class TGBOT_API Url {
   std::string fragment;
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_URL_H

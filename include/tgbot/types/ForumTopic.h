@@ -5,7 +5,7 @@
 #include <string>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a forum topic.
@@ -36,6 +36,6 @@ class ForumTopic {
    */
   std::string iconCustomEmojiId;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_FORUMTOPIC_H

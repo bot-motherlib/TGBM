@@ -9,8 +9,8 @@
 
 #include <cassert>
 
-// TODO change namespac TgBot -> tgbm
-namespace TgBot {
+// TODO change namespac tgbm -> tgbm
+namespace tgbm {
 
 template <typename Node>
 struct intrusive_stack {
@@ -165,4 +165,4 @@ struct pool_t {
   }
 };
 
-}  // namespace TgBot
+}  // namespace tgbm

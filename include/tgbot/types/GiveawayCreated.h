@@ -3,7 +3,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a service message about the creation of a scheduled giveaway.
@@ -16,6 +16,6 @@ class GiveawayCreated {
  public:
   typedef std::shared_ptr<GiveawayCreated> Ptr;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_GIVEAWAYCREATED_H

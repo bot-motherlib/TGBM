@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a [chat member](https://core.telegram.org/bots/api#chatmember) that has some additional
@@ -118,6 +118,6 @@ class ChatMemberAdministrator : public ChatMember {
    */
   std::string customTitle;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATMEMBERADMINISTRATOR_H

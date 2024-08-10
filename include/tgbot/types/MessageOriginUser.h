@@ -6,7 +6,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief The message was originally sent by a known user.
@@ -28,6 +28,6 @@ class MessageOriginUser : public MessageOrigin {
    */
   User::Ptr senderUser;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_MESSAGEORIGINUSER_H

@@ -8,7 +8,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 class TGBOT_API HttpParser {
  public:
@@ -25,6 +25,6 @@ class TGBOT_API HttpParser {
   std::string extractBody(const std::string& data) const;
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_HTTPPARSER_H

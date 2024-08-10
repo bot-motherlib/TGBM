@@ -3,7 +3,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This abstract class is base of all keyboard related events.
@@ -17,6 +17,6 @@ class GenericReply {
   }
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_GENERICREPLY_H

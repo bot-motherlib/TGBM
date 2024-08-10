@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This class makes http requests via boost::asio.
@@ -43,6 +43,6 @@ class TGBOT_API BoostHttpOnlySslClient : public HttpClient {
   // TODO здесь кешировать сокет (или стрим и тд)
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_BOOSTHTTPCLIENT_H

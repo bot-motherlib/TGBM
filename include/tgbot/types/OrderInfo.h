@@ -6,7 +6,7 @@
 #include <string>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents information about an order.
@@ -40,6 +40,6 @@ class OrderInfo {
   ShippingAddress::Ptr shippingAddress;
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_ORDERINFO_H

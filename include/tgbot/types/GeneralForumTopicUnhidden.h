@@ -3,7 +3,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a service message about General forum topic unhidden in the chat.
@@ -16,6 +16,6 @@ class GeneralForumTopicUnhidden {
  public:
   typedef std::shared_ptr<GeneralForumTopicUnhidden> Ptr;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_GENERALFORUMTOPICUNHIDDEN_H

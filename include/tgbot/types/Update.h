@@ -21,7 +21,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This [object](https://core.telegram.org/bots/api#available-types) represents an incoming update.
@@ -193,6 +193,6 @@ class Update {
    */
   ChatBoostRemoved::Ptr removedChatBoost;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_UPDATE_H

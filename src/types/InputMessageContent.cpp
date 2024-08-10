@@ -6,7 +6,7 @@
 
 #include <string>
 
-using namespace TgBot;
+using namespace tgbm;
 
 const std::string InputTextMessageContent::TYPE = "text";
 const std::string InputLocationMessageContent::TYPE = "location";

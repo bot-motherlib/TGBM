@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a file ready to be downloaded.
@@ -47,6 +47,6 @@ class File {
    */
   std::string filePath;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_FILE_H

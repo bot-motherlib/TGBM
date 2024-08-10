@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a game.
@@ -55,6 +55,6 @@ class Game {
    */
   Animation::Ptr animation;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_GAME_H

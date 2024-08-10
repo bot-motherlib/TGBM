@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a Game.
@@ -28,6 +28,6 @@ class InlineQueryResultGame : public InlineQueryResult {
    */
   std::string gameShortName;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INLINEQUERYRESULTGAME_H

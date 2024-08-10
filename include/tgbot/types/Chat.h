@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 class Message;
 
@@ -342,6 +342,6 @@ class Chat {
    */
   ChatLocation::Ptr location;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHAT_H

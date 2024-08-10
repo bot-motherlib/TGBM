@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a file uploaded to Telegram Passport.
@@ -37,6 +37,6 @@ class PassportFile {
    */
   std::int32_t fileDate;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_PASSPORTFILE_H

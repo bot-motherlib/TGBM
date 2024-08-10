@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This abstract class is base of all bot menu buttons.
@@ -31,6 +31,6 @@ class MenuButton {
    */
   std::string type;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_MENUBUTTON_H

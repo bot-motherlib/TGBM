@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object contains basic information about a successful payment.
@@ -64,6 +64,6 @@ class SuccessfulPayment {
    */
   std::string providerPaymentChargeId;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_SUCCESSFULPAYMENT_H

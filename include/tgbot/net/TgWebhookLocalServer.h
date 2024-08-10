@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This class setups HTTP server for receiving Telegram Update objects from unix socket.
@@ -28,7 +28,7 @@ class TgWebhookLocalServer : public TgWebhookServer<boost::asio::local::stream_p
   }
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // BOOST_ASIO_HAS_LOCAL_SOCKETS
 

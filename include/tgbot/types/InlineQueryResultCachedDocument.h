@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a link to a file stored on the Telegram servers.
@@ -68,6 +68,6 @@ class InlineQueryResultCachedDocument : public InlineQueryResult {
    */
   InputMessageContent::Ptr inputMessageContent;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INLINEQUERYRESULTCACHEDDOCUMENT_H

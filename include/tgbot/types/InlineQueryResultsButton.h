@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a button to be shown above inline query results.
@@ -47,6 +47,6 @@ class InlineQueryResultsButton {
    */
   std::string startParameter;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INLINEQUERYRESULTSBUTTON_H

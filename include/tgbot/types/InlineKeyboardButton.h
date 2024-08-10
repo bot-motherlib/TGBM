@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents one button of an inline keyboard.
@@ -97,6 +97,6 @@ class InlineKeyboardButton {
    */
   bool pay;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INLINEKEYBOARDBUTTON_H

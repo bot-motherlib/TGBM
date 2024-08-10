@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object is received when messages are deleted from a connected business account.
@@ -36,6 +36,6 @@ class BusinessMessagesDeleted {
    */
   std::vector<std::int32_t> messageIds;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_BUSINESSMESSAGESDELETED_H

@@ -4,7 +4,7 @@
 
 #include <string>
 
-using namespace TgBot;
+using namespace tgbm;
 
 const std::string ChatBoostSourcePremium::SOURCE = "premium";
 const std::string ChatBoostSourceGiftCode::SOURCE = "gift_code";

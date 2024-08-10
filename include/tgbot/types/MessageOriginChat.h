@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief The message was originally sent on behalf of a chat to a group chat.
@@ -35,6 +35,6 @@ class MessageOriginChat : public MessageOrigin {
    */
   std::string authorSignature;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_MESSAGEORIGINCHAT_H

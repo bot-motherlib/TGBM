@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a general file (as opposed to photos, voice messages and audio files).
@@ -53,6 +53,6 @@ class Document {
    */
   std::int64_t fileSize;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_DOCUMENT_H

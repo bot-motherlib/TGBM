@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a location on a map.
@@ -89,6 +89,6 @@ class InlineQueryResultLocation : public InlineQueryResult {
    */
   std::int32_t thumbnailHeight;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INLINEQUERYRESULTLOCATION_H

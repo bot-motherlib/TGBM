@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a chat member that was banned in the chat and can't return to the chat or view chat
@@ -31,6 +31,6 @@ class ChatMemberBanned : public ChatMember {
    */
   std::uint32_t untilDate;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATMEMBERBANNED_H

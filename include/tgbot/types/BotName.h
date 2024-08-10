@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents the bot's name.
@@ -20,6 +20,6 @@ class BotName {
    */
   std::string name;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_BOTNAME_H

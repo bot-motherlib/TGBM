@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object describes a sticker to be added to a sticker set.
@@ -54,6 +54,6 @@ class InputSticker {
    */
   std::vector<std::string> keywords;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INPUTSTICKER_H

@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents the scope of bot commands, covering all administrators of a specific group or supergroup
@@ -30,6 +30,6 @@ class BotCommandScopeChatAdministrators : public BotCommandScope {
    */
   std::int64_t chatId;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_BOTCOMMANDSCOPECHATADMINISTRATORS_H

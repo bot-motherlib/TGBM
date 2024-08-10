@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a link to an animated GIF file stored on the Telegram servers.
@@ -61,6 +61,6 @@ class InlineQueryResultCachedGif : public InlineQueryResult {
    */
   InputMessageContent::Ptr inputMessageContent;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INLINEQUERYRESULTCACHEDGIF_H

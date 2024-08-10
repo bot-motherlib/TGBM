@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Contains data sent from a Web App to the bot.
@@ -27,6 +27,6 @@ class WebAppData {
    */
   std::string buttonText;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_WEBAPPMESSAGE_H

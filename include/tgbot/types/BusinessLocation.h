@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @ingroup types
@@ -25,6 +25,6 @@ class BusinessLocation {
    */
   Location::Ptr location;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_BUSINESSLOCATION_H

@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a sticker set.
@@ -49,6 +49,6 @@ class StickerSet {
    */
   PhotoSize::Ptr thumbnail;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_STICKERSET_H

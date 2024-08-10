@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a sticker.
@@ -105,6 +105,6 @@ class Sticker {
    */
   std::int32_t fileSize;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_STICKER_H

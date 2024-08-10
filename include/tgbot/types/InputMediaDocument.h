@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a general file to be sent.
@@ -39,6 +39,6 @@ class InputMediaDocument : public InputMedia {
    */
   bool disableContentTypeDetection;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INPUTMEDIADOCUMENT_H

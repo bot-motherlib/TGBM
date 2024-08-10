@@ -55,7 +55,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a message.
@@ -532,6 +532,6 @@ class Message {
    */
   InlineKeyboardMarkup::Ptr replyMarkup;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_MESSAGE_H

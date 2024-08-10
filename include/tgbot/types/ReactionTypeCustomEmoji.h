@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief The reaction is based on a custom emoji.
@@ -28,6 +28,6 @@ class ReactionTypeCustomEmoji : public ReactionType {
    */
   std::string customEmojiId;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_REACTIONTYPECUSTOMEMOJI_H

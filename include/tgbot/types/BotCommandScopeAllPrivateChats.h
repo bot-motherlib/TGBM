@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents the scope of bot commands, covering all private chats.
@@ -22,6 +22,6 @@ class BotCommandScopeAllPrivateChats : public BotCommandScope {
     this->type = TYPE;
   }
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_BOTCOMMANDSCOPEALLPRIVATECHATS_H

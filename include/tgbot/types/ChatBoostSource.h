@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object describes the source of a chat boost.
@@ -38,6 +38,6 @@ class ChatBoostSource {
    */
   User::Ptr user;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATBOOSTSOURCE_H

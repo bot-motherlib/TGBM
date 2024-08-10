@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents an audio file to be treated as music by the Telegram clients.
@@ -68,6 +68,6 @@ class Audio {
    */
   PhotoSize::Ptr thumbnail;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_AUDIO_H

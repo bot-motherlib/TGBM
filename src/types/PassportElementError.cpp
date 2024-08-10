@@ -10,7 +10,7 @@
 
 #include <string>
 
-using namespace TgBot;
+using namespace tgbm;
 
 const std::string PassportElementErrorDataField::SOURCE = "data";
 const std::string PassportElementErrorFrontSide::SOURCE = "front_side";

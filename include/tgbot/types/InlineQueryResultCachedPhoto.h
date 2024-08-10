@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a link to a photo stored on the Telegram servers.
@@ -66,6 +66,6 @@ class InlineQueryResultCachedPhoto : public InlineQueryResult {
    */
   InputMessageContent::Ptr inputMessageContent;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INLINEQUERYRESULTCACHEDPHOTO_H

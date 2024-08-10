@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents the content of a contact message to be sent as the result of an inline query.
@@ -43,6 +43,6 @@ class InputContactMessageContent : public InputMessageContent {
    */
   std::string vcard;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INPUTCONTACTMESSAGECONTENT_H

@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a venue.
@@ -54,6 +54,6 @@ class Venue {
    */
   std::string googlePlaceType;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_VENUE_H

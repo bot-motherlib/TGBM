@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents an answer of a user in a non-anonymous poll.
@@ -42,6 +42,6 @@ class PollAnswer {
    */
   std::vector<std::int32_t> optionIds;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_POLLANSWER_H

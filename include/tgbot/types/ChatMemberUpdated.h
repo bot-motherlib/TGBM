@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents changes in the status of a chat member.
@@ -56,6 +56,6 @@ class ChatMemberUpdated {
    */
   bool viaChatFolderInviteLink;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATMEMBERUPDATED_H

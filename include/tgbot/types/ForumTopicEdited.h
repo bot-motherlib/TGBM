@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a service message about an edited forum topic.
@@ -26,6 +26,6 @@ class ForumTopicEdited {
    */
   std::string iconCustomEmojiId;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_FORUMTOPICEDITED_H

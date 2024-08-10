@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a Telegram user or bot.
@@ -91,6 +91,6 @@ class User {
    */
   bool canConnectToBusiness;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_USER_H

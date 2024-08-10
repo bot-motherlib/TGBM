@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a message about a scheduled giveaway.
@@ -66,6 +66,6 @@ class Giveaway {
    */
   std::int32_t premiumSubscriptionMonthCount;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_GIVEAWAY_H

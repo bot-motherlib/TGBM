@@ -9,7 +9,7 @@
 #include <vector>
 #include <functional>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This class represents argument in POST http requests.
@@ -54,6 +54,6 @@ class TGBOT_API HttpReqArg {
   std::string fileName;
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_HTTPPARAMETER_H

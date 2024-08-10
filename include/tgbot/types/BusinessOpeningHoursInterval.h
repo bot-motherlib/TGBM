@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @ingroup types
@@ -25,6 +25,6 @@ class BusinessOpeningHoursInterval {
    */
   std::int32_t closingMinute;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_BUSINESSOPENINGHOURSINTERVAL_H

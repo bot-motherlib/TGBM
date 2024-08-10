@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This abstract class is base of all chat members.
@@ -35,6 +35,6 @@ class ChatMember {
    */
   User::Ptr user;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATMEMBER_H

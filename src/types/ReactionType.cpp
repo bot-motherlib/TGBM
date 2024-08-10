@@ -3,7 +3,7 @@
 
 #include <string>
 
-using namespace TgBot;
+using namespace tgbm;
 
 const std::string ReactionTypeEmoji::TYPE = "emoji";
 const std::string ReactionTypeCustomEmoji::TYPE = "custom_emoji";

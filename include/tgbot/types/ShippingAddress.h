@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a shipping address.
@@ -45,6 +45,6 @@ class ShippingAddress {
    */
   std::string postCode;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_SHIPPINGADDRESS_H

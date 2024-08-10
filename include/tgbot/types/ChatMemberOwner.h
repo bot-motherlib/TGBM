@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a chat member that owns the chat and has all administrator privileges.
@@ -33,6 +33,6 @@ class ChatMemberOwner : public ChatMember {
    */
   bool isAnonymous;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATMEMBEROWNER_H

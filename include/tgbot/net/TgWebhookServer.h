@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <utility>
 
-namespace TgBot {
+namespace tgbm {
 
 template <typename Protocol>
 class TgWebhookServer : public HttpServer<Protocol> {
@@ -48,6 +48,6 @@ class TgWebhookServer : public HttpServer<Protocol> {
   const TgTypeParser _tgTypeParser;
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_TGHTTPSERVER_H

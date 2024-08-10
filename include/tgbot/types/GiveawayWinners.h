@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a message about the completion of a giveaway with public winners.
@@ -77,6 +77,6 @@ class GiveawayWinners {
    */
   std::string prizeDescription;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_GIVEAWAYWINNERS_H

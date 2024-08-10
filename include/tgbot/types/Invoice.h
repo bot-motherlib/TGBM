@@ -5,7 +5,7 @@
 #include <string>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object contains basic information about an invoice.
@@ -51,6 +51,6 @@ class Invoice {
    */
   std::int32_t totalAmount;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INVOICE_H

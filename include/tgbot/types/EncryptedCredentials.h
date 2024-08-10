@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Contains data required for decrypting and authenticating EncryptedPassportElement.
@@ -33,6 +33,6 @@ class EncryptedCredentials {
    */
   std::string secret;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_ENCRYPTEDCREDENTIALS_H

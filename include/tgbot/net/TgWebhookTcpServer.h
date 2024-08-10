@@ -5,7 +5,7 @@
 
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * This class setups HTTP server for receiving Telegram Update objects from tcp connections.
@@ -24,6 +24,6 @@ class TgWebhookTcpServer : public TgWebhookServer<boost::asio::ip::tcp> {
   }
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_TGWEBHOOKTCPSERVER_H

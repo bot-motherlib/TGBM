@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Contains information about why a request was unsuccessfull.
@@ -30,6 +30,6 @@ class ResponseParameters {
    */
   std::int32_t retryAfter;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_RESPONSEPARAMETERS_H

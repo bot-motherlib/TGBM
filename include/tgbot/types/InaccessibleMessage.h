@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object describes a message that was deleted or is otherwise inaccessible to the bot.
@@ -34,6 +34,6 @@ class InaccessibleMessage {
    */
   std::uint8_t date;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INACCESSIBLEMESSAGE_H

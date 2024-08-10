@@ -3,7 +3,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents the rights of an administrator in a chat.
@@ -98,6 +98,6 @@ class ChatAdministratorRights {
    */
   bool canManageTopics;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATADMINISTRATORRIGHTS_H

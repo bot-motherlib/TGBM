@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a contact with a phone number.
@@ -70,6 +70,6 @@ class InlineQueryResultContact : public InlineQueryResult {
    */
   std::int32_t thumbnailHeight;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INLINEQUERYRESULTCONTACT_H

@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents an issue with a list of scans.
@@ -30,6 +30,6 @@ class PassportElementErrorFiles : public PassportElementError {
    */
   std::vector<std::string> fileHashes;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_PASSPORTELEMENTERRORFILES_H

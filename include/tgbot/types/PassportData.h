@@ -5,7 +5,7 @@
 #include "tgbot/types/EncryptedCredentials.h"
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Contains information about Telegram Passport data shared with the bot by the user.
@@ -27,6 +27,6 @@ class PassportData {
    */
   EncryptedCredentials::Ptr credentials;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_PASSPORTDATA_H

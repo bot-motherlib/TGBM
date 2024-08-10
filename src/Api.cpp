@@ -3,7 +3,7 @@
 #include <chrono>
 #include <thread>
 
-namespace TgBot {
+namespace tgbm {
 
 Api::Api(std::string token, const HttpClient &httpClient, const std::string &url)
     : _httpClient(httpClient), _token(std::move(token)), _tgTypeParser(), _url(url) {
@@ -1148,7 +1148,7 @@ dd::task<bool> Api::unbanChatMember(boost::variant<std::int64_t, std::string> ch
 }
 
 dd::task<bool> Api::restrictChatMember(boost::variant<std::int64_t, std::string> chatId, std::int64_t userId,
-                                       TgBot::ChatPermissions::Ptr permissions, std::uint32_t untilDate,
+                                       tgbm::ChatPermissions::Ptr permissions, std::uint32_t untilDate,
                                        bool useIndependentChatPermissions) const {
   std::vector<HttpReqArg> args;
   args.reserve(5);
@@ -2726,4 +2726,4 @@ dd::task<boost::property_tree::ptree> Api::sendRequest(const std::string &method
   }
 }
 
-}  // namespace TgBot
+}  // namespace tgbm

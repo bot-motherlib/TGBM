@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents reaction changes on a message with anonymous reactions.
@@ -39,6 +39,6 @@ class MessageReactionCountUpdated {
    */
   std::vector<ReactionCount::Ptr> reactions;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_MESSAGEREACTIONCOUNTUPDATED_H

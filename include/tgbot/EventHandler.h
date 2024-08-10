@@ -9,7 +9,7 @@
 #include <cstddef>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 class TGBOT_API EventHandler {
  public:
@@ -24,6 +24,6 @@ class TGBOT_API EventHandler {
   void handleMessage(const Message::Ptr& message) const;
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_EVENTHANDLER_H

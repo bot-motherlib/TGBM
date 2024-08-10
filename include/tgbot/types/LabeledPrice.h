@@ -5,7 +5,7 @@
 #include <string>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a portion of the price for goods or services.
@@ -34,6 +34,6 @@ class LabeledPrice {
    */
   std::int32_t amount;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_LABELEDPRICE_H

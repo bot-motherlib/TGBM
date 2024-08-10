@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a chat photo.
@@ -39,6 +39,6 @@ class ChatPhoto {
    */
   std::string bigFileUniqueId;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATPHOTO_H

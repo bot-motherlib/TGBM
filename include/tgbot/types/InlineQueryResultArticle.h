@@ -8,7 +8,7 @@
 #include <string>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a link to an article of web page.
@@ -65,6 +65,6 @@ class InlineQueryResultArticle : public InlineQueryResult {
    */
   std::int32_t thumbnailHeight;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INLINEQUERYRESULTARTICLE_H

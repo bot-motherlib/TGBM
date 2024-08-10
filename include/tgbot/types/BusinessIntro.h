@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @ingroup types
@@ -30,6 +30,6 @@ class BusinessIntro {
    */
   Sticker::Ptr sticker;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_BUSINESSINTRO_H

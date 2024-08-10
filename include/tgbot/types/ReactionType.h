@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object describes the type of a reaction.
@@ -30,6 +30,6 @@ class ReactionType {
    */
   std::string type;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_REACTIONTYPE_H

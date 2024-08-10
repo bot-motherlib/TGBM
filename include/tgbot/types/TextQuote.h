@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object contains information about the quoted part of a message that is replied to by the given
@@ -45,6 +45,6 @@ class TextQuote {
    */
   bool isManual;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_TEXTQUOTE_H

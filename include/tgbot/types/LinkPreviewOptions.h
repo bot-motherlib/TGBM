@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Describes the options used for link preview generation.
@@ -45,6 +45,6 @@ class LinkPreviewOptions {
    */
   bool showAboveText;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_LINKPREVIEWOPTIONS_H

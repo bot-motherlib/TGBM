@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object defines the criteria used to request suitable users.
@@ -61,6 +61,6 @@ class KeyboardButtonRequestUsers {
    */
   bool requestPhoto;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_KEYBOARDBUTTONREQUESTUSERS_H

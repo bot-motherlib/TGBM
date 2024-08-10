@@ -1,6 +1,6 @@
 #include "tgbot/TgTypeParser.h"
 
-namespace TgBot {
+namespace tgbm {
 // TODO убрать бесконечное число shared_ptr здесь
 Update::Ptr TgTypeParser::parseJsonAndGetUpdate(const boost::property_tree::ptree& data) const {
   auto result(std::make_shared<Update>());
@@ -5927,4 +5927,4 @@ void TgTypeParser::appendToJson(std::string& json, const std::string& varName,
   }
   json += ',';
 }
-}  // namespace TgBot
+}  // namespace tgbm

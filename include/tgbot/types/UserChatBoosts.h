@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a list of boosts added to a chat by a user.
@@ -22,6 +22,6 @@ class UserChatBoosts {
    */
   std::vector<ChatBoost::Ptr> boosts;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_USERCHATBOOSTS_H

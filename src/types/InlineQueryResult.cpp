@@ -21,7 +21,7 @@
 
 #include <string>
 
-using namespace TgBot;
+using namespace tgbm;
 
 const std::string InlineQueryResultCachedAudio::TYPE = "audio";
 const std::string InlineQueryResultCachedDocument::TYPE = "document";

@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents the content of a location message to be sent as the result of an inline query.
@@ -54,6 +54,6 @@ class InputLocationMessageContent : public InputMessageContent {
    */
   std::int32_t proximityAlertRadius;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INPUTLOCATIONMESSAGECONTENT_H

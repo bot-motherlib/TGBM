@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Describes the connection of the bot with a business account.
@@ -53,6 +53,6 @@ class BusinessConnection {
    */
   bool isEnabled;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_BUSINESSCONNECTION_H

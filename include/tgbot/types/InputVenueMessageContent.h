@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents the content of a venue message to be sent as the result of an inline query.
@@ -65,6 +65,6 @@ class InputVenueMessageContent : public InputMessageContent {
    */
   std::string googlePlaceType;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INPUTVENUEMESSAGECONTENT_H

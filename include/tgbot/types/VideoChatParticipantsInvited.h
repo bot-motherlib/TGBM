@@ -6,7 +6,7 @@
 #include <memory>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a service message about new members invited to a video chat.
@@ -22,6 +22,6 @@ class VideoChatParticipantsInvited {
    */
   std::vector<User::Ptr> users;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_VIDEOCHATPARTICIPANTSINVITED_H

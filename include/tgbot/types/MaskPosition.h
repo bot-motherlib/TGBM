@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object describes the position on faces where a mask should be placed by default.
@@ -38,6 +38,6 @@ class MaskPosition {
    */
   float scale;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_MARKPOSITION_H

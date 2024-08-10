@@ -7,7 +7,7 @@
 #include <string>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a result of an inline query that was chosen by the user and sent to their
@@ -47,6 +47,6 @@ class ChosenInlineResult {
    */
   std::string query;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHOSENINLINERESULT_H

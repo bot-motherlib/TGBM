@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object contains information about a chat that was shared with the bot using a
@@ -52,6 +52,6 @@ class ChatShared {
    */
   std::vector<PhotoSize::Ptr> photo;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATSHARED_H

@@ -7,7 +7,7 @@
 #include <string>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a video message.
@@ -49,6 +49,6 @@ class VideoNote {
    */
   std::int32_t fileSize;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_VIDEONOTE_H

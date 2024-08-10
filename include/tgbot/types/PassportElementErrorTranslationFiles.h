@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents an issue with the translated version of a document.
@@ -30,6 +30,6 @@ class PassportElementErrorTranslationFiles : public PassportElementError {
    */
   std::vector<std::string> fileHashes;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_PASSPORTELEMENTERRORTRANSLATIONFILES_H

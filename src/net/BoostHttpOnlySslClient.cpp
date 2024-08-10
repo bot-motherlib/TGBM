@@ -6,7 +6,7 @@
 #include <iostream>  // TODO rm
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 BoostHttpOnlySslClient::BoostHttpOnlySslClient() : _httpParser() {
 }
@@ -208,4 +208,4 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(const Url& url,
   co_return _httpParser.extractBody(response);
 }
 
-}  // namespace TgBot
+}  // namespace tgbm

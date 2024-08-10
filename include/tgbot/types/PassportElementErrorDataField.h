@@ -6,7 +6,7 @@
 #include <string>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents an issue in one of the data fields that was provided by the user.
@@ -34,6 +34,6 @@ class PassportElementErrorDataField : public PassportElementError {
    */
   std::string dataHash;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_PASSPORTELEMENTERRORDATAFILED_H

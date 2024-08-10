@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents an invite link for a chat.
@@ -66,6 +66,6 @@ class ChatInviteLink {
    */
   std::uint32_t pendingJoinRequestCount;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_CHATINVITELINK_H

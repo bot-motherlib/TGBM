@@ -27,7 +27,7 @@
 #include <memory>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object contains information about a message that is being replied to, which may come from
@@ -165,6 +165,6 @@ class ExternalReplyInfo {
    */
   Venue::Ptr venue;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_EXTERNALREPLYINFO_H

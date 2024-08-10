@@ -3,7 +3,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Describes actions that a non-administrator user is allowed to take in a chat.
@@ -91,6 +91,6 @@ class ChatPermissions {
    */
   bool canManageTopics;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATPERMISSIONS_H

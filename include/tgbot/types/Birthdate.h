@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @ingroup types
@@ -28,6 +28,6 @@ class Birthdate {
    */
   std::uint16_t year;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_BIRTHDATE_H

@@ -3,7 +3,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a service message about a forum topic closed in the chat.
@@ -16,6 +16,6 @@ class ForumTopicClosed {
  public:
   typedef std::shared_ptr<ForumTopicClosed> Ptr;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_FORUMTOPICCLOSED_H

@@ -7,7 +7,7 @@
 #include <vector>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represent a user's profile pictures.
@@ -29,6 +29,6 @@ class UserProfilePhotos {
   std::vector<std::vector<PhotoSize::Ptr>> photos;
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_USERPROFILEPHOTOS_H

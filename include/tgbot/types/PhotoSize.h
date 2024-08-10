@@ -5,7 +5,7 @@
 #include <string>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents one size of a photo or a file / sticker thumbnail.
@@ -42,6 +42,6 @@ class PhotoSize {
    */
   std::int32_t fileSize;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_PHOTOSIZE_H

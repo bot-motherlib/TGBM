@@ -4,7 +4,7 @@
 #include <string>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents type of a poll, which is allowed to be created and sent when the
@@ -23,6 +23,6 @@ class KeyboardButtonPollType {
    */
   std::string type;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_KEYBOARDBUTTONPOLLTYPE_H

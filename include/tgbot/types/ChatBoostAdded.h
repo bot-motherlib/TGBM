@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a service message about a user boosting a chat.
@@ -20,6 +20,6 @@ class ChatBoostAdded {
    */
   std::int32_t boostCount;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATBOOSTADDED_H

@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a menu button, which opens the bot's list of commands.
@@ -22,6 +22,6 @@ class MenuButtonCommands : public MenuButton {
     this->type = TYPE;
   }
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_MENUBUTTONCOMMANDS_H

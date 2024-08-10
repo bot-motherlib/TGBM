@@ -10,7 +10,7 @@
 
 #include <kelcoro/task.hpp>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This class makes http requests.
@@ -57,6 +57,6 @@ class TGBOT_API HttpClient {
   int requestBackoff = 1;
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_HTTPCLIENT_H

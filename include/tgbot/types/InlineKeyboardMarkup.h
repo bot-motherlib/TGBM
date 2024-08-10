@@ -7,7 +7,7 @@
 #include <vector>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents an [inline
@@ -25,6 +25,6 @@ class InlineKeyboardMarkup : public GenericReply {
    */
   std::vector<std::vector<InlineKeyboardButton::Ptr>> inlineKeyboard;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INLINEKEYBOARDMARKUP_H

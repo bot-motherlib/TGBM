@@ -12,7 +12,7 @@
 using namespace std;
 using namespace boost;
 
-namespace TgBot {
+namespace tgbm {
 
 string HttpParser::generateRequest(const Url& url, const vector<HttpReqArg>& args, bool isKeepAlive) const {
   string result;
@@ -181,4 +181,4 @@ string HttpParser::extractBody(const string& data) const {
   return data.substr(headerEnd);
 }
 
-}  // namespace TgBot
+}  // namespace tgbm

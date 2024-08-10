@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 class Message;
 
@@ -32,6 +32,6 @@ class GiveawayCompleted {
    */
   std::shared_ptr<Message> giveawayMessage;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_GIVEAWAYCOMPLETED_H

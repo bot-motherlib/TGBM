@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Describes a Web App.
@@ -23,6 +23,6 @@ class WebAppInfo {
    */
   std::string url;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_WEBAPPINFO_H

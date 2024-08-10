@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a parameter of the inline keyboard button used to automatically authorize a
@@ -50,6 +50,6 @@ class LoginUrl {
    */
   bool requestWriteAccess;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_LOGINURL_H

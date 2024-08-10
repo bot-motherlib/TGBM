@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a link to a voice recording in an .OGG container encoded with OPUS.
@@ -69,6 +69,6 @@ class InlineQueryResultVoice : public InlineQueryResult {
    */
   InputMessageContent::Ptr inputMessageContent;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INLINEQUERYRESULTVOICE_H

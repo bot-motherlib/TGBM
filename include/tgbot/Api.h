@@ -38,7 +38,7 @@
 #include <utility>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 class Bot;
 
@@ -2620,6 +2620,6 @@ class TGBOT_API Api {
   const TgTypeParser _tgTypeParser;
   const std::string _url;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_API_H

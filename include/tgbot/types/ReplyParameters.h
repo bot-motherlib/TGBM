@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Describes reply parameters for the message that is being sent.
@@ -70,6 +70,6 @@ class ReplyParameters {
    */
   std::int32_t quotePosition;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_REPLYPARAMETERS_H

@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a reaction added to a message along with the number of times it was added.
@@ -27,6 +27,6 @@ class ReactionCount {
    */
   std::int32_t totalCount;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_REACTIONCOUNT_H

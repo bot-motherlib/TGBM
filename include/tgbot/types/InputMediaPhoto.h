@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a photo to be sent.
@@ -27,6 +27,6 @@ class InputMediaPhoto : public InputMedia {
    */
   bool hasSpoiler;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INPUTMEDIAPHOTO_H

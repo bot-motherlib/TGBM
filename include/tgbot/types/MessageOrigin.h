@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object describes the origin of a message.
@@ -38,6 +38,6 @@ class MessageOrigin {
    */
   std::uint32_t date;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_MESSAGEORIGIN_H

@@ -3,7 +3,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents an animated emoji that displays a random value.
@@ -25,6 +25,6 @@ class Dice {
    */
   std::int32_t value;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_DICE_H

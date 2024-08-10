@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Contains information about the current status of a webhook.
@@ -67,6 +67,6 @@ class WebhookInfo {
    */
   std::vector<std::string> allowedUpdates;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_WEBHOOKINFO_H

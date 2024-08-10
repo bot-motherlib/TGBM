@@ -32,7 +32,7 @@ struct test_exe {
   }
 };
 TEST(base) {
-  using namespace TgBot;
+  using namespace tgbm;
   test_exe exe;
   enum { MAX_POOL_SIZE = 10 };
   pool_t<int> pool(

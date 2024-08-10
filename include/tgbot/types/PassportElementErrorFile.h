@@ -6,7 +6,7 @@
 #include <string>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents an issue with a document scan.
@@ -29,6 +29,6 @@ class PassportElementErrorFile : public PassportElementError {
    */
   std::string fileHash;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_PASSPORTELEMENTERRORFILE_H

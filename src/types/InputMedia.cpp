@@ -6,7 +6,7 @@
 
 #include <string>
 
-using namespace TgBot;
+using namespace tgbm;
 
 const std::string InputMediaPhoto::TYPE = "photo";
 const std::string InputMediaVideo::TYPE = "video";

@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object contains information about a poll.
@@ -88,6 +88,6 @@ class Poll {
    */
   std::int64_t closeDate;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_POLL_H

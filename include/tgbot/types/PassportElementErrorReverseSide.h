@@ -6,7 +6,7 @@
 #include <string>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents an issue with the reverse side of a document.
@@ -29,6 +29,6 @@ class PassportElementErrorReverseSide : public PassportElementError {
    */
   std::string fileHash;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_PASSPORTELEMENTERRORREVERSESIDE_H

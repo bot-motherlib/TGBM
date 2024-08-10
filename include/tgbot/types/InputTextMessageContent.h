@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents the [content](https://core.telegram.org/bots/api#inputmessagecontent) of a text message
@@ -50,6 +50,6 @@ class InputTextMessageContent : public InputMessageContent {
    */
   LinkPreviewOptions::Ptr linkPreviewOptions;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INPUTTEXTMESSAGECONTENT_H

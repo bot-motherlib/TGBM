@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a venue.
@@ -93,6 +93,6 @@ class InlineQueryResultVenue : public InlineQueryResult {
    */
   std::int32_t thumbnailHeight;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INLINEQUERYRESULTVENUE_H

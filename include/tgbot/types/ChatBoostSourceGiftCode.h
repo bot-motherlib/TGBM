@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief The boost was obtained by the creation of Telegram Premium gift codes to boost a chat.
@@ -24,6 +24,6 @@ class ChatBoostSourceGiftCode : public ChatBoostSource {
     this->source = SOURCE;
   }
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATBOOSTSOURCEGIFTCODE_H

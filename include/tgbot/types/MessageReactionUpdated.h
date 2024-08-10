@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a change of a reaction on a message performed by a user.
@@ -55,6 +55,6 @@ class MessageReactionUpdated {
    */
   std::vector<ReactionType::Ptr> newReaction;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_MESSAGEREACTIONUPDATED_H

@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a service message about a video chat scheduled in the chat.
@@ -21,6 +21,6 @@ class VideoChatScheduled {
    */
   std::int32_t startDate;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_VIDEOCHATSCHEDULED_H

@@ -201,7 +201,7 @@
 #include <utility>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 class TGBOT_API TgTypeParser {
  public:
@@ -1063,6 +1063,6 @@ class TGBOT_API TgTypeParser {
 
   void appendToJson(std::string& json, const std::string& varName, const std::string& value) const;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_TGTYPEPARSER_H

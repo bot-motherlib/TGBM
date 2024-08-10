@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents one button of the reply keyboard.
@@ -82,6 +82,6 @@ class KeyboardButton {
    */
   WebAppInfo::Ptr webApp;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_KEYBOARDBUTTON_H

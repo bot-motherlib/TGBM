@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Contains information about an inline message sent by a Web App on behalf of a user.
@@ -21,6 +21,6 @@ class SentWebAppMessage {
    */
   std::string inlineMessageId;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_SENTWEBAPPMESSAGE_H

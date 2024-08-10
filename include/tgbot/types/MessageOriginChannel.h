@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief The message was originally sent to a channel chat.
@@ -40,6 +40,6 @@ class MessageOriginChannel : public MessageOrigin {
    */
   std::string authorSignature;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_MESSAGEORIGINCHANNEL_H

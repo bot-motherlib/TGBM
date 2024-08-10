@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents an incoming callback query from a callback button in an inline keyboard.
@@ -55,6 +55,6 @@ class CallbackQuery {
    */
   std::string gameShortName;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CALLBACKQUERY_H

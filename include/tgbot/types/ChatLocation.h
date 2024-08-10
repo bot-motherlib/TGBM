@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a location to which a chat is connected.
@@ -27,6 +27,6 @@ class ChatLocation {
    */
   std::string address;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_CHATLOCATION_H

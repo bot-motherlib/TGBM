@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This abstract class is base of all passport element errors.
@@ -40,6 +40,6 @@ class PassportElementError {
    */
   std::string message;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_PASSPORTELEMENTERROR_H

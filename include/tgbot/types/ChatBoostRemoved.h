@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a boost removed from a chat.
@@ -39,6 +39,6 @@ class ChatBoostRemoved {
    */
   ChatBoostSource::Ptr source;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATBOOSTREMOVED_H

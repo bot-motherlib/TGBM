@@ -8,7 +8,7 @@
 #include <tgbot/tgbot.h>
 
 using namespace std;
-using namespace TgBot;
+using namespace tgbm;
 
 void createOneColumnKeyboard(const vector<string>& buttonStrings, ReplyKeyboardMarkup::Ptr& kb) {
   for (size_t i = 0; i < buttonStrings.size(); ++i) {

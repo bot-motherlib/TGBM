@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Upon receiving a message with this object, Telegram clients will display a reply interface to the
@@ -50,6 +50,6 @@ class ForceReply : public GenericReply {
    */
   bool selective;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_FORCEREPLY_H

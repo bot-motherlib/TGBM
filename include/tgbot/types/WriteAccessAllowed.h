@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a service message about a user allowing a bot to write messages after adding
@@ -33,6 +33,6 @@ class WriteAccessAllowed {
    */
   bool fromAttachmentMenu;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_WRITEACCESSALLOWED_H

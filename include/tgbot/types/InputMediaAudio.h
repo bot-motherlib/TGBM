@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents an audio file to be treated as music to be sent.
@@ -48,6 +48,6 @@ class InputMediaAudio : public InputMedia {
    */
   std::string title;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INPUTMEDIAAUDIO_H

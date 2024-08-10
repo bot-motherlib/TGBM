@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents an inline button that switches the current user to inline mode in a chosen
@@ -42,6 +42,6 @@ class SwitchInlineQueryChosenChat {
    */
   bool allowChannelChats;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_SWITCHINLINEQUERYCHOSENCHAT_H

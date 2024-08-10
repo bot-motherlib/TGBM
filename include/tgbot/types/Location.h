@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a point on the map.
@@ -53,6 +53,6 @@ class Location {
    */
   std::int32_t proximityAlertRadius;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_LOCATION_H

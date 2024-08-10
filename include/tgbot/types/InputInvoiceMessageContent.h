@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents the content of an invoice message to be sent as the result of an inline query.
@@ -138,6 +138,6 @@ class InputInvoiceMessageContent : public InputMessageContent {
    */
   bool isFlexible;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INPUTINVOICEMESSAGECONTENT_H

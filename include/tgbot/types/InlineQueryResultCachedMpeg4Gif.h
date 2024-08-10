@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a link to a video animation (H.264/MPEG-4 AVC video without sound) stored on the Telegram
@@ -61,6 +61,6 @@ class InlineQueryResultCachedMpeg4Gif : public InlineQueryResult {
    */
   InputMessageContent::Ptr inputMessageContent;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INLINEQUERYRESULTCACHEDMPEG4GIF_H

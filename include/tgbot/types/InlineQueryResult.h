@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents one result of an inline query.
@@ -64,6 +64,6 @@ class InlineQueryResult {
    */
   InlineKeyboardMarkup::Ptr replyMarkup;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INLINEQUERYRESULT_H

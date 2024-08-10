@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Describes that no specific value for the menu button was set.
@@ -22,6 +22,6 @@ class MenuButtonDefault : public MenuButton {
     this->type = TYPE;
   }
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_MENUBUTTONDEFAULT_H

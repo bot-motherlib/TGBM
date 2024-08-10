@@ -4,7 +4,7 @@
 
 #include <string>
 
-using namespace TgBot;
+using namespace tgbm;
 
 const std::string MenuButtonCommands::TYPE = "commands";
 const std::string MenuButtonWebApp::TYPE = "web_app";

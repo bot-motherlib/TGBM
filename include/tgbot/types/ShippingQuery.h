@@ -8,7 +8,7 @@
 #include <memory>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object contains information about an incoming shipping query.
@@ -41,6 +41,6 @@ class ShippingQuery {
    */
   ShippingAddress::Ptr shippingAddress;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_SHIPPINGQUERY_H

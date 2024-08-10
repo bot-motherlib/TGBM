@@ -4,7 +4,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This abstract class is base of all bot command scopes.
@@ -28,6 +28,6 @@ class BotCommandScope {
    */
   std::string type;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_BOTCOMMANDSCOPE_H

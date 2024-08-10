@@ -7,7 +7,7 @@
 #include <tgbot/tgbot.h>
 
 using namespace std;
-using namespace TgBot;
+using namespace tgbm;
 
 int main() {
   string token(getenv("TOKEN"));

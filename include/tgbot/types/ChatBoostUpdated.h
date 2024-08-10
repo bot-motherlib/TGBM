@@ -6,7 +6,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a boost added to a chat or changed.
@@ -27,6 +27,6 @@ class ChatBoostUpdated {
    */
   ChatBoost::Ptr boost;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATBOOSTUPDATED_H

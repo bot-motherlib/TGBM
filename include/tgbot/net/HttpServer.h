@@ -14,7 +14,7 @@
 #include <unordered_map>
 #include <utility>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This class handles HTTP requests from the Internet.
@@ -167,6 +167,6 @@ class HttpServer {
   const HttpParser _httpParser;
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_HTTPSERVER_H

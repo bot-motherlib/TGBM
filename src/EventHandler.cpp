@@ -1,6 +1,6 @@
 #include "tgbot/EventHandler.h"
 
-namespace TgBot {
+namespace tgbm {
 
 void EventHandler::handleUpdate(const Update::Ptr& update) const {
   if (update->message != nullptr) {
@@ -74,4 +74,4 @@ void EventHandler::handleMessage(const Message::Ptr& message) const {
   }
 }
 
-}  // namespace TgBot
+}  // namespace tgbm

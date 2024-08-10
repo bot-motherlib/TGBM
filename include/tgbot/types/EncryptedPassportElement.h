@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Describes documents or other Telegram Passport elements shared with the bot by the user.
@@ -92,6 +92,6 @@ class EncryptedPassportElement {
    */
   std::string hash;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_ENCRYPTEDPASSPORTELEMENT_H

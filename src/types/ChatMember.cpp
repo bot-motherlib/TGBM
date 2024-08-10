@@ -7,7 +7,7 @@
 
 #include <string>
 
-using namespace TgBot;
+using namespace tgbm;
 
 const std::string ChatMemberOwner::STATUS = "creator";
 const std::string ChatMemberAdministrator::STATUS = "administrator";

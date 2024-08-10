@@ -5,7 +5,7 @@
 #include <string>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a service message about a new forum topic created in the chat.
@@ -31,6 +31,6 @@ class ForumTopicCreated {
    */
   std::string iconCustomEmojiId;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_FORUMTOPICCREATED_H

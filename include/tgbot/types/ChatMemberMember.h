@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a chat member that has no additional privileges or restrictions.
@@ -22,6 +22,6 @@ class ChatMemberMember : public ChatMember {
     this->status = STATUS;
   }
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATMEMBERMEMBER_H

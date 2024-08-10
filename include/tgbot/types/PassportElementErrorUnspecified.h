@@ -6,7 +6,7 @@
 #include <string>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents an issue in an unspecified place.
@@ -29,6 +29,6 @@ class PassportElementErrorUnspecified : public PassportElementError {
    */
   std::string elementHash;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_PASSPORTELEMENTERRORUNSPECIFIED_H

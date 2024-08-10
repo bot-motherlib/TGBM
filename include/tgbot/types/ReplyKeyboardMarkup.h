@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a [custom keyboard](https://core.telegram.org/bots/features#keyboards) with
@@ -67,6 +67,6 @@ class ReplyKeyboardMarkup : public GenericReply {
    */
   bool selective;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_REPLYKEYBOARDMARKUP_H

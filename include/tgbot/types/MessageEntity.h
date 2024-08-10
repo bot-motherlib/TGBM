@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents one special entity in a text message.
@@ -92,6 +92,6 @@ class MessageEntity {
    */
   std::string customEmojiId;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_MESSAGEENTITY_H

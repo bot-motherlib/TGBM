@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a video to be sent.
@@ -62,6 +62,6 @@ class InputMediaVideo : public InputMedia {
    */
   bool hasSpoiler;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INPUTMEDIAVIDEO_H

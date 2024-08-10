@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents one shipping option.
@@ -35,6 +35,6 @@ class ShippingOption {
    */
   std::vector<LabeledPrice::Ptr> prices;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_SHIPPINGOPTION_H

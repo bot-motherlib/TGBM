@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-namespace TgBot {
+namespace tgbm {
 
 class EventBroadcaster;
 class HttpClient;
@@ -61,6 +61,6 @@ class TGBOT_API Bot {
   const EventHandler _eventHandler;
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_BOT_H

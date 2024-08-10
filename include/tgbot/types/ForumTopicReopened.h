@@ -3,7 +3,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a service message about a forum topic reopened in the chat.
@@ -16,6 +16,6 @@ class ForumTopicReopened {
  public:
   typedef std::shared_ptr<ForumTopicReopened> Ptr;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_FORUMTOPICREOPENED_H

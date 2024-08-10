@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 InputFile::Ptr InputFile::fromFile(const std::string& filePath, const std::string& mimeType) {
   auto result(std::make_shared<InputFile>());
@@ -15,4 +15,4 @@ InputFile::Ptr InputFile::fromFile(const std::string& filePath, const std::strin
   return result;
 }
 
-}  // namespace TgBot
+}  // namespace tgbm

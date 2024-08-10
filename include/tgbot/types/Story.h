@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a story.
@@ -27,6 +27,6 @@ class Story {
    */
   std::int32_t id;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_STORY_H

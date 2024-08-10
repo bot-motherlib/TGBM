@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief The boost was obtained by subscribing to Telegram Premium or by gifting a Telegram Premium
@@ -23,6 +23,6 @@ class ChatBoostSourcePremium : public ChatBoostSource {
     this->source = SOURCE;
   }
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATBOOSTSOURCEPREMIUM_H

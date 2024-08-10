@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents one row of the high scores table for a game.
@@ -34,6 +34,6 @@ class GameHighScore {
    */
   std::int32_t score;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_GAMEHIGHSCORE_H

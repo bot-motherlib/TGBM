@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Upon receiving a message with this object, Telegram clients will remove the current custom keyboard
@@ -38,6 +38,6 @@ class ReplyKeyboardRemove : public GenericReply {
    */
   bool selective;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_REPLYKEYBOARDREMOVE_H

@@ -4,7 +4,7 @@
 #include <string>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a phone contact.
@@ -41,6 +41,6 @@ class Contact {
   std::string vcard;
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_CONTACT_H

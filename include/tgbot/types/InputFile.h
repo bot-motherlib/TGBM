@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents the contents of a file to be uploaded.
@@ -38,6 +38,6 @@ class TGBOT_API InputFile {
   static InputFile::Ptr fromFile(const std::string& filePath, const std::string& mimeType);
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_INPUTFILE_H

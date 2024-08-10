@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 class PollOption {
  public:
@@ -23,6 +23,6 @@ class PollOption {
   std::int64_t voterCount;
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_POLLOPTION_H

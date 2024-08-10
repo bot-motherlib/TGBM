@@ -9,7 +9,7 @@
 #include <memory>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object contains information about an incoming pre-checkout query.
@@ -65,6 +65,6 @@ class PreCheckoutQuery {
    */
   OrderInfo::Ptr orderInfo;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_PRECHECKOUTQUERY_H

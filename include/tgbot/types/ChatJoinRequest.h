@@ -9,7 +9,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a join request sent to a chat.
@@ -56,6 +56,6 @@ class ChatJoinRequest {
    */
   ChatInviteLink::Ptr inviteLink;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATJOINREQUEST_H

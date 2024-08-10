@@ -5,7 +5,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents the content of a service message, sent whenever a user in the chat triggers a
@@ -32,6 +32,6 @@ class ProximityAlertTriggered {
    */
   std::int32_t distance;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_PROXIMITYALERTTRIGGERED_H

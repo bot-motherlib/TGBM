@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief The boost was obtained by the creation of a Telegram Premium giveaway.
@@ -38,6 +38,6 @@ class ChatBoostSourceGiveaway : public ChatBoostSource {
    */
   bool isUnclaimed;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATBOOSTSOURCEGIVEAWAY_H

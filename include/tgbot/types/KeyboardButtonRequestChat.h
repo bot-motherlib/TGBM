@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object defines the criteria used to request a suitable chat.
@@ -95,6 +95,6 @@ class KeyboardButtonRequestChat {
    */
   bool requestPhoto;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_KEYBOARDBUTTONREQUESTCHAT_H

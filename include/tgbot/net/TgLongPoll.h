@@ -9,7 +9,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 class Bot;
 class EventHandler;
@@ -43,6 +43,6 @@ class TGBOT_API TgLongPoll {
   std::vector<Update::Ptr> _updates;
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_TGLONGPOLL_H

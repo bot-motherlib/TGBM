@@ -3,7 +3,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief A placeholder, currently holds no information.
@@ -15,6 +15,6 @@ class CallbackGame {
  public:
   typedef std::shared_ptr<CallbackGame> Ptr;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CALLBACKGAME_H

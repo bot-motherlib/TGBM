@@ -2,10 +2,10 @@
 
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 TgException::TgException(const std::string& description, ErrorCode errorCode)
     : runtime_error(description), errorCode(errorCode) {
 }
 
-}  // namespace TgBot
+}  // namespace tgbm

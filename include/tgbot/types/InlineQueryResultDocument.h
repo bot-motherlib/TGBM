@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a link to a file.
@@ -89,6 +89,6 @@ class InlineQueryResultDocument : public InlineQueryResult {
    */
   std::int32_t thumbnailHeight;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INLINEQUERYRESULTDOCUMENT_H

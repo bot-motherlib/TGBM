@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This abstract class is base of all input media.
@@ -58,6 +58,6 @@ class InputMedia {
    */
   std::vector<MessageEntity::Ptr> captionEntities;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_INPUTMEDIA_H

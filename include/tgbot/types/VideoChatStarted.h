@@ -3,7 +3,7 @@
 
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a service message about a video chat started in the chat.
@@ -15,6 +15,6 @@ class VideoChatStarted {
  public:
   typedef std::shared_ptr<VideoChatStarted> Ptr;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_VIDEOCHATSTARTED_H

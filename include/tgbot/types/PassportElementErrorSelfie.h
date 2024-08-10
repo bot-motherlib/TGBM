@@ -6,7 +6,7 @@
 #include <string>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents an issue with the selfie with a document.
@@ -29,6 +29,6 @@ class PassportElementErrorSelfie : public PassportElementError {
    */
   std::string fileHash;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_PASSPORTELEMENTERRORSELFIE_H

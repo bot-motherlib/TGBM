@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a voice note.
@@ -46,6 +46,6 @@ class Voice {
    */
   std::int64_t fileSize;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_VOICE_H

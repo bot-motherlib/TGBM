@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object contains information about the users whose identifiers were shared with the bot using a
@@ -29,6 +29,6 @@ class UsersShared {
    */
   std::vector<SharedUser::Ptr> users;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_USERSSHARED_H

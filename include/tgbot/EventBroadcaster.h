@@ -19,7 +19,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 class EventHandler;
 
@@ -300,6 +300,6 @@ class TGBOT_API EventBroadcaster {
   std::vector<ChatJoinRequestListener> _onChatJoinRequestListeners;
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_EVENTBROADCASTER_H

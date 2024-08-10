@@ -6,7 +6,7 @@
 #include <string>
 #include <stdexcept>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Exception type which is only thrown when Telegram refuses API request.
@@ -35,6 +35,6 @@ class TGBOT_API TgException : public std::runtime_error {
   const ErrorCode errorCode;
 };
 
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_TGEXCEPTION_H

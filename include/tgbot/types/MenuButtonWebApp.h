@@ -7,7 +7,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a menu button, which launches a Web App.
@@ -36,6 +36,6 @@ class MenuButtonWebApp : public MenuButton {
    */
   WebAppInfo::Ptr webApp;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_MENUBUTTONWEBAPP_H

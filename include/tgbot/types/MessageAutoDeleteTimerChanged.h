@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief This object represents a service message about a change in auto-delete timer settings.
@@ -20,6 +20,6 @@ class MessageAutoDeleteTimerChanged {
    */
   std::int32_t messageAutoDeleteTime;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CPP_MESSAGEAUTODELETETIMERCHANGED_H

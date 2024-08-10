@@ -5,7 +5,7 @@
 
 #include <string>
 
-using namespace TgBot;
+using namespace tgbm;
 
 const std::string MessageOriginUser::TYPE = "user";
 const std::string MessageOriginHiddenUser::TYPE = "hidden_user";

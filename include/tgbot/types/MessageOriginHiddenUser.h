@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief The message was originally sent by an unknown user.
@@ -28,6 +28,6 @@ class MessageOriginHiddenUser : public MessageOrigin {
    */
   std::string senderUserName;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_MESSAGEORIGINHIDDENUSER_H

@@ -8,7 +8,7 @@
 
 #include <string>
 
-using namespace TgBot;
+using namespace tgbm;
 
 const std::string BotCommandScopeDefault::TYPE = "default";
 const std::string BotCommandScopeAllPrivateChats::TYPE = "all_private_chats";

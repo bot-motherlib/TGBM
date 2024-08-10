@@ -6,7 +6,7 @@
 #include <cstdint>
 #include <memory>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @brief Represents a [chat member](https://core.telegram.org/bots/api#chatmember) that is under certain
@@ -109,6 +109,6 @@ class ChatMemberRestricted : public ChatMember {
    */
   std::uint32_t untilDate;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_CHATMEMBERRESTRICTED_H

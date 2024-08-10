@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace TgBot {
+namespace tgbm {
 
 /**
  * @ingroup types
@@ -26,6 +26,6 @@ class BusinessOpeningHours {
    */
   std::vector<BusinessOpeningHoursInterval::Ptr> openingHours;
 };
-}  // namespace TgBot
+}  // namespace tgbm
 
 #endif  // TGBOT_BUSINESSOPENINGHOURS_H

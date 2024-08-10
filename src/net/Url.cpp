@@ -5,7 +5,7 @@
 
 using namespace std;
 
-namespace TgBot {
+namespace tgbm {
 
 Url::Url(const string& url) {
   bool isProtocolParsed = false;
@@ -56,4 +56,4 @@ Url::Url(const string& url) {
   }
 }
 
-}  // namespace TgBot
+}  // namespace tgbm
