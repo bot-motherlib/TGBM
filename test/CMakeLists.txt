@@ -1,6 +1,13 @@
-set(TEST_SRC_LIST main.cpp tgbot / Api.cpp tgbot / net / Url.cpp tgbot / net / HttpParser.cpp tgbot / tools /
-    StringTools.cpp)
+set(TGBM_TEST_PARTS connection_pool)
+foreach(PART ${TGBM_TEST_PARTS})
+  add_executable(${PART} "${CMAKE_CURRENT_SOURCE_DIR}/test_${PART}.cpp")
+  target_link_libraries(${PART} PUBLIC tgbmlib)
+  set_target_properties(${PART} PROPERTIES
+	  CMAKE_CXX_EXTENSIONS OFF
+	  LINKER_LANGUAGE CXX
+	  CMAKE_CXX_STANDARD_REQUIRED ON
+	  CXX_STANDARD 20
+  )
 
-    include_directories("${PROJECT_SOURCE_DIR}/test") add_executable(${PROJECT_NAME} _test ${TEST_SRC_LIST})
-        target_link_libraries(${PROJECT_NAME} _test ${PROJECT_NAME})
-            add_test(${PROJECT_NAME} _test ${PROJECT_NAME} _test)
+  add_test(NAME test_${PART} COMMAND ${PART})
+endforeach()

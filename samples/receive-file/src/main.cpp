@@ -19,7 +19,7 @@ int main() {
   bot.getEvents().onAnyMessage([&bot](Message::Ptr message) {
     printf("User wrote %s\n", message->text.c_str());
 
-    if (StringTools::startsWith(message->text, "/start")) {
+    if (message->text.starts_with("/start")) {
       return;
     }
 

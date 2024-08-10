@@ -47,6 +47,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(kelcoro)
 
+FetchContent_Declare(
+  AnyAny
+  GIT_REPOSITORY https://github.com/kelbon/AnyAny
+  GIT_TAG origin/main
+)
+FetchContent_MakeAvailable(AnyAny)
+
 add_library(tgbmlib ${TGBM_SRC_LIST})
 
 target_include_directories(tgbmlib PUBLIC 
@@ -57,6 +64,7 @@ target_include_directories(tgbmlib PUBLIC
 
 target_link_libraries(tgbmlib PUBLIC
     kelcorolib
+    anyanylib
     ${CMAKE_THREAD_LIBS_INIT}
     ${ZLIB_LIBRARIES}
     OpenSSL::SSL OpenSSL::Crypto

@@ -61,8 +61,7 @@ int main() {
   });
   bot.getEvents().onAnyMessage([&bot](Message::Ptr message) {
     printf("User wrote %s\n", message->text.c_str());
-    if (StringTools::startsWith(message->text, "/start") ||
-        StringTools::startsWith(message->text, "/layout")) {
+    if (message->text.starts_with("/start") || message->text.starts_with("/layout")) {
       return;
     }
     bot.getApi().sendMessage(message->chat->id, "Your message is: " + message->text);

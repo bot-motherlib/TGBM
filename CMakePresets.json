@@ -4,13 +4,14 @@
         {
             "name": "debug_dev",
             "generator": "Ninja",
-            "binaryDir": "${sourceDir}/build_debug",
+            "binaryDir": "${sourceDir}/build",
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "1",
                 "CMAKE_BUILD_TYPE": "Debug",
                 "CMAKE_CXX_STANDARD": "20",
                 "CMAKE_CXX_COMPILER": "clang++",
-                "CMAKE_TOOLCHAIN_FILE": "E:/dev/utils/vcpkg_dir/vcpkg/scripts/buildsystems/vcpkg.cmake"
+                "CMAKE_TOOLCHAIN_FILE": "E:/dev/utils/vcpkg_dir/vcpkg/scripts/buildsystems/vcpkg.cmake",
+                "TGBM_ENABLE_TESTS": "ON"
             }
         },
         {

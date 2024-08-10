@@ -32,7 +32,7 @@ int main() {
     bot.getApi().sendMessage(message->chat->id, response, nullptr, nullptr, keyboard, "Markdown");
   });
   bot.getEvents().onCallbackQuery([&bot, &keyboard](CallbackQuery::Ptr query) {
-    if (StringTools::startsWith(query->data, "check")) {
+    if (query->data.starts_with("check")) {
       string response = "ok";
       bot.getApi().sendMessage(query->message->chat->id, response, nullptr, nullptr, keyboard, "Markdown");
     }

@@ -50,7 +50,7 @@ void EventHandler::handleUpdate(const Update::Ptr& update) const {
 void EventHandler::handleMessage(const Message::Ptr& message) const {
   _broadcaster.broadcastAnyMessage(message);
 
-  if (StringTools::startsWith(message->text, "/")) {
+  if (message->text.starts_with('/')) {
     std::size_t splitPosition;
     std::size_t spacePosition = message->text.find(' ');
     std::size_t atSymbolPosition = message->text.find('@');

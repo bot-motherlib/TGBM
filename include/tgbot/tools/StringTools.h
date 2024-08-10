@@ -14,22 +14,6 @@
 namespace StringTools {
 
 /**
- * Checks if first string is starting with second string
- * @param str1 First string
- * @param str2 Second string
- */
-TGBOT_API
-bool startsWith(const std::string& str1, const std::string& str2);
-
-/**
- * Checks if first string is ending with second string
- * @param str1 First string
- * @param str2 Second string
- */
-TGBOT_API
-bool endsWith(const std::string& str1, const std::string& str2);
-
-/**
  * Splits string to smaller substrings which have between them a delimiter. Resulting substrings won't have
  * delimiter.
  * @param str Source string
