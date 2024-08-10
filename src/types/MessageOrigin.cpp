@@ -1,7 +1,7 @@
-#include "tgbot/types/MessageOriginUser.h"
-#include "tgbot/types/MessageOriginHiddenUser.h"
-#include "tgbot/types/MessageOriginChat.h"
-#include "tgbot/types/MessageOriginChannel.h"
+#include "tgbm/types/MessageOriginUser.h"
+#include "tgbm/types/MessageOriginHiddenUser.h"
+#include "tgbm/types/MessageOriginChat.h"
+#include "tgbm/types/MessageOriginChannel.h"
 
 #include <string>
 

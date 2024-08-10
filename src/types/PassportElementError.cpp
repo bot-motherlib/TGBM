@@ -1,12 +1,12 @@
-#include "tgbot/types/PassportElementErrorDataField.h"
-#include "tgbot/types/PassportElementErrorFrontSide.h"
-#include "tgbot/types/PassportElementErrorReverseSide.h"
-#include "tgbot/types/PassportElementErrorSelfie.h"
-#include "tgbot/types/PassportElementErrorFile.h"
-#include "tgbot/types/PassportElementErrorFiles.h"
-#include "tgbot/types/PassportElementErrorTranslationFile.h"
-#include "tgbot/types/PassportElementErrorTranslationFiles.h"
-#include "tgbot/types/PassportElementErrorUnspecified.h"
+#include "tgbm/types/PassportElementErrorDataField.h"
+#include "tgbm/types/PassportElementErrorFrontSide.h"
+#include "tgbm/types/PassportElementErrorReverseSide.h"
+#include "tgbm/types/PassportElementErrorSelfie.h"
+#include "tgbm/types/PassportElementErrorFile.h"
+#include "tgbm/types/PassportElementErrorFiles.h"
+#include "tgbm/types/PassportElementErrorTranslationFile.h"
+#include "tgbm/types/PassportElementErrorTranslationFiles.h"
+#include "tgbm/types/PassportElementErrorUnspecified.h"
 
 #include <string>
 

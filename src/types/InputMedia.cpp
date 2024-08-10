@@ -1,8 +1,8 @@
-#include "tgbot/types/InputMediaPhoto.h"
-#include "tgbot/types/InputMediaVideo.h"
-#include "tgbot/types/InputMediaAnimation.h"
-#include "tgbot/types/InputMediaAudio.h"
-#include "tgbot/types/InputMediaDocument.h"
+#include "tgbm/types/InputMediaPhoto.h"
+#include "tgbm/types/InputMediaVideo.h"
+#include "tgbm/types/InputMediaAnimation.h"
+#include "tgbm/types/InputMediaAudio.h"
+#include "tgbm/types/InputMediaDocument.h"
 
 #include <string>
 

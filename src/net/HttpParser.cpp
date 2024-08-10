@@ -1,6 +1,6 @@
-#include "tgbot/net/HttpParser.h"
+#include "tgbm/net/HttpParser.h"
 
-#include "tgbot/tools/StringTools.h"
+#include "tgbm/tools/StringTools.h"
 
 #include <boost/algorithm/string.hpp>
 

@@ -1,7 +1,7 @@
-#include "tgbot/net/BoostHttpOnlySslClient.h"
-#include "tgbot/Bot.h"
+#include "tgbm/net/BoostHttpOnlySslClient.h"
+#include "tgbm/Bot.h"
 
-#include "tgbot/EventBroadcaster.h"
+#include "tgbm/EventBroadcaster.h"
 
 #include <memory>
 #include <string>

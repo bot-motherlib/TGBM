@@ -1,5 +1,5 @@
-#include "tgbot/types/ReactionTypeEmoji.h"
-#include "tgbot/types/ReactionTypeCustomEmoji.h"
+#include "tgbm/types/ReactionTypeEmoji.h"
+#include "tgbm/types/ReactionTypeCustomEmoji.h"
 
 #include <string>
 

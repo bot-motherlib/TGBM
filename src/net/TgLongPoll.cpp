@@ -1,8 +1,8 @@
-#include "tgbot/net/TgLongPoll.h"
+#include "tgbm/net/TgLongPoll.h"
 
-#include "tgbot/Api.h"
-#include "tgbot/Bot.h"
-#include "tgbot/EventHandler.h"
+#include "tgbm/Api.h"
+#include "tgbm/Bot.h"
+#include "tgbm/EventHandler.h"
 
 #include <cstdint>
 #include <memory>

@@ -1,6 +1,6 @@
-#include "tgbot/types/MenuButtonCommands.h"
-#include "tgbot/types/MenuButtonWebApp.h"
-#include "tgbot/types/MenuButtonDefault.h"
+#include "tgbm/types/MenuButtonCommands.h"
+#include "tgbm/types/MenuButtonWebApp.h"
+#include "tgbm/types/MenuButtonDefault.h"
 
 #include <string>
 

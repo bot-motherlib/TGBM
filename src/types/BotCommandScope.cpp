@@ -1,10 +1,10 @@
-#include "tgbot/types/BotCommandScopeDefault.h"
-#include "tgbot/types/BotCommandScopeAllPrivateChats.h"
-#include "tgbot/types/BotCommandScopeAllGroupChats.h"
-#include "tgbot/types/BotCommandScopeAllChatAdministrators.h"
-#include "tgbot/types/BotCommandScopeChat.h"
-#include "tgbot/types/BotCommandScopeChatAdministrators.h"
-#include "tgbot/types/BotCommandScopeChatMember.h"
+#include "tgbm/types/BotCommandScopeDefault.h"
+#include "tgbm/types/BotCommandScopeAllPrivateChats.h"
+#include "tgbm/types/BotCommandScopeAllGroupChats.h"
+#include "tgbm/types/BotCommandScopeAllChatAdministrators.h"
+#include "tgbm/types/BotCommandScopeChat.h"
+#include "tgbm/types/BotCommandScopeChatAdministrators.h"
+#include "tgbm/types/BotCommandScopeChatMember.h"
 
 #include <string>
 

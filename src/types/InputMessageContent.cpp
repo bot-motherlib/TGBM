@@ -1,8 +1,8 @@
-#include "tgbot/types/InputTextMessageContent.h"
-#include "tgbot/types/InputLocationMessageContent.h"
-#include "tgbot/types/InputVenueMessageContent.h"
-#include "tgbot/types/InputContactMessageContent.h"
-#include "tgbot/types/InputInvoiceMessageContent.h"
+#include "tgbm/types/InputTextMessageContent.h"
+#include "tgbm/types/InputLocationMessageContent.h"
+#include "tgbm/types/InputVenueMessageContent.h"
+#include "tgbm/types/InputContactMessageContent.h"
+#include "tgbm/types/InputInvoiceMessageContent.h"
 
 #include <string>
 

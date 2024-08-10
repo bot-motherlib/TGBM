@@ -1,6 +1,6 @@
-#include "tgbot/types/ChatBoostSourcePremium.h"
-#include "tgbot/types/ChatBoostSourceGiftCode.h"
-#include "tgbot/types/ChatBoostSourceGiveaway.h"
+#include "tgbm/types/ChatBoostSourcePremium.h"
+#include "tgbm/types/ChatBoostSourceGiftCode.h"
+#include "tgbm/types/ChatBoostSourceGiveaway.h"
 
 #include <string>
 

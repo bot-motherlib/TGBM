@@ -1,9 +1,9 @@
-#include "tgbot/types/ChatMemberOwner.h"
-#include "tgbot/types/ChatMemberAdministrator.h"
-#include "tgbot/types/ChatMemberMember.h"
-#include "tgbot/types/ChatMemberRestricted.h"
-#include "tgbot/types/ChatMemberLeft.h"
-#include "tgbot/types/ChatMemberBanned.h"
+#include "tgbm/types/ChatMemberOwner.h"
+#include "tgbm/types/ChatMemberAdministrator.h"
+#include "tgbm/types/ChatMemberMember.h"
+#include "tgbm/types/ChatMemberRestricted.h"
+#include "tgbm/types/ChatMemberLeft.h"
+#include "tgbm/types/ChatMemberBanned.h"
 
 #include <string>
 
