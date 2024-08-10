@@ -1,7 +1,7 @@
 #pragma once
 
 #ifndef TGBM_API
-#ifdef TGBOT_DLL
+#ifdef TGBM_DLL
 #if defined _WIN32 || defined __CYGWIN__
 #define TGBM_HELPER_DLL_EXPORT __declspec(dllexport)
 #define TGBM_HELPER_DLL_IMPORT __declspec(dllimport)
@@ -14,7 +14,7 @@
 #define TGBM_HELPER_DLL_IMPORT
 #endif
 #endif
-#ifdef TgBot_EXPORTS
+#ifdef TGBM_EXPORTS
 #define TGBM_API TGBM_HELPER_DLL_EXPORT
 #else
 #define TGBM_API TGBM_HELPER_DLL_IMPORT

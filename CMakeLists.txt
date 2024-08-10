@@ -84,5 +84,5 @@ if (TGBM_ENABLE_TESTS)
 endif()
 
 if(BUILD_SHARED_LIBS)
-    add_definitions(-DTGBOT_DLL)
+    add_definitions(-DTGBM_DLL)
 endif()

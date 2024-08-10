@@ -2691,7 +2691,7 @@ dd::task<boost::property_tree::ptree> Api::sendRequest(const std::string &method
 
       if (!serverResponse.compare(0, 6, "<html>")) {
         std::string message =
-            "tgbot-cpp library have got html page instead of json response. "
+            "TGBM library have got html page instead of json response. "
             "Maybe you entered wrong bot token.";
         throw TgException(message, TgException::ErrorCode::HtmlResponse);
       }
@@ -2700,7 +2700,7 @@ dd::task<boost::property_tree::ptree> Api::sendRequest(const std::string &method
       try {
         result = _tgTypeParser.parseJson(serverResponse);
       } catch (boost::property_tree::ptree_error &e) {
-        std::string message = "tgbot-cpp library can't parse json response. " + std::string(e.what());
+        std::string message = "TGBM library can't parse json response. " + std::string(e.what());
 
         throw TgException(message, TgException::ErrorCode::InvalidJson);
       }

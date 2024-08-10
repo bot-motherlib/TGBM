@@ -149,9 +149,9 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(const Url& url,
     // std::cerr << ec.message() << std::endl;
     co_return "";
   }
-#ifdef TGBOT_DISABLE_NAGLES_ALGORITHM
+#ifdef TGBM_DISABLE_NAGLES_ALGORITHM
   socket.lowest_layer().set_option(tcp::no_delay(true));
-#endif  // TGBOT_DISABLE_NAGLES_ALGORITHM
+#endif  // TGBM_DISABLE_NAGLES_ALGORITHM
 
   // TODO подобрать хорошие значения
   socket.lowest_layer().set_option(asio::socket_base::send_buffer_size(32768));
