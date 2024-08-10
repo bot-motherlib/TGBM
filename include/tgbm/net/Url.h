@@ -11,7 +11,7 @@ namespace tgbm {
  *
  * @ingroup net
  */
-class TGBOT_API Url {
+class TGBM_API Url {
  public:
   Url(const std::string& url);
 

@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include <tgbm/tgbot.h>
+#include <tgbm/tgbm.h>
 
 using namespace std;
 using namespace tgbm;

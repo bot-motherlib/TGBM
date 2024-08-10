@@ -17,7 +17,7 @@ namespace tgbm {
  *
  * @ingroup net
  */
-class TGBOT_API BoostHttpOnlySslClient : public HttpClient {
+class TGBM_API BoostHttpOnlySslClient : public HttpClient {
  public:
   BoostHttpOnlySslClient();
   ~BoostHttpOnlySslClient() override;

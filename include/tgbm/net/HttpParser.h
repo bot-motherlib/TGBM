@@ -9,7 +9,7 @@
 
 namespace tgbm {
 
-class TGBOT_API HttpParser {
+class TGBM_API HttpParser {
  public:
   std::string generateRequest(const Url& url, const std::vector<HttpReqArg>& args,
                               bool isKeepAlive = false) const;

@@ -27,7 +27,7 @@ class EventHandler;
  *
  * @ingroup general
  */
-class TGBOT_API EventBroadcaster {
+class TGBM_API EventBroadcaster {
   friend EventHandler;
 
  public:

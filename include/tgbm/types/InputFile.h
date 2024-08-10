@@ -12,7 +12,7 @@ namespace tgbm {
  *
  * @ingroup types
  */
-class TGBOT_API InputFile {
+class TGBM_API InputFile {
  public:
   typedef std::shared_ptr<InputFile> Ptr;
 

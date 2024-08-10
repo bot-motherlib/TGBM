@@ -18,7 +18,7 @@ class EventHandler;
  *
  * @ingroup net
  */
-class TGBOT_API TgLongPoll {
+class TGBM_API TgLongPoll {
  public:
   TgLongPoll(const Api* api, const EventHandler* eventHandler, std::int32_t limit, std::int32_t timeout,
              std::shared_ptr<std::vector<std::string>> allowUpdates);

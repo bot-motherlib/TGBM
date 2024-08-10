@@ -15,7 +15,7 @@ namespace tgbm {
  *
  * @ingroup net
  */
-class TGBOT_API HttpReqArg {
+class TGBM_API HttpReqArg {
  public:
   template <typename T>
   HttpReqArg(std::string name, const T& value, bool isFile = false, std::string mimeType = "text/plain",

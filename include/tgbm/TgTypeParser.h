@@ -202,7 +202,7 @@
 
 namespace tgbm {
 
-class TGBOT_API TgTypeParser {
+class TGBM_API TgTypeParser {
  public:
   template <typename T>
   using JsonToTgTypeFunc = std::shared_ptr<T> (TgTypeParser::*)(const boost::property_tree::ptree&) const;
