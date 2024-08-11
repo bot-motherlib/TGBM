@@ -42,6 +42,7 @@ string HttpParser::generateRequest(const Url& url, const vector<HttpReqArg>& arg
 
     string bondary = generateMultipartBoundary(args);
     if (bondary.empty()) {
+      // TODO application/json
       result += "Content-Type: application/x-www-form-urlencoded\r\n";
       requestData = generateWwwFormUrlencoded(args);
     } else {

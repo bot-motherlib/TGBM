@@ -53,7 +53,7 @@ class TGBM_API Api {
   friend class Bot;
 
  public:
-  Api(std::string token, const HttpClient& httpClient, const std::string& url);
+  Api(std::string token, HttpClient& httpClient, const std::string& url);
 
   /**
    * @brief Use this method to receive incoming updates using long polling
@@ -2598,7 +2598,7 @@ class TGBM_API Api {
    * @return File content in a string.
    */
   dd::task<std::string> downloadFile(const std::string& filePath,
-                                     const std::vector<HttpReqArg>& args = std::vector<HttpReqArg>()) const;
+                                     const std::vector<HttpReqArg>& args = std::vector<HttpReqArg>());
 
   /**
    * @brief Check if user has blocked the bot
@@ -2609,7 +2609,7 @@ class TGBM_API Api {
    */
   dd::task<bool> blockedByUser(std::int64_t chatId) const;
 
-  const HttpClient& _httpClient;
+  HttpClient& _httpClient;
 
  protected:
   dd::task<boost::property_tree::ptree> sendRequest(

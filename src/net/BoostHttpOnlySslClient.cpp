@@ -1,18 +1,21 @@
 #include "tgbm/net/BoostHttpOnlySslClient.h"
 
-#include <boost/asio/ssl.hpp>
-
 #include <cstddef>
 #include <vector>
 
+#include <boost/asio.hpp>
+
 namespace tgbm {
 
-BoostHttpOnlySslClient::BoostHttpOnlySslClient() : _httpParser() {
+BoostHttpOnlySslClient::BoostHttpOnlySslClient(std::string host, size_t connections_max_count)
+    : _httpParser(),
+      connections(
+          connections_max_count, [io = &io_ctx, h = std::move(host)]() { return create_connection(*io, h); },
+          exe) {
 }
 
-BoostHttpOnlySslClient::~BoostHttpOnlySslClient() {
-}
-
+BoostHttpOnlySslClient::~BoostHttpOnlySslClient() = default;
+// TODO вынести в отдельный хедер
 using io_error_code = boost::system::error_code;
 
 template <typename T, typename CallbackUser>
@@ -119,27 +122,25 @@ KELCORO_CO_AWAIT_REQUIRED auto async_read(auto& stream, Buf&& buffer, io_error_c
   return asio_awaiter<size_t, decltype(cb_usr)>(cb_usr, ec);
 }
 
-dd::task<std::string> BoostHttpOnlySslClient::makeRequest(const Url& url,
-                                                          const std::vector<HttpReqArg>& args) const {
+dd::task<BoostHttpOnlySslClient::connection_t> BoostHttpOnlySslClient::create_connection(
+    boost::asio::io_context& io_ctx, std::string host) {
   namespace asio = boost::asio;
   namespace ssl = asio::ssl;
-
   using tcp = asio::ip::tcp;
-  tcp::resolver resolver(_ioService);
+  tcp::resolver resolver(io_ctx);
   ssl::context context(ssl::context::tlsv12_client);
   context.set_default_verify_paths();
-  // TODO добавить сюда connection_pool
-  ssl::stream<tcp::socket> socket(_ioService, context);
+  ssl::stream<tcp::socket> socket(io_ctx, context);
   // TODO ?? (хотя вроде нахуй не нужно, я итак узнаю что оно отвалилось т.к. постоянно посылаю телеграму что
   // то) socket.lowest_layer().set_option(boost::asio::socket_base::keep_alive(true));
-  tcp::resolver::query query(url.host, "443");
+  tcp::resolver::query query(std::string(host), "https");
   io_error_code ec;
   auto results = resolver.resolve(std::move(query), ec);
   // auto [ec, results] = co_await async_resolve(resolver, std::move(query));
   if (ec) {
     // TODO smth ? ? ? exception ? (terminate...)
     // std::cerr << ec.message() << std::endl;
-    co_return "";
+    co_return socket;
   }
   asio::connect(socket.lowest_layer(), results, ec);
   // tcp::endpoint e;
@@ -147,30 +148,41 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(const Url& url,
   if (ec) {
     // TODO smth
     // std::cerr << ec.message() << std::endl;
-    co_return "";
+    co_return socket;
   }
-#ifdef TGBM_DISABLE_NAGLES_ALGORITHM
+  // TODO ? is needed?
   socket.lowest_layer().set_option(tcp::no_delay(true));
-#endif  // TGBM_DISABLE_NAGLES_ALGORITHM
 
   // TODO подобрать хорошие значения
   socket.lowest_layer().set_option(asio::socket_base::send_buffer_size(32768));
   socket.lowest_layer().set_option(asio::socket_base::receive_buffer_size(32768));
   socket.set_verify_mode(ssl::verify_none);
-  socket.set_verify_callback(ssl::rfc2818_verification(url.host));
-  socket.handshake(ssl::stream_base::handshake_type::client);
+  socket.set_verify_callback(ssl::host_name_verification(host));
+  socket.handshake(socket.client);
   // ec = co_await async_handshake(socket, ssl::stream_base::handshake_type::client);
   if (ec) {
     // TODO smth
     // std::cerr << ec.message() << std::endl;
-    co_return "";
+    co_return socket;
   }
-  // END SOCKET CREATION (TODO into other function ::prepare or smth)
+  co_return socket;
+}
 
+dd::task<std::string> BoostHttpOnlySslClient::makeRequest(const Url& url,
+                                                          const std::vector<HttpReqArg>& args) {
+  namespace asio = boost::asio;
+
+  using tcp = asio::ip::tcp;
+  auto h = co_await connections.borrow();
+  connection_t& socket = *h.get();
+  if (!socket.lowest_layer().is_open())
+    co_return "";  // TODO error
+  h.drop();        // TODO коннекншн пол нахрен не нужен, если нет keep alive
+  io_error_code ec;
   // TODO доделать write/read
   // TODO проверить какой протокол, т.к. в http версии 1.0 соединение завершается сервером
   // а нужно хотя бы 1.1 и в общем надо смотреть тг какие умеет вообще
-  std::string requestText = _httpParser.generateRequest(url, args, false);
+  std::string requestText = _httpParser.generateRequest(url, args, false);  // TODO set keep alive true
   size_t transfered = co_await async_write(socket, asio::buffer(requestText), ec);
   if (ec) {
     // TODO smth

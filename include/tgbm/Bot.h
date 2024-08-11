@@ -19,7 +19,7 @@ class HttpClient;
  */
 class TGBM_API Bot {
  public:
-  explicit Bot(std::string token, const HttpClient& httpClient = _getDefaultHttpClient(),
+  explicit Bot(std::string token, HttpClient& httpClient,
                const std::string& url = "https://api.telegram.org");
 
   /**
@@ -52,8 +52,6 @@ class TGBM_API Bot {
   }
 
  private:
-  static HttpClient& _getDefaultHttpClient();
-
   const std::string _token;
   const Api _api;
   std::unique_ptr<EventBroadcaster> _eventBroadcaster;

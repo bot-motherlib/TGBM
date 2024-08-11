@@ -78,6 +78,10 @@ struct pool_t {
       return node.result;
     }
   };
+  static void destroy_node(node_t *n) noexcept {
+    std::destroy_at(n);
+    resource()->deallocate(n, sizeof(node_t), alignof(node_t));
+  }
   static std::pmr::memory_resource *resource() noexcept {
     return std::pmr::new_delete_resource();
   }
@@ -94,8 +98,8 @@ struct pool_t {
     assert(free_count <= max);
     assert(waiters.empty());
     while (!free.empty()) {
-      node_t *c = free.pop();
-      resource()->deallocate(c, sizeof(node_t), alignof(node_t));
+      node_t *n = free.pop();
+      destroy_node(n);
     }
   }
 
@@ -119,13 +123,28 @@ struct pool_t {
     }
     ~handle_t() {
       if (node)
-        p->payoff(node);
+        p ? p->payoff(node) : destroy_node(node);
     }
     data_type *get() noexcept {
       return node ? std::addressof(node->data) : nullptr;
     }
     const data_type *get() const noexcept {
       return node ? std::addressof(node->data) : nullptr;
+    }
+    // pool forgets about borrowed data forever
+    void drop() noexcept {
+      if (!p)
+        return;
+      p->mtx.lock();
+      --p->borrowed_count;
+      p->mtx.unlock();
+      p = nullptr;
+    }
+    [[nodiscard]] bool dropped() const noexcept {
+      return !p && node;
+    }
+    [[nodiscard]] bool empty() const noexcept {
+      return !node;
     }
   };
   dd::task<handle_t> borrow() {

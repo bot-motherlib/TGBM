@@ -5,7 +5,7 @@
 
 namespace tgbm {
 
-Api::Api(std::string token, const HttpClient &httpClient, const std::string &url)
+Api::Api(std::string token, HttpClient &httpClient, const std::string &url)
     : _httpClient(httpClient), _token(std::move(token)), _tgTypeParser(), _url(url) {
 }
 
@@ -2646,8 +2646,7 @@ dd::task<std::vector<GameHighScore::Ptr>> Api::getGameHighScores(std::int64_t us
       &TgTypeParser::parseJsonAndGetGameHighScore, co_await sendRequest("getGameHighScores", args));
 }
 
-dd::task<std::string> Api::downloadFile(const std::string &filePath,
-                                        const std::vector<HttpReqArg> &args) const {
+dd::task<std::string> Api::downloadFile(const std::string &filePath, const std::vector<HttpReqArg> &args) {
   std::string url(_url);
   url += "/file/bot";
   url += _token;
@@ -2664,9 +2663,7 @@ dd::task<bool> Api::blockedByUser(std::int64_t chatId) const {
     (void)co_await sendChatAction(chatId, "typing");
 
   } catch (std::exception &e) {
-    std::string error = e.what();
-
-    if (error.compare("Forbidden: bot was blocked by the user") == 0) {
+    if (std::string_view("Forbidden: bot was blocked by the user") == e.what()) {
       isBotBlocked = true;
     }
   }
@@ -2674,7 +2671,6 @@ dd::task<bool> Api::blockedByUser(std::int64_t chatId) const {
   co_return isBotBlocked;
 }
 
-// TODO корутины здесь, всё перевести на асинхронщину
 dd::task<boost::property_tree::ptree> Api::sendRequest(const std::string &method,
                                                        const std::vector<HttpReqArg> &args) const {
   std::string url(_url);
@@ -2688,8 +2684,7 @@ dd::task<boost::property_tree::ptree> Api::sendRequest(const std::string &method
   while (1) {
     try {
       std::string serverResponse = co_await _httpClient.makeRequest(url, args);
-
-      if (!serverResponse.compare(0, 6, "<html>")) {
+      if (serverResponse.starts_with("<html>")) {
         std::string message =
             "TGBM library have got html page instead of json response. "
             "Maybe you entered wrong bot token.";
