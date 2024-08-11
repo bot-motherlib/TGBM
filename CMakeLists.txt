@@ -1,8 +1,16 @@
 cmake_minimum_required(VERSION 3.30)
 project(tgbm) # telegram bot mother library
 
+option(TGBM_SANITIZE_THREAD "" OFF)
+option(TGBM_SANITIZE "" OFF)
 option(TGBM_ENABLE_TESTS "Set to ON to enable building of tests" OFF)
 option(BUILD_SHARED_LIBS "Build tgbm shared/static library" OFF)
+
+if (TGBM_SANITIZE_THREAD)
+  if (TGBM_SANITIZE)
+    message(FATAL "TGBM_SANITIZE and TGBM_SANITIZE_THREAD incompatible, use only one of them")
+  endif()
+endif()
 
 set(TGBM_SRC_LIST
     src/Api.cpp
@@ -69,6 +77,20 @@ target_link_libraries(tgbmlib PUBLIC
     ${ZLIB_LIBRARIES}
     OpenSSL::SSL OpenSSL::Crypto
     ${Boost_LIBRARIES})
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  if (TGBM_SANITIZE_THREAD)
+    set(TGBM_SANITIZER_FLAGS "-fsanitize=thread")
+  endif()
+  if (TGBM_SANITIZE)
+    set(TGBM_SANITIZER_FLAGS "-fsanitize=address,undefined")
+    if (NOT WIN32)
+      set(TGBM_SANITIZER_FLAGS "${TGBM_SANITIZER_FLAGS},memory")
+    endif()
+  endif()
+  add_compile_options(${TGBM_SANITIZER_FLAGS})
+  add_link_options(${TGBM_SANITIZER_FLAGS})
+endif()
 
 set_target_properties(tgbmlib PROPERTIES
 	CMAKE_CXX_EXTENSIONS OFF

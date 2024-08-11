@@ -9,6 +9,8 @@
 #include <vector>
 #include <utility>
 
+#include "tgbm/logger.h"
+
 namespace tgbm {
 
 TgLongPoll::TgLongPoll(const Api* api, const EventHandler* eventHandler, std::int32_t limit,
@@ -27,25 +29,35 @@ TgLongPoll::TgLongPoll(const Bot& bot, std::int32_t limit, std::int32_t timeout,
 }
 
 dd::task<void> TgLongPoll::start() {
-  //// handle updates
-  // for (Update::Ptr& item : _updates) {
-  //   if (item->updateId >= _lastUpdateId) {
-  //     _lastUpdateId = item->updateId + 1;
-  //   }
-  //   _eventHandler->handleUpdate(item);
-  // }
-
+  // TODO один коннекшн и через него делать всё и всегда, не переиспользовать
+  if (started)
+    throw 42;
+  started = true;
+  auto limit = _limit;
+  auto timeout = _timeout;
+  auto allowUpdates = _allowUpdates;
   // confirm handled updates
-  // TODO async (channel...)
-  // TODO это очевидно на одном потоке всегда должно происходить...
-  // почему то не обновляются апдейты, хм... странное что то
-  //_updates
-  auto updates = co_await _api->getUpdates(_lastUpdateId, _limit, _timeout, _allowUpdates);
-  for (Update::Ptr& item : updates) {
-    if (item->updateId >= _lastUpdateId) {
-      _lastUpdateId = item->updateId + 1;
+  std::int32_t lastUpdateId = 0;
+  std::vector<std::shared_ptr<tgbm::Update>> updates;
+  while (true) {
+    try {
+      updates = co_await _api->getUpdates(lastUpdateId, limit, timeout, allowUpdates);
+    } catch (std::exception& e) {
+      LOG_ERR("[updates] getUpdates exception: {}", e.what());
+    } catch (...) {
+      LOG_ERR("[updates] UNKNOWN EXCEPTION");
     }
-    _eventHandler->handleUpdate(item);
+    LOG("[updates] getted {} updates on {} thread", updates.size(),
+        std::bit_cast<unsigned>(std::this_thread::get_id()));
+    for (Update::Ptr& item : updates) {
+      if (item->updateId >= lastUpdateId) {
+        lastUpdateId = item->updateId + 1;
+      }
+      LOG("[updates] handle id #{}", lastUpdateId);
+      // TODO нужно хендлер тоже чтоли захватывать, в общем однопоточно совершенно читать и обрабатывать
+      // ивенты
+      _eventHandler->handleUpdate(item);
+    }
   }
 }
 

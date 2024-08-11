@@ -9,6 +9,7 @@
 
 namespace tgbm {
 
+// TODO wtf это всё статические функции вообще
 class TGBM_API HttpParser {
  public:
   std::string generateRequest(const Url& url, const std::vector<HttpReqArg>& args,

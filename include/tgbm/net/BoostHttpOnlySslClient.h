@@ -5,6 +5,7 @@
 #include "tgbm/net/HttpReqArg.h"
 #include "tgbm/net/HttpParser.h"
 #include "tgbm/net/ConnectionPool.h"
+#include "tgbm/logger.h"
 
 #include <boost/asio/ssl.hpp>
 #include <boost/asio/io_context.hpp>
@@ -22,7 +23,10 @@ namespace tgbm {
  */
 // TODO? shared from this?...
 class TGBM_API BoostHttpOnlySslClient : public HttpClient {
-  using connection_t = boost::asio::ssl::stream<boost::asio::ip::tcp::socket>;
+  struct connection_t {
+    boost::asio::ssl::stream<boost::asio::ip::tcp::socket> socket;
+    bool used = false;
+  };
 
  public:
   BoostHttpOnlySslClient(std::string host, size_t connections_max_count = 1000);
@@ -37,17 +41,32 @@ class TGBM_API BoostHttpOnlySslClient : public HttpClient {
    */
   // TODO понять правильно ли передаются & в ключе и значении x-www-form-urlencoded (должно быть %26 и тд)
   // TOOD ссылки опасные, могут протухнутьы
-  dd::task<std::string> makeRequest(const Url& url, const std::vector<HttpReqArg>& args) override;
+  dd::task<std::string> makeRequest(Url url, std::vector<HttpReqArg> args) override;
 
-  static dd::task<connection_t> create_connection(boost::asio::io_context&, std::string host);
-  [[nodiscard]] boost::asio::io_context& getIoContext() noexcept {
+  static dd::task<connection_t> create_connection(boost::asio::io_context &, std::string host);
+  [[nodiscard]] boost::asio::io_context &getIoContext() noexcept {
     return io_ctx;
   }
 
  private:
+  struct log_events_handler_t {
+    static void dropped(const connection_t &c) {
+      LOG("[socket] {} dropped", (void *)&c);
+    }
+    static void reused(const connection_t &c) {
+      LOG("[socket] {} reused", (void *)&c);
+    }
+    static void created(const connection_t &c) {
+      LOG("[socket] {} created", (void *)&c);
+    }
+    static void deleted(const connection_t &c) {
+      LOG("[socket] {} deleted", (void *)&c);
+    }
+  };
+
   mutable boost::asio::io_context io_ctx;
   const HttpParser _httpParser;
-  pool_t<connection_t> connections;
+  pool_t<connection_t, log_events_handler_t> connections;
   dd::this_thread_executor_t exe;  // TODO change
 };
 

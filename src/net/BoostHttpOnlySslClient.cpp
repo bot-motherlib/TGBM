@@ -5,6 +5,8 @@
 
 #include <boost/asio.hpp>
 
+#include "tgbm/scope_exit.h"
+
 namespace tgbm {
 
 BoostHttpOnlySslClient::BoostHttpOnlySslClient(std::string host, size_t connections_max_count)
@@ -122,6 +124,33 @@ KELCORO_CO_AWAIT_REQUIRED auto async_read(auto& stream, Buf&& buffer, io_error_c
   return asio_awaiter<size_t, decltype(cb_usr)>(cb_usr, ec);
 }
 
+template <typename Buf>
+KELCORO_CO_AWAIT_REQUIRED auto async_read_some(auto& stream, Buf&& buffer, io_error_code& ec) {
+  auto cb_usr = [&]<typename T>(T&& cb) {
+    stream.async_read_some(std::forward<Buf>(buffer), std::forward<T>(cb));
+  };
+  return asio_awaiter<size_t, decltype(cb_usr)>(cb_usr, ec);
+}
+
+template <typename Buf>
+KELCORO_CO_AWAIT_REQUIRED auto async_read_until(auto& stream, Buf&& buffer, std::string_view delim,
+                                                io_error_code& ec) {
+  auto cb_usr = [&]<typename T>(T&& cb) {
+    boost::asio::async_read_until(stream, std::forward<Buf>(buffer), delim, std::forward<T>(cb));
+  };
+  return asio_awaiter<size_t, decltype(cb_usr)>(cb_usr, ec);
+}
+
+template <typename Buf>
+KELCORO_CO_AWAIT_REQUIRED auto async_read_exactly(auto& stream, Buf&& buffer, size_t count,
+                                                  io_error_code& ec) {
+  auto cb_usr = [&]<typename T>(T&& cb) {
+    boost::asio::async_read(stream, std::forward<Buf>(buffer), boost::asio::transfer_exactly(count),
+                            std::forward<T>(cb));
+  };
+  return asio_awaiter<size_t, decltype(cb_usr)>(cb_usr, ec);
+}
+
 dd::task<BoostHttpOnlySslClient::connection_t> BoostHttpOnlySslClient::create_connection(
     boost::asio::io_context& io_ctx, std::string host) {
   namespace asio = boost::asio;
@@ -140,7 +169,7 @@ dd::task<BoostHttpOnlySslClient::connection_t> BoostHttpOnlySslClient::create_co
   if (ec) {
     // TODO smth ? ? ? exception ? (terminate...)
     // std::cerr << ec.message() << std::endl;
-    co_return socket;
+    co_return {std::move(socket)};
   }
   asio::connect(socket.lowest_layer(), results, ec);
   // tcp::endpoint e;
@@ -148,7 +177,7 @@ dd::task<BoostHttpOnlySslClient::connection_t> BoostHttpOnlySslClient::create_co
   if (ec) {
     // TODO smth
     // std::cerr << ec.message() << std::endl;
-    co_return socket;
+    co_return {std::move(socket)};
   }
   // TODO ? is needed?
   socket.lowest_layer().set_option(tcp::no_delay(true));
@@ -163,51 +192,110 @@ dd::task<BoostHttpOnlySslClient::connection_t> BoostHttpOnlySslClient::create_co
   if (ec) {
     // TODO smth
     // std::cerr << ec.message() << std::endl;
-    co_return socket;
+    co_return {std::move(socket)};
   }
-  co_return socket;
+  co_return {std::move(socket)};
 }
 
-dd::task<std::string> BoostHttpOnlySslClient::makeRequest(const Url& url,
-                                                          const std::vector<HttpReqArg>& args) {
+dd::task<std::string> BoostHttpOnlySslClient::makeRequest(Url url, std::vector<HttpReqArg> args) {
   namespace asio = boost::asio;
 
   using tcp = asio::ip::tcp;
-  auto h = co_await connections.borrow();
-  connection_t& socket = *h.get();
-  if (!socket.lowest_layer().is_open())
+  auto handle = co_await connections.borrow();
+  auto& socket = handle.get()->socket;
+  LOG("just borrowed {}", (void*)&socket);
+  // TODO remove bool flag (its debug)
+  if (handle.get()->used) {
+    LOG_ERR("{} ALREADY USED", (void*)&socket);
+  }
+  assert(!handle.get()->used);
+  handle.get()->used = true;
+  on_scope_exit {
+    handle.get()->used = false;
+    LOG("{} not used now", (void*)&socket);
+  };
+  on_scope_failure(drop_socket) {
+    handle.drop();
+  };
+  // TODO RM h.drop();  // TODO rm, проверка мб пофиксит баги
+  if (!socket.lowest_layer().is_open()) {
+    LOG_ERR("[http] cannot {} socket connect to TG", (void*)&socket);
+    // TODO drop and try again?
     co_return "";  // TODO error
-  h.drop();        // TODO коннекншн пол нахрен не нужен, если нет keep alive
+  }
   io_error_code ec;
-  // TODO доделать write/read
-  // TODO проверить какой протокол, т.к. в http версии 1.0 соединение завершается сервером
-  // а нужно хотя бы 1.1 и в общем надо смотреть тг какие умеет вообще
-  std::string requestText = _httpParser.generateRequest(url, args, false);  // TODO set keep alive true
+  std::string requestText = _httpParser.generateRequest(url, args, /*isKeepAlive=*/true);
   size_t transfered = co_await async_write(socket, asio::buffer(requestText), ec);
   if (ec) {
+    LOG_ERR("[http] cannot write to {} socket, err: {}", (void*)&socket, ec.message());
     // TODO smth
     // std::cerr << ec.message() << std::endl;
     co_return "";
   }
   assert(transfered == requestText.size());
-  // TODO timeout
+  // TODO timeout на весь сокет сразу одну штуку(точнее на одну операцию(корутину)...)
 
-  std::string response;
-  // TODO по другому читать как-то, учитывая что будет keep-alive (позже)
-  char buff[4096];
-  // TODO видимо здесь надеются, что соединение будет закрыто в другой стороны после отправки ответа
-  // вероятно потому что отправляется .close вместо keep-alive!!! Это где-то напрямую отправляется!!!
-  // TODO boost::asio::transfer_exactly(content_length)
+  std::string data;
   // TODO нужно возвращать вектор байт вместо строки 1. это выгоднее (sso не нужно)
   // 2. там могут быть \0, т.к. это в том числе загрузка файлов
-  while (!ec) {
-    transfered = co_await async_read(socket, asio::buffer(buff), ec);
-    response += std::string_view(buff, transfered);
+
+  // read http headers
+  // TODO тесты на конкретно эту часть кода
+  std::string::size_type headers_end_pos = 0;
+  static constexpr std::string_view headers_end_marker = "\r\n\r\n";
+  static constexpr std::string_view content_length_header = "Content-Length:";
+  for (;;) {
+    // async read until may overread after \r\n\r\n
+    char buf[128];
+    transfered = co_await async_read_some(socket, asio::buffer(buf), ec);
+    if (ec)
+      break;
+    data += std::string_view(buf, transfered);  // TODO better
+    if (auto p = data.find(headers_end_marker, headers_end_pos); p != data.npos) {
+      headers_end_pos = p;
+      break;
+    }
+    headers_end_pos += transfered;
   }
-  // TODO как хуёво, тут ещё и копирование строки
-  // TODO просто сразу читать до \r\n\r\n и после этого читать тело. Тогда оно сразу будет у меня
-  // TODO нужно чекнуть, что Content-Length вообще указывается телеграммом (wireshark...)
-  co_return _httpParser.extractBody(response);
+  if (ec) {
+    // TODO smth
+    LOG_ERR("[http] error while reading http headers: {}", ec.message());
+    co_return "";
+  }
+  auto content_len_pos = data.find(content_length_header);
+  if (content_len_pos == data.npos) {
+    LOG_ERR("[http] incorrect server answer");
+    co_return "";
+  }
+  content_len_pos += content_length_header.size();
+  // skip whitespaces (exactly one usually)
+  content_len_pos = data.find_first_not_of(' ', content_len_pos);
+  assert(content_len_pos < headers_end_pos);
+  size_t content_length;
+  auto [_, err] =
+      std::from_chars(data.data() + content_len_pos, data.data() + headers_end_pos, content_length);
+  if (err != std::errc{}) {
+    // TODO smth, incorrect server answer ?
+    LOG_ERR("[http] cannot parse content length from server response");
+    co_return "";
+  }
+  headers_end_pos += headers_end_marker.size();
+  size_t overriden_bytes = data.size() - headers_end_pos;
+  assert(overriden_bytes <= content_length);
+  // remove headers, keep only overreaded body
+  data.erase(data.begin(), data.begin() + headers_end_pos);
+  data.resize(content_length);
+  // TODO что будет если надо прочитать 0 байт? Вернётся сразу asio или зависнет нахрен?
+  transfered = co_await async_read(
+      socket, asio::buffer(data.data() + overriden_bytes, content_length - overriden_bytes), ec);
+  if (ec) {
+    // TODO smth
+    LOG_ERR("[http] error while reading body: {}", ec.message());
+    co_return "";
+  }
+  assert(transfered == content_length - overriden_bytes);
+  drop_socket.no_longer_needed();
+  co_return data;
 }
 
 }  // namespace tgbm

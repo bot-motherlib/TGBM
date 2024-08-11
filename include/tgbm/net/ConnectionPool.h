@@ -23,6 +23,7 @@ struct intrusive_stack {
   void push(Node *n) noexcept {
     assert(n);
     if (!first) {
+      n->next = nullptr;
       first = n;
       return;
     }
@@ -35,7 +36,27 @@ struct intrusive_stack {
   }
 };
 
+template <typename EventHandler, typename T>
+concept pool_events_handler_for = requires(EventHandler &e, T &t) {
+  EventHandler::dropped(t);
+  EventHandler::reused(t);
+  EventHandler::created(t);
+  EventHandler::deleted(t);
+};
+
 template <typename T>
+struct noop_events_handler_t {
+  static void dropped(const T &) {
+  }
+  static void reused(const T &) {
+  }
+  static void created(const T &) {
+  }
+  static void deleted(const T &) {
+  }
+};
+
+template <typename T, pool_events_handler_for<T> H = noop_events_handler_t<T>>
 struct pool_t {
  private:
   using data_type = T;
@@ -66,19 +87,24 @@ struct pool_t {
     }
     bool await_suspend(std::coroutine_handle<> handle) noexcept {
       node.task = handle;
-      std::lock_guard l(pool.mtx);
+      std::unique_lock l(pool.mtx);
       if (!pool.free.empty()) {
         node.result = pool.free.pop();
+        l.unlock();
+        H::reused(node.result->data);
         return false;
       }
       pool.waiters.push(&node);
       return true;
     }
     [[nodiscard]] node_t *await_resume() const noexcept {
+      H::reused(node.result->data);
       return node.result;
     }
   };
   static void destroy_node(node_t *n) noexcept {
+    assert(n);
+    H::deleted(n->data);
     std::destroy_at(n);
     resource()->deallocate(n, sizeof(node_t), alignof(node_t));
   }
@@ -89,7 +115,11 @@ struct pool_t {
  public:
   // attach operation on 'e' should be thread safe, 'e' used to resume waiters on borrow
   explicit pool_t(size_t max_count, auto &&fac, dd::any_executor_ref e)
-      : max(max_count), free_count(0), borrowed_count(0), factory(static_cast<decltype(fac)>(fac)), exe(e) {
+      : max(std::max<size_t>(1, max_count)),
+        free_count(0),
+        borrowed_count(0),
+        factory(static_cast<decltype(fac)>(fac)),
+        exe(e) {
     assert(factory);
   }
 
@@ -133,6 +163,9 @@ struct pool_t {
     }
     // pool forgets about borrowed data forever
     void drop() noexcept {
+      if (!node)
+        return;
+      H::dropped(node->data);
       if (!p)
         return;
       p->mtx.lock();
@@ -152,7 +185,10 @@ struct pool_t {
     if (!free.empty()) {
       ++borrowed_count;
       --free_count;
-      co_return handle_t(free.pop(), *this);
+      node_t *n = free.pop();
+      l.unlock();
+      H::reused(n->data);
+      co_return handle_t(n, *this);
     }
     if (borrowed_count == max) {
       l.unlock();
@@ -163,6 +199,7 @@ struct pool_t {
     // new_delete resource do not require synchronization
     void *mem = resource()->allocate(sizeof(node_t), alignof(node_t));
     node_t *node = new (mem) node_t(nullptr, co_await factory());
+    H::created(node->data);
     co_return handle_t(node, *this);
   }
 

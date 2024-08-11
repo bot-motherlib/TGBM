@@ -32,7 +32,7 @@ class TGBM_API HttpClient {
   // TODO вот здесь главный асинх должен произойти
   // TODO? сразу сюда принимать не аргументы, а сгенеренный body?. Крч надо сразу json сделать и положить его
   // в application/json, вместо сначала создания вектора
-  virtual dd::task<std::string> makeRequest(const Url& url, const std::vector<HttpReqArg>& args) = 0;
+  virtual dd::task<std::string> makeRequest(Url url, std::vector<HttpReqArg> args) = 0;
   // TODO передавать таймаут в makeRequest, количество ретраев вероятно тоже. И std::chrono::seconds вместо
   // int
   std::int32_t _timeout = 25;
