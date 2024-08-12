@@ -3,7 +3,6 @@ CMakeCache.txt
 CMakeFiles
 CMakeSettings.json
 Makefile
-*.cmake
 install_manifest.txt
 *.cbp
 *.a
@@ -16,11 +15,14 @@ Thumbs.db
 docs/
 cmake-build-*
 .cache
+CMakePresets.json
 # Visual Studio
 .vs/
 .vscode/
 build/
 out/
+
+build*
 
 # MacOS dependecies
 .DS_Store
