@@ -108,4 +108,3 @@ endif()
 if(BUILD_SHARED_LIBS)
     add_definitions(-DTGBM_DLL)
 endif()
-
