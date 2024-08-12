@@ -23,8 +23,6 @@ using io_error_code = boost::system::error_code;
 template <typename T, typename CallbackUser>
 struct asio_awaiter {
   static_assert(std::is_same_v<T, std::decay_t<T>>);
-  // also should not use its memory after passing callback to asio!
-  static_assert(std::is_trivially_destructible_v<CallbackUser>);
 
   union {
     CallbackUser _cb_user;
@@ -32,7 +30,9 @@ struct asio_awaiter {
   };
   io_error_code& _ec;
 
-  explicit asio_awaiter(CallbackUser usr, io_error_code& ec) noexcept : _cb_user(std::move(usr)), _ec(ec) {
+  template <typename... Args>
+  explicit asio_awaiter(io_error_code& ec [[clang::lifetimebound]], Args&&... args) noexcept
+      : _cb_user(std::forward<Args>(args)...), _ec(ec) {
   }
   ~asio_awaiter() {
     // noop, if value exist, it was destroyed in await_resume
@@ -47,8 +47,9 @@ struct asio_awaiter {
       std::construct_at(std::addressof(_data), std::move(data));
       handle.resume();
     };
-    // assume does not use its memory after passing callback to asio
-    _cb_user(cb);
+    auto cb_user = std::move(_cb_user);
+    std::destroy_at(std::addressof(_cb_user));
+    cb_user(cb);
   }
   [[nodiscard]] T await_resume() noexcept {
     T result = std::move(_data);
@@ -64,7 +65,10 @@ struct asio_awaiter<void, CallbackUser> {
 
   CallbackUser _cb_user;
   io_error_code& _ec;
-  explicit asio_awaiter(CallbackUser usr, io_error_code& ec) noexcept : _cb_user(std::move(usr)), _ec(ec) {
+
+  template <typename... Args>
+  explicit asio_awaiter(io_error_code& ec [[clang::lifetimebound]], Args&&... args) noexcept
+      : _cb_user(std::forward<Args>(args)...), _ec(ec) {
   }
 
   static bool await_ready() noexcept {
@@ -84,71 +88,158 @@ struct asio_awaiter<void, CallbackUser> {
 };
 
 template <typename Protocol>
-KELCORO_CO_AWAIT_REQUIRED auto async_resolve(
-    boost::asio::ip::basic_resolver<Protocol>& resolver,
-    std::type_identity_t<boost::asio::ip::basic_resolver_query<Protocol>> query, io_error_code& ec) {
-  auto cb_usr = [&]<typename T>(T&& cb) { resolver.async_resolve(std::move(query), std::forward<T>(cb)); };
+struct resolve_operation {
+  boost::asio::ip::basic_resolver<Protocol>& resolver;
+  boost::asio::ip::basic_resolver_query<Protocol> query;
+
+  template <typename T>
+  void operator()(T&& cb) {
+    resolver.async_resolve(std::move(query), std::forward<T>(cb));
+  }
+};
+
+template <typename Protocol>
+KELCORO_CO_AWAIT_REQUIRED [[clang::always_inline]] auto async_resolve(
+    boost::asio::ip::basic_resolver<Protocol>& resolver KELCORO_LIFETIMEBOUND,
+    std::type_identity_t<boost::asio::ip::basic_resolver_query<Protocol>> query,
+    io_error_code& ec KELCORO_LIFETIMEBOUND) {
   using resolve_results_t = typename boost::asio::ip::basic_resolver<Protocol>::results_type;
-  return asio_awaiter<resolve_results_t, decltype(cb_usr)>(cb_usr, ec);
+  return asio_awaiter<resolve_results_t, resolve_operation<Protocol>>(ec, resolver, std::move(query));
 }
 
 template <typename Protocol>
-KELCORO_CO_AWAIT_REQUIRED auto async_connect(
-    boost::asio::basic_socket<Protocol>& socket,
-    std::type_identity_t<typename boost::asio::ip::basic_resolver<Protocol>::results_type> endpoints,
-    io_error_code& ec) {
-  auto cb_usr = [&]<typename T>(T&& cb) {
+struct connect_operation {
+  boost::asio::basic_socket<Protocol>& socket;
+  typename boost::asio::ip::basic_resolver<Protocol>::results_type endpoints;
+
+  template <typename T>
+  void operator()(T&& cb) {
     boost::asio::async_connect(socket, endpoints, std::forward<T>(cb));
-  };
-  return asio_awaiter<boost::asio::ip::basic_endpoint<Protocol>, decltype(cb_usr)>(cb_usr, ec);
+  }
+};
+
+template <typename Protocol>
+KELCORO_CO_AWAIT_REQUIRED [[clang::always_inline]] auto async_connect(
+    boost::asio::basic_socket<Protocol>& socket KELCORO_LIFETIMEBOUND,
+    std::type_identity_t<typename boost::asio::ip::basic_resolver<Protocol>::results_type> endpoints,
+    io_error_code& ec KELCORO_LIFETIMEBOUND) {
+  return asio_awaiter<boost::asio::ip::basic_endpoint<Protocol>, connect_operation<Protocol>>(
+      ec, socket, std::move(endpoints));
 }
 
 template <typename Stream>
-KELCORO_CO_AWAIT_REQUIRED auto async_handshake(boost::asio::ssl::stream<Stream>& stream,
-                                               boost::asio::ssl::stream_base::handshake_type type,
-                                               io_error_code& ec) {
-  auto cb_usr = [&]<typename T>(T&& cb) { stream.async_handshake(type, std::forward<T>(cb)); };
-  return asio_awaiter<void, decltype(cb_usr)>(cb_usr, ec);
+struct ssl_handshake_operation {
+  boost::asio::ssl::stream<Stream>& stream;
+  boost::asio::ssl::stream_base::handshake_type type;
+
+  template <typename T>
+  void operator()(T&& cb) {
+    stream.async_handshake(type, std::forward<T>(cb));
+  }
+};
+
+template <typename Stream>
+KELCORO_CO_AWAIT_REQUIRED [[clang::always_inline]] auto async_handshake(
+    boost::asio::ssl::stream<Stream>& stream KELCORO_LIFETIMEBOUND,
+    boost::asio::ssl::stream_base::handshake_type type, io_error_code& ec KELCORO_LIFETIMEBOUND) {
+  return asio_awaiter<void, ssl_handshake_operation<Stream>>(ec, stream, type);
 }
 
-KELCORO_CO_AWAIT_REQUIRED auto async_write(auto& stream, const auto& buffer, io_error_code& ec) {
-  auto cb_usr = [&]<typename T>(T&& cb) { boost::asio::async_write(stream, buffer, std::forward<T>(cb)); };
-  return asio_awaiter<size_t, decltype(cb_usr)>(cb_usr, ec);
+template <typename Stream, typename ConstBuffer>
+struct write_operation {
+  Stream& stream;
+  const ConstBuffer& buffer;
+
+  template <typename T>
+  void operator()(T&& cb) {
+    boost::asio::async_write(stream, buffer, std::forward<T>(cb));
+  }
+};
+
+template <typename Stream, typename ConstBuffer>
+KELCORO_CO_AWAIT_REQUIRED [[clang::always_inline]] auto async_write(
+    Stream& stream KELCORO_LIFETIMEBOUND, const ConstBuffer& buffer KELCORO_LIFETIMEBOUND,
+    io_error_code& ec KELCORO_LIFETIMEBOUND) {
+  return asio_awaiter<size_t, write_operation<Stream, ConstBuffer>>(ec, stream, buffer);
 }
 
-template <typename Buf>
-KELCORO_CO_AWAIT_REQUIRED auto async_read(auto& stream, Buf&& buffer, io_error_code& ec) {
-  auto cb_usr = [&]<typename T>(T&& cb) {
-    boost::asio::async_read(stream, std::forward<Buf>(buffer), std::forward<T>(cb));
-  };
-  return asio_awaiter<size_t, decltype(cb_usr)>(cb_usr, ec);
+template <typename Stream, typename Buffer>
+struct read_operation {
+  Stream& stream;
+  Buffer& buffer;
+
+  template <typename T>
+  void operator()(T&& cb) {
+    boost::asio::async_read(stream, buffer, std::forward<T>(cb));
+  }
+};
+
+template <typename Stream, typename Buffer>
+KELCORO_CO_AWAIT_REQUIRED [[clang::always_inline]] auto async_read(Stream& stream KELCORO_LIFETIMEBOUND,
+                                                                   Buffer&& buffer KELCORO_LIFETIMEBOUND,
+                                                                   io_error_code& ec KELCORO_LIFETIMEBOUND) {
+  return asio_awaiter<size_t, read_operation<Stream, std::remove_reference_t<Buffer>>>(ec, stream, buffer);
 }
 
-template <typename Buf>
-KELCORO_CO_AWAIT_REQUIRED auto async_read_some(auto& stream, Buf&& buffer, io_error_code& ec) {
-  auto cb_usr = [&]<typename T>(T&& cb) {
-    stream.async_read_some(std::forward<Buf>(buffer), std::forward<T>(cb));
-  };
-  return asio_awaiter<size_t, decltype(cb_usr)>(cb_usr, ec);
+template <typename Stream, typename Buffer>
+struct read_some_operation {
+  Stream& stream;
+  Buffer& buffer;
+
+  template <typename T>
+  void operator()(T&& cb) {
+    stream.async_read_some(buffer, std::forward<T>(cb));
+  }
+};
+
+template <typename Stream, typename Buffer>
+KELCORO_CO_AWAIT_REQUIRED [[clang::always_inline]] auto async_read_some(
+    Stream& stream KELCORO_LIFETIMEBOUND, Buffer&& buffer KELCORO_LIFETIMEBOUND,
+    io_error_code& ec KELCORO_LIFETIMEBOUND) {
+  return asio_awaiter<size_t, read_some_operation<Stream, Buffer>>(ec, stream, buffer);
 }
 
-template <typename Buf>
-KELCORO_CO_AWAIT_REQUIRED auto async_read_until(auto& stream, Buf&& buffer, std::string_view delim,
-                                                io_error_code& ec) {
-  auto cb_usr = [&]<typename T>(T&& cb) {
-    boost::asio::async_read_until(stream, std::forward<Buf>(buffer), delim, std::forward<T>(cb));
-  };
-  return asio_awaiter<size_t, decltype(cb_usr)>(cb_usr, ec);
+template <typename Stream, typename Buffer>
+struct read_until_operation {
+  Stream& stream;
+  Buffer& buffer;
+  std::string_view delim;
+
+  template <typename T>
+  void operator()(T&& cb) {
+    boost::asio::async_read_until(stream, buffer, delim, std::forward<T>(cb));
+  }
+};
+
+// TODO delim тоже нужно захавтывать, но не выражается, надо через шаблонный арг
+template <typename Stream, typename Buffer, std::convertible_to<std::string_view> StringView>
+KELCORO_CO_AWAIT_REQUIRED [[clang::always_inline]] auto async_read_until(
+    Stream& stream KELCORO_LIFETIMEBOUND, Buffer&& buffer KELCORO_LIFETIMEBOUND, StringView&& delim,
+    io_error_code& ec KELCORO_LIFETIMEBOUND) {
+  static_assert(!std::is_rvalue_reference_v<StringView&&>,
+                "string delimiter will die before operation complete");
+  return asio_awaiter<size_t, read_until_operation<Stream, std::remove_reference_t<Buffer>>>(
+      ec, stream, buffer, std::string_view(delim));
 }
 
-template <typename Buf>
-KELCORO_CO_AWAIT_REQUIRED auto async_read_exactly(auto& stream, Buf&& buffer, size_t count,
-                                                  io_error_code& ec) {
-  auto cb_usr = [&]<typename T>(T&& cb) {
-    boost::asio::async_read(stream, std::forward<Buf>(buffer), boost::asio::transfer_exactly(count),
-                            std::forward<T>(cb));
-  };
-  return asio_awaiter<size_t, decltype(cb_usr)>(cb_usr, ec);
+template <typename Stream, typename Buffer>
+struct read_exactly_operation {
+  Stream& stream;
+  Buffer& buffer;
+  size_t count = 0;
+
+  template <typename T>
+  void operator()(T&& cb) {
+    boost::asio::async_read(stream, buffer, boost::asio::transfer_exactly(count), std::forward<T>(cb));
+  }
+};
+
+template <typename Stream, typename Buffer>
+KELCORO_CO_AWAIT_REQUIRED [[clang::always_inline]] auto async_read_exactly(
+    Stream& stream KELCORO_LIFETIMEBOUND, Buffer&& buffer KELCORO_LIFETIMEBOUND, size_t count,
+    io_error_code& ec KELCORO_LIFETIMEBOUND) {
+  return asio_awaiter<size_t, read_exactly_operation<Stream, std::remove_reference_t<Buffer>>>(ec, stream,
+                                                                                               buffer, count);
 }
 
 dd::task<BoostHttpOnlySslClient::connection_t> BoostHttpOnlySslClient::create_connection(
@@ -156,27 +247,25 @@ dd::task<BoostHttpOnlySslClient::connection_t> BoostHttpOnlySslClient::create_co
   namespace asio = boost::asio;
   namespace ssl = asio::ssl;
   using tcp = asio::ip::tcp;
+
   tcp::resolver resolver(io_ctx);
   ssl::context context(ssl::context::tlsv12_client);
+  context.set_options(ssl::context::default_workarounds | ssl::context::no_sslv2 |
+                      ssl::context::single_dh_use);
   context.set_default_verify_paths();
   ssl::stream<tcp::socket> socket(io_ctx, context);
-  // TODO ?? (хотя вроде нахуй не нужно, я итак узнаю что оно отвалилось т.к. постоянно посылаю телеграму что
-  // то) socket.lowest_layer().set_option(boost::asio::socket_base::keep_alive(true));
   tcp::resolver::query query(std::string(host), "https");
   io_error_code ec;
-  auto results = resolver.resolve(std::move(query), ec);
-  // auto [ec, results] = co_await async_resolve(resolver, std::move(query));
+  auto results = co_await async_resolve(resolver, query, ec);
   if (ec) {
-    // TODO smth ? ? ? exception ? (terminate...)
-    // std::cerr << ec.message() << std::endl;
+    LOG_ERR("[http] cannot resolve host: {}: service: {}, err: {}", query.host_name(), query.service_name(),
+            ec.message());
     co_return {std::move(socket)};
   }
   asio::connect(socket.lowest_layer(), results, ec);
-  // tcp::endpoint e;
-  // std::tie(ec, e) = co_await async_connect(socket.lowest_layer(), results);
+  tcp::endpoint e = co_await async_connect(socket.lowest_layer(), results, ec);
   if (ec) {
-    // TODO smth
-    // std::cerr << ec.message() << std::endl;
+    LOG_ERR("[http] cannot connect to {}, err: {}", host, ec.message());
     co_return {std::move(socket)};
   }
   // TODO ? is needed?
@@ -187,11 +276,10 @@ dd::task<BoostHttpOnlySslClient::connection_t> BoostHttpOnlySslClient::create_co
   socket.lowest_layer().set_option(asio::socket_base::receive_buffer_size(32768));
   socket.set_verify_mode(ssl::verify_none);
   socket.set_verify_callback(ssl::host_name_verification(host));
-  socket.handshake(socket.client);
-  // ec = co_await async_handshake(socket, ssl::stream_base::handshake_type::client);
+
+  co_await async_handshake(socket, ssl::stream_base::handshake_type::client, ec);
   if (ec) {
-    // TODO smth
-    // std::cerr << ec.message() << std::endl;
+    LOG_ERR("[http] cannot ssl handshake: {}", ec.message());
     co_return {std::move(socket)};
   }
   co_return {std::move(socket)};
@@ -244,7 +332,11 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(Url url, std::vector<H
   std::string::size_type headers_end_pos = 0;
   static constexpr std::string_view headers_end_marker = "\r\n\r\n";
   static constexpr std::string_view content_length_header = "Content-Length:";
+  // TODO видимо всё таки вынести в функцию read_until или типа того
+  // TODO какая-то обработка на goto возможно этих еррор кодов, кек
   for (;;) {
+    // TODO read http status string first, return http status code too
+    // HTTP<version><whitespaces><code>
     // async read until may overread after \r\n\r\n
     char buf[128];
     transfered = co_await async_read_some(socket, asio::buffer(buf), ec);

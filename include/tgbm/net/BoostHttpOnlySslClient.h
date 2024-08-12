@@ -40,7 +40,8 @@ class TGBM_API BoostHttpOnlySslClient : public HttpClient {
    * it will be application/x-www-form-urlencoded.
    */
   // TODO понять правильно ли передаются & в ключе и значении x-www-form-urlencoded (должно быть %26 и тд)
-  // TOOD ссылки опасные, могут протухнутьы
+  // TODO разделить get (без аргментов)/post и отдельно видимо файл, т.е. будет одно application/json
+  // и второе multipart/form-data
   dd::task<std::string> makeRequest(Url url, std::vector<HttpReqArg> args) override;
 
   static dd::task<connection_t> create_connection(boost::asio::io_context &, std::string host);

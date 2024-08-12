@@ -27,8 +27,6 @@ string HttpParser::generateRequest(const Url& url, const vector<HttpReqArg>& arg
   result += "Host: ";
   result += url.host;
   result += "\r\nConnection: ";
-  // TODO чтобы коннекшны жили нужно видимо делать keep-alive, но это требует ещё проверки закрывает ли тг сам
-  // всегда
   if (isKeepAlive) {
     result += "keep-alive";
   } else {
@@ -86,6 +84,7 @@ string HttpParser::generateMultipartFormData(const vector<HttpReqArg>& args, con
 
 string HttpParser::generateMultipartBoundary(const vector<HttpReqArg>& args) const {
   string result;
+  // TODO нужно смотреть что вообще тут происходит по http спеке, странное что-то
   for (const HttpReqArg& item : args) {
     if (item.isFile) {
       while (result.empty() || item.value.find(result) != string::npos) {
@@ -116,6 +115,7 @@ string HttpParser::generateWwwFormUrlencoded(const vector<HttpReqArg>& args) con
 
 string HttpParser::generateResponse(const string& data, const string& mimeType, unsigned short statusCode,
                                     const string& statusStr, bool isKeepAlive) const {
+  // TODO по сути из statusCode выводится statusStr, не нужно это отдельным аргументом
   string result;
   result += "HTTP/1.1 ";
   result += std::to_string(statusCode);
