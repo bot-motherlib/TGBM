@@ -31,7 +31,7 @@ struct asio_awaiter {
   io_error_code& _ec;
 
   template <typename... Args>
-  explicit asio_awaiter(io_error_code& ec [[clang::lifetimebound]], Args&&... args) noexcept
+  explicit asio_awaiter(io_error_code& ec KELCORO_LIFETIMEBOUND, Args&&... args)
       : _cb_user(std::forward<Args>(args)...), _ec(ec) {
   }
   ~asio_awaiter() {
@@ -43,6 +43,10 @@ struct asio_awaiter {
 
   void await_suspend(std::coroutine_handle<> handle) noexcept {
     auto cb = [this, handle](const io_error_code& ec, T data) {
+      if (ec == boost::asio::error::operation_aborted) {
+        handle.destroy();
+        return;
+      }
       _ec = ec;
       std::construct_at(std::addressof(_data), std::move(data));
       handle.resume();
@@ -51,7 +55,8 @@ struct asio_awaiter {
     std::destroy_at(std::addressof(_cb_user));
     cb_user(cb);
   }
-  [[nodiscard]] T await_resume() noexcept {
+
+  [[nodiscard]] T await_resume() noexcept(std::is_nothrow_move_constructible_v<T>) {
     T result = std::move(_data);
     std::destroy_at(std::addressof(_data));
     return result;  // nrvo
@@ -211,15 +216,42 @@ struct read_until_operation {
   }
 };
 
-// TODO delim тоже нужно захавтывать, но не выражается, надо через шаблонный арг
-template <typename Stream, typename Buffer, std::convertible_to<std::string_view> StringView>
+// appends readen bytes to 'buffer'
+// returns position where in result 'needle' starts
+// TODO noexcept task?
+// TODO tests на эту функцию
+dd::task<size_t> do_read_until(auto& stream, std::string& buffer, std::string_view needle,
+                               io_error_code& ec KELCORO_LIFETIMEBOUND) {
+  assert(!needle.empty());
+  assert(!ec);
+  char buf[128];
+  const size_t init_sz = buffer.size();
+  size_t transfered = 0;
+  size_t checked_bytes = 0;
+  for (;;) {
+    size_t read_bytes = co_await async_read_some(stream, boost::asio::buffer(buf), ec);
+    if (ec)
+      co_return needle.npos;
+    transfered += read_bytes;
+    buffer += std::string_view(buf, read_bytes);  // TODO better
+    if (transfered < needle.size())
+      continue;
+    size_t s = needle.size() - 1;
+    auto p = buffer.find(needle, init_sz + (checked_bytes > s ? checked_bytes - s : 0));
+    if (p != buffer.npos)
+      co_return p;
+    checked_bytes += read_bytes;
+  }
+  KELCORO_UNREACHABLE;
+}
+
+template <typename Stream, std::convertible_to<std::string_view> StringView>
 KELCORO_CO_AWAIT_REQUIRED [[clang::always_inline]] auto async_read_until(
-    Stream& stream KELCORO_LIFETIMEBOUND, Buffer&& buffer KELCORO_LIFETIMEBOUND, StringView&& delim,
+    Stream& stream KELCORO_LIFETIMEBOUND, std::string& buffer KELCORO_LIFETIMEBOUND, StringView&& delim,
     io_error_code& ec KELCORO_LIFETIMEBOUND) {
-  static_assert(!std::is_rvalue_reference_v<StringView&&>,
+  static_assert(!std::is_rvalue_reference_v<StringView&&> || std::is_same_v<StringView, std::string_view>,
                 "string delimiter will die before operation complete");
-  return asio_awaiter<size_t, read_until_operation<Stream, std::remove_reference_t<Buffer>>>(
-      ec, stream, buffer, std::string_view(delim));
+  return do_read_until(stream, buffer, std::string_view(delim), ec);
 }
 
 template <typename Stream, typename Buffer>
@@ -241,36 +273,34 @@ KELCORO_CO_AWAIT_REQUIRED [[clang::always_inline]] auto async_read_exactly(
   return asio_awaiter<size_t, read_exactly_operation<Stream, std::remove_reference_t<Buffer>>>(ec, stream,
                                                                                                buffer, count);
 }
-
+// TODO co_await sleep (timer, duration)
 dd::task<BoostHttpOnlySslClient::connection_t> BoostHttpOnlySslClient::create_connection(
-    boost::asio::io_context& io_ctx, std::string host) {
+    boost::asio::io_context& io_ctx KELCORO_LIFETIMEBOUND, std::string host) {
   namespace asio = boost::asio;
   namespace ssl = asio::ssl;
   using tcp = asio::ip::tcp;
 
   tcp::resolver resolver(io_ctx);
-  ssl::context context(ssl::context::tlsv12_client);
-  context.set_options(ssl::context::default_workarounds | ssl::context::no_sslv2 |
-                      ssl::context::single_dh_use);
-  context.set_default_verify_paths();
-  ssl::stream<tcp::socket> socket(io_ctx, context);
+  std::shared_ptr connection = [&io_ctx] {
+    ssl::context sslctx(ssl::context::tlsv12_client);
+    sslctx.set_options(ssl::context::default_workarounds | ssl::context::no_sslv2 |
+                       ssl::context::single_dh_use);
+    sslctx.set_default_verify_paths();
+    return std::make_shared<asio_connection_t>(io_ctx, std::move(sslctx));
+  }();
+  ssl::stream<tcp::socket>& socket = connection->socket;
+  // TODO ? is needed?
   tcp::resolver::query query(std::string(host), "https");
   io_error_code ec;
   auto results = co_await async_resolve(resolver, query, ec);
-  if (ec) {
-    LOG_ERR("[http] cannot resolve host: {}: service: {}, err: {}", query.host_name(), query.service_name(),
-            ec.message());
-    co_return {std::move(socket)};
-  }
+  if (ec)
+    throw network_exception("[http] cannot resolve host: {}: service: {}, err: {}", query.host_name(),
+                            query.service_name(), ec.message());
   asio::connect(socket.lowest_layer(), results, ec);
-  tcp::endpoint e = co_await async_connect(socket.lowest_layer(), results, ec);
-  if (ec) {
-    LOG_ERR("[http] cannot connect to {}, err: {}", host, ec.message());
-    co_return {std::move(socket)};
-  }
-  // TODO ? is needed?
+  (void)co_await async_connect(socket.lowest_layer(), results, ec);
+  if (ec)
+    throw network_exception("[http] cannot connect to {}, err: {}", host, ec.message());
   socket.lowest_layer().set_option(tcp::no_delay(true));
-
   // TODO подобрать хорошие значения
   socket.lowest_layer().set_option(asio::socket_base::send_buffer_size(32768));
   socket.lowest_layer().set_option(asio::socket_base::receive_buffer_size(32768));
@@ -278,48 +308,28 @@ dd::task<BoostHttpOnlySslClient::connection_t> BoostHttpOnlySslClient::create_co
   socket.set_verify_callback(ssl::host_name_verification(host));
 
   co_await async_handshake(socket, ssl::stream_base::handshake_type::client, ec);
-  if (ec) {
-    LOG_ERR("[http] cannot ssl handshake: {}", ec.message());
-    co_return {std::move(socket)};
-  }
-  co_return {std::move(socket)};
+  if (ec)
+    throw network_exception("[http] cannot ssl handshake: {}", ec.message());
+  co_return connection;
 }
 
 dd::task<std::string> BoostHttpOnlySslClient::makeRequest(Url url, std::vector<HttpReqArg> args) {
   namespace asio = boost::asio;
-
   using tcp = asio::ip::tcp;
+
+  // TODO? retry if throw?
   auto handle = co_await connections.borrow();
-  auto& socket = handle.get()->socket;
-  LOG("just borrowed {}", (void*)&socket);
-  // TODO remove bool flag (its debug)
-  if (handle.get()->used) {
-    LOG_ERR("{} ALREADY USED", (void*)&socket);
-  }
-  assert(!handle.get()->used);
-  handle.get()->used = true;
-  on_scope_exit {
-    handle.get()->used = false;
-    LOG("{} not used now", (void*)&socket);
-  };
+  auto& socket = handle.get()->get()->socket;
   on_scope_failure(drop_socket) {
-    handle.drop();
+    // avoid drop connection on timeout (handle.destroy())
+    if (std::uncaught_exceptions())
+      handle.drop();
   };
-  // TODO RM h.drop();  // TODO rm, проверка мб пофиксит баги
-  if (!socket.lowest_layer().is_open()) {
-    LOG_ERR("[http] cannot {} socket connect to TG", (void*)&socket);
-    // TODO drop and try again?
-    co_return "";  // TODO error
-  }
   io_error_code ec;
   std::string requestText = _httpParser.generateRequest(url, args, /*isKeepAlive=*/true);
   size_t transfered = co_await async_write(socket, asio::buffer(requestText), ec);
-  if (ec) {
-    LOG_ERR("[http] cannot write to {} socket, err: {}", (void*)&socket, ec.message());
-    // TODO smth
-    // std::cerr << ec.message() << std::endl;
-    co_return "";
-  }
+  if (ec)
+    throw http_exception("[http] cannot write to {} socket, err: {}", (void*)&socket, ec.message());
   assert(transfered == requestText.size());
   // TODO timeout на весь сокет сразу одну штуку(точнее на одну операцию(корутину)...)
 
@@ -327,38 +337,19 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(Url url, std::vector<H
   // TODO нужно возвращать вектор байт вместо строки 1. это выгоднее (sso не нужно)
   // 2. там могут быть \0, т.к. это в том числе загрузка файлов
 
-  // read http headers
-  // TODO тесты на конкретно эту часть кода
-  std::string::size_type headers_end_pos = 0;
+  // TODO read http status string first, return http status code too
+  // HTTP<version><whitespaces><code>
   static constexpr std::string_view headers_end_marker = "\r\n\r\n";
+  // read http headers
+  std::string::size_type headers_end_pos = co_await async_read_until(socket, data, headers_end_marker, ec);
+  // TODO получается тут 3 read_until - status string \r\n, Content-Length: (хотя это ... Хм), headers end
+  // \r\n\r\n
+  if (ec)
+    throw http_exception("[http] error while reading http headers: {}", ec.message());
   static constexpr std::string_view content_length_header = "Content-Length:";
-  // TODO видимо всё таки вынести в функцию read_until или типа того
-  // TODO какая-то обработка на goto возможно этих еррор кодов, кек
-  for (;;) {
-    // TODO read http status string first, return http status code too
-    // HTTP<version><whitespaces><code>
-    // async read until may overread after \r\n\r\n
-    char buf[128];
-    transfered = co_await async_read_some(socket, asio::buffer(buf), ec);
-    if (ec)
-      break;
-    data += std::string_view(buf, transfered);  // TODO better
-    if (auto p = data.find(headers_end_marker, headers_end_pos); p != data.npos) {
-      headers_end_pos = p;
-      break;
-    }
-    headers_end_pos += transfered;
-  }
-  if (ec) {
-    // TODO smth
-    LOG_ERR("[http] error while reading http headers: {}", ec.message());
-    co_return "";
-  }
   auto content_len_pos = data.find(content_length_header);
-  if (content_len_pos == data.npos) {
-    LOG_ERR("[http] incorrect server answer");
-    co_return "";
-  }
+  if (content_len_pos == data.npos)
+    throw http_exception("[http] incorrect server answer");
   content_len_pos += content_length_header.size();
   // skip whitespaces (exactly one usually)
   content_len_pos = data.find_first_not_of(' ', content_len_pos);
@@ -366,25 +357,20 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(Url url, std::vector<H
   size_t content_length;
   auto [_, err] =
       std::from_chars(data.data() + content_len_pos, data.data() + headers_end_pos, content_length);
-  if (err != std::errc{}) {
-    // TODO smth, incorrect server answer ?
-    LOG_ERR("[http] cannot parse content length from server response");
-    co_return "";
-  }
+  if (err != std::errc{})
+    throw http_exception("[http] cannot parse content length from server response: {}",
+                         std::make_error_code(err).message());
+
   headers_end_pos += headers_end_marker.size();
   size_t overriden_bytes = data.size() - headers_end_pos;
   assert(overriden_bytes <= content_length);
   // remove headers, keep only overreaded body
   data.erase(data.begin(), data.begin() + headers_end_pos);
   data.resize(content_length);
-  // TODO что будет если надо прочитать 0 байт? Вернётся сразу asio или зависнет нахрен?
   transfered = co_await async_read(
       socket, asio::buffer(data.data() + overriden_bytes, content_length - overriden_bytes), ec);
-  if (ec) {
-    // TODO smth
-    LOG_ERR("[http] error while reading body: {}", ec.message());
-    co_return "";
-  }
+  if (ec)
+    throw http_exception("[http] error while reading body: {}", ec.message());
   assert(transfered == content_length - overriden_bytes);
   drop_socket.no_longer_needed();
   co_return data;

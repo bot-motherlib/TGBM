@@ -103,13 +103,26 @@ dd::task<bool> Api::close() const {
   co_return (co_await sendRequest("close")).get<bool>("", false);
 }
 
-dd::task<Message::Ptr> Api::sendMessage(boost::variant<std::int64_t, std::string> chatId,
-                                        const std::string &text, LinkPreviewOptions::Ptr linkPreviewOptions,
+dd::task<Message::Ptr> Api::sendMessage(boost::variant<std::int64_t, std::string> chatId, std::string text,
+                                        LinkPreviewOptions::Ptr linkPreviewOptions,
                                         ReplyParameters::Ptr replyParameters, GenericReply::Ptr replyMarkup,
-                                        const std::string &parseMode, bool disableNotification,
-                                        const std::vector<MessageEntity::Ptr> &entities,
+                                        std::string parseMode, bool disableNotification,
+                                        std::vector<MessageEntity::Ptr> entities,
                                         std::int32_t messageThreadId, bool protectContent,
-                                        const std::string &businessConnectionId) const {
+                                        std::string businessConnectionId) const {
+  // TODO а что если отправить пустое сообщение или одни пробелы? Нужно здесь это обработать
+  // TODO обрезать пробелы с двух сторон
+  // TODO better
+  enum { max_tg_msg_size = 4096 };
+
+  if (text.size() == 0)
+    co_return nullptr;
+  while (text.size() > max_tg_msg_size) {
+    (void)co_await sendMessage(chatId, text.substr(0, max_tg_msg_size), linkPreviewOptions, replyParameters,
+                               replyMarkup, parseMode, disableNotification, entities, messageThreadId,
+                               protectContent, businessConnectionId);
+    text = text.substr(max_tg_msg_size);
+  }
   std::vector<HttpReqArg> args;
   args.reserve(11);
 

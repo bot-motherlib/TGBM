@@ -213,13 +213,12 @@ class TGBM_API Api {
    * @return On success, the sent Message is returned.
    */
   dd::task<Message::Ptr> sendMessage(
-      boost::variant<std::int64_t, std::string> chatId, const std::string& text,
+      boost::variant<std::int64_t, std::string> chatId, std::string text,
       LinkPreviewOptions::Ptr linkPreviewOptions = nullptr, ReplyParameters::Ptr replyParameters = nullptr,
-      GenericReply::Ptr replyMarkup = nullptr, const std::string& parseMode = "",
-      bool disableNotification = false,
-      const std::vector<MessageEntity::Ptr>& entities = std::vector<MessageEntity::Ptr>(),
+      GenericReply::Ptr replyMarkup = nullptr, std::string parseMode = "", bool disableNotification = false,
+      std::vector<MessageEntity::Ptr> entities = std::vector<MessageEntity::Ptr>(),
       std::int32_t messageThreadId = 0, bool protectContent = false,
-      const std::string& businessConnectionId = "") const;
+      std::string businessConnectionId = "") const;
 
   /**
    * @brief Use this method to forward messages of any kind.

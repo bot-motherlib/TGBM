@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cassert>
-#include <mutex>
 #include <coroutine>
 #include <anyany/anyany.hpp>
 
@@ -9,7 +8,8 @@
 
 #include <cassert>
 
-// TODO change namespac tgbm -> tgbm
+#include "tgbm/scope_exit.h"
+
 namespace tgbm {
 
 template <typename Node>
@@ -56,7 +56,18 @@ struct noop_events_handler_t {
   }
 };
 
-template <typename T, pool_events_handler_for<T> H = noop_events_handler_t<T>>
+struct null_mutex {
+  static constexpr void lock() noexcept {
+  }
+  static constexpr void unlock() noexcept {
+  }
+  static constexpr bool try_lock() noexcept {
+    return true;
+  }
+};
+
+// TODO coro allocator multithread (interface)
+template <typename T, pool_events_handler_for<T> H = noop_events_handler_t<T>, typename Mutex = null_mutex>
 struct pool_t {
  private:
   using data_type = T;
@@ -76,7 +87,7 @@ struct pool_t {
   intrusive_stack<dd::task_node> waiters;
   factory_t factory;
   dd::any_executor_ref exe;  // where waiters will be resumed
-  mutable std::mutex mtx;
+  KELCORO_NO_UNIQUE_ADDRESS mutable Mutex mtx;
 
   struct free_data_awaiter {
     pool_t &pool;
@@ -144,6 +155,7 @@ struct pool_t {
     }
 
    public:
+    handle_t() = default;
     handle_t(handle_t &&other) noexcept : node(std::exchange(other.node, nullptr)), p(other.p) {
     }
     handle_t &operator=(handle_t &&other) noexcept {
@@ -181,7 +193,7 @@ struct pool_t {
     }
   };
   dd::task<handle_t> borrow() {
-    std::unique_lock<std::mutex> l(mtx);
+    std::unique_lock l(mtx);
     if (!free.empty()) {
       ++borrowed_count;
       --free_count;
@@ -198,8 +210,12 @@ struct pool_t {
     l.unlock();
     // new_delete resource do not require synchronization
     void *mem = resource()->allocate(sizeof(node_t), alignof(node_t));
+    on_scope_failure(free_mem) {
+      resource()->deallocate(mem, sizeof(node_t), alignof(node_t));
+    };
     node_t *node = new (mem) node_t(nullptr, co_await factory());
     H::created(node->data);
+    free_mem.no_longer_needed();
     co_return handle_t(node, *this);
   }
 

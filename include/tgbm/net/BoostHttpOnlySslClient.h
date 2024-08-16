@@ -16,6 +16,34 @@
 
 namespace tgbm {
 
+struct asio_connection_t : std::enable_shared_from_this<asio_connection_t> {
+  boost::asio::ssl::context sslctx;  // required all time while socket alive
+  boost::asio::ssl::stream<boost::asio::ip::tcp::socket> socket;
+
+  explicit asio_connection_t(boost::asio::io_context &ctx KELCORO_LIFETIMEBOUND,
+                             boost::asio::ssl::context _ssl_ctx)
+      : sslctx(std::move(_ssl_ctx)), socket(ctx, sslctx) {
+  }
+};
+
+struct network_exception : std::exception {
+  std::string data;
+
+  template <typename... Args>
+  explicit network_exception(std::format_string<Args...> fmt_str, Args &&...args)
+      : data(std::format(fmt_str, std::forward<Args>(args)...)) {
+  }
+  explicit network_exception(std::string s) noexcept : data(std::move(s)) {
+  }
+  const char *what() const noexcept KELCORO_LIFETIMEBOUND override {
+    return data.c_str();
+  }
+};
+
+struct http_exception : network_exception {
+  using network_exception::network_exception;
+};
+
 /**
  * @brief This class makes http requests via boost::asio.
  *
@@ -23,12 +51,9 @@ namespace tgbm {
  */
 // TODO? shared from this?...
 class TGBM_API BoostHttpOnlySslClient : public HttpClient {
-  struct connection_t {
-    boost::asio::ssl::stream<boost::asio::ip::tcp::socket> socket;
-    bool used = false;
-  };
-
  public:
+  using connection_t = std::shared_ptr<asio_connection_t>;
+
   BoostHttpOnlySslClient(std::string host, size_t connections_max_count = 1000);
   ~BoostHttpOnlySslClient() override;
 
