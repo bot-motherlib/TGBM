@@ -1,16 +1,18 @@
 cmake_minimum_required(VERSION 3.30)
 project(tgbm) # telegram bot mother library
 
+
 option(TGBM_SANITIZE_THREAD "" OFF)
 option(TGBM_SANITIZE "" OFF)
 option(TGBM_ENABLE_TESTS "Set to ON to enable building of tests" OFF)
-option(BUILD_SHARED_LIBS "Build tgbm shared/static library" OFF)
 
 if (TGBM_SANITIZE_THREAD)
   if (TGBM_SANITIZE)
     message(FATAL "TGBM_SANITIZE and TGBM_SANITIZE_THREAD incompatible, use only one of them")
   endif()
 endif()
+
+include (cmake/deps.cmake)
 
 set(TGBM_SRC_LIST
     src/Api.cpp
@@ -35,47 +37,21 @@ set(TGBM_SRC_LIST
     src/types/PassportElementError.cpp
     src/types/ReactionType.cpp)
 
-# deps
-
-add_compile_definitions(BOOST_ASIO_HAS_CO_AWAIT)
-
-# TODO rm unit test framework
-find_package(Boost 1.82 COMPONENTS system unit_test_framework REQUIRED)
-find_package(Threads REQUIRED)
-find_package(ZLIB REQUIRED)
-find_package(OpenSSL REQUIRED)
-
-include(FetchContent)
-
-FetchContent_Declare(
-  kelcoro
-  GIT_REPOSITORY https://github.com/kelbon/kelcoro
-  GIT_TAG origin/main
-)
-FetchContent_MakeAvailable(kelcoro)
-
-FetchContent_Declare(
-  AnyAny
-  GIT_REPOSITORY https://github.com/kelbon/AnyAny
-  GIT_TAG origin/main
-)
-FetchContent_MakeAvailable(AnyAny)
-
 add_library(tgbmlib ${TGBM_SRC_LIST})
 
-target_include_directories(tgbmlib PUBLIC 
-                           "${CMAKE_CURRENT_SOURCE_DIR}/include"
-                           PRIVATE
-                           ${OPENSSL_INCLUDE_DIR}
-                           ${Boost_INCLUDE_DIR})
+target_include_directories(tgbmlib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 target_link_libraries(tgbmlib PUBLIC
-    kelcorolib
-    anyanylib
     ${CMAKE_THREAD_LIBS_INIT}
     ${ZLIB_LIBRARIES}
-    OpenSSL::SSL OpenSSL::Crypto
-    ${Boost_LIBRARIES})
+    ssl crypto
+    anyanylib
+    kelcorolib
+    Boost::system
+    Boost::asio
+    Boost::property_tree
+    fmt::fmt
+)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   if (TGBM_SANITIZE_THREAD)
@@ -102,8 +78,4 @@ set_target_properties(tgbmlib PROPERTIES
 if (TGBM_ENABLE_TESTS)
     include(CTest)
     add_subdirectory(test)
-endif()
-
-if(BUILD_SHARED_LIBS)
-    add_definitions(-DTGBM_DLL)
 endif()

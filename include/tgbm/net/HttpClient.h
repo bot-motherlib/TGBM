@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
-#include <format>
+#include <fmt/format.h>
 
 #include <kelcoro/task.hpp>
 
@@ -16,8 +16,8 @@ struct network_exception : std::exception {
   std::string data;
 
   template <typename... Args>
-  explicit network_exception(std::format_string<Args...> fmt_str, Args &&...args)
-      : data(std::format(fmt_str, std::forward<Args>(args)...)) {
+  explicit network_exception(fmt::format_string<Args...> fmt_str, Args &&...args)
+      : data(fmt::format(fmt_str, std::forward<Args>(args)...)) {
   }
   explicit network_exception(std::string s) noexcept : data(std::move(s)) {
   }
