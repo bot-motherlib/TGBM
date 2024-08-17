@@ -14,6 +14,7 @@ class TGBM_API HttpParser {
  public:
   std::string generateRequest(const Url& url, const std::vector<HttpReqArg>& args,
                               bool isKeepAlive = false) const;
+  static std::string generateApplicationJson(const std::vector<HttpReqArg>& args);
   std::string generateMultipartFormData(const std::vector<HttpReqArg>& args,
                                         const std::string& boundary) const;
   std::string generateMultipartBoundary(const std::vector<HttpReqArg>& args) const;

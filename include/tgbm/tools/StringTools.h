@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <vector>
 #include <string>
-#include <sstream>
 
 /**
  * @ingroup tools
@@ -36,7 +35,7 @@ std::string generateRandomString(std::size_t length);
  * @return Encoded url string
  */
 TGBM_API
-std::string urlEncode(const std::string& value, const std::string& additionalLegitChars = "");
+std::string urlEncode(std::string_view value);
 
 /**
  * Performs url decode.

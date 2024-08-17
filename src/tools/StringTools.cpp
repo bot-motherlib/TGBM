@@ -1,9 +1,10 @@
 #include "tgbm/tools/StringTools.h"
 
-#include <iomanip>
+#include <format>
 #include <cstdio>
 #include <random>
 #include <string>
+#include <sstream>
 
 using namespace std;
 
@@ -34,23 +35,31 @@ string generateRandomString(std::size_t length) {
   return result;
 }
 
-string urlEncode(const string& value, const std::string& additionalLegitChars) {
-  // о господи, уж лучше в json передавать чем вот это
-  // TODO use application/json
-  static const string legitPunctuation =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.-~:";
-  std::stringstream ss;
-  for (auto const& c : value) {
-    if ((legitPunctuation.find(c) == std::string::npos) &&
-        (additionalLegitChars.find(c) == std::string::npos)) {
-      ss << '%' << std::uppercase << std::setfill('0') << std::setw(2) << std::hex
-         << (unsigned int)(unsigned char)c;
-    } else {
-      ss << c;
+string urlEncode(std::string_view value) {
+  auto is_legit = [](char c) {
+    switch (c) {
+      case 'A' ... 'Z':
+      case 'a' ... 'z':
+      case '0' ... '9':
+      case '_':
+      case '.':
+      case '-':
+      case '~':
+      case ':':
+        return true;
+      default:
+        return false;
     }
+  };
+  std::string ss;
+  ss.reserve(value.size());
+  for (auto const& c : value) {
+    if (is_legit(c))
+      ss.push_back(c);
+    else [[unlikely]]
+      std::format_to(std::back_inserter(ss), "%{:02X}", (unsigned)(unsigned char)c);
   }
-
-  return ss.str();
+  return ss;
 }
 
 string urlDecode(const string& value) {

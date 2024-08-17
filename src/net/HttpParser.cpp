@@ -5,6 +5,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include <cstddef>
+#include <format>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -13,6 +14,27 @@ using namespace std;
 using namespace boost;
 
 namespace tgbm {
+
+// TODO rapid json (escape all)
+std::string HttpParser::generateApplicationJson(const std::vector<HttpReqArg>& args) {
+  assert(!args.empty());
+  string result;
+  // TODO reserve exactly? item.name.size() + item.value.size() + 4 quotes + comma (-1) + object { }
+  result.reserve(args.size() * 20);
+  auto bi = std::back_inserter(result);
+  result.push_back('{');
+  auto b = args.begin();
+  auto e = args.end();
+  goto start;
+  for (; b != e; ++b) {
+    result.push_back(',');
+  start:
+    // TODO appends?
+    std::format_to(bi, R"("{}":"{}")", b->name, b->value);
+  }
+  result.push_back('}');
+  return result;
+}
 
 string HttpParser::generateRequest(const Url& url, const vector<HttpReqArg>& args, bool isKeepAlive) const {
   string result;
@@ -40,7 +62,7 @@ string HttpParser::generateRequest(const Url& url, const vector<HttpReqArg>& arg
 
     string bondary = generateMultipartBoundary(args);
     if (bondary.empty()) {
-      // TODO application/json
+      // TODO application/json ?
       result += "Content-Type: application/x-www-form-urlencoded\r\n";
       requestData = generateWwwFormUrlencoded(args);
     } else {
@@ -57,7 +79,7 @@ string HttpParser::generateRequest(const Url& url, const vector<HttpReqArg>& arg
   }
   return result;
 }
-
+// TODO используется когда хотя бы 1 аргумент - файл, нужно обдумать когда это вообще
 string HttpParser::generateMultipartFormData(const vector<HttpReqArg>& args, const string& boundary) const {
   string result;
   for (const HttpReqArg& item : args) {
@@ -85,6 +107,7 @@ string HttpParser::generateMultipartFormData(const vector<HttpReqArg>& args, con
 string HttpParser::generateMultipartBoundary(const vector<HttpReqArg>& args) const {
   string result;
   // TODO нужно смотреть что вообще тут происходит по http спеке, странное что-то
+  // насколько понял boundary должно не содержаться в файле и стоит в начале и конце, и так он генерит его..
   for (const HttpReqArg& item : args) {
     if (item.isFile) {
       while (result.empty() || item.value.find(result) != string::npos) {

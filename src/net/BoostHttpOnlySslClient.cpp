@@ -70,6 +70,7 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(Url url, std::vector<H
   };
   io_error_code ec;
   std::string requestText = _httpParser.generateRequest(url, args, /*isKeepAlive=*/true);
+  LOG_DEBUG("generated request: {}", requestText);
   size_t transfered = co_await async_write(socket, asio::buffer(requestText), ec);
   if (ec)
     throw http_exception("[http] cannot write to {} socket, err: {}", (void*)&socket, ec.message());

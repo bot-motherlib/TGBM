@@ -3,6 +3,8 @@
 #include <chrono>
 #include <thread>
 
+#include "tgbm/logger.h"
+
 namespace tgbm {
 
 Api::Api(std::string token, HttpClient &httpClient, const std::string &url)
@@ -2710,7 +2712,8 @@ dd::task<boost::property_tree::ptree> Api::sendRequest(const std::string &method
                                 result.get("description", ""));
       // TODO тоже копирование мда
       co_return result.get_child("result");
-    } catch (...) {
+    } catch (std::exception &e) {
+      LOG_ERR("[send request] thrown exception: {}", e.what());
       int max_retries = _httpClient.getRequestMaxRetries();
       if ((max_retries >= 0) && (retries == max_retries)) {
         throw;
