@@ -6,7 +6,7 @@ CPMAddPackage(
   GIT_TAG 1.1.1w-20231130
   OPTIONS "WITH_APPS OFF"
   EXCLUDE_FROM_ALL YES
-  SYSTEM YES
+  SYSTEM OFF
 )
 set(BOOST_INCLUDE_LIBRARIES system asio property_tree)
 CPMAddPackage(

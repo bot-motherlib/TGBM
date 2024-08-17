@@ -5,7 +5,6 @@ project(tgbm) # telegram bot mother library
 option(TGBM_SANITIZE_THREAD "" OFF)
 option(TGBM_SANITIZE "" OFF)
 option(TGBM_ENABLE_TESTS "Set to ON to enable building of tests" OFF)
-option(BUILD_SHARED_LIBS "Build tgbm shared/static library" OFF)
 
 if (TGBM_SANITIZE_THREAD)
   if (TGBM_SANITIZE)
@@ -79,8 +78,4 @@ set_target_properties(tgbmlib PROPERTIES
 if (TGBM_ENABLE_TESTS)
     include(CTest)
     add_subdirectory(test)
-endif()
-
-if(BUILD_SHARED_LIBS)
-    add_definitions(-DTGBM_DLL)
 endif()
