@@ -2688,7 +2688,7 @@ dd::task<bool> Api::blockedByUser(std::int64_t chatId) const {
 
 dd::task<boost::property_tree::ptree> Api::sendRequest(const std::string &method,
                                                        const std::vector<HttpReqArg> &args) const {
-  std::string url = std::format("{}/bot{}/{}", _url, _token, method);
+  std::string url = fmt::format("{}/bot{}/{}", _url, _token, method);
 
   int requestRetryBackoff = _httpClient.getRequestBackoff();
   int retries = 0;

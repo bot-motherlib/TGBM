@@ -5,7 +5,7 @@
 #include <boost/algorithm/string.hpp>
 
 #include <cstddef>
-#include <format>
+#include <fmt/format.h>
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -30,7 +30,7 @@ std::string HttpParser::generateApplicationJson(const std::vector<HttpReqArg>& a
     result.push_back(',');
   start:
     // TODO appends?
-    std::format_to(bi, R"("{}":"{}")", b->name, b->value);
+    fmt::format_to(bi, R"("{}":"{}")", b->name, b->value);
   }
   result.push_back('}');
   return result;

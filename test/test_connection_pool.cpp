@@ -3,12 +3,12 @@
 
 #include <iostream>
 #include <source_location>
-#include <format>
+#include <fmt/format.h>
 
 #include <kelcoro/thread_pool.hpp>
 
 static void log_err(std::source_location loc = std::source_location::current()) {
-  std::format_to(std::ostreambuf_iterator(std::cerr), "{} failed, location: {}:{}:{}", loc.function_name(),
+  fmt::format_to(std::ostreambuf_iterator(std::cerr), "{} failed, location: {}:{}:{}", loc.function_name(),
                  loc.file_name(), loc.line(), loc.column());
   std::cerr.flush();
 }

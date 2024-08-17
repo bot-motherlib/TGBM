@@ -1,6 +1,6 @@
 #include "tgbm/tools/StringTools.h"
 
-#include <format>
+#include <fmt/format.h>
 #include <cstdio>
 #include <random>
 #include <string>
@@ -57,7 +57,7 @@ string urlEncode(std::string_view value) {
     if (is_legit(c))
       ss.push_back(c);
     else [[unlikely]]
-      std::format_to(std::back_inserter(ss), "%{:02X}", (unsigned)(unsigned char)c);
+      fmt::format_to(std::back_inserter(ss), "%{:02X}", (unsigned)(unsigned char)c);
   }
   return ss;
 }
