@@ -2686,41 +2686,30 @@ dd::task<bool> Api::blockedByUser(std::int64_t chatId) const {
 
 dd::task<boost::property_tree::ptree> Api::sendRequest(const std::string &method,
                                                        const std::vector<HttpReqArg> &args) const {
-  std::string url(_url);
-  url += "/bot";
-  url += _token;
-  url += "/";
-  url += method;
+  std::string url = std::format("{}/bot{}/{}", _url, _token, method);
 
   int requestRetryBackoff = _httpClient.getRequestBackoff();
   int retries = 0;
-  while (1) {
+  for (;;) {
     try {
       std::string serverResponse = co_await _httpClient.makeRequest(url, args);
-      if (serverResponse.starts_with("<html>")) {
-        std::string message =
-            "TGBM library have got html page instead of json response. "
-            "Maybe you entered wrong bot token.";
-        throw TgException(message, TgException::ErrorCode::HtmlResponse);
-      }
+      if (serverResponse.starts_with("<html>"))
+        throw TGBM_TG_EXCEPTION(tg_errc::HtmlResponse,
+                                "TGBM library have got html page instead of json response. "
+                                "Maybe you entered wrong bot token.");
 
       boost::property_tree::ptree result;
       try {
         result = _tgTypeParser.parseJson(serverResponse);
       } catch (boost::property_tree::ptree_error &e) {
-        std::string message = "TGBM library can't parse json response. " + std::string(e.what());
-
-        throw TgException(message, TgException::ErrorCode::InvalidJson);
+        throw TGBM_TG_EXCEPTION(tg_errc::InvalidJson, "TGBM library can't parse json response. {}", e.what());
       }
 
-      if (result.get<bool>("ok", false)) {
-        co_return result.get_child("result");
-      } else {
-        std::string message = result.get("description", "");
-        size_t errorCode = result.get<size_t>("error_code", 0u);
-
-        throw TgException(message, static_cast<TgException::ErrorCode>(errorCode));
-      }
+      if (!result.get<bool>("ok", false))
+        throw TGBM_TG_EXCEPTION(tg_errc(result.get<size_t>("error_code", 0u)), "{}",
+                                result.get("description", ""));
+      // TODO тоже копирование мда
+      co_return result.get_child("result");
     } catch (...) {
       int max_retries = _httpClient.getRequestMaxRetries();
       if ((max_retries >= 0) && (retries == max_retries)) {

@@ -16,7 +16,6 @@ set(TGBM_SRC_LIST
     src/Api.cpp
     src/Bot.cpp
     src/EventHandler.cpp
-    src/TgException.cpp
     src/TgTypeParser.cpp
     src/net/BoostHttpOnlySslClient.cpp
     src/net/HttpParser.cpp

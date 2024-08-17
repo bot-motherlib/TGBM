@@ -7,8 +7,9 @@
 #include "tgbm/net/ConnectionPool.h"
 #include "tgbm/logger.h"
 
-#include <boost/asio/ssl.hpp>
 #include <boost/asio/io_context.hpp>
+#include <boost/asio/ssl/context.hpp>
+#include <boost/asio/ssl/stream.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
 #include <string>
@@ -24,24 +25,6 @@ struct asio_connection_t : std::enable_shared_from_this<asio_connection_t> {
                              boost::asio::ssl::context _ssl_ctx)
       : sslctx(std::move(_ssl_ctx)), socket(ctx, sslctx) {
   }
-};
-
-struct network_exception : std::exception {
-  std::string data;
-
-  template <typename... Args>
-  explicit network_exception(std::format_string<Args...> fmt_str, Args &&...args)
-      : data(std::format(fmt_str, std::forward<Args>(args)...)) {
-  }
-  explicit network_exception(std::string s) noexcept : data(std::move(s)) {
-  }
-  const char *what() const noexcept KELCORO_LIFETIMEBOUND override {
-    return data.c_str();
-  }
-};
-
-struct http_exception : network_exception {
-  using network_exception::network_exception;
 };
 
 /**
@@ -64,9 +47,9 @@ class TGBM_API BoostHttpOnlySslClient : public HttpClient {
    * If at least 1 arg is marked as file, the content type of a request will be multipart/form-data, otherwise
    * it will be application/x-www-form-urlencoded.
    */
-  // TODO понять правильно ли передаются & в ключе и значении x-www-form-urlencoded (должно быть %26 и тд)
   // TODO разделить get (без аргментов)/post и отдельно видимо файл, т.е. будет одно application/json
   // и второе multipart/form-data
+  // TODO убрать аргументы и передавать сам запрос (они используются только чтобы сгенерировать запрос)
   dd::task<std::string> makeRequest(Url url, std::vector<HttpReqArg> args) override;
 
   static dd::task<connection_t> create_connection(boost::asio::io_context &, std::string host);

@@ -8,6 +8,8 @@ using namespace std;
 namespace tgbm {
 
 Url::Url(const string& url) {
+  // TODO охё, сначала строку создают, потом парсят обратно
+  // TODO понять куда попадает method?..
   bool isProtocolParsed = false;
   bool isHostParsed = false;
   bool isPathParsed = false;

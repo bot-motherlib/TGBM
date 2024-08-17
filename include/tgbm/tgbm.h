@@ -4,7 +4,6 @@
 #include "tgbm/Bot.h"
 #include "tgbm/EventBroadcaster.h"
 #include "tgbm/EventHandler.h"
-#include "tgbm/TgException.h"
 #include "tgbm/TgTypeParser.h"
 #include "tgbm/net/BoostHttpOnlySslClient.h"
 #include "tgbm/net/HttpClient.h"

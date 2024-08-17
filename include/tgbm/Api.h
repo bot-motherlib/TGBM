@@ -1,6 +1,5 @@
 #pragma once
 
-#include "tgbm/TgException.h"
 #include "tgbm/TgTypeParser.h"
 #include "tgbm/net/HttpClient.h"
 #include "tgbm/net/HttpReqArg.h"
@@ -40,6 +39,52 @@
 namespace tgbm {
 
 class Bot;
+
+// possible errors from Api requests
+enum struct tg_errc : int16_t {
+  Undefined = 0,
+  BadRequest = 400,
+  Unauthorized = 401,
+  Forbidden = 403,
+  NotFound = 404,
+  Flood = 402,
+  Internal = 500,
+  HtmlResponse = 100,
+  InvalidJson = 101
+};
+
+constexpr std::string_view e2str(tg_errc e) noexcept {
+  using enum tg_errc;
+  switch (e) {
+    case BadRequest:
+      return "BadRequest";
+    case Unauthorized:
+      return "Unauthorized";
+    case Forbidden:
+      return "Forbidden";
+    case NotFound:
+      return "NotFound";
+    case Flood:
+      return "Flood";
+    case HtmlResponse:
+      return "HtmlResponse";
+    case InvalidJson:
+      return "InvalidJson";
+    case Internal:
+      return "Internal";
+    case Undefined:
+      return "Undefined";
+    default:
+      return "Unexpected error";
+  }
+}
+#define TGBM_TG_EXCEPTION(ERRC, FMT_STR, ...) \
+  ::tgbm::tg_exception(FMT_STR " errc: {}" __VA_OPT__(, ) __VA_ARGS__, e2str(ERRC))
+
+// thrown when Telegram refuses API request
+struct tg_exception : http_exception {
+  using http_exception::http_exception;
+};
 
 /**
  * @brief This class executes telegram api methods. Telegram docs:
@@ -2611,6 +2656,8 @@ class TGBM_API Api {
   HttpClient& _httpClient;
 
  protected:
+  // TODO аргументы передавать не надо, они используются только чтобы сгенерить реквест
+  // можно сразу application/json
   dd::task<boost::property_tree::ptree> sendRequest(
       const std::string& method, const std::vector<HttpReqArg>& args = std::vector<HttpReqArg>()) const;
 

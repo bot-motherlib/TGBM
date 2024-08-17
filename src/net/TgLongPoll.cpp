@@ -20,6 +20,7 @@ TgLongPoll::TgLongPoll(const Api* api, const EventHandler* eventHandler, std::in
       _limit(limit),
       _timeout(timeout),
       _allowUpdates(std::move(allowUpdates)) {
+  // TODO wtf
   const_cast<tgbm::HttpClient&>(_api->_httpClient)._timeout = _timeout + 5;
 }
 
@@ -30,6 +31,8 @@ TgLongPoll::TgLongPoll(const Bot& bot, std::int32_t limit, std::int32_t timeout,
 
 dd::task<void> TgLongPoll::start() {
   // TODO один коннекшн и через него делать всё и всегда, не переиспользовать
+  // TODO выразить нормально через интерфейс, мб logical_thread или типа того
+  // чтобы можно было запросить остановку получается...
   if (started)
     throw 42;
   started = true;
