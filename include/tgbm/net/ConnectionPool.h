@@ -7,6 +7,7 @@
 #include <kelcoro/task.hpp>
 
 #include <cassert>
+#include <mutex>
 
 #include "tgbm/scope_exit.h"
 
