@@ -71,7 +71,7 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(Url url, std::vector<H
   };
   io_error_code ec;
   std::string requestText = _httpParser.generateRequest(url, args, /*isKeepAlive=*/true);
-  LOG_DEBUG("generated request: {}", requestText);
+  LOG_DEBUG("generated request:\n{}", requestText);
   size_t transfered = co_await async_write(socket, asio::buffer(requestText), ec);
   if (ec)
     throw http_exception("[http] cannot write to {} socket, err: {}", (void*)&socket, ec.message());
@@ -110,6 +110,7 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(Url url, std::vector<H
   size_t overriden_bytes = data.size() - headers_end_pos;
   assert(overriden_bytes <= content_length);
   // remove headers, keep only overreaded body
+  LOG_DEBUG("response headers:\n{}", std::string_view(data).substr(0, data.size() - overriden_bytes));
   data.erase(data.begin(), data.begin() + headers_end_pos);
   data.resize(content_length);
   transfered = co_await async_read(
@@ -118,6 +119,7 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(Url url, std::vector<H
     throw http_exception("[http] error while reading body: {}", ec.message());
   assert(transfered == content_length - overriden_bytes);
   drop_socket.no_longer_needed();
+  LOG_DEBUG("response body:\n{}", data);
   co_return data;
 }
 

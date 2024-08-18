@@ -51,6 +51,7 @@ target_link_libraries(tgbmlib PUBLIC
     Boost::asio
     Boost::property_tree
     fmt::fmt
+    rapidjsonlib
 )
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")

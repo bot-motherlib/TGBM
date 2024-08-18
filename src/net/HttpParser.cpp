@@ -10,6 +10,10 @@
 #include <vector>
 #include <unordered_map>
 
+#include <rapidjson/stringbuffer.h>
+#include <rapidjson/writer.h>
+#include <rapidjson/document.h>
+
 using namespace std;
 using namespace boost;
 
@@ -18,22 +22,15 @@ namespace tgbm {
 // TODO rapid json (escape all)
 std::string HttpParser::generateApplicationJson(const std::vector<HttpReqArg>& args) {
   assert(!args.empty());
-  string result;
-  // TODO reserve exactly? item.name.size() + item.value.size() + 4 quotes + comma (-1) + object { }
-  result.reserve(args.size() * 20);
-  auto bi = std::back_inserter(result);
-  result.push_back('{');
-  auto b = args.begin();
-  auto e = args.end();
-  goto start;
-  for (; b != e; ++b) {
-    result.push_back(',');
-  start:
-    // TODO appends?
-    fmt::format_to(bi, R"("{}":"{}")", b->name, b->value);
+  rapidjson::StringBuffer buffer;
+  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+  writer.StartObject();
+  for (auto& arg : args) {
+    writer.Key(arg.name.data(), arg.name.size());
+    writer.String(arg.value.data(), arg.value.size());
   }
-  result.push_back('}');
-  return result;
+  writer.EndObject();
+  return {buffer.GetString(), buffer.GetSize()};
 }
 
 string HttpParser::generateRequest(const Url& url, const vector<HttpReqArg>& args, bool isKeepAlive) const {

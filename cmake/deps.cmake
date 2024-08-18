@@ -40,4 +40,10 @@ CPMAddPackage(
   GIT_TAG origin/main
 )
 
+CPMAddPackage(
+  NAME rapidjson
+  GIT_REPOSITORY https://github.com/kelbon/rapidjson-usable
+  GIT_TAG        origin/master
+)
+
 find_package(Threads REQUIRED)
