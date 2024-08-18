@@ -1,5 +1,6 @@
 #include "tgbm/net/HttpParser.h"
 
+#include "tgbm/scope_exit.h"
 #include "tgbm/tools/StringTools.h"
 
 #include <boost/algorithm/string.hpp>
@@ -10,8 +11,6 @@
 #include <vector>
 #include <unordered_map>
 
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
 #include <rapidjson/document.h>
 
 using namespace std;
@@ -19,21 +18,22 @@ using namespace boost;
 
 namespace tgbm {
 
-struct rapidjson_string_buffer {
-  std::string& buf;
-
-  using Ch = std::string::traits_type::char_type;
-
-  void Put(char c) {
-    buf.push_back(c);
-  }
-  static void Flush() noexcept {
-  }
-};
-
 std::string HttpParser::generateApplicationJson(const std::vector<HttpReqArg>& args) {
-  assert(!args.empty());
+  struct rapidjson_string_buffer {
+    std::string& buf;
+
+    using Ch = char;
+
+    void Put(char c) {
+      buf.push_back(c);
+    }
+    static void Flush() noexcept {
+    }
+  };
+
   std::string result;
+  if (args.empty())
+    return result;
   result.reserve(args.size() * 20);  // TODO may be calculate better
   rapidjson_string_buffer buffer(result);
   rapidjson::Writer writer(buffer);
@@ -43,6 +43,66 @@ std::string HttpParser::generateApplicationJson(const std::vector<HttpReqArg>& a
     writer.String(arg.value);
   }
   writer.EndObject();
+  return result;
+}
+
+std::string generate_http_headers_get(const Url& url, bool keep_alive) {
+  // TODO optimized inlined version
+  return generate_http_headers(url, keep_alive, {}, {});
+}
+std::string generate_http_headers(const Url& url, bool keep_alive, std::string_view body,
+                                  std::string_view content_type) {
+  assert(body != "{}" && "empty json object provided");
+  std::string body_sz_str = fmt::format("{}", body.size());
+  size_t size_bytes = [&] {
+    using namespace std::string_view_literals;
+    size_t headers_size = 0;
+    headers_size += body.empty() ? "GET "sv.size() : "POST "sv.size();
+    headers_size += url.path.size();
+    if (!url.query.empty())
+      headers_size += url.query.size() + 1;  // "?"
+    headers_size += " HTTP/1.1\r\nHost: "sv.size() + url.host.size() + "\r\nConnection: "sv.size() +
+                    (keep_alive ? "keep-alive"sv.size() : "close"sv.size());
+    headers_size += "\r\n"sv.size();
+    if (body.empty()) {
+      headers_size += "\r\n"sv.size();
+      return headers_size;
+    }
+    headers_size += "Content-Type: "sv.size() + content_type.size() + "\r\nContent-Length: "sv.size() +
+                    body_sz_str.size() + "\r\n\r\n"sv.size();
+    return headers_size;
+  }();
+  string result;
+  // TODO resize
+  result.reserve(size_bytes);
+  on_scope_exit {
+    assert(result.size() == size_bytes && "not exactly equal size reserved, logical error");
+  };
+  if (body.empty())
+    result += "GET ";
+  else
+    result += "POST ";
+  result += url.path;
+  result += url.query.empty() ? "" : "?" + url.query;
+  result +=
+      " HTTP/1.1\r\n"
+      "Host: ";
+  result += url.host;
+  result += "\r\nConnection: ";
+  if (keep_alive)
+    result += "keep-alive";
+  else
+    result += "close";
+  result += "\r\n";
+  if (body.empty()) {
+    result += "\r\n";
+    return result;
+  }
+  result += "Content-Type: ";
+  result += content_type;
+  result += "\r\nContent-Length: ";
+  result += body_sz_str;
+  result += "\r\n\r\n";
   return result;
 }
 

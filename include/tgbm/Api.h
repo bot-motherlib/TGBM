@@ -100,6 +100,11 @@ class TGBM_API Api {
  public:
   Api(std::string token, HttpClient& httpClient KELCORO_LIFETIMEBOUND, std::string url);
 
+  // TODO rewrite, no useless work str -> str -> Url parse str.. -> split
+  std::string get_url(std::string_view method) const {
+    return fmt::format("{}/bot{}/{}", _url, _token, method);
+  }
+
   std::string_view get_token() const noexcept KELCORO_LIFETIMEBOUND {
     return _token;
   }
@@ -258,9 +263,9 @@ class TGBM_API Api {
    * @param businessConnectionId Optional. Unique identifier of the business connection on behalf of which the
    * message will be sent
    *
-   * @return On success, the sent Message is returned.
+   * @return On success, the sent Messages is returned (if message too long, then several messages sended).
    */
-  dd::task<Message::Ptr> sendMessage(
+  dd::task<std::vector<Message::Ptr>> sendMessage(
       boost::variant<std::int64_t, std::string> chatId, std::string text,
       LinkPreviewOptions::Ptr linkPreviewOptions = nullptr, ReplyParameters::Ptr replyParameters = nullptr,
       GenericReply::Ptr replyMarkup = nullptr, std::string parseMode = "", bool disableNotification = false,
@@ -2661,8 +2666,7 @@ class TGBM_API Api {
  protected:
   // TODO аргументы передавать не надо, они используются только чтобы сгенерить реквест
   // можно сразу application/json
-  dd::task<boost::property_tree::ptree> sendRequest(
-      const std::string& method, const std::vector<HttpReqArg>& args = std::vector<HttpReqArg>()) const;
+  dd::task<boost::property_tree::ptree> sendRequest(http_request) const;
 
   const std::string _token;
   const TgTypeParser _tgTypeParser;

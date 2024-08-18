@@ -7,6 +7,9 @@
 
 namespace tgbm {
 
+// name of function should be same as in API https://core.telegram.org/bots/api
+#define $METHOD ::std::string_view(__func__)
+
 Api::Api(std::string token, HttpClient &httpClient, std::string url)
     : _httpClient(httpClient), _token(std::move(token)), _tgTypeParser(), _url(std::move(url)) {
 }
@@ -14,28 +17,22 @@ Api::Api(std::string token, HttpClient &httpClient, std::string url)
 dd::task<std::vector<Update::Ptr>> Api::getUpdates(std::int32_t offset, std::int32_t limit,
                                                    std::int32_t timeout,
                                                    const StringArrayPtr &allowedUpdates) const {
-  std::vector<HttpReqArg> args;
-  args.reserve(4);
-
-  if (offset != 0) {
-    args.emplace_back("offset", offset);
-  }
-  if (limit != 100) {
-    args.emplace_back("limit", std::max(1, std::min(100, limit)));
-  }
-  if (timeout != 0) {
-    args.emplace_back("timeout", timeout);
-  }
-  if (allowedUpdates != nullptr) {
-    std::string allowedUpdatesJson = _tgTypeParser.parseArray<std::string>(
-        [](const std::string &s) -> std::string { return s; }, *allowedUpdates);
-    args.emplace_back("allowed_updates", allowedUpdatesJson);
-  }
-
-  co_return _tgTypeParser.parseJsonAndGetArray<Update>(&TgTypeParser::parseJsonAndGetUpdate,
-                                                       co_await sendRequest("getUpdates", args));
+  // TODO declare structs and default arguments (autogenerate this code)
+  application_json_body body;
+  body.start();
+  if (offset != 0)
+    body.arg("offset", offset);
+  if (limit != 100)
+    body.arg("limit", std::max(1, std::min(100, limit)));
+  if (timeout != 0)
+    body.arg("timeout", timeout);
+  if (allowedUpdates)
+    body.arg("allowed_updates", *allowedUpdates);
+  body.end();
+  boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD), std::move(body)));
+  co_return _tgTypeParser.parseJsonAndGetArray<Update>(&TgTypeParser::parseJsonAndGetUpdate, json);
 }
-
+/*
 dd::task<bool> Api::setWebhook(const std::string &url, InputFile::Ptr certificate,
                                std::int32_t maxConnections, const StringArrayPtr &allowedUpdates,
                                const std::string &ipAddress, bool dropPendingUpdates,
@@ -67,18 +64,17 @@ dd::task<bool> Api::setWebhook(const std::string &url, InputFile::Ptr certificat
 
   co_return (co_await sendRequest("setWebhook", args)).get<bool>("", false);
 }
-
+*/
 dd::task<bool> Api::deleteWebhook(bool dropPendingUpdates) const {
-  std::vector<HttpReqArg> args;
-  args.reserve(1);
-
-  if (dropPendingUpdates) {
-    args.emplace_back("drop_pending_updates", dropPendingUpdates);
-  }
-
-  co_return (co_await sendRequest("deleteWebhook", args)).get<bool>("", false);
+  application_json_body body;
+  body.start();
+  if (dropPendingUpdates)
+    body.arg("drop_pending_updates", dropPendingUpdates);
+  body.end();
+  boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD), std::move(body)));
+  co_return json.get<bool>("", false);
 }
-
+/*
 dd::task<WebhookInfo::Ptr> Api::getWebhookInfo() const {
   boost::property_tree::ptree p = co_await sendRequest("getWebhookInfo");
 
@@ -92,11 +88,12 @@ dd::task<WebhookInfo::Ptr> Api::getWebhookInfo() const {
     co_return nullptr;
   }
 }
-
+*/
 dd::task<User::Ptr> Api::getMe() const {
-  co_return _tgTypeParser.parseJsonAndGetUser(co_await sendRequest("getMe"));
+  boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD)));
+  co_return _tgTypeParser.parseJsonAndGetUser(json);
 }
-
+/*
 dd::task<bool> Api::logOut() const {
   co_return (co_await sendRequest("logOut")).get<bool>("", false);
 }
@@ -105,63 +102,67 @@ dd::task<bool> Api::close() const {
   co_return (co_await sendRequest("close")).get<bool>("", false);
 }
 
-dd::task<Message::Ptr> Api::sendMessage(boost::variant<std::int64_t, std::string> chatId, std::string text,
-                                        LinkPreviewOptions::Ptr linkPreviewOptions,
-                                        ReplyParameters::Ptr replyParameters, GenericReply::Ptr replyMarkup,
-                                        std::string parseMode, bool disableNotification,
-                                        std::vector<MessageEntity::Ptr> entities,
-                                        std::int32_t messageThreadId, bool protectContent,
-                                        std::string businessConnectionId) const {
+*/
+
+dd::task<std::vector<Message::Ptr>> Api::sendMessage(
+    boost::variant<std::int64_t, std::string> chatId, std::string text,
+    LinkPreviewOptions::Ptr linkPreviewOptions, ReplyParameters::Ptr replyParameters,
+    GenericReply::Ptr replyMarkup, std::string parseMode, bool disableNotification,
+    std::vector<MessageEntity::Ptr> entities, std::int32_t messageThreadId, bool protectContent,
+    std::string businessConnectionId) const {
   // TODO а что если отправить пустое сообщение или одни пробелы? Нужно здесь это обработать
   // TODO обрезать пробелы с двух сторон
   // TODO better
   enum { max_tg_msg_size = 4096 };
-
+  std::vector<Message::Ptr> msgs;
   if (text.size() == 0)
-    co_return nullptr;
+    co_return msgs;
   while (text.size() > max_tg_msg_size) {
-    (void)co_await sendMessage(chatId, text.substr(0, max_tg_msg_size), linkPreviewOptions, replyParameters,
-                               replyMarkup, parseMode, disableNotification, entities, messageThreadId,
-                               protectContent, businessConnectionId);
+    // TODO should i repeat linkPreviewOptions etc for all messages? entities?
+    std::vector msg = co_await sendMessage(
+        chatId, text.substr(0, max_tg_msg_size), linkPreviewOptions, replyParameters, replyMarkup, parseMode,
+        disableNotification, std::move(entities), messageThreadId, protectContent, businessConnectionId);
+    assert(msg.size() == 1);
+    msgs.push_back(std::move(msg.front()));
     text = text.substr(max_tg_msg_size);
   }
-  std::vector<HttpReqArg> args;
-  args.reserve(11);
-
-  if (!businessConnectionId.empty()) {
-    args.emplace_back("business_connection_id", businessConnectionId);
-  }
-  args.emplace_back("chat_id", chatId);
-  if (messageThreadId != 0) {
-    args.emplace_back("message_thread_id", messageThreadId);
-  }
-  args.emplace_back("text", text);
-  if (!parseMode.empty()) {
-    args.emplace_back("parse_mode", parseMode);
-  }
-  if (!entities.empty()) {
-    args.emplace_back("entities",
-                      _tgTypeParser.parseArray<MessageEntity>(&TgTypeParser::parseMessageEntity, entities));
-  }
-  if (linkPreviewOptions != nullptr) {
-    args.emplace_back("link_preview_options", _tgTypeParser.parseLinkPreviewOptions(linkPreviewOptions));
-  }
-  if (disableNotification) {
-    args.emplace_back("disable_notification", disableNotification);
-  }
-  if (protectContent) {
-    args.emplace_back("protect_content", protectContent);
-  }
-  if (replyParameters != nullptr) {
-    args.emplace_back("reply_parameters", _tgTypeParser.parseReplyParameters(replyParameters));
-  }
-  if (replyMarkup) {
-    args.emplace_back("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
-  }
-
-  co_return _tgTypeParser.parseJsonAndGetMessage(co_await sendRequest("sendMessage", args));
+  application_json_body body;
+  body.start();
+  if (!businessConnectionId.empty())
+    body.arg("business_connection_id", businessConnectionId);
+  // TODO string_or_int type and 'to_json' for it
+  if (chatId.which() == 0)
+    body.arg("chat_id", boost::get<std::int64_t>(chatId));
+  else
+    body.arg("chat_id", boost::get<std::string>(chatId));
+  if (messageThreadId != 0)
+    body.arg("message_thread_id", messageThreadId);
+  body.arg("text", text);
+  if (!parseMode.empty())
+    body.arg("parse_mode", parseMode);
+  // TODO to_json customization point with rapidjson and use it here
+  // for example to_json required for MessageEntity, LinkPreviewOptions, ReplyParameters, GenericReply,
+  // string_or_int etc
+  if (!entities.empty())
+    body.arg("entities",
+             _tgTypeParser.parseArray<MessageEntity>(&TgTypeParser::parseMessageEntity, entities));
+  if (linkPreviewOptions)
+    body.arg("link_preview_options", _tgTypeParser.parseLinkPreviewOptions(linkPreviewOptions));
+  if (disableNotification)
+    body.arg("disable_notification", disableNotification);
+  if (protectContent)
+    body.arg("protect_content", protectContent);
+  if (replyParameters)
+    body.arg("reply_parameters", _tgTypeParser.parseReplyParameters(replyParameters));
+  if (replyMarkup)
+    body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
+  body.end();
+  boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD), std::move(body)));
+  msgs.push_back(_tgTypeParser.parseJsonAndGetMessage(json));
+  co_return msgs;
 }
 
+/*
 dd::task<Message::Ptr> Api::forwardMessage(boost::variant<std::int64_t, std::string> chatId,
                                            boost::variant<std::int64_t, std::string> fromChatId,
                                            std::int32_t messageId, bool disableNotification,
@@ -2661,14 +2662,15 @@ dd::task<std::vector<GameHighScore::Ptr>> Api::getGameHighScores(std::int64_t us
       &TgTypeParser::parseJsonAndGetGameHighScore, co_await sendRequest("getGameHighScores", args));
 }
 
-dd::task<std::string> Api::downloadFile(const std::string &filePath, const std::vector<HttpReqArg> &args) {
+// TODO understand why 'args' presented?? Что туда блин передавать то можно?
+dd::task<std::string> Api::downloadFile(const std::string &filePath) {
   std::string url(_url);
   url += "/file/bot";
   url += _token;
   url += "/";
   url += filePath;
   // TODO нужно возвращать вектор байт, очевидно стринга не подходит
-  return _httpClient.makeRequest(url, args);
+  return _httpClient.makeRequest(http_request(url));
 }
 
 dd::task<bool> Api::blockedByUser(std::int64_t chatId) const {
@@ -2685,17 +2687,15 @@ dd::task<bool> Api::blockedByUser(std::int64_t chatId) const {
 
   co_return isBotBlocked;
 }
-
-dd::task<boost::property_tree::ptree> Api::sendRequest(const std::string &method,
-                                                       const std::vector<HttpReqArg> &args) const {
-  std::string url = fmt::format("{}/bot{}/{}", _url, _token, method);
-
+*/
+dd::task<boost::property_tree::ptree> Api::sendRequest(http_request request) const {
   int requestRetryBackoff = _httpClient.getRequestBackoff();
   int retries = 0;
   for (;;) {
     try {
-      std::string serverResponse = co_await _httpClient.makeRequest(url, args);
-      if (serverResponse.starts_with("<html>"))
+      std::string serverResponse = co_await _httpClient.makeRequest(std::move(request));
+      if (serverResponse.starts_with(
+              "<html>"))  // TODO проверить работоспособность этой ветки с неправильным токеном
         throw TGBM_TG_EXCEPTION(tg_errc::HtmlResponse,
                                 "TGBM library have got html page instead of json response. "
                                 "Maybe you entered wrong bot token.");
@@ -2728,3 +2728,5 @@ dd::task<boost::property_tree::ptree> Api::sendRequest(const std::string &method
 }
 
 }  // namespace tgbm
+
+#undef $METHOD

@@ -13,7 +13,6 @@
 #include <boost/asio/ip/tcp.hpp>
 
 #include <string>
-#include <vector>
 
 namespace tgbm {
 
@@ -48,10 +47,7 @@ class TGBM_API BoostHttpOnlySslClient : public HttpClient {
    * If at least 1 arg is marked as file, the content type of a request will be multipart/form-data, otherwise
    * it will be application/x-www-form-urlencoded.
    */
-  // TODO разделить get (без аргментов)/post и отдельно видимо файл, т.е. будет одно application/json
-  // и второе multipart/form-data
-  // TODO убрать аргументы и передавать сам запрос (они используются только чтобы сгенерировать запрос)
-  dd::task<std::string> makeRequest(Url url, std::vector<HttpReqArg> args) override;
+  dd::task<std::string> makeRequest(http_request) override;
 
   static dd::task<connection_t> create_connection(boost::asio::io_context &, std::string host);
   [[nodiscard]] boost::asio::io_context &get_io_context() noexcept {
