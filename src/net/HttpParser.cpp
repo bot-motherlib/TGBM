@@ -19,17 +19,31 @@ using namespace boost;
 
 namespace tgbm {
 
+struct rapidjson_string_buffer {
+  std::string& buf;
+
+  using Ch = std::string::traits_type::char_type;
+
+  void Put(char c) {
+    buf.push_back(c);
+  }
+  static void Flush() noexcept {
+  }
+};
+
 std::string HttpParser::generateApplicationJson(const std::vector<HttpReqArg>& args) {
   assert(!args.empty());
-  rapidjson::StringBuffer buffer;
-  rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
+  std::string result;
+  result.reserve(args.size() * 20);  // TODO may be calculate better
+  rapidjson_string_buffer buffer(result);
+  rapidjson::Writer writer(buffer);
   writer.StartObject();
   for (auto& arg : args) {
     writer.Key(arg.name);
     writer.String(arg.value);
   }
   writer.EndObject();
-  return {buffer.GetString(), buffer.GetSize()};
+  return result;
 }
 
 string HttpParser::generateRequest(const Url& url, const vector<HttpReqArg>& args, bool isKeepAlive) const {
@@ -58,9 +72,8 @@ string HttpParser::generateRequest(const Url& url, const vector<HttpReqArg>& arg
 
     string bondary = generateMultipartBoundary(args);
     if (bondary.empty()) {
-      // TODO application/json ?
-      result += "Content-Type: application/x-www-form-urlencoded\r\n";
-      requestData = generateWwwFormUrlencoded(args);
+      result += "Content-Type: application/json\r\n";
+      requestData = generateApplicationJson(args);
     } else {
       result += "Content-Type: multipart/form-data; boundary=";
       result += bondary;
