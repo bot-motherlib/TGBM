@@ -26,6 +26,10 @@
   SOFTWARE.
 ]]
 
+####
+#### THIS FILE IS COPY PASTED FROM https://github.com/cpm-cmake/CPM.cmake/releases (VERSION v0.40.2)
+####
+
 cmake_minimum_required(VERSION 3.14 FATAL_ERROR)
 
 # Initialize logging prefix

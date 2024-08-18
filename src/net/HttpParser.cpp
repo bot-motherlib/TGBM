@@ -19,15 +19,14 @@ using namespace boost;
 
 namespace tgbm {
 
-// TODO rapid json (escape all)
 std::string HttpParser::generateApplicationJson(const std::vector<HttpReqArg>& args) {
   assert(!args.empty());
   rapidjson::StringBuffer buffer;
   rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
   writer.StartObject();
   for (auto& arg : args) {
-    writer.Key(arg.name.data(), arg.name.size());
-    writer.String(arg.value.data(), arg.value.size());
+    writer.Key(arg.name);
+    writer.String(arg.value);
   }
   writer.EndObject();
   return {buffer.GetString(), buffer.GetSize()};
