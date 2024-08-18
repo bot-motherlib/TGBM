@@ -13,8 +13,8 @@ enum { VISIT_INDEX_MAX = 64 - 1 };
 // switch 'i' up to 64 for better code generatrion
 // 'F' should be like [] <size_t I> {}
 // Max - index until 'f' will be instanciated, assumes i <= MAX
-template <size_t Max>
-constexpr decltype(auto) visit_index(auto&& f, size_t i) {
+template <std::size_t Max>
+constexpr decltype(auto) visit_index(auto&& f, std::size_t i) {
   static_assert(Max <= VISIT_INDEX_MAX);
   assert(i <= VISIT_INDEX_MAX);
   if constexpr (Max == 0)
@@ -67,17 +67,17 @@ constexpr auto matcher_r(Foos&&... foos) noexcept(
   };
 }
 
-consteval size_t log2_constexpr(size_t n) {
+consteval std::size_t log2_constexpr(std::size_t n) {
   return n == 1 ? 0 : log2_constexpr(n / 2) + 1;
 }
 
 template <typename T, typename... Ts>
-consteval size_t find_first() {
-  size_t result = -1;
-  size_t i = -1;
-  // for guaranteed sequence
-  (void)std::initializer_list<bool>{((++i, std::is_same_v<T, Ts>)&&result == -1 && (result = i))...};
-  return result;
+consteval std::size_t find_first() {
+  bool same[]{std::same_as<T, Ts>...};
+  for (bool& t : same)
+    if (t)
+      return &t - &same[0];
+  return std::size_t(-1);
 }
 
 template <typename T, typename... Ts>
@@ -101,15 +101,15 @@ template <typename... Ts>
 using first_type_t = typename first_type<Ts...>::type;
 
 // no support to void types and I > sizeof...(Types)
-template <size_t I, typename... Types>
+template <std::size_t I, typename... Types>
 using element_at_t = std::tuple_element_t<I, std::tuple<Types...>>;
 
 template <typename... Ts>
 consteval bool is_unique_types() {
-  size_t is[] = {find_first<Ts, Ts...>()..., size_t(-1) /* avoid empty array */};
-  auto count = [&is](size_t val) {
-    size_t c = 0;
-    for (size_t x : is)
+  std::size_t is[] = {find_first<Ts, Ts...>()..., std::size_t(-1) /* avoid empty array */};
+  auto count = [&is](std::size_t val) {
+    std::size_t c = 0;
+    for (std::size_t x : is)
       c += val == x;
     return c;
   };

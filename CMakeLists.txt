@@ -34,7 +34,8 @@ set(TGBM_SRC_LIST
     src/types/MenuButton.cpp
     src/types/MessageOrigin.cpp
     src/types/PassportElementError.cpp
-    src/types/ReactionType.cpp)
+    src/types/ReactionType.cpp
+    )
 
 add_library(tgbmlib ${TGBM_SRC_LIST})
 
@@ -49,6 +50,8 @@ target_link_libraries(tgbmlib PUBLIC
     Boost::system
     Boost::asio
     Boost::property_tree
+    Boost::pfr
+    Boost::json
     fmt::fmt
     rapidjsonlib
 )
@@ -78,4 +81,5 @@ set_target_properties(tgbmlib PROPERTIES
 if (TGBM_ENABLE_TESTS)
     include(CTest)
     add_subdirectory(test)
+    add_subdirectory(gtest)
 endif()

@@ -14,12 +14,12 @@ struct network_exception : std::exception {
   std::string data;
 
   template <typename... Args>
-  explicit network_exception(fmt::format_string<Args...> fmt_str, Args &&...args)
+  explicit network_exception(fmt::format_string<Args...> fmt_str, Args&&... args)
       : data(fmt::format(fmt_str, std::forward<Args>(args)...)) {
   }
   explicit network_exception(std::string s) noexcept : data(std::move(s)) {
   }
-  const char *what() const noexcept KELCORO_LIFETIMEBOUND override {
+  const char* what() const noexcept KELCORO_LIFETIMEBOUND override {
     return data.c_str();
   }
 };

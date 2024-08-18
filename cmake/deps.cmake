@@ -8,7 +8,7 @@ CPMAddPackage(
   EXCLUDE_FROM_ALL YES
   SYSTEM OFF
 )
-set(BOOST_INCLUDE_LIBRARIES system asio property_tree)
+set(BOOST_INCLUDE_LIBRARIES system asio property_tree pfr json)
 CPMAddPackage(
   NAME Boost
   VERSION 1.84.0
@@ -16,7 +16,7 @@ CPMAddPackage(
   OPTIONS "BOOST_ENABLE_CMAKE ON"
 )
 unset(BOOST_INCLUDE_LIBRARIES)
-find_package(Boost 1.84 COMPONENTS system asio property_tree REQUIRED)
+find_package(Boost 1.84 COMPONENTS system asio property_tree pfr json REQUIRED)
 
 CPMAddPackage(
   NAME ZLIB
@@ -45,6 +45,14 @@ CPMAddPackage(
   NAME rapidjson
   GIT_REPOSITORY https://github.com/kelbon/rapidjson-usable
   GIT_TAG        origin/master
+)
+
+CPMAddPackage(
+  NAME googletest
+  GITHUB_REPOSITORY google/googletest
+  GIT_TAG release-1.12.1
+  VERSION 1.12.1
+  OPTIONS "INSTALL_GTEST OFF"
 )
 
 find_package(Threads REQUIRED)

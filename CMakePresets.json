@@ -35,8 +35,8 @@
             "binaryDir": "${sourceDir}/build_debug",
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "1",
-                "CMAKE_C_COMPILER": "clang",
-                "CMAKE_CXX_COMPILER": "clang++",
+                "CMAKE_C_COMPILER": "clang-17",
+                "CMAKE_CXX_COMPILER": "clang++-17",
                 "CMAKE_BUILD_TYPE": "Debug",
                 "TGBM_ENABLE_TESTS": "ON"
             }

@@ -15,8 +15,10 @@ Thumbs.db
 docs/
 cmake-build-*
 .cache
-CMakePresets.json
-# Visual Studio
+*tgapi.html
+include/tgbm/api/generator/types.txt
+include/tgbm/api/generator/methods.txt
+
 .vs/
 .vscode/
 build/
@@ -24,7 +26,8 @@ out/
 
 build*
 
-# MacOS dependecies
+
 .DS_Store
 vcpkg_installed
 compile_commands.json
+CMakePresets.json

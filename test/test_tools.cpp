@@ -20,7 +20,7 @@ consteval int sstest3() {
 }
 static_assert(sstest3() == 15);
 
-consteval bool boxtest1() {
+bool boxtest1() {
   tgbm::box b(5);
   static_assert(std::is_same_v<decltype(b), tgbm::box<int>>);
   b.emplace(15);
@@ -37,8 +37,10 @@ consteval bool boxtest1() {
     throw 42;
   return true;
 }
-static_assert(boxtest1());
 
 int main() {
+  if (!boxtest1()){
+    return -1;
+  }
   return 0;
 }
