@@ -7,8 +7,8 @@
 
 namespace tgbm {
 
-Api::Api(std::string token, HttpClient &httpClient, const std::string &url)
-    : _httpClient(httpClient), _token(std::move(token)), _tgTypeParser(), _url(url) {
+Api::Api(std::string token, HttpClient &httpClient, std::string url)
+    : _httpClient(httpClient), _token(std::move(token)), _tgTypeParser(), _url(std::move(url)) {
 }
 
 dd::task<std::vector<Update::Ptr>> Api::getUpdates(std::int32_t offset, std::int32_t limit,

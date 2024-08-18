@@ -37,7 +37,8 @@ class TGBM_API BoostHttpOnlySslClient : public HttpClient {
  public:
   using connection_t = std::shared_ptr<asio_connection_t>;
 
-  BoostHttpOnlySslClient(std::string host, size_t connections_max_count = 1000);
+  BoostHttpOnlySslClient(boost::asio::io_context &ctx KELCORO_LIFETIMEBOUND, std::string host,
+                         size_t connections_max_count = 1000);
   ~BoostHttpOnlySslClient() override;
 
   /**
@@ -53,7 +54,7 @@ class TGBM_API BoostHttpOnlySslClient : public HttpClient {
   dd::task<std::string> makeRequest(Url url, std::vector<HttpReqArg> args) override;
 
   static dd::task<connection_t> create_connection(boost::asio::io_context &, std::string host);
-  [[nodiscard]] boost::asio::io_context &getIoContext() noexcept {
+  [[nodiscard]] boost::asio::io_context &get_io_context() noexcept {
     return io_ctx;
   }
 
@@ -73,7 +74,7 @@ class TGBM_API BoostHttpOnlySslClient : public HttpClient {
     }
   };
 
-  mutable boost::asio::io_context io_ctx;
+  boost::asio::io_context &io_ctx;
   const HttpParser _httpParser;
   pool_t<connection_t, log_events_handler_t> connections;
   dd::this_thread_executor_t exe;  // TODO change

@@ -31,7 +31,7 @@ class TgWebhookServer : public HttpServer<Protocol> {
 
   TgWebhookServer(const typename boost::asio::basic_socket_acceptor<Protocol>::endpoint_type& endpoint,
                   const Bot& bot)
-      : TgWebhookServer(endpoint, "/" + bot.getToken(), bot.getEventHandler()) {
+      : TgWebhookServer(endpoint, "/" + std::string(bot.get_token()), bot.getEventHandler()) {
   }
 
  private:

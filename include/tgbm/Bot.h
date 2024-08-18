@@ -5,7 +5,6 @@
 
 #include <memory>
 #include <string>
-#include <utility>
 
 namespace tgbm {
 
@@ -19,14 +18,14 @@ class HttpClient;
  */
 class TGBM_API Bot {
  public:
-  explicit Bot(std::string token, HttpClient& httpClient,
-               const std::string& url = "https://api.telegram.org");
+  explicit Bot(std::string token, HttpClient& httpClient KELCORO_LIFETIMEBOUND,
+               std::string url = "https://api.telegram.org");
 
   /**
    * @return Token for accessing api.
    */
-  inline const std::string& getToken() const {
-    return _token;
+  std::string_view get_token() const noexcept KELCORO_LIFETIMEBOUND {
+    return _api.get_token();
   }
 
   /**
@@ -52,7 +51,6 @@ class TGBM_API Bot {
   }
 
  private:
-  const std::string _token;
   const Api _api;
   std::unique_ptr<EventBroadcaster> _eventBroadcaster;
   const EventHandler _eventHandler;

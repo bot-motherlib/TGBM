@@ -98,8 +98,11 @@ class TGBM_API Api {
   friend class Bot;
 
  public:
-  Api(std::string token, HttpClient& httpClient, const std::string& url);
+  Api(std::string token, HttpClient& httpClient KELCORO_LIFETIMEBOUND, std::string url);
 
+  std::string_view get_token() const noexcept KELCORO_LIFETIMEBOUND {
+    return _token;
+  }
   /**
    * @brief Use this method to receive incoming updates using long polling
    * ([wiki](https://en.wikipedia.org/wiki/Push_technology#Long_polling)).
