@@ -105,7 +105,7 @@ std::string generate_http_headers(const Url& url, bool keep_alive, std::string_v
   result += "\r\n\r\n";
   return result;
 }
-
+// TODO remove
 string HttpParser::generateRequest(const Url& url, const vector<HttpReqArg>& args, bool isKeepAlive) const {
   string result;
   if (args.empty()) {
@@ -148,6 +148,7 @@ string HttpParser::generateRequest(const Url& url, const vector<HttpReqArg>& arg
   }
   return result;
 }
+
 // TODO используется когда хотя бы 1 аргумент - файл, нужно обдумать когда это вообще
 string HttpParser::generateMultipartFormData(const vector<HttpReqArg>& args, const string& boundary) const {
   string result;
@@ -175,12 +176,10 @@ string HttpParser::generateMultipartFormData(const vector<HttpReqArg>& args, con
 
 string HttpParser::generateMultipartBoundary(const vector<HttpReqArg>& args) const {
   string result;
-  // TODO нужно смотреть что вообще тут происходит по http спеке, странное что-то
-  // насколько понял boundary должно не содержаться в файле и стоит в начале и конце, и так он генерит его..
   for (const HttpReqArg& item : args) {
     if (item.isFile) {
       while (result.empty() || item.value.find(result) != string::npos) {
-        result += StringTools::generateRandomString(4);
+        result += StringTools::generate_multipart_boundary(4);
       }
     }
   }
@@ -197,9 +196,9 @@ string HttpParser::generateWwwFormUrlencoded(const vector<HttpReqArg>& args) con
     } else {
       result += '&';
     }
-    result += StringTools::urlEncode(item.name);
+    StringTools::urlEncode(item.name, result);
     result += '=';
-    result += StringTools::urlEncode(item.value);
+    StringTools::urlEncode(item.value, result);
   }
 
   return result;

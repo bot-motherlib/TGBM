@@ -1,7 +1,6 @@
 #pragma once
 
 #include "tgbm/net/HttpParser.h"
-#include "tgbm/net/Url.h"
 
 #include <string>
 #include <cstdint>

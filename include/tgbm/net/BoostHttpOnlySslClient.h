@@ -1,12 +1,14 @@
 #pragma once
 
 #include "tgbm/net/HttpClient.h"
-#include "tgbm/net/Url.h"
-#include "tgbm/net/HttpReqArg.h"
 #include "tgbm/net/HttpParser.h"
 #include "tgbm/net/ConnectionPool.h"
 #include "tgbm/logger.h"
 
+// TODO wrap asio/detail/config.hpp (using include_next)
+#ifdef _WIN32
+#define _WIN32_WINNT 0x0A00
+#endif
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ssl/context.hpp>
 #include <boost/asio/ssl/stream.hpp>

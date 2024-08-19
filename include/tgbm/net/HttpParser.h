@@ -8,7 +8,10 @@
 #include <vector>
 #include <cassert>
 
-#include <rapidjson/writer.h>
+#include "tgbm/tools/StringTools.h"
+#include "tgbm/tools/rapidjson_to_json.h"
+
+#include <fmt/format.h>
 
 namespace tgbm {
 
@@ -28,18 +31,8 @@ struct HttpParser {
   std::string extractBody(const std::string& data) const;
 };
 
-// TODO в утилс хедер
-
-template <typename T, typename... Types>
-concept any_of = (std::is_same_v<T, Types> || ...);
-
-template <typename T>
-concept char_type_like = any_of<T, char, signed char, unsigned char, char8_t, char16_t, char32_t, wchar_t>;
-
-template <typename T>
-concept numeric = std::is_integral_v<T> && !char_type_like<T> && !std::is_same_v<T, bool>;
-
 struct application_json_body {
+ private:
   struct buffer_type {
     std::string buf;  // TODO replace with vector
 
@@ -55,108 +48,98 @@ struct application_json_body {
   buffer_type body;
   rapidjson::Writer<buffer_type> writer;
 
-  application_json_body() : writer(body) {
-  }
-#ifndef NDEBUG
-  bool started : 1 = false;
-  bool ended : 1 = false;
-#endif
-  // TODO чёт сделать с старт енд, мб в конструктор + .take какое то
-  void start() {
-    assert(!started && (started = true));
+ public:
+  explicit application_json_body(size_t reserve = 0) : writer(body) {
+    body.buf.reserve(reserve);
     rj_assume(writer.StartObject());
   }
-
-  void end() {
-    assert(started);
-    assert(!ended && (ended = true));
+  std::string take() noexcept {
     if (body.buf.size() == 1) {
       assert(body.buf.front() == '{');
       body.buf.clear();
-      return;
-    }
-    rj_assume(writer.EndObject());
+    } else
+      rj_assume(writer.EndObject());
+    return std::move(body.buf);
   }
 
   void arg(std::string_view k, const auto& value) {
-    key(k);
-    val(value);
-  }
-  template <std::ranges::range R>
-  void arg(std::string_view k, const R& rng)
-    requires(!std::convertible_to<R, std::string_view>)
-  {
-    key(k);
-    writer.StartArray();
-    for (auto&& item : rng)
-      val(item);
-    writer.EndArray();
-  }
-
- private:
-  void key(std::string_view k) {
-    assert(started);
-    // assumes our keys always ASCI encoded
     writer.Key(k.data(), k.size());
-  }
-  void val(bool b) {
-    rj_assume(writer.Bool(b));
-  }
-  void val(std::string_view v) {
-    rj_assume(writer.String(v.data(), v.size()));
-  }
-  void val(numeric auto numb) {
-    using T = std::remove_cvref_t<decltype(numb)>;
-    if constexpr (std::is_unsigned_v<T>) {
-      if constexpr (sizeof(T) > sizeof(int32_t)) {
-        rj_assume(writer.Uint64(numb));
-      } else {
-        rj_assume(writer.Uint(numb));
-      }
-    } else {
-      if constexpr (sizeof(T) > sizeof(int32_t)) {
-        rj_assume(writer.Int64(numb));
-      } else {
-        rj_assume(writer.Int(numb));
-      }
-    }
-  }
-  void val(char_type_like auto) = delete;
-  // rapid json very bad handle doubles
-  void val(long double) = delete;
-  void val(double) = delete;
-  void val(float) = delete;
-
-  [[gnu::always_inline]] static void rj_assume(bool b) {
-    assert(b);
-    (void)b;
+    rj_tojson(writer, value);
   }
 };
 
 struct application_x_www_form_urlencoded {
-  // TODO
+ private:
+  std::string body;
+
+ public:
+  application_x_www_form_urlencoded() = default;
+  application_x_www_form_urlencoded(size_t reserve) {
+    body.reserve(reserve);
+  }
+  std::string take() noexcept {
+    if (!body.empty()) {
+      assert(body.back() == '&');
+      body.pop_back();
+    }
+    return std::move(body);
+  }
+
+  void arg(std::string_view k, const auto& value) {
+    StringTools::urlEncode(k, body);
+    body.push_back('=');
+    // TODO url encode wrapper around output iterator?
+    StringTools::urlEncode(fmt::format("{}", value), body);
+    body.push_back('&');
+  }
 };
+
+// just hopes that 'boundary' is not contained in arguments
 struct application_multipart_form_data {
-  // TODO
-};
+ private:
+  std::string boundary;
+  std::string body;
 
-template <typename BodyType>
-struct http_content_type {};
+ public:
+  application_multipart_form_data(size_t reserve = 0) {
+    boundary = StringTools::generate_multipart_boundary(16);
+    body.reserve(reserve);
+  }
+  explicit application_multipart_form_data(std::string boudary, size_t reserve = 0) {
+    if (boundary.size() > 69)
+      throw std::invalid_argument("HTTP boundary should be [1-69] symbols");
+    if (boudary.empty())
+      boudary = StringTools::generate_multipart_boundary(16);
+    body.reserve(reserve);
+  }
 
-template <>
-struct http_content_type<application_json_body> {
-  static consteval std::string_view value() {
-    return "application/json";
+  std::string_view get_boundary() const noexcept {
+    return boundary;
+  }
+
+  std::string take() noexcept {
+    if (!body.empty())
+      fmt::format_to(std::back_inserter(body), "\r\n--{}--\r\n", boundary);
+    return std::move(body);
+  }
+
+  void file_arg(std::string_view k, std::string_view filename, std::string_view mime_type,
+                std::string_view data) {
+    fmt::format_to(std::back_inserter(body),
+                   "--{}\r\n"
+                   "Content-Disposition: form-data; name=\"{}\"; filename=\"{}\"\r\n"
+                   "Content-Type: {}\r\n\r\n"
+                   "{}\r\n",
+                   boundary, k, StringTools::url_encoded(filename), mime_type, data);
+  }
+  void arg(std::string_view k, const auto& value) {
+    fmt::format_to(std::back_inserter(body),
+                   "--{}\r\n"
+                   "Content-Disposition: form-data; name=\"{}\"\r\n\r\n"
+                   "{}\r\n",
+                   boundary, k, value);
   }
 };
-
-template <>
-struct http_content_type<application_x_www_form_urlencoded> {
-  static consteval std::string_view value() {
-    return "application/x-www-form-urlencoded";
-  }
-};
-// TODO для multipart/form-data; boundary= ещё нужно boundary прямо в контент тайп
 
 std::string generate_http_headers_get(const Url& url, bool keep_alive);
 // GET if !body.empty(), POST otherwise
@@ -167,15 +150,22 @@ struct http_request {
   std::string body;
   std::string headers;  // TODO vectors (?allocs?)
 
-  // TODO overloads with application/x-www-form-urlencoded
-  // and application/multipart/form-data (fixed/non-fixed boundary)
   // TODO rm url/keep alive
-  explicit http_request(const Url& url, application_json_body&& b, bool keep_alive = true)
-      : body(std::move(b.body.buf)),
-        headers(
-            generate_http_headers(url, keep_alive, body, http_content_type<application_json_body>::value())) {
-    assert(b.started && b.ended);
+  http_request(const Url& url, application_json_body&& b, bool keep_alive = true)
+      : body(b.take()), headers(generate_http_headers(url, keep_alive, body, "application/json")) {
   }
+  http_request(const Url& url, application_x_www_form_urlencoded&& b, bool keep_alive = true)
+      : body(b.take()),
+        headers(generate_http_headers(url, keep_alive, body, "application/x-www-form-urlencoded")) {
+  }
+  http_request(const Url& url, application_multipart_form_data&& b, bool keep_alive = true)
+      : body(b.take()),
+        headers(generate_http_headers(
+            // https://datatracker.ietf.org/doc/html/rfc2046#section-5.1.1
+            url, keep_alive, body, fmt::format("multipart/form-data; boundary=\"{}\"", b.get_boundary()))) {
+  }
+
+  // GET request
   explicit http_request(const Url& url, bool keep_alive = true)
       : headers(generate_http_headers_get(url, keep_alive)) {
   }

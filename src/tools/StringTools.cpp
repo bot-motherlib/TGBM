@@ -5,6 +5,9 @@
 #include <random>
 #include <string>
 #include <sstream>
+#include <thread>
+
+#include <boost/functional/hash.hpp>
 
 using namespace std;
 
@@ -18,24 +21,25 @@ void split(const string& str, char delimiter, vector<string>& dest) {
   }
 }
 
-string generateRandomString(std::size_t length) {
-  static const string chars(
-      "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890-=[]\\',./!@#$%^&*()_+{}|:\"<>?`~");
+static std::size_t generate_random_seed() noexcept {
+  size_t seed = std::random_device{}();
+  boost::hash_combine(seed, std::hash<std::thread::id>{}(std::this_thread::get_id()));
+  boost::hash_combine(seed, std::chrono::high_resolution_clock::now().time_since_epoch().count());
+  return seed;
+}
 
-  static const std::size_t charsLen = chars.length();
+string generate_multipart_boundary(std::size_t length) {
+  constexpr std::string_view chars = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890+=()?_";
   string result;
-
-  random_device randomDevice;
-  mt19937 randomSeed(randomDevice());
-  uniform_int_distribution<std::size_t> generator(0, charsLen - 1);
-
-  for (std::size_t i = 0; i < length; ++i) {
-    result += chars[generator(randomSeed)];
-  }
+  result.reserve(length);
+  thread_local mt19937 gen(generate_random_seed());
+  uniform_int_distribution<std::size_t> dist(0, chars.size() - 1);
+  for (std::size_t i = 0; i < length; ++i)
+    result += chars[dist(gen)];
   return result;
 }
 
-string urlEncode(std::string_view value) {
+void urlEncode(std::string_view value, std::string& out) {
   auto is_legit = [](char c) {
     switch (c) {
       case 'A' ... 'Z':
@@ -51,15 +55,13 @@ string urlEncode(std::string_view value) {
         return false;
     }
   };
-  std::string ss;
-  ss.reserve(value.size());
+  out.reserve(value.size());
   for (auto const& c : value) {
     if (is_legit(c))
-      ss.push_back(c);
+      out.push_back(c);
     else [[unlikely]]
-      fmt::format_to(std::back_inserter(ss), "%{:02X}", (unsigned)(unsigned char)c);
+      fmt::format_to(std::back_inserter(out), "%{:02X}", (unsigned)(unsigned char)c);
   }
-  return ss;
 }
 
 string urlDecode(const string& value) {
@@ -74,24 +76,6 @@ string urlDecode(const string& value) {
       result += c;
     }
   }
-  return result;
-}
-
-std::string escapeJsonString(const std::string& value) {
-  string result;
-
-  for (const char& c : value) {
-    switch (c) {
-      case '"':
-      case '\\':
-      case '/':
-        result += '\\';
-        break;
-    }
-
-    result += c;
-  }
-
   return result;
 }
 

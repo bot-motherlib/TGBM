@@ -3,6 +3,8 @@
 #include <chrono>
 #include <thread>
 
+#include <fmt/ranges.h>
+
 #include "tgbm/logger.h"
 
 namespace tgbm {
@@ -18,8 +20,8 @@ dd::task<std::vector<Update::Ptr>> Api::getUpdates(std::int32_t offset, std::int
                                                    std::int32_t timeout,
                                                    const StringArrayPtr &allowedUpdates) const {
   // TODO declare structs and default arguments (autogenerate this code)
+  // TODO reserve везде в body примерное количество байт (можно и точно посчитать)
   application_json_body body;
-  body.start();
   if (offset != 0)
     body.arg("offset", offset);
   if (limit != 100)
@@ -28,88 +30,80 @@ dd::task<std::vector<Update::Ptr>> Api::getUpdates(std::int32_t offset, std::int
     body.arg("timeout", timeout);
   if (allowedUpdates)
     body.arg("allowed_updates", *allowedUpdates);
-  body.end();
   boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD), std::move(body)));
   co_return _tgTypeParser.parseJsonAndGetArray<Update>(&TgTypeParser::parseJsonAndGetUpdate, json);
 }
-/*
+
 dd::task<bool> Api::setWebhook(const std::string &url, InputFile::Ptr certificate,
                                std::int32_t maxConnections, const StringArrayPtr &allowedUpdates,
                                const std::string &ipAddress, bool dropPendingUpdates,
                                const std::string &secretToken) const {
-  std::vector<HttpReqArg> args;
-  args.reserve(7);
-
-  args.emplace_back("url", url);
-  if (certificate != nullptr) {
-    args.emplace_back("certificate", certificate->data, true, certificate->mimeType, certificate->fileName);
+  boost::property_tree::ptree json;
+  auto fillbody = [&](auto &body) {
+    body.arg("url", url);
+    if (!ipAddress.empty())
+      body.arg("ip_address", ipAddress);
+    if (maxConnections != 40)
+      body.arg("max_connections", std::max(1, std::min(100, maxConnections)));
+    if (allowedUpdates)
+      body.arg("allowed_updates", *allowedUpdates);
+    if (dropPendingUpdates)
+      body.arg("drop_pending_updates", dropPendingUpdates);
+    if (!secretToken.empty())
+      body.arg("secret_token", secretToken);
+  };
+  if (certificate) {
+    application_multipart_form_data body;
+    body.file_arg("certificate", certificate->mimeType, certificate->fileName, certificate->data);
+    fillbody(body);
+    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  } else {
+    application_json_body body;
+    fillbody(body);
+    json = co_await sendRequest({get_url($METHOD), std::move(body)});
   }
-  if (!ipAddress.empty()) {
-    args.emplace_back("ip_address", ipAddress);
-  }
-  if (maxConnections != 40) {
-    args.emplace_back("max_connections", std::max(1, std::min(100, maxConnections)));
-  }
-  if (allowedUpdates != nullptr) {
-    auto allowedUpdatesJson = _tgTypeParser.parseArray<std::string>(
-        [](const std::string &s) -> std::string { return s; }, *allowedUpdates);
-    args.emplace_back("allowed_updates", allowedUpdatesJson);
-  }
-  if (dropPendingUpdates) {
-    args.emplace_back("drop_pending_updates", dropPendingUpdates);
-  }
-  if (!secretToken.empty()) {
-    args.emplace_back("secret_token", secretToken);
-  }
-
-  co_return (co_await sendRequest("setWebhook", args)).get<bool>("", false);
+  co_return json.get<bool>("", false);
 }
-*/
+
 dd::task<bool> Api::deleteWebhook(bool dropPendingUpdates) const {
   application_json_body body;
-  body.start();
   if (dropPendingUpdates)
     body.arg("drop_pending_updates", dropPendingUpdates);
-  body.end();
   boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD), std::move(body)));
   co_return json.get<bool>("", false);
 }
-/*
+
 dd::task<WebhookInfo::Ptr> Api::getWebhookInfo() const {
-  boost::property_tree::ptree p = co_await sendRequest("getWebhookInfo");
+  boost::property_tree::ptree p = co_await sendRequest(http_request(get_url($METHOD)));
 
-  if (!p.get_child_optional("url")) {
+  if (!p.get_child_optional("url"))
     co_return nullptr;
-  }
 
-  if (p.get<std::string>("url", "") != std::string("")) {
+  if (p.get<std::string>("url", "") != "")
     co_return _tgTypeParser.parseJsonAndGetWebhookInfo(p);
-  } else {
-    co_return nullptr;
-  }
+  co_return nullptr;
 }
-*/
+
 dd::task<User::Ptr> Api::getMe() const {
   boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD)));
   co_return _tgTypeParser.parseJsonAndGetUser(json);
 }
-/*
+
 dd::task<bool> Api::logOut() const {
-  co_return (co_await sendRequest("logOut")).get<bool>("", false);
+  boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD)));
+  co_return json.get<bool>("", false);
 }
 
 dd::task<bool> Api::close() const {
-  co_return (co_await sendRequest("close")).get<bool>("", false);
+  boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD)));
+  co_return json.get<bool>("", false);
 }
 
-*/
-
 dd::task<std::vector<Message::Ptr>> Api::sendMessage(
-    boost::variant<std::int64_t, std::string> chatId, std::string text,
-    LinkPreviewOptions::Ptr linkPreviewOptions, ReplyParameters::Ptr replyParameters,
-    GenericReply::Ptr replyMarkup, std::string parseMode, bool disableNotification,
-    std::vector<MessageEntity::Ptr> entities, std::int32_t messageThreadId, bool protectContent,
-    std::string businessConnectionId) const {
+    int_or_str chatId, std::string text, LinkPreviewOptions::Ptr linkPreviewOptions,
+    ReplyParameters::Ptr replyParameters, GenericReply::Ptr replyMarkup, std::string parseMode,
+    bool disableNotification, std::vector<MessageEntity::Ptr> entities, std::int32_t messageThreadId,
+    bool protectContent, std::string businessConnectionId) const {
   // TODO а что если отправить пустое сообщение или одни пробелы? Нужно здесь это обработать
   // TODO обрезать пробелы с двух сторон
   // TODO better
@@ -127,22 +121,14 @@ dd::task<std::vector<Message::Ptr>> Api::sendMessage(
     text = text.substr(max_tg_msg_size);
   }
   application_json_body body;
-  body.start();
   if (!businessConnectionId.empty())
     body.arg("business_connection_id", businessConnectionId);
-  // TODO string_or_int type and 'to_json' for it
-  if (chatId.which() == 0)
-    body.arg("chat_id", boost::get<std::int64_t>(chatId));
-  else
-    body.arg("chat_id", boost::get<std::string>(chatId));
+  body.arg("chat_id", chatId);
   if (messageThreadId != 0)
     body.arg("message_thread_id", messageThreadId);
   body.arg("text", text);
   if (!parseMode.empty())
     body.arg("parse_mode", parseMode);
-  // TODO to_json customization point with rapidjson and use it here
-  // for example to_json required for MessageEntity, LinkPreviewOptions, ReplyParameters, GenericReply,
-  // string_or_int etc
   if (!entities.empty())
     body.arg("entities",
              _tgTypeParser.parseArray<MessageEntity>(&TgTypeParser::parseMessageEntity, entities));
@@ -156,201 +142,164 @@ dd::task<std::vector<Message::Ptr>> Api::sendMessage(
     body.arg("reply_parameters", _tgTypeParser.parseReplyParameters(replyParameters));
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
-  body.end();
   boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD), std::move(body)));
   msgs.push_back(_tgTypeParser.parseJsonAndGetMessage(json));
   co_return msgs;
 }
 
-/*
-dd::task<Message::Ptr> Api::forwardMessage(boost::variant<std::int64_t, std::string> chatId,
-                                           boost::variant<std::int64_t, std::string> fromChatId,
-                                           std::int32_t messageId, bool disableNotification,
-                                           bool protectContent, std::int32_t messageThreadId) const {
-  std::vector<HttpReqArg> args;
-  args.reserve(6);
-
-  args.emplace_back("chat_id", chatId);
-  if (messageThreadId != 0) {
-    args.emplace_back("message_thread_id", messageThreadId);
-  }
-  args.emplace_back("from_chat_id", fromChatId);
-  if (disableNotification) {
-    args.emplace_back("disable_notification", disableNotification);
-  }
-  if (protectContent) {
-    args.emplace_back("protect_content", protectContent);
-  }
-  args.emplace_back("message_id", messageId);
-
-  co_return _tgTypeParser.parseJsonAndGetMessage(co_await sendRequest("forwardMessage", args));
+dd::task<Message::Ptr> Api::forwardMessage(int_or_str chatId, int_or_str fromChatId, std::int32_t messageId,
+                                           bool disableNotification, bool protectContent,
+                                           std::int32_t messageThreadId) const {
+  application_json_body body;
+  body.arg("chat_id", chatId);
+  if (messageThreadId != 0)
+    body.arg("message_thread_id", messageThreadId);
+  body.arg("from_chat_id", fromChatId);
+  if (disableNotification)
+    body.arg("disable_notification", disableNotification);
+  if (protectContent)
+    body.arg("protect_content", protectContent);
+  body.arg("message_id", messageId);
+  boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD), std::move(body)));
+  co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 
-dd::task<std::vector<MessageId::Ptr>> Api::forwardMessages(
-    boost::variant<std::int64_t, std::string> chatId, boost::variant<std::int64_t, std::string> fromChatId,
-    const std::vector<std::int32_t> &messageIds, std::int32_t messageThreadId, bool disableNotification,
-    bool protectContent) const {
-  std::vector<HttpReqArg> args;
-  args.reserve(6);
+dd::task<std::vector<MessageId::Ptr>> Api::forwardMessages(int_or_str chatId, int_or_str fromChatId,
+                                                           const std::vector<std::int32_t> &messageIds,
+                                                           std::int32_t messageThreadId,
+                                                           bool disableNotification,
+                                                           bool protectContent) const {
+  application_json_body body;
 
-  args.emplace_back("chat_id", chatId);
-  args.emplace_back("from_chat_id", fromChatId);
-  if (!messageIds.empty()) {
-    args.emplace_back("message_ids",
-                      _tgTypeParser.parseArray<std::int32_t>(
-                          [](const std::int32_t &i) -> std::int32_t { return i; }, messageIds));
-  }
-  if (messageThreadId != 0) {
-    args.emplace_back("message_thread_id", messageThreadId);
-  }
-  if (disableNotification) {
-    args.emplace_back("disable_notification", disableNotification);
-  }
-  if (protectContent) {
-    args.emplace_back("protect_content", protectContent);
-  }
-
-  co_return _tgTypeParser.parseJsonAndGetArray<MessageId>(&TgTypeParser::parseJsonAndGetMessageId,
-                                                          co_await sendRequest("forwardMessages", args));
+  body.arg("chat_id", chatId);
+  body.arg("from_chat_id", fromChatId);
+  if (!messageIds.empty())
+    body.arg("message_ids", messageIds);
+  if (messageThreadId != 0)
+    body.arg("message_thread_id", messageThreadId);
+  if (disableNotification)
+    body.arg("disable_notification", disableNotification);
+  if (protectContent)
+    body.arg("protect_content", protectContent);
+  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  co_return _tgTypeParser.parseJsonAndGetArray<MessageId>(&TgTypeParser::parseJsonAndGetMessageId, json);
 }
 
-dd::task<MessageId::Ptr> Api::copyMessage(boost::variant<std::int64_t, std::string> chatId,
-                                          boost::variant<std::int64_t, std::string> fromChatId,
-                                          std::int32_t messageId, const std::string &caption,
-                                          const std::string &parseMode,
+dd::task<MessageId::Ptr> Api::copyMessage(int_or_str chatId, int_or_str fromChatId, std::int32_t messageId,
+                                          const std::string &caption, const std::string &parseMode,
                                           const std::vector<MessageEntity::Ptr> &captionEntities,
                                           bool disableNotification, ReplyParameters::Ptr replyParameters,
                                           GenericReply::Ptr replyMarkup, bool protectContent,
                                           std::int32_t messageThreadId) const {
-  std::vector<HttpReqArg> args;
-  args.reserve(11);
+  application_json_body body;
 
-  args.emplace_back("chat_id", chatId);
-  if (messageThreadId != 0) {
-    args.emplace_back("message_thread_id", messageThreadId);
-  }
-  args.emplace_back("from_chat_id", fromChatId);
-  args.emplace_back("message_id", messageId);
-  if (!caption.empty()) {
-    args.emplace_back("caption", caption);
-  }
-  if (!parseMode.empty()) {
-    args.emplace_back("parse_mode", parseMode);
-  }
+  body.arg("chat_id", chatId);
+  if (messageThreadId != 0)
+    body.arg("message_thread_id", messageThreadId);
+  body.arg("from_chat_id", fromChatId);
+  body.arg("message_id", messageId);
+  if (!caption.empty())
+    body.arg("caption", caption);
+  if (!parseMode.empty())
+    body.arg("parse_mode", parseMode);
+  // TODO rj_tojson for types/
   if (!captionEntities.empty()) {
-    args.emplace_back("caption_entities", _tgTypeParser.parseArray<MessageEntity>(
-                                              &TgTypeParser::parseMessageEntity, captionEntities));
+    body.arg("caption_entities",
+             _tgTypeParser.parseArray<MessageEntity>(&TgTypeParser::parseMessageEntity, captionEntities));
   }
-  if (disableNotification) {
-    args.emplace_back("disable_notification", disableNotification);
-  }
-  if (protectContent) {
-    args.emplace_back("protect_content", protectContent);
-  }
-  if (replyParameters != nullptr) {
-    args.emplace_back("reply_parameters", _tgTypeParser.parseReplyParameters(replyParameters));
-  }
-  if (replyMarkup) {
-    args.emplace_back("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
-  }
-
-  co_return _tgTypeParser.parseJsonAndGetMessageId(co_await sendRequest("copyMessage", args));
+  if (disableNotification)
+    body.arg("disable_notification", disableNotification);
+  if (protectContent)
+    body.arg("protect_content", protectContent);
+  if (replyParameters)
+    body.arg("reply_parameters", _tgTypeParser.parseReplyParameters(replyParameters));
+  if (replyMarkup)
+    body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
+  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  co_return _tgTypeParser.parseJsonAndGetMessageId(json);
 }
 
-dd::task<std::vector<MessageId::Ptr>> Api::copyMessages(boost::variant<std::int64_t, std::string> chatId,
-                                                        boost::variant<std::int64_t, std::string> fromChatId,
+dd::task<std::vector<MessageId::Ptr>> Api::copyMessages(int_or_str chatId, int_or_str fromChatId,
                                                         const std::vector<std::int32_t> &messageIds,
                                                         std::int32_t messageThreadId,
                                                         bool disableNotification, bool protectContent,
                                                         bool removeCaption) const {
-  std::vector<HttpReqArg> args;
-  args.reserve(7);
+  application_json_body body;
 
-  args.emplace_back("chat_id", chatId);
-  args.emplace_back("from_chat_id", fromChatId);
+  body.arg("chat_id", chatId);
+  body.arg("from_chat_id", fromChatId);
 
-  if (!messageIds.empty()) {
-    args.emplace_back("message_ids",
-                      _tgTypeParser.parseArray<std::int32_t>(
-                          [](const std::int32_t &i) -> std::int32_t { return i; }, messageIds));
-  }
-  if (messageThreadId != 0) {
-    args.emplace_back("message_thread_id", messageThreadId);
-  }
-  if (disableNotification) {
-    args.emplace_back("disable_notification", disableNotification);
-  }
-  if (protectContent) {
-    args.emplace_back("protect_content", protectContent);
-  }
-  if (removeCaption) {
-    args.emplace_back("remove_caption", removeCaption);
-  }
-
-  co_return _tgTypeParser.parseJsonAndGetArray<MessageId>(&TgTypeParser::parseJsonAndGetMessageId,
-                                                          co_await sendRequest("copyMessages", args));
+  if (!messageIds.empty())
+    body.arg("message_ids", messageIds);
+  if (messageThreadId != 0)
+    body.arg("message_thread_id", messageThreadId);
+  if (disableNotification)
+    body.arg("disable_notification", disableNotification);
+  if (protectContent)
+    body.arg("protect_content", protectContent);
+  if (removeCaption)
+    body.arg("remove_caption", removeCaption);
+  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  co_return _tgTypeParser.parseJsonAndGetArray<MessageId>(&TgTypeParser::parseJsonAndGetMessageId, json);
 }
 
-dd::task<Message::Ptr> Api::sendPhoto(boost::variant<std::int64_t, std::string> chatId,
-                                      boost::variant<InputFile::Ptr, std::string> photo,
+dd::task<Message::Ptr> Api::sendPhoto(int_or_str chatId, boost::variant<InputFile::Ptr, std::string> photo,
                                       const std::string &caption, ReplyParameters::Ptr replyParameters,
                                       GenericReply::Ptr replyMarkup, const std::string &parseMode,
                                       bool disableNotification,
                                       const std::vector<MessageEntity::Ptr> &captionEntities,
                                       std::int32_t messageThreadId, bool protectContent, bool hasSpoiler,
                                       const std::string &businessConnectionId) const {
-  std::vector<HttpReqArg> args;
-  args.reserve(12);
-
-  if (!businessConnectionId.empty()) {
-    args.emplace_back("business_connection_id", businessConnectionId);
-  }
-  args.emplace_back("chat_id", chatId);
-  if (messageThreadId != 0) {
-    args.emplace_back("message_thread_id", messageThreadId);
-  }
+  boost::property_tree::ptree json;
+  auto fillbody = [&](auto &body) {
+    if (!businessConnectionId.empty())
+      body.arg("business_connection_id", businessConnectionId);
+    body.arg("chat_id", chatId);
+    if (messageThreadId != 0)
+      body.arg("message_thread_id", messageThreadId);
+    if (!caption.empty())
+      body.arg("caption", caption);
+    if (!parseMode.empty())
+      body.arg("parse_mode", parseMode);
+    if (!captionEntities.empty()) {
+      body.arg("caption_entities",
+               _tgTypeParser.parseArray<MessageEntity>(&TgTypeParser::parseMessageEntity, captionEntities));
+    }
+    if (hasSpoiler)
+      body.arg("has_spoiler", hasSpoiler);
+    if (disableNotification)
+      body.arg("disable_notification", disableNotification);
+    if (protectContent)
+      body.arg("protect_content", protectContent);
+    if (replyParameters)
+      body.arg("reply_parameters", _tgTypeParser.parseReplyParameters(replyParameters));
+    if (replyMarkup)
+      body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
+  };
   if (photo.which() == 0) {  // InputFile::Ptr
-    auto file = boost::get<InputFile::Ptr>(photo);
-    args.emplace_back("photo", file->data, true, file->mimeType, file->fileName);
-  } else {  // std::string
-    args.emplace_back("photo", boost::get<std::string>(photo));
+    application_multipart_form_data body;
+    auto &file = boost::get<InputFile::Ptr>(photo);
+    body.file_arg("photo", file->mimeType, file->fileName, file->data);
+    fillbody(body);
+    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  } else {
+    application_json_body body;
+    body.arg("photo", boost::get<std::string>(photo));
+    fillbody(body);
+    json = co_await sendRequest({get_url($METHOD), std::move(body)});
   }
-  if (!caption.empty()) {
-    args.emplace_back("caption", caption);
-  }
-  if (!parseMode.empty()) {
-    args.emplace_back("parse_mode", parseMode);
-  }
-  if (!captionEntities.empty()) {
-    args.emplace_back("caption_entities", _tgTypeParser.parseArray<MessageEntity>(
-                                              &TgTypeParser::parseMessageEntity, captionEntities));
-  }
-  if (hasSpoiler) {
-    args.emplace_back("has_spoiler", hasSpoiler);
-  }
-  if (disableNotification) {
-    args.emplace_back("disable_notification", disableNotification);
-  }
-  if (protectContent) {
-    args.emplace_back("protect_content", protectContent);
-  }
-  if (replyParameters != nullptr) {
-    args.emplace_back("reply_parameters", _tgTypeParser.parseReplyParameters(replyParameters));
-  }
-  if (replyMarkup != nullptr) {
-    args.emplace_back("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
-  }
-
-  co_return _tgTypeParser.parseJsonAndGetMessage(co_await sendRequest("sendPhoto", args));
+  co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
-
-dd::task<Message::Ptr> Api::sendAudio(
-    boost::variant<std::int64_t, std::string> chatId, boost::variant<InputFile::Ptr, std::string> audio,
-    const std::string &caption, std::int32_t duration, const std::string &performer, const std::string &title,
-    boost::variant<InputFile::Ptr, std::string> thumbnail, ReplyParameters::Ptr replyParameters,
-    GenericReply::Ptr replyMarkup, const std::string &parseMode, bool disableNotification,
-    const std::vector<MessageEntity::Ptr> &captionEntities, std::int32_t messageThreadId, bool protectContent,
-    const std::string &businessConnectionId) const {
+/*
+dd::task<Message::Ptr> Api::sendAudio(int_or_str chatId, boost::variant<InputFile::Ptr, std::string> audio,
+                                      const std::string &caption, std::int32_t duration,
+                                      const std::string &performer, const std::string &title,
+                                      boost::variant<InputFile::Ptr, std::string> thumbnail,
+                                      ReplyParameters::Ptr replyParameters, GenericReply::Ptr replyMarkup,
+                                      const std::string &parseMode, bool disableNotification,
+                                      const std::vector<MessageEntity::Ptr> &captionEntities,
+                                      std::int32_t messageThreadId, bool protectContent,
+                                      const std::string &businessConnectionId) const {
   std::vector<HttpReqArg> args;
   args.reserve(15);
 
@@ -411,7 +360,7 @@ dd::task<Message::Ptr> Api::sendAudio(
   co_return _tgTypeParser.parseJsonAndGetMessage(co_await sendRequest("sendAudio", args));
 }
 
-dd::task<Message::Ptr> Api::sendDocument(boost::variant<std::int64_t, std::string> chatId,
+dd::task<Message::Ptr> Api::sendDocument(int_or_str chatId,
                                          boost::variant<InputFile::Ptr, std::string> document,
                                          boost::variant<InputFile::Ptr, std::string> thumbnail,
                                          const std::string &caption, ReplyParameters::Ptr replyParameters,
@@ -475,7 +424,7 @@ dd::task<Message::Ptr> Api::sendDocument(boost::variant<std::int64_t, std::strin
 }
 
 dd::task<Message::Ptr> Api::sendVideo(
-    boost::variant<std::int64_t, std::string> chatId, boost::variant<InputFile::Ptr, std::string> video,
+    int_or_str chatId, boost::variant<InputFile::Ptr, std::string> video,
     bool supportsStreaming, std::int32_t duration, std::int32_t width, std::int32_t height,
     boost::variant<InputFile::Ptr, std::string> thumbnail, const std::string &caption,
     ReplyParameters::Ptr replyParameters, GenericReply::Ptr replyMarkup, const std::string &parseMode,
@@ -548,7 +497,7 @@ dd::task<Message::Ptr> Api::sendVideo(
   co_return _tgTypeParser.parseJsonAndGetMessage(co_await sendRequest("sendVideo", args));
 }
 
-dd::task<Message::Ptr> Api::sendAnimation(boost::variant<std::int64_t, std::string> chatId,
+dd::task<Message::Ptr> Api::sendAnimation(int_or_str chatId,
                                           boost::variant<InputFile::Ptr, std::string> animation,
                                           std::int32_t duration, std::int32_t width, std::int32_t height,
                                           boost::variant<InputFile::Ptr, std::string> thumbnail,
@@ -621,7 +570,7 @@ dd::task<Message::Ptr> Api::sendAnimation(boost::variant<std::int64_t, std::stri
   co_return _tgTypeParser.parseJsonAndGetMessage(co_await sendRequest("sendAnimation", args));
 }
 
-dd::task<Message::Ptr> Api::sendVoice(boost::variant<std::int64_t, std::string> chatId,
+dd::task<Message::Ptr> Api::sendVoice(int_or_str chatId,
                                       boost::variant<InputFile::Ptr, std::string> voice,
                                       const std::string &caption, std::int32_t duration,
                                       ReplyParameters::Ptr replyParameters, GenericReply::Ptr replyMarkup,
@@ -675,7 +624,7 @@ dd::task<Message::Ptr> Api::sendVoice(boost::variant<std::int64_t, std::string> 
 }
 
 dd::task<Message::Ptr> Api::sendVideoNote(
-    boost::variant<std::int64_t, std::string> chatId, boost::variant<InputFile::Ptr, std::string> videoNote,
+    int_or_str chatId, boost::variant<InputFile::Ptr, std::string> videoNote,
     ReplyParameters::Ptr replyParameters, bool disableNotification, std::int32_t duration,
     std::int32_t length, boost::variant<InputFile::Ptr, std::string> thumbnail, GenericReply::Ptr replyMarkup,
     std::int32_t messageThreadId, bool protectContent, const std::string &businessConnectionId) const {
@@ -726,7 +675,7 @@ dd::task<Message::Ptr> Api::sendVideoNote(
   co_return _tgTypeParser.parseJsonAndGetMessage(co_await sendRequest("sendVideoNote", args));
 }
 
-dd::task<std::vector<Message::Ptr>> Api::sendMediaGroup(boost::variant<std::int64_t, std::string> chatId,
+dd::task<std::vector<Message::Ptr>> Api::sendMediaGroup(int_or_str chatId,
                                                         const std::vector<InputMedia::Ptr> &media,
                                                         bool disableNotification,
                                                         ReplyParameters::Ptr replyParameters,
@@ -757,7 +706,7 @@ dd::task<std::vector<Message::Ptr>> Api::sendMediaGroup(boost::variant<std::int6
                                                         co_await sendRequest("sendMediaGroup", args));
 }
 
-dd::task<Message::Ptr> Api::sendLocation(boost::variant<std::int64_t, std::string> chatId, float latitude,
+dd::task<Message::Ptr> Api::sendLocation(int_or_str chatId, float latitude,
                                          float longitude, std::int32_t livePeriod,
                                          ReplyParameters::Ptr replyParameters, GenericReply::Ptr replyMarkup,
                                          bool disableNotification, float horizontalAccuracy,
@@ -805,7 +754,7 @@ dd::task<Message::Ptr> Api::sendLocation(boost::variant<std::int64_t, std::strin
 }
 
 dd::task<Message::Ptr> Api::editMessageLiveLocation(
-    float latitude, float longitude, boost::variant<std::int64_t, std::string> chatId, std::int32_t messageId,
+    float latitude, float longitude, int_or_str chatId, std::int32_t messageId,
     const std::string &inlineMessageId, InlineKeyboardMarkup::Ptr replyMarkup, float horizontalAccuracy,
     std::int32_t heading, std::int32_t proximityAlertRadius) const {
   std::vector<HttpReqArg> args;
@@ -844,7 +793,7 @@ dd::task<Message::Ptr> Api::editMessageLiveLocation(
   co_return _tgTypeParser.parseJsonAndGetMessage(co_await sendRequest("editMessageLiveLocation", args));
 }
 
-dd::task<Message::Ptr> Api::stopMessageLiveLocation(boost::variant<std::int64_t, std::string> chatId,
+dd::task<Message::Ptr> Api::stopMessageLiveLocation(int_or_str chatId,
                                                     std::int32_t messageId,
                                                     const std::string &inlineMessageId,
                                                     InlineKeyboardMarkup::Ptr replyMarkup) const {
@@ -873,7 +822,7 @@ dd::task<Message::Ptr> Api::stopMessageLiveLocation(boost::variant<std::int64_t,
   co_return _tgTypeParser.parseJsonAndGetMessage(co_await sendRequest("stopMessageLiveLocation", args));
 }
 
-dd::task<Message::Ptr> Api::sendVenue(boost::variant<std::int64_t, std::string> chatId, float latitude,
+dd::task<Message::Ptr> Api::sendVenue(int_or_str chatId, float latitude,
                                       float longitude, const std::string &title, const std::string &address,
                                       const std::string &foursquareId, const std::string &foursquareType,
                                       bool disableNotification, ReplyParameters::Ptr replyParameters,
@@ -922,7 +871,7 @@ dd::task<Message::Ptr> Api::sendVenue(boost::variant<std::int64_t, std::string> 
   co_return _tgTypeParser.parseJsonAndGetMessage(co_await sendRequest("sendVenue", args));
 }
 
-dd::task<Message::Ptr> Api::sendContact(boost::variant<std::int64_t, std::string> chatId,
+dd::task<Message::Ptr> Api::sendContact(int_or_str chatId,
                                         const std::string &phoneNumber, const std::string &firstName,
                                         const std::string &lastName, const std::string &vcard,
                                         bool disableNotification, ReplyParameters::Ptr replyParameters,
@@ -962,7 +911,7 @@ dd::task<Message::Ptr> Api::sendContact(boost::variant<std::int64_t, std::string
   co_return _tgTypeParser.parseJsonAndGetMessage(co_await sendRequest("sendContact", args));
 }
 
-dd::task<Message::Ptr> Api::sendPoll(boost::variant<std::int64_t, std::string> chatId,
+dd::task<Message::Ptr> Api::sendPoll(int_or_str chatId,
                                      const std::string &question, const std::vector<std::string> &options,
                                      bool disableNotification, ReplyParameters::Ptr replyParameters,
                                      GenericReply::Ptr replyMarkup, bool isAnonymous, const std::string &type,
@@ -1035,7 +984,7 @@ dd::task<Message::Ptr> Api::sendPoll(boost::variant<std::int64_t, std::string> c
   co_return _tgTypeParser.parseJsonAndGetMessage(co_await sendRequest("sendPoll", args));
 }
 
-dd::task<Message::Ptr> Api::sendDice(boost::variant<std::int64_t, std::string> chatId,
+dd::task<Message::Ptr> Api::sendDice(int_or_str chatId,
                                      bool disableNotification, ReplyParameters::Ptr replyParameters,
                                      GenericReply::Ptr replyMarkup, const std::string &emoji,
                                      std::int32_t messageThreadId, bool protectContent,
@@ -1069,7 +1018,7 @@ dd::task<Message::Ptr> Api::sendDice(boost::variant<std::int64_t, std::string> c
   co_return _tgTypeParser.parseJsonAndGetMessage(co_await sendRequest("sendDice", args));
 }
 
-dd::task<bool> Api::setMessageReaction(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::setMessageReaction(int_or_str chatId,
                                        std::int32_t messageId, const std::vector<ReactionType::Ptr> &reaction,
                                        bool isBig) const {
   std::vector<HttpReqArg> args;
@@ -1132,7 +1081,7 @@ dd::task<File::Ptr> Api::getFile(const std::string &fileId) const {
   co_return _tgTypeParser.parseJsonAndGetFile(co_await sendRequest("getFile", args));
 }
 
-dd::task<bool> Api::banChatMember(boost::variant<std::int64_t, std::string> chatId, std::int64_t userId,
+dd::task<bool> Api::banChatMember(int_or_str chatId, std::int64_t userId,
                                   std::int32_t untilDate, bool revokeMessages) const {
   std::vector<HttpReqArg> args;
   args.reserve(4);
@@ -1149,7 +1098,7 @@ dd::task<bool> Api::banChatMember(boost::variant<std::int64_t, std::string> chat
   co_return (co_await sendRequest("banChatMember", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::unbanChatMember(boost::variant<std::int64_t, std::string> chatId, std::int64_t userId,
+dd::task<bool> Api::unbanChatMember(int_or_str chatId, std::int64_t userId,
                                     bool onlyIfBanned) const {
   std::vector<HttpReqArg> args;
   args.reserve(3);
@@ -1163,7 +1112,7 @@ dd::task<bool> Api::unbanChatMember(boost::variant<std::int64_t, std::string> ch
   co_return (co_await sendRequest("unbanChatMember", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::restrictChatMember(boost::variant<std::int64_t, std::string> chatId, std::int64_t userId,
+dd::task<bool> Api::restrictChatMember(int_or_str chatId, std::int64_t userId,
                                        tgbm::ChatPermissions::Ptr permissions, std::uint32_t untilDate,
                                        bool useIndependentChatPermissions) const {
   std::vector<HttpReqArg> args;
@@ -1182,7 +1131,7 @@ dd::task<bool> Api::restrictChatMember(boost::variant<std::int64_t, std::string>
   co_return (co_await sendRequest("restrictChatMember", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::promoteChatMember(boost::variant<std::int64_t, std::string> chatId, std::int64_t userId,
+dd::task<bool> Api::promoteChatMember(int_or_str chatId, std::int64_t userId,
                                       bool canChangeInfo, bool canPostMessages, bool canEditMessages,
                                       bool canDeleteMessages, bool canInviteUsers, bool canPinMessages,
                                       bool canPromoteMembers, bool isAnonymous, bool canManageChat,
@@ -1242,7 +1191,7 @@ dd::task<bool> Api::promoteChatMember(boost::variant<std::int64_t, std::string> 
   co_return (co_await sendRequest("promoteChatMember", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::setChatAdministratorCustomTitle(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::setChatAdministratorCustomTitle(int_or_str chatId,
                                                     std::int64_t userId,
                                                     const std::string &customTitle) const {
   std::vector<HttpReqArg> args;
@@ -1255,7 +1204,7 @@ dd::task<bool> Api::setChatAdministratorCustomTitle(boost::variant<std::int64_t,
   co_return (co_await sendRequest("setChatAdministratorCustomTitle", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::banChatSenderChat(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::banChatSenderChat(int_or_str chatId,
                                       std::int64_t senderChatId) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1266,7 +1215,7 @@ dd::task<bool> Api::banChatSenderChat(boost::variant<std::int64_t, std::string> 
   co_return (co_await sendRequest("banChatSenderChat", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::unbanChatSenderChat(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::unbanChatSenderChat(int_or_str chatId,
                                         std::int64_t senderChatId) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1277,7 +1226,7 @@ dd::task<bool> Api::unbanChatSenderChat(boost::variant<std::int64_t, std::string
   co_return (co_await sendRequest("unbanChatSenderChat", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::setChatPermissions(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::setChatPermissions(int_or_str chatId,
                                        ChatPermissions::Ptr permissions,
                                        bool useIndependentChatPermissions) const {
   std::vector<HttpReqArg> args;
@@ -1292,7 +1241,7 @@ dd::task<bool> Api::setChatPermissions(boost::variant<std::int64_t, std::string>
   co_return (co_await sendRequest("setChatPermissions", args)).get<bool>("", false);
 }
 
-dd::task<std::string> Api::exportChatInviteLink(boost::variant<std::int64_t, std::string> chatId) const {
+dd::task<std::string> Api::exportChatInviteLink(int_or_str chatId) const {
   std::vector<HttpReqArg> args;
   args.reserve(1);
 
@@ -1301,7 +1250,7 @@ dd::task<std::string> Api::exportChatInviteLink(boost::variant<std::int64_t, std
   co_return (co_await sendRequest("exportChatInviteLink", args)).get("", "");
 }
 
-dd::task<ChatInviteLink::Ptr> Api::createChatInviteLink(boost::variant<std::int64_t, std::string> chatId,
+dd::task<ChatInviteLink::Ptr> Api::createChatInviteLink(int_or_str chatId,
                                                         std::int32_t expireDate, std::int32_t memberLimit,
                                                         const std::string &name,
                                                         bool createsJoinRequest) const {
@@ -1325,7 +1274,7 @@ dd::task<ChatInviteLink::Ptr> Api::createChatInviteLink(boost::variant<std::int6
   co_return _tgTypeParser.parseJsonAndGetChatInviteLink(co_await sendRequest("createChatInviteLink", args));
 }
 
-dd::task<ChatInviteLink::Ptr> Api::editChatInviteLink(boost::variant<std::int64_t, std::string> chatId,
+dd::task<ChatInviteLink::Ptr> Api::editChatInviteLink(int_or_str chatId,
                                                       const std::string &inviteLink, std::int32_t expireDate,
                                                       std::int32_t memberLimit, const std::string &name,
                                                       bool createsJoinRequest) const {
@@ -1350,7 +1299,7 @@ dd::task<ChatInviteLink::Ptr> Api::editChatInviteLink(boost::variant<std::int64_
   co_return _tgTypeParser.parseJsonAndGetChatInviteLink(co_await sendRequest("editChatInviteLink", args));
 }
 
-dd::task<ChatInviteLink::Ptr> Api::revokeChatInviteLink(boost::variant<std::int64_t, std::string> chatId,
+dd::task<ChatInviteLink::Ptr> Api::revokeChatInviteLink(int_or_str chatId,
                                                         const std::string &inviteLink) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1361,7 +1310,7 @@ dd::task<ChatInviteLink::Ptr> Api::revokeChatInviteLink(boost::variant<std::int6
   co_return _tgTypeParser.parseJsonAndGetChatInviteLink(co_await sendRequest("revokeChatInviteLink", args));
 }
 
-dd::task<bool> Api::approveChatJoinRequest(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::approveChatJoinRequest(int_or_str chatId,
                                            std::int64_t userId) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1372,7 +1321,7 @@ dd::task<bool> Api::approveChatJoinRequest(boost::variant<std::int64_t, std::str
   co_return (co_await sendRequest("approveChatJoinRequest", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::declineChatJoinRequest(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::declineChatJoinRequest(int_or_str chatId,
                                            std::int64_t userId) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1383,7 +1332,7 @@ dd::task<bool> Api::declineChatJoinRequest(boost::variant<std::int64_t, std::str
   co_return (co_await sendRequest("declineChatJoinRequest", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::setChatPhoto(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::setChatPhoto(int_or_str chatId,
                                  const InputFile::Ptr photo) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1394,7 +1343,7 @@ dd::task<bool> Api::setChatPhoto(boost::variant<std::int64_t, std::string> chatI
   co_return (co_await sendRequest("setChatPhoto", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::deleteChatPhoto(boost::variant<std::int64_t, std::string> chatId) const {
+dd::task<bool> Api::deleteChatPhoto(int_or_str chatId) const {
   std::vector<HttpReqArg> args;
   args.reserve(1);
 
@@ -1403,7 +1352,7 @@ dd::task<bool> Api::deleteChatPhoto(boost::variant<std::int64_t, std::string> ch
   co_return (co_await sendRequest("deleteChatPhoto", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::setChatTitle(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::setChatTitle(int_or_str chatId,
                                  const std::string &title) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1414,7 +1363,7 @@ dd::task<bool> Api::setChatTitle(boost::variant<std::int64_t, std::string> chatI
   co_return (co_await sendRequest("setChatTitle", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::setChatDescription(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::setChatDescription(int_or_str chatId,
                                        const std::string &description) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1427,7 +1376,7 @@ dd::task<bool> Api::setChatDescription(boost::variant<std::int64_t, std::string>
   co_return (co_await sendRequest("setChatDescription", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::pinChatMessage(boost::variant<std::int64_t, std::string> chatId, std::int32_t messageId,
+dd::task<bool> Api::pinChatMessage(int_or_str chatId, std::int32_t messageId,
                                    bool disableNotification) const {
   std::vector<HttpReqArg> args;
   args.reserve(3);
@@ -1441,7 +1390,7 @@ dd::task<bool> Api::pinChatMessage(boost::variant<std::int64_t, std::string> cha
   co_return (co_await sendRequest("pinChatMessage", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::unpinChatMessage(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::unpinChatMessage(int_or_str chatId,
                                      std::int32_t messageId) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1454,7 +1403,7 @@ dd::task<bool> Api::unpinChatMessage(boost::variant<std::int64_t, std::string> c
   co_return (co_await sendRequest("unpinChatMessage", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::unpinAllChatMessages(boost::variant<std::int64_t, std::string> chatId) const {
+dd::task<bool> Api::unpinAllChatMessages(int_or_str chatId) const {
   std::vector<HttpReqArg> args;
   args.reserve(1);
 
@@ -1463,7 +1412,7 @@ dd::task<bool> Api::unpinAllChatMessages(boost::variant<std::int64_t, std::strin
   co_return (co_await sendRequest("unpinAllChatMessages", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::leaveChat(boost::variant<std::int64_t, std::string> chatId) const {
+dd::task<bool> Api::leaveChat(int_or_str chatId) const {
   std::vector<HttpReqArg> args;
   args.reserve(1);
 
@@ -1472,7 +1421,7 @@ dd::task<bool> Api::leaveChat(boost::variant<std::int64_t, std::string> chatId) 
   co_return (co_await sendRequest("leaveChat", args)).get<bool>("", false);
 }
 
-dd::task<Chat::Ptr> Api::getChat(boost::variant<std::int64_t, std::string> chatId) const {
+dd::task<Chat::Ptr> Api::getChat(int_or_str chatId) const {
   std::vector<HttpReqArg> args;
   args.reserve(1);
 
@@ -1482,7 +1431,7 @@ dd::task<Chat::Ptr> Api::getChat(boost::variant<std::int64_t, std::string> chatI
 }
 
 dd::task<std::vector<ChatMember::Ptr>> Api::getChatAdministrators(
-    boost::variant<std::int64_t, std::string> chatId) const {
+    int_or_str chatId) const {
   std::vector<HttpReqArg> args;
   args.reserve(1);
 
@@ -1492,7 +1441,7 @@ dd::task<std::vector<ChatMember::Ptr>> Api::getChatAdministrators(
       &TgTypeParser::parseJsonAndGetChatMember, co_await sendRequest("getChatAdministrators", args));
 }
 
-dd::task<int32_t> Api::getChatMemberCount(boost::variant<std::int64_t, std::string> chatId) const {
+dd::task<int32_t> Api::getChatMemberCount(int_or_str chatId) const {
   std::vector<HttpReqArg> args;
   args.reserve(1);
 
@@ -1501,7 +1450,7 @@ dd::task<int32_t> Api::getChatMemberCount(boost::variant<std::int64_t, std::stri
   co_return (co_await sendRequest("getChatMemberCount", args)).get<int32_t>("", 0);
 }
 
-dd::task<ChatMember::Ptr> Api::getChatMember(boost::variant<std::int64_t, std::string> chatId,
+dd::task<ChatMember::Ptr> Api::getChatMember(int_or_str chatId,
                                              std::int64_t userId) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1512,7 +1461,7 @@ dd::task<ChatMember::Ptr> Api::getChatMember(boost::variant<std::int64_t, std::s
   co_return _tgTypeParser.parseJsonAndGetChatMember(co_await sendRequest("getChatMember", args));
 }
 
-dd::task<bool> Api::setChatStickerSet(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::setChatStickerSet(int_or_str chatId,
                                       const std::string &stickerSetName) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1523,7 +1472,7 @@ dd::task<bool> Api::setChatStickerSet(boost::variant<std::int64_t, std::string> 
   co_return (co_await sendRequest("setChatStickerSet", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::deleteChatStickerSet(boost::variant<std::int64_t, std::string> chatId) const {
+dd::task<bool> Api::deleteChatStickerSet(int_or_str chatId) const {
   std::vector<HttpReqArg> args;
   args.reserve(1);
 
@@ -1537,7 +1486,7 @@ dd::task<std::vector<Sticker::Ptr>> Api::getForumTopicIconStickers() const {
                                                         co_await sendRequest("getForumTopicIconStickers"));
 }
 
-dd::task<ForumTopic::Ptr> Api::createForumTopic(boost::variant<std::int64_t, std::string> chatId,
+dd::task<ForumTopic::Ptr> Api::createForumTopic(int_or_str chatId,
                                                 const std::string &name, std::int32_t iconColor,
                                                 const std::string &iconCustomEmojiId) const {
   std::vector<HttpReqArg> args;
@@ -1555,7 +1504,7 @@ dd::task<ForumTopic::Ptr> Api::createForumTopic(boost::variant<std::int64_t, std
   co_return _tgTypeParser.parseJsonAndGetForumTopic(co_await sendRequest("createForumTopic", args));
 }
 
-dd::task<bool> Api::editForumTopic(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::editForumTopic(int_or_str chatId,
                                    std::int32_t messageThreadId, const std::string &name,
                                    boost::variant<std::int32_t, std::string> iconCustomEmojiId) const {
   std::vector<HttpReqArg> args;
@@ -1579,7 +1528,7 @@ dd::task<bool> Api::editForumTopic(boost::variant<std::int64_t, std::string> cha
   co_return (co_await sendRequest("editForumTopic", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::closeForumTopic(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::closeForumTopic(int_or_str chatId,
                                     std::int32_t messageThreadId) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1590,7 +1539,7 @@ dd::task<bool> Api::closeForumTopic(boost::variant<std::int64_t, std::string> ch
   co_return (co_await sendRequest("closeForumTopic", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::reopenForumTopic(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::reopenForumTopic(int_or_str chatId,
                                      std::int32_t messageThreadId) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1601,7 +1550,7 @@ dd::task<bool> Api::reopenForumTopic(boost::variant<std::int64_t, std::string> c
   co_return (co_await sendRequest("reopenForumTopic", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::deleteForumTopic(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::deleteForumTopic(int_or_str chatId,
                                      std::int32_t messageThreadId) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1612,7 +1561,7 @@ dd::task<bool> Api::deleteForumTopic(boost::variant<std::int64_t, std::string> c
   co_return (co_await sendRequest("deleteForumTopic", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::unpinAllForumTopicMessages(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::unpinAllForumTopicMessages(int_or_str chatId,
                                                std::int32_t messageThreadId) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1623,7 +1572,7 @@ dd::task<bool> Api::unpinAllForumTopicMessages(boost::variant<std::int64_t, std:
   co_return (co_await sendRequest("unpinAllForumTopicMessages", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::editGeneralForumTopic(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::editGeneralForumTopic(int_or_str chatId,
                                           std::string name) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1634,7 +1583,7 @@ dd::task<bool> Api::editGeneralForumTopic(boost::variant<std::int64_t, std::stri
   co_return (co_await sendRequest("editGeneralForumTopic", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::closeGeneralForumTopic(boost::variant<std::int64_t, std::string> chatId) const {
+dd::task<bool> Api::closeGeneralForumTopic(int_or_str chatId) const {
   std::vector<HttpReqArg> args;
   args.reserve(1);
 
@@ -1643,7 +1592,7 @@ dd::task<bool> Api::closeGeneralForumTopic(boost::variant<std::int64_t, std::str
   co_return (co_await sendRequest("closeGeneralForumTopic", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::reopenGeneralForumTopic(boost::variant<std::int64_t, std::string> chatId) const {
+dd::task<bool> Api::reopenGeneralForumTopic(int_or_str chatId) const {
   std::vector<HttpReqArg> args;
   args.reserve(1);
 
@@ -1652,7 +1601,7 @@ dd::task<bool> Api::reopenGeneralForumTopic(boost::variant<std::int64_t, std::st
   co_return (co_await sendRequest("reopenGeneralForumTopic", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::hideGeneralForumTopic(boost::variant<std::int64_t, std::string> chatId) const {
+dd::task<bool> Api::hideGeneralForumTopic(int_or_str chatId) const {
   std::vector<HttpReqArg> args;
   args.reserve(1);
 
@@ -1661,7 +1610,7 @@ dd::task<bool> Api::hideGeneralForumTopic(boost::variant<std::int64_t, std::stri
   co_return (co_await sendRequest("hideGeneralForumTopic", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::unhideGeneralForumTopic(boost::variant<std::int64_t, std::string> chatId) const {
+dd::task<bool> Api::unhideGeneralForumTopic(int_or_str chatId) const {
   std::vector<HttpReqArg> args;
   args.reserve(1);
 
@@ -1671,7 +1620,7 @@ dd::task<bool> Api::unhideGeneralForumTopic(boost::variant<std::int64_t, std::st
 }
 
 dd::task<bool> Api::unpinAllGeneralForumTopicMessages(
-    boost::variant<std::int64_t, std::string> chatId) const {
+    int_or_str chatId) const {
   std::vector<HttpReqArg> args;
   args.reserve(1);
 
@@ -1703,7 +1652,7 @@ dd::task<bool> Api::answerCallbackQuery(const std::string &callbackQueryId, cons
   co_return (co_await sendRequest("answerCallbackQuery", args)).get<bool>("", false);
 }
 
-dd::task<UserChatBoosts::Ptr> Api::getUserChatBoosts(boost::variant<std::int64_t, std::string> chatId,
+dd::task<UserChatBoosts::Ptr> Api::getUserChatBoosts(int_or_str chatId,
                                                      std::int32_t userId) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -1901,7 +1850,7 @@ dd::task<ChatAdministratorRights::Ptr> Api::getMyDefaultAdministratorRights(bool
 }
 
 dd::task<Message::Ptr> Api::editMessageText(const std::string &text,
-                                            boost::variant<std::int64_t, std::string> chatId,
+                                            int_or_str chatId,
                                             std::int32_t messageId, const std::string &inlineMessageId,
                                             const std::string &parseMode,
                                             LinkPreviewOptions::Ptr linkPreviewOptions,
@@ -1948,7 +1897,7 @@ dd::task<Message::Ptr> Api::editMessageText(const std::string &text,
   }
 }
 
-dd::task<Message::Ptr> Api::editMessageCaption(boost::variant<std::int64_t, std::string> chatId,
+dd::task<Message::Ptr> Api::editMessageCaption(int_or_str chatId,
                                                std::int32_t messageId, const std::string &caption,
                                                const std::string &inlineMessageId,
                                                GenericReply::Ptr replyMarkup, const std::string &parseMode,
@@ -1994,7 +1943,7 @@ dd::task<Message::Ptr> Api::editMessageCaption(boost::variant<std::int64_t, std:
 }
 
 dd::task<Message::Ptr> Api::editMessageMedia(InputMedia::Ptr media,
-                                             boost::variant<std::int64_t, std::string> chatId,
+                                             int_or_str chatId,
                                              std::int32_t messageId, const std::string &inlineMessageId,
                                              GenericReply::Ptr replyMarkup) const {
   std::vector<HttpReqArg> args;
@@ -2028,7 +1977,7 @@ dd::task<Message::Ptr> Api::editMessageMedia(InputMedia::Ptr media,
   }
 }
 
-dd::task<Message::Ptr> Api::editMessageReplyMarkup(boost::variant<std::int64_t, std::string> chatId,
+dd::task<Message::Ptr> Api::editMessageReplyMarkup(int_or_str chatId,
                                                    std::int32_t messageId, const std::string &inlineMessageId,
                                                    const GenericReply::Ptr replyMarkup) const {
   std::vector<HttpReqArg> args;
@@ -2061,7 +2010,7 @@ dd::task<Message::Ptr> Api::editMessageReplyMarkup(boost::variant<std::int64_t, 
   }
 }
 
-dd::task<Poll::Ptr> Api::stopPoll(boost::variant<std::int64_t, std::string> chatId, std::int64_t messageId,
+dd::task<Poll::Ptr> Api::stopPoll(int_or_str chatId, std::int64_t messageId,
                                   const InlineKeyboardMarkup::Ptr replyMarkup) const {
   std::vector<HttpReqArg> args;
   args.reserve(3);
@@ -2075,7 +2024,7 @@ dd::task<Poll::Ptr> Api::stopPoll(boost::variant<std::int64_t, std::string> chat
   co_return _tgTypeParser.parseJsonAndGetPoll(co_await sendRequest("stopPoll", args));
 }
 
-dd::task<bool> Api::deleteMessage(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::deleteMessage(int_or_str chatId,
                                   std::int32_t messageId) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -2086,7 +2035,7 @@ dd::task<bool> Api::deleteMessage(boost::variant<std::int64_t, std::string> chat
   co_return (co_await sendRequest("deleteMessage", args)).get<bool>("", false);
 }
 
-dd::task<bool> Api::deleteMessages(boost::variant<std::int64_t, std::string> chatId,
+dd::task<bool> Api::deleteMessages(int_or_str chatId,
                                    const std::vector<std::int32_t> &messageIds) const {
   std::vector<HttpReqArg> args;
   args.reserve(2);
@@ -2101,7 +2050,7 @@ dd::task<bool> Api::deleteMessages(boost::variant<std::int64_t, std::string> cha
   co_return (co_await sendRequest("deleteMessages", args)).get<bool>("", false);
 }
 
-dd::task<Message::Ptr> Api::sendSticker(boost::variant<std::int64_t, std::string> chatId,
+dd::task<Message::Ptr> Api::sendSticker(int_or_str chatId,
                                         boost::variant<InputFile::Ptr, std::string> sticker,
                                         ReplyParameters::Ptr replyParameters, GenericReply::Ptr replyMarkup,
                                         bool disableNotification, std::int32_t messageThreadId,
@@ -2386,7 +2335,7 @@ dd::task<SentWebAppMessage::Ptr> Api::answerWebAppQuery(const std::string &webAp
 }
 
 dd::task<Message::Ptr> Api::sendInvoice(
-    boost::variant<std::int64_t, std::string> chatId, const std::string &title,
+    int_or_str chatId, const std::string &title,
     const std::string &description, const std::string &payload, const std::string &providerToken,
     const std::string &currency, const std::vector<LabeledPrice::Ptr> &prices,
     const std::string &providerData, const std::string &photoUrl, std::int32_t photoSize,

@@ -3,7 +3,6 @@
 #include "tgbm/TgTypeParser.h"
 #include "tgbm/net/HttpClient.h"
 #include "tgbm/net/HttpReqArg.h"
-#include "tgbm/tools/StringTools.h"
 #include "tgbm/types/User.h"
 #include "tgbm/types/Message.h"
 #include "tgbm/types/MessageId.h"
@@ -12,7 +11,6 @@
 #include "tgbm/types/UserProfilePhotos.h"
 #include "tgbm/types/Update.h"
 #include "tgbm/types/InlineQueryResult.h"
-#include "tgbm/types/Venue.h"
 #include "tgbm/types/WebhookInfo.h"
 #include "tgbm/types/ChatMember.h"
 #include "tgbm/types/Sticker.h"
@@ -26,6 +24,7 @@
 #include "tgbm/types/BotCommand.h"
 #include "tgbm/types/ForumTopic.h"
 #include "tgbm/types/LinkPreviewOptions.h"
+#include "tools/rapidjson_to_json.h"
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/variant.hpp>
@@ -33,7 +32,6 @@
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace tgbm {
@@ -85,6 +83,15 @@ constexpr std::string_view e2str(tg_errc e) noexcept {
 struct tg_exception : http_exception {
   using http_exception::http_exception;
 };
+// TODO better type (and std::variant or may be somehow rid of it in API at all)
+using int_or_str = boost::variant<std::int64_t, std::string>;
+
+void rj_tojson(rjson_writer auto& writer, const int_or_str& v) {
+  if (v.which() == 0)
+    rj_tojson(writer, boost::get<int64_t>(v));
+  else
+    rj_tojson(writer, boost::get<std::string>(v));
+}
 
 /**
  * @brief This class executes telegram api methods. Telegram docs:
@@ -2649,6 +2656,8 @@ class TGBM_API Api {
    *
    * @return File content in a string.
    */
+  // TODO принимать аргумент для обработки записи (чтобы по частям можно было в файлик складывать вместо
+  // строки в памяти)
   dd::task<std::string> downloadFile(const std::string& filePath,
                                      const std::vector<HttpReqArg>& args = std::vector<HttpReqArg>());
 
@@ -2673,3 +2682,21 @@ class TGBM_API Api {
   const std::string _url;
 };
 }  // namespace tgbm
+
+namespace fmt {
+
+template <>
+struct fmt::formatter<::tgbm::int_or_str> {
+  static constexpr auto parse(fmt::format_parse_context& ctx) -> decltype(ctx.begin()) {
+    return ctx.end();
+  }
+
+  static auto format(const ::tgbm::int_or_str& s, auto& ctx) -> decltype(ctx.out()) {
+    if (s.which())
+      return fmt::format_to(ctx.out(), "{}", boost::get<int64_t>(s));
+    else
+      return fmt::format_to(ctx.out(), "{}", boost::get<std::string>(s));
+  }
+};
+
+}  // namespace fmt

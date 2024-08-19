@@ -80,7 +80,7 @@ if (TGBM_ENABLE_TESTS)
     include(CTest)
     add_subdirectory(test)
 endif()
-
+# TODO rm
 add_executable(tgbm_main ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 target_link_libraries(tgbm_main PUBLIC tgbmlib)
 

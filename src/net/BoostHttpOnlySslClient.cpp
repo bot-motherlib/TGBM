@@ -74,7 +74,7 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(http_request request) 
       socket.lowest_layer().cancel();
   };
   io_error_code ec;
-  LOG_DEBUG("generated request:\n HEADERS:\n {}, BODY:\n {}", request.headers, request.body);
+  LOG_DEBUG("generated request:\n HEADERS:\n{}\nBODY:\n{}", request.headers, request.body);
   std::array<asio::const_buffer, 2> headers_and_body{asio::buffer(request.headers),
                                                      asio::buffer(request.body)};
   size_t transfered = co_await async_write(socket, headers_and_body, ec);
