@@ -2251,7 +2251,8 @@ dd::task<std::string> Api::downloadFile(const std::string &filePath) {
   url += "/";
   url += filePath;
   // TODO нужно возвращать вектор байт, очевидно стринга не подходит
-  return _httpClient.makeRequest(http_request(url));
+  http_response rsp = co_await _httpClient.makeRequest(http_request(url));
+  co_return std::move(rsp.body);
 }
 
 dd::task<bool> Api::blockedByUser(std::int64_t chatId) const {
@@ -2269,7 +2270,8 @@ dd::task<boost::property_tree::ptree> Api::sendRequest(http_request request) con
   int retries = 0;
   for (;;) {
     try {
-      std::string serverResponse = co_await _httpClient.makeRequest(std::move(request));
+      // TODO parse http response
+      std::string serverResponse = (co_await _httpClient.makeRequest(std::move(request))).body;
       if (serverResponse.starts_with(
               "<html>"))  // TODO проверить работоспособность этой ветки с неправильным токеном
         throw TGBM_TG_EXCEPTION(tg_errc::HtmlResponse,

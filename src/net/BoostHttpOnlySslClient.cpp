@@ -40,7 +40,6 @@ dd::task<BoostHttpOnlySslClient::connection_t> BoostHttpOnlySslClient::create_co
   if (ec)
     throw network_exception("[http] cannot resolve host: {}: service: {}, err: {}", query.host_name(),
                             query.service_name(), ec.message());
-  asio::connect(socket.lowest_layer(), results, ec);
   (void)co_await async_connect(socket.lowest_layer(), results, ec);
   if (ec)
     throw network_exception("[http] cannot connect to {}, err: {}", host, ec.message());
@@ -57,7 +56,7 @@ dd::task<BoostHttpOnlySslClient::connection_t> BoostHttpOnlySslClient::create_co
   co_return connection;
 }
 
-dd::task<std::string> BoostHttpOnlySslClient::makeRequest(http_request request) {
+dd::task<http_response> BoostHttpOnlySslClient::makeRequest(http_request request) {
   namespace asio = boost::asio;
   using tcp = asio::ip::tcp;
 
@@ -72,7 +71,7 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(http_request request) 
       socket.lowest_layer().cancel();
   };
   io_error_code ec;
-  LOG_DEBUG("generated request:\n HEADERS:\n{}\nBODY:\n{}", request.headers, request.body);
+  LOG_DEBUG("generated request:\nHEADERS:\n{}\nBODY:\n{}", request.headers, request.body);
   std::array<asio::const_buffer, 2> headers_and_body{asio::buffer(request.headers),
                                                      asio::buffer(request.body)};
   size_t transfered = co_await async_write(socket, headers_and_body, ec);
@@ -80,8 +79,8 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(http_request request) 
     throw http_exception("[http] cannot write to {} socket, err: {}", (void*)&socket, ec.message());
   assert(transfered == (request.headers.size() + request.body.size()));
   // TODO timeout на весь сокет сразу одну штуку(точнее на одну операцию(корутину)...)
-  // TODO reuse memory from http request
-  std::string data;
+  request.headers.clear();
+  request.body.clear();
   // TODO нужно возвращать вектор байт вместо строки 1. это выгоднее (sso не нужно)
   // 2. там могут быть \0, т.к. это в том числе загрузка файлов
 
@@ -89,41 +88,42 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(http_request request) 
   // HTTP<version><whitespaces><code>
   static constexpr std::string_view headers_end_marker = "\r\n\r\n";
   // read http headers
-  std::string::size_type headers_end_pos = co_await async_read_until(socket, data, headers_end_marker, ec);
-  // TODO получается тут 3 read_until - status string \r\n, Content-Length: (хотя это ... Хм), headers end
-  // \r\n\r\n
+  std::string::size_type headers_end_pos =
+      co_await async_read_until(socket, request.headers, headers_end_marker, ec);
   if (ec)
     throw http_exception("[http] error while reading http headers: {}", ec.message());
   static constexpr std::string_view content_length_header = "Content-Length:";
-  auto content_len_pos = data.find(content_length_header);
-  if (content_len_pos == data.npos)
+  auto content_len_pos = request.headers.find(content_length_header);
+  if (content_len_pos == request.headers.npos)
     throw http_exception("[http] incorrect server answer");
   content_len_pos += content_length_header.size();
   // skip whitespaces (exactly one usually)
-  content_len_pos = data.find_first_not_of(' ', content_len_pos);
+  content_len_pos = request.headers.find_first_not_of(' ', content_len_pos);
   assert(content_len_pos < headers_end_pos);
   size_t content_length;
-  auto [_, err] =
-      std::from_chars(data.data() + content_len_pos, data.data() + headers_end_pos, content_length);
+  auto [_, err] = std::from_chars(request.headers.data() + content_len_pos,
+                                  request.headers.data() + headers_end_pos, content_length);
   if (err != std::errc{})
     throw http_exception("[http] cannot parse content length from server response: {}",
                          std::make_error_code(err).message());
 
   headers_end_pos += headers_end_marker.size();
-  size_t overriden_bytes = data.size() - headers_end_pos;
+  size_t overriden_bytes = request.headers.size() - headers_end_pos;
   assert(overriden_bytes <= content_length);
-  // remove headers, keep only overreaded body
-  LOG_DEBUG("response headers:\n{}", std::string_view(data).substr(0, data.size() - overriden_bytes));
-  data.erase(data.begin(), data.begin() + headers_end_pos);
-  data.resize(content_length);
+  // store overriden body and erase it from headers
+  request.body.resize(content_length);
+  memcpy(request.body.data(), request.headers.data() + headers_end_pos, overriden_bytes);
+  request.headers.erase(request.headers.begin() + headers_end_pos, request.headers.end());
+  LOG_DEBUG("response headers:\n{}", request.headers);
   transfered = co_await async_read(
-      socket, asio::buffer(data.data() + overriden_bytes, content_length - overriden_bytes), ec);
+      socket, asio::buffer(request.body.data() + overriden_bytes, content_length - overriden_bytes), ec);
   if (ec)
     throw http_exception("[http] error while reading body: {}", ec.message());
   assert(transfered == content_length - overriden_bytes);
   drop_socket.no_longer_needed();
-  LOG_DEBUG("response body:\n{}", data);
-  co_return data;
+  LOG_DEBUG("response body:\n{}", request.body);
+  // reuses memory
+  co_return http_response{.body = std::move(request.body), .headers = std::move(request.headers)};
 }
 
 }  // namespace tgbm

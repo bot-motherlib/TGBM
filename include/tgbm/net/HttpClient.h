@@ -45,7 +45,7 @@ class TGBM_API HttpClient {
    * If at least 1 arg is marked as file, the content type of a request will be multipart/form-data, otherwise
    * it will be application/x-www-form-urlencoded.
    */
-  virtual dd::task<std::string> makeRequest(http_request request) = 0;
+  virtual dd::task<http_response> makeRequest(http_request request) = 0;
   // TODO передавать таймаут в makeRequest, количество ретраев вероятно тоже. И std::chrono::seconds вместо
   // int
   std::int32_t _timeout = 25;

@@ -41,14 +41,7 @@ class TGBM_API BoostHttpOnlySslClient : public HttpClient {
                          size_t connections_max_count = 1000);
   ~BoostHttpOnlySslClient() override;
 
-  /**
-   * @brief Sends a request to the url.
-   *
-   * If there's no args specified, a GET request will be sent, otherwise a POST request will be sent.
-   * If at least 1 arg is marked as file, the content type of a request will be multipart/form-data, otherwise
-   * it will be application/x-www-form-urlencoded.
-   */
-  dd::task<std::string> makeRequest(http_request) override;
+  dd::task<http_response> makeRequest(http_request) override;
 
   static dd::task<connection_t> create_connection(boost::asio::io_context &, std::string host);
   [[nodiscard]] boost::asio::io_context &get_io_context() noexcept {

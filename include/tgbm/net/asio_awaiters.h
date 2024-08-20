@@ -217,6 +217,7 @@ dd::task<size_t> do_read_until(auto& stream, std::string& buffer, std::string_vi
                                io_error_code& ec KELCORO_LIFETIMEBOUND) {
   assert(!needle.empty());
   assert(!ec);
+  // TODO better
   char buf[128];
   const size_t init_sz = buffer.size();
   size_t transfered = 0;

@@ -201,4 +201,10 @@ struct http_request {
   }
 };
 
+struct http_response {
+  std::string body;
+  std::string headers;  // TODO vectors (?allocs?)
+  // TODO parse status string (error code, msg, http version)
+};
+
 }  // namespace tgbm
