@@ -1,19 +1,19 @@
 #pragma once
 
 #include "tgbm/net/HttpClient.h"
-#include "tgbm/net/Url.h"
-#include "tgbm/net/HttpReqArg.h"
-#include "tgbm/net/HttpParser.h"
 #include "tgbm/net/ConnectionPool.h"
 #include "tgbm/logger.h"
 
+// TODO wrap asio/detail/config.hpp (using include_next)
+#ifdef _WIN32
+#define _WIN32_WINNT 0x0A00
+#endif
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ssl/context.hpp>
 #include <boost/asio/ssl/stream.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
 #include <string>
-#include <vector>
 
 namespace tgbm {
 
@@ -48,10 +48,7 @@ class TGBM_API BoostHttpOnlySslClient : public HttpClient {
    * If at least 1 arg is marked as file, the content type of a request will be multipart/form-data, otherwise
    * it will be application/x-www-form-urlencoded.
    */
-  // TODO разделить get (без аргментов)/post и отдельно видимо файл, т.е. будет одно application/json
-  // и второе multipart/form-data
-  // TODO убрать аргументы и передавать сам запрос (они используются только чтобы сгенерировать запрос)
-  dd::task<std::string> makeRequest(Url url, std::vector<HttpReqArg> args) override;
+  dd::task<std::string> makeRequest(http_request) override;
 
   static dd::task<connection_t> create_connection(boost::asio::io_context &, std::string host);
   [[nodiscard]] boost::asio::io_context &get_io_context() noexcept {
@@ -75,7 +72,6 @@ class TGBM_API BoostHttpOnlySslClient : public HttpClient {
   };
 
   boost::asio::io_context &io_ctx;
-  const HttpParser _httpParser;
   pool_t<connection_t, log_events_handler_t> connections;
   dd::this_thread_executor_t exe;  // TODO change
 };

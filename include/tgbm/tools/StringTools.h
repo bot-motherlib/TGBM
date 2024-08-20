@@ -6,6 +6,8 @@
 #include <vector>
 #include <string>
 
+#include <fmt/format.h>
+
 /**
  * @ingroup tools
  */
@@ -26,7 +28,7 @@ void split(const std::string& str, char delimiter, std::vector<std::string>& des
  * @param length Length of resulting string.
  */
 TGBM_API
-std::string generateRandomString(std::size_t length);
+std::string generate_multipart_boundary(std::size_t length);
 
 /**
  * Performs url encode.
@@ -34,8 +36,11 @@ std::string generateRandomString(std::size_t length);
  * @param additionalLegitChars Optional. String of chars which will be not encoded in source url string.
  * @return Encoded url string
  */
-TGBM_API
-std::string urlEncode(std::string_view value);
+void urlEncode(std::string_view value, std::string& out);
+
+struct url_encoded {
+  std::string_view str;
+};
 
 /**
  * Performs url decode.
@@ -44,15 +49,6 @@ std::string urlEncode(std::string_view value);
  */
 TGBM_API
 std::string urlDecode(const std::string& value);
-
-/**
- * Escapes a string with illegal characters ("\/) for json
- *
- * @param value input string
- *
- * @return An encoded string
- */
-std::string escapeJsonString(const std::string& value);
 
 /**
  * Splits string to smaller substrings which have between them a delimiter. Resulting substrings won't have
@@ -68,3 +64,41 @@ inline std::vector<std::string> split(const std::string& str, char delimiter) {
 }
 
 }  // namespace StringTools
+
+namespace fmt {
+
+template <>
+struct fmt::formatter<::StringTools::url_encoded> {
+  static constexpr auto parse(fmt::format_parse_context& ctx) -> decltype(ctx.begin()) {
+    return ctx.end();
+  }
+
+  static auto format(::StringTools::url_encoded s, auto& ctx) -> decltype(ctx.out()) {
+    auto is_legit = [](char c) {
+      switch (c) {
+        case 'A' ... 'Z':
+        case 'a' ... 'z':
+        case '0' ... '9':
+        case '_':
+        case '.':
+        case '-':
+        case '~':
+        case ':':
+          return true;
+        default:
+          return false;
+      }
+    };
+    auto it = ctx.out();
+    for (auto const& c : s.str) {
+      if (is_legit(c)) {
+        *it = c;
+        ++it;
+      } else
+        it = fmt::format_to(it, "%{:02X}", (unsigned)(unsigned char)c);
+    }
+    return it;
+  }
+};
+
+}  // namespace fmt

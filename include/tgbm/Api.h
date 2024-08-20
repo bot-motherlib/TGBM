@@ -2,8 +2,6 @@
 
 #include "tgbm/TgTypeParser.h"
 #include "tgbm/net/HttpClient.h"
-#include "tgbm/net/HttpReqArg.h"
-#include "tgbm/tools/StringTools.h"
 #include "tgbm/types/User.h"
 #include "tgbm/types/Message.h"
 #include "tgbm/types/MessageId.h"
@@ -12,7 +10,6 @@
 #include "tgbm/types/UserProfilePhotos.h"
 #include "tgbm/types/Update.h"
 #include "tgbm/types/InlineQueryResult.h"
-#include "tgbm/types/Venue.h"
 #include "tgbm/types/WebhookInfo.h"
 #include "tgbm/types/ChatMember.h"
 #include "tgbm/types/Sticker.h"
@@ -26,14 +23,14 @@
 #include "tgbm/types/BotCommand.h"
 #include "tgbm/types/ForumTopic.h"
 #include "tgbm/types/LinkPreviewOptions.h"
+#include "tools/rapidjson_to_json.h"
 
 #include <boost/property_tree/ptree.hpp>
-#include <boost/variant.hpp>
 
+#include <variant>
 #include <cstdint>
 #include <memory>
 #include <string>
-#include <utility>
 #include <vector>
 
 namespace tgbm {
@@ -86,6 +83,16 @@ struct tg_exception : http_exception {
   using http_exception::http_exception;
 };
 
+using int_or_str = std::variant<std::int64_t, std::string>;
+using thumbnail_t = std::variant<InputFile::Ptr, std::string>;
+
+void rj_tojson(rjson_writer auto& writer, const int_or_str& v) {
+  if (auto* x = std::get_if<0>(&v))
+    rj_tojson(writer, *x);
+  else
+    rj_tojson(writer, *std::get_if<1>(&v));
+}
+
 /**
  * @brief This class executes telegram api methods. Telegram docs:
  * <https://core.telegram.org/bots/api#available-methods>
@@ -99,6 +106,13 @@ class TGBM_API Api {
 
  public:
   Api(std::string token, HttpClient& httpClient KELCORO_LIFETIMEBOUND, std::string url);
+
+  // TODO rewrite, no useless work str -> str -> Url parse str.. -> split
+  // нужно типизировать url типа сразу раскладыавть в хост и т.д. и только метод оставить отдельно и
+  // передавать его
+  std::string get_url(std::string_view method) const {
+    return fmt::format("{}/bot{}/{}", _url, _token, method);
+  }
 
   std::string_view get_token() const noexcept KELCORO_LIFETIMEBOUND {
     return _token;
@@ -258,12 +272,12 @@ class TGBM_API Api {
    * @param businessConnectionId Optional. Unique identifier of the business connection on behalf of which the
    * message will be sent
    *
-   * @return On success, the sent Message is returned.
+   * @return On success, the sent Messages is returned (if message too long, then several messages sended).
    */
-  dd::task<Message::Ptr> sendMessage(
-      boost::variant<std::int64_t, std::string> chatId, std::string text,
-      LinkPreviewOptions::Ptr linkPreviewOptions = nullptr, ReplyParameters::Ptr replyParameters = nullptr,
-      GenericReply::Ptr replyMarkup = nullptr, std::string parseMode = "", bool disableNotification = false,
+  dd::task<std::vector<Message::Ptr>> sendMessage(
+      int_or_str chatId, std::string text, LinkPreviewOptions::Ptr linkPreviewOptions = nullptr,
+      ReplyParameters::Ptr replyParameters = nullptr, GenericReply::Ptr replyMarkup = nullptr,
+      std::string parseMode = "", bool disableNotification = false,
       std::vector<MessageEntity::Ptr> entities = std::vector<MessageEntity::Ptr>(),
       std::int32_t messageThreadId = 0, bool protectContent = false,
       std::string businessConnectionId = "") const;
@@ -287,10 +301,9 @@ class TGBM_API Api {
    *
    * @return On success, the sent Message is returned.
    */
-  dd::task<Message::Ptr> forwardMessage(boost::variant<std::int64_t, std::string> chatId,
-                                        boost::variant<std::int64_t, std::string> fromChatId,
-                                        std::int32_t messageId, bool disableNotification = false,
-                                        bool protectContent = false, std::int32_t messageThreadId = 0) const;
+  dd::task<Message::Ptr> forwardMessage(int_or_str chatId, int_or_str fromChatId, std::int32_t messageId,
+                                        bool disableNotification = false, bool protectContent = false,
+                                        std::int32_t messageThreadId = 0) const;
 
   /**
    * @brief Use this method to forward multiple messages of any kind.
@@ -314,8 +327,7 @@ class TGBM_API Api {
    *
    * @return On success, an array of MessageId of the sent messages is returned.
    */
-  dd::task<std::vector<MessageId::Ptr>> forwardMessages(boost::variant<std::int64_t, std::string> chatId,
-                                                        boost::variant<std::int64_t, std::string> fromChatId,
+  dd::task<std::vector<MessageId::Ptr>> forwardMessages(int_or_str chatId, int_or_str fromChatId,
                                                         const std::vector<std::int32_t>& messageIds,
                                                         std::int32_t messageThreadId = 0,
                                                         bool disableNotification = false,
@@ -355,8 +367,8 @@ class TGBM_API Api {
    * @return Returns the MessageId of the sent message on success.
    */
   dd::task<MessageId::Ptr> copyMessage(
-      boost::variant<std::int64_t, std::string> chatId, boost::variant<std::int64_t, std::string> fromChatId,
-      std::int32_t messageId, const std::string& caption = "", const std::string& parseMode = "",
+      int_or_str chatId, int_or_str fromChatId, std::int32_t messageId, const std::string& caption = "",
+      const std::string& parseMode = "",
       const std::vector<MessageEntity::Ptr>& captionEntities = std::vector<MessageEntity::Ptr>(),
       bool disableNotification = false, ReplyParameters::Ptr replyParameters = nullptr,
       GenericReply::Ptr replyMarkup = std::make_shared<GenericReply>(), bool protectContent = false,
@@ -387,10 +399,12 @@ class TGBM_API Api {
    *
    * @return On success, an array of MessageId of the sent messages is returned.
    */
-  dd::task<std::vector<MessageId::Ptr>> copyMessages(
-      boost::variant<std::int64_t, std::string> chatId, boost::variant<std::int64_t, std::string> fromChatId,
-      const std::vector<std::int32_t>& messageIds, std::int32_t messageThreadId = 0,
-      bool disableNotification = false, bool protectContent = false, bool removeCaption = false) const;
+  dd::task<std::vector<MessageId::Ptr>> copyMessages(int_or_str chatId, int_or_str fromChatId,
+                                                     const std::vector<std::int32_t>& messageIds,
+                                                     std::int32_t messageThreadId = 0,
+                                                     bool disableNotification = false,
+                                                     bool protectContent = false,
+                                                     bool removeCaption = false) const;
 
   /**
    * @brief Use this method to send photos.
@@ -425,10 +439,9 @@ class TGBM_API Api {
    * @return On success, the sent Message is returned.
    */
   dd::task<Message::Ptr> sendPhoto(
-      boost::variant<std::int64_t, std::string> chatId, boost::variant<InputFile::Ptr, std::string> photo,
-      const std::string& caption = "", ReplyParameters::Ptr replyParameters = nullptr,
-      GenericReply::Ptr replyMarkup = nullptr, const std::string& parseMode = "",
-      bool disableNotification = false,
+      int_or_str chatId, thumbnail_t photo, const std::string& caption = "",
+      ReplyParameters::Ptr replyParameters = nullptr, GenericReply::Ptr replyMarkup = nullptr,
+      const std::string& parseMode = "", bool disableNotification = false,
       const std::vector<MessageEntity::Ptr>& captionEntities = std::vector<MessageEntity::Ptr>(),
       std::int32_t messageThreadId = 0, bool protectContent = false, bool hasSpoiler = false,
       const std::string& businessConnectionId = "") const;
@@ -477,9 +490,8 @@ class TGBM_API Api {
    * @return On success, the sent Message is returned.
    */
   dd::task<Message::Ptr> sendAudio(
-      boost::variant<std::int64_t, std::string> chatId, boost::variant<InputFile::Ptr, std::string> audio,
-      const std::string& caption = "", std::int32_t duration = 0, const std::string& performer = "",
-      const std::string& title = "", boost::variant<InputFile::Ptr, std::string> thumbnail = "",
+      int_or_str chatId, thumbnail_t audio, const std::string& caption = "", std::int32_t duration = 0,
+      const std::string& performer = "", const std::string& title = "", thumbnail_t thumbnail = "",
       ReplyParameters::Ptr replyParameters = nullptr, GenericReply::Ptr replyMarkup = nullptr,
       const std::string& parseMode = "", bool disableNotification = false,
       const std::vector<MessageEntity::Ptr>& captionEntities = std::vector<MessageEntity::Ptr>(),
@@ -527,8 +539,7 @@ class TGBM_API Api {
    * @return On success, the sent Message is returned.
    */
   dd::task<Message::Ptr> sendDocument(
-      boost::variant<std::int64_t, std::string> chatId, boost::variant<InputFile::Ptr, std::string> document,
-      boost::variant<InputFile::Ptr, std::string> thumbnail = "", const std::string& caption = "",
+      int_or_str chatId, thumbnail_t document, thumbnail_t thumbnail = "", const std::string& caption = "",
       ReplyParameters::Ptr replyParameters = nullptr, GenericReply::Ptr replyMarkup = nullptr,
       const std::string& parseMode = "", bool disableNotification = false,
       const std::vector<MessageEntity::Ptr>& captionEntities = std::vector<MessageEntity::Ptr>(),
@@ -579,9 +590,8 @@ class TGBM_API Api {
    * @return On success, the sent Message is returned.
    */
   dd::task<Message::Ptr> sendVideo(
-      boost::variant<std::int64_t, std::string> chatId, boost::variant<InputFile::Ptr, std::string> video,
-      bool supportsStreaming = false, std::int32_t duration = 0, std::int32_t width = 0,
-      std::int32_t height = 0, boost::variant<InputFile::Ptr, std::string> thumbnail = "",
+      int_or_str chatId, thumbnail_t video, bool supportsStreaming = false, std::int32_t duration = 0,
+      std::int32_t width = 0, std::int32_t height = 0, thumbnail_t thumbnail = "",
       const std::string& caption = "", ReplyParameters::Ptr replyParameters = nullptr,
       GenericReply::Ptr replyMarkup = nullptr, const std::string& parseMode = "",
       bool disableNotification = false,
@@ -632,9 +642,8 @@ class TGBM_API Api {
    * @return On success, the sent Message is returned.
    */
   dd::task<Message::Ptr> sendAnimation(
-      boost::variant<std::int64_t, std::string> chatId, boost::variant<InputFile::Ptr, std::string> animation,
-      std::int32_t duration = 0, std::int32_t width = 0, std::int32_t height = 0,
-      boost::variant<InputFile::Ptr, std::string> thumbnail = "", const std::string& caption = "",
+      int_or_str chatId, thumbnail_t animation, std::int32_t duration = 0, std::int32_t width = 0,
+      std::int32_t height = 0, thumbnail_t thumbnail = "", const std::string& caption = "",
       ReplyParameters::Ptr replyParameters = nullptr, GenericReply::Ptr replyMarkup = nullptr,
       const std::string& parseMode = "", bool disableNotification = false,
       const std::vector<MessageEntity::Ptr>& captionEntities = std::vector<MessageEntity::Ptr>(),
@@ -676,8 +685,7 @@ class TGBM_API Api {
    * @return On success, the sent Message is returned.
    */
   dd::task<Message::Ptr> sendVoice(
-      boost::variant<std::int64_t, std::string> chatId, boost::variant<InputFile::Ptr, std::string> voice,
-      const std::string& caption = "", std::int32_t duration = 0,
+      int_or_str chatId, thumbnail_t voice, const std::string& caption = "", std::int32_t duration = 0,
       ReplyParameters::Ptr replyParameters = nullptr, GenericReply::Ptr replyMarkup = nullptr,
       const std::string& parseMode = "", bool disableNotification = false,
       const std::vector<MessageEntity::Ptr>& captionEntities = std::vector<MessageEntity::Ptr>(),
@@ -717,12 +725,10 @@ class TGBM_API Api {
    *
    * @return On success, the sent Message is returned.
    */
-  dd::task<Message::Ptr> sendVideoNote(boost::variant<std::int64_t, std::string> chatId,
-                                       boost::variant<InputFile::Ptr, std::string> videoNote,
+  dd::task<Message::Ptr> sendVideoNote(int_or_str chatId, thumbnail_t videoNote,
                                        ReplyParameters::Ptr replyParameters = nullptr,
                                        bool disableNotification = false, std::int32_t duration = 0,
-                                       std::int32_t length = 0,
-                                       boost::variant<InputFile::Ptr, std::string> thumbnail = "",
+                                       std::int32_t length = 0, thumbnail_t thumbnail = "",
                                        GenericReply::Ptr replyMarkup = nullptr,
                                        std::int32_t messageThreadId = 0, bool protectContent = false,
                                        const std::string& businessConnectionId = "") const;
@@ -746,13 +752,10 @@ class TGBM_API Api {
    *
    * @return On success, an array of Messages that were sent is returned.
    */
-  dd::task<std::vector<Message::Ptr>> sendMediaGroup(boost::variant<std::int64_t, std::string> chatId,
-                                                     const std::vector<InputMedia::Ptr>& media,
-                                                     bool disableNotification = false,
-                                                     ReplyParameters::Ptr replyParameters = nullptr,
-                                                     std::int32_t messageThreadId = 0,
-                                                     bool protectContent = false,
-                                                     const std::string& businessConnectionId = "") const;
+  dd::task<std::vector<Message::Ptr>> sendMediaGroup(
+      int_or_str chatId, const std::vector<InputMedia::Ptr>& media, bool disableNotification = false,
+      ReplyParameters::Ptr replyParameters = nullptr, std::int32_t messageThreadId = 0,
+      bool protectContent = false, const std::string& businessConnectionId = "") const;
 
   /**
    * @brief Use this method to send point on the map.
@@ -784,8 +787,8 @@ class TGBM_API Api {
    *
    * @return On success, the sent Message is returned.
    */
-  dd::task<Message::Ptr> sendLocation(boost::variant<std::int64_t, std::string> chatId, float latitude,
-                                      float longitude, std::int32_t livePeriod = 0,
+  dd::task<Message::Ptr> sendLocation(int_or_str chatId, float latitude, float longitude,
+                                      std::int32_t livePeriod = 0,
                                       ReplyParameters::Ptr replyParameters = nullptr,
                                       GenericReply::Ptr replyMarkup = nullptr,
                                       bool disableNotification = false, float horizontalAccuracy = 0,
@@ -817,9 +820,11 @@ class TGBM_API Api {
    *
    * @return On success, the edited Message is returned.
    */
+  // TODO https://core.telegram.org/bots/api#editmessagelivelocation
+  // чёто вообще не совпадает, много параметров не хватает
   dd::task<Message::Ptr> editMessageLiveLocation(
-      float latitude, float longitude, boost::variant<std::int64_t, std::string> chatId = "",
-      std::int32_t messageId = 0, const std::string& inlineMessageId = "",
+      float latitude, float longitude, int_or_str chatId = "", std::int32_t messageId = 0,
+      const std::string& inlineMessageId = "",
       InlineKeyboardMarkup::Ptr replyMarkup = std::make_shared<InlineKeyboardMarkup>(),
       float horizontalAccuracy = 0, std::int32_t heading = 0, std::int32_t proximityAlertRadius = 0) const;
 
@@ -837,8 +842,7 @@ class TGBM_API Api {
    * @return On success, the edited Message is returned.
    */
   dd::task<Message::Ptr> stopMessageLiveLocation(
-      boost::variant<std::int64_t, std::string> chatId = "", std::int32_t messageId = 0,
-      const std::string& inlineMessageId = "",
+      int_or_str chatId = "", std::int32_t messageId = 0, const std::string& inlineMessageId = "",
       InlineKeyboardMarkup::Ptr replyMarkup = std::make_shared<InlineKeyboardMarkup>()) const;
 
   /**
@@ -871,8 +875,8 @@ class TGBM_API Api {
    *
    * @return On success, the sent Message is returned.
    */
-  dd::task<Message::Ptr> sendVenue(boost::variant<std::int64_t, std::string> chatId, float latitude,
-                                   float longitude, const std::string& title, const std::string& address,
+  dd::task<Message::Ptr> sendVenue(int_or_str chatId, float latitude, float longitude,
+                                   const std::string& title, const std::string& address,
                                    const std::string& foursquareId = "",
                                    const std::string& foursquareType = "", bool disableNotification = false,
                                    ReplyParameters::Ptr replyParameters = nullptr,
@@ -906,10 +910,9 @@ class TGBM_API Api {
    *
    * @return On success, the sent Message is returned.
    */
-  dd::task<Message::Ptr> sendContact(boost::variant<std::int64_t, std::string> chatId,
-                                     const std::string& phoneNumber, const std::string& firstName,
-                                     const std::string& lastName = "", const std::string& vcard = "",
-                                     bool disableNotification = false,
+  dd::task<Message::Ptr> sendContact(int_or_str chatId, const std::string& phoneNumber,
+                                     const std::string& firstName, const std::string& lastName = "",
+                                     const std::string& vcard = "", bool disableNotification = false,
                                      ReplyParameters::Ptr replyParameters = nullptr,
                                      GenericReply::Ptr replyMarkup = nullptr,
                                      std::int32_t messageThreadId = 0, bool protectContent = false,
@@ -956,12 +959,11 @@ class TGBM_API Api {
    * @return On success, the sent Message is returned.
    */
   dd::task<Message::Ptr> sendPoll(
-      boost::variant<std::int64_t, std::string> chatId, const std::string& question,
-      const std::vector<std::string>& options, bool disableNotification = false,
-      ReplyParameters::Ptr replyParameters = nullptr, GenericReply::Ptr replyMarkup = nullptr,
-      bool isAnonymous = true, const std::string& type = "", bool allowsMultipleAnswers = false,
-      std::int32_t correctOptionId = -1, const std::string& explanation = "",
-      const std::string& explanationParseMode = "",
+      int_or_str chatId, const std::string& question, const std::vector<std::string>& options,
+      bool disableNotification = false, ReplyParameters::Ptr replyParameters = nullptr,
+      GenericReply::Ptr replyMarkup = nullptr, bool isAnonymous = true, const std::string& type = "",
+      bool allowsMultipleAnswers = false, std::int32_t correctOptionId = -1,
+      const std::string& explanation = "", const std::string& explanationParseMode = "",
       const std::vector<MessageEntity::Ptr>& explanationEntities = std::vector<MessageEntity::Ptr>(),
       std::int32_t openPeriod = 0, std::int32_t closeDate = 0, bool isClosed = false,
       std::int32_t messageThreadId = 0, bool protectContent = false,
@@ -990,8 +992,7 @@ class TGBM_API Api {
    *
    * @return On success, the sent Message is returned.
    */
-  dd::task<Message::Ptr> sendDice(boost::variant<std::int64_t, std::string> chatId,
-                                  bool disableNotification = false,
+  dd::task<Message::Ptr> sendDice(int_or_str chatId, bool disableNotification = false,
                                   ReplyParameters::Ptr replyParameters = nullptr,
                                   GenericReply::Ptr replyMarkup = nullptr, const std::string& emoji = "",
                                   std::int32_t messageThreadId = 0, bool protectContent = false,
@@ -1016,7 +1017,7 @@ class TGBM_API Api {
    * @return Returns True on success.
    */
   dd::task<bool> setMessageReaction(
-      boost::variant<std::int64_t, std::string> chatId, std::int32_t messageId = 0,
+      int_or_str chatId, std::int32_t messageId = 0,
       const std::vector<ReactionType::Ptr>& reaction = std::vector<ReactionType::Ptr>(),
       bool isBig = false) const;
 
@@ -1100,8 +1101,8 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> banChatMember(boost::variant<std::int64_t, std::string> chatId, std::int64_t userId,
-                               std::int32_t untilDate = 0, bool revokeMessages = true) const;
+  dd::task<bool> banChatMember(int_or_str chatId, std::int64_t userId, std::int32_t untilDate = 0,
+                               bool revokeMessages = true) const;
 
   /**
    * @brief Use this method to unban a previously banned user in a supergroup or channel.
@@ -1119,8 +1120,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> unbanChatMember(boost::variant<std::int64_t, std::string> chatId, std::int64_t userId,
-                                 bool onlyIfBanned = false) const;
+  dd::task<bool> unbanChatMember(int_or_str chatId, std::int64_t userId, bool onlyIfBanned = false) const;
 
   /**
    * @brief Use this method to restrict a user in a supergroup.
@@ -1142,8 +1142,8 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> restrictChatMember(boost::variant<std::int64_t, std::string> chatId, std::int64_t userId,
-                                    ChatPermissions::Ptr permissions, std::uint32_t untilDate = 0,
+  dd::task<bool> restrictChatMember(int_or_str chatId, std::int64_t userId, ChatPermissions::Ptr permissions,
+                                    std::uint32_t untilDate = 0,
                                     bool useIndependentChatPermissions = false) const;
 
   /**
@@ -1182,15 +1182,14 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> promoteChatMember(boost::variant<std::int64_t, std::string> chatId, std::int64_t userId,
-                                   bool canChangeInfo = false, bool canPostMessages = false,
-                                   bool canEditMessages = false, bool canDeleteMessages = false,
-                                   bool canInviteUsers = false, bool canPinMessages = false,
-                                   bool canPromoteMembers = false, bool isAnonymous = false,
-                                   bool canManageChat = false, bool canManageVideoChats = false,
-                                   bool canRestrictMembers = false, bool canManageTopics = false,
-                                   bool canPostStories = false, bool canEditStories = false,
-                                   bool canDeleteStories = false) const;
+  dd::task<bool> promoteChatMember(int_or_str chatId, std::int64_t userId, bool canChangeInfo = false,
+                                   bool canPostMessages = false, bool canEditMessages = false,
+                                   bool canDeleteMessages = false, bool canInviteUsers = false,
+                                   bool canPinMessages = false, bool canPromoteMembers = false,
+                                   bool isAnonymous = false, bool canManageChat = false,
+                                   bool canManageVideoChats = false, bool canRestrictMembers = false,
+                                   bool canManageTopics = false, bool canPostStories = false,
+                                   bool canEditStories = false, bool canDeleteStories = false) const;
 
   /**
    * @brief Use this method to set a custom title for an administrator in a supergroup promoted by the bot.
@@ -1202,8 +1201,8 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> setChatAdministratorCustomTitle(boost::variant<std::int64_t, std::string> chatId,
-                                                 std::int64_t userId, const std::string& customTitle) const;
+  dd::task<bool> setChatAdministratorCustomTitle(int_or_str chatId, std::int64_t userId,
+                                                 const std::string& customTitle) const;
 
   /**
    * @brief Use this method to ban a channel chat in a supergroup or a channel.
@@ -1218,8 +1217,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> banChatSenderChat(boost::variant<std::int64_t, std::string> chatId,
-                                   std::int64_t senderChatId) const;
+  dd::task<bool> banChatSenderChat(int_or_str chatId, std::int64_t senderChatId) const;
 
   /**
    * @brief Use this method to unban a previously banned channel chat in a supergroup or channel.
@@ -1232,8 +1230,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> unbanChatSenderChat(boost::variant<std::int64_t, std::string> chatId,
-                                     std::int64_t senderChatId) const;
+  dd::task<bool> unbanChatSenderChat(int_or_str chatId, std::int64_t senderChatId) const;
 
   /**
    * @brief Use this method to set default chat permissions for all members.
@@ -1251,8 +1248,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> setChatPermissions(boost::variant<std::int64_t, std::string> chatId,
-                                    ChatPermissions::Ptr permissions,
+  dd::task<bool> setChatPermissions(int_or_str chatId, ChatPermissions::Ptr permissions,
                                     bool useIndependentChatPermissions = false) const;
 
   /**
@@ -1273,7 +1269,7 @@ class TGBM_API Api {
    *
    * @return Returns the new invite link as String on success.
    */
-  dd::task<std::string> exportChatInviteLink(boost::variant<std::int64_t, std::string> chatId) const;
+  dd::task<std::string> exportChatInviteLink(int_or_str chatId) const;
 
   /**
    * @brief Use this method to create an additional invite link for a chat.
@@ -1292,8 +1288,7 @@ class TGBM_API Api {
    *
    * @return Returns the new invite link as ChatInviteLink object.
    */
-  dd::task<ChatInviteLink::Ptr> createChatInviteLink(boost::variant<std::int64_t, std::string> chatId,
-                                                     std::int32_t expireDate = 0,
+  dd::task<ChatInviteLink::Ptr> createChatInviteLink(int_or_str chatId, std::int32_t expireDate = 0,
                                                      std::int32_t memberLimit = 0,
                                                      const std::string& name = "",
                                                      bool createsJoinRequest = false) const;
@@ -1316,9 +1311,9 @@ class TGBM_API Api {
    *
    * @return Returns the edited invite link as a ChatInviteLink object.
    */
-  dd::task<ChatInviteLink::Ptr> editChatInviteLink(boost::variant<std::int64_t, std::string> chatId,
-                                                   const std::string& inviteLink, std::int32_t expireDate = 0,
-                                                   std::int32_t memberLimit = 0, const std::string& name = "",
+  dd::task<ChatInviteLink::Ptr> editChatInviteLink(int_or_str chatId, const std::string& inviteLink,
+                                                   std::int32_t expireDate = 0, std::int32_t memberLimit = 0,
+                                                   const std::string& name = "",
                                                    bool createsJoinRequest = false) const;
 
   /**
@@ -1334,8 +1329,7 @@ class TGBM_API Api {
    *
    * @return Returns the revoked invite link as ChatInviteLink object.
    */
-  dd::task<ChatInviteLink::Ptr> revokeChatInviteLink(boost::variant<std::int64_t, std::string> chatId,
-                                                     const std::string& inviteLink) const;
+  dd::task<ChatInviteLink::Ptr> revokeChatInviteLink(int_or_str chatId, const std::string& inviteLink) const;
 
   /**
    * @brief Use this method to approve a chat join request.
@@ -1349,8 +1343,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> approveChatJoinRequest(boost::variant<std::int64_t, std::string> chatId,
-                                        std::int64_t userId) const;
+  dd::task<bool> approveChatJoinRequest(int_or_str chatId, std::int64_t userId) const;
 
   /**
    * @brief Use this method to decline a chat join request.
@@ -1364,8 +1357,7 @@ class TGBM_API Api {
    *
    * @return True on success.
    */
-  dd::task<bool> declineChatJoinRequest(boost::variant<std::int64_t, std::string> chatId,
-                                        std::int64_t userId) const;
+  dd::task<bool> declineChatJoinRequest(int_or_str chatId, std::int64_t userId) const;
 
   /**
    * @brief Use this method to set a new profile photo for the chat.
@@ -1380,7 +1372,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> setChatPhoto(boost::variant<std::int64_t, std::string> chatId, InputFile::Ptr photo) const;
+  dd::task<bool> setChatPhoto(int_or_str chatId, InputFile::Ptr photo) const;
 
   /**
    * @brief Use this method to delete a chat photo.
@@ -1394,7 +1386,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> deleteChatPhoto(boost::variant<std::int64_t, std::string> chatId) const;
+  dd::task<bool> deleteChatPhoto(int_or_str chatId) const;
 
   /**
    * @brief Use this method to change the title of a chat.
@@ -1409,8 +1401,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> setChatTitle(boost::variant<std::int64_t, std::string> chatId,
-                              const std::string& title) const;
+  dd::task<bool> setChatTitle(int_or_str chatId, const std::string& title) const;
 
   /**
    * @brief Use this method to change the description of a group, a supergroup or a channel.
@@ -1424,8 +1415,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> setChatDescription(boost::variant<std::int64_t, std::string> chatId,
-                                    const std::string& description = "") const;
+  dd::task<bool> setChatDescription(int_or_str chatId, const std::string& description = "") const;
 
   /**
    * @brief Use this method to add a message to the list of pinned messages in a chat.
@@ -1442,7 +1432,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> pinChatMessage(boost::variant<std::int64_t, std::string> chatId, std::int32_t messageId,
+  dd::task<bool> pinChatMessage(int_or_str chatId, std::int32_t messageId,
                                 bool disableNotification = false) const;
 
   /**
@@ -1459,8 +1449,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> unpinChatMessage(boost::variant<std::int64_t, std::string> chatId,
-                                  std::int32_t messageId = 0) const;
+  dd::task<bool> unpinChatMessage(int_or_str chatId, std::int32_t messageId = 0) const;
 
   /**
    * @brief Use this method to clear the list of pinned messages in a chat.
@@ -1474,7 +1463,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> unpinAllChatMessages(boost::variant<std::int64_t, std::string> chatId) const;
+  dd::task<bool> unpinAllChatMessages(int_or_str chatId) const;
 
   /**
    * @brief Use this method for your bot to leave a group, supergroup or channel.
@@ -1484,7 +1473,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> leaveChat(boost::variant<std::int64_t, std::string> chatId) const;
+  dd::task<bool> leaveChat(int_or_str chatId) const;
 
   /**
    * @brief Use this method to get up to date information about the chat.
@@ -1494,7 +1483,7 @@ class TGBM_API Api {
    *
    * @return Returns a Chat object on success.
    */
-  dd::task<Chat::Ptr> getChat(boost::variant<std::int64_t, std::string> chatId) const;
+  dd::task<Chat::Ptr> getChat(int_or_str chatId) const;
 
   /**
    * @brief Use this method to get a list of administrators in a chat, which aren't bots.
@@ -1504,8 +1493,7 @@ class TGBM_API Api {
    *
    * @return Returns an Array of ChatMember objects.
    */
-  dd::task<std::vector<ChatMember::Ptr>> getChatAdministrators(
-      boost::variant<std::int64_t, std::string> chatId) const;
+  dd::task<std::vector<ChatMember::Ptr>> getChatAdministrators(int_or_str chatId) const;
 
   /**
    * @brief Use this method to get the number of members in a chat.
@@ -1515,7 +1503,7 @@ class TGBM_API Api {
    *
    * @return Returns Int on success.
    */
-  dd::task<int32_t> getChatMemberCount(boost::variant<std::int64_t, std::string> chatId) const;
+  dd::task<int32_t> getChatMemberCount(int_or_str chatId) const;
 
   /**
    * @brief Use this method to get information about a member of a chat.
@@ -1528,8 +1516,7 @@ class TGBM_API Api {
    *
    * @return Returns a ChatMember object on success.
    */
-  dd::task<ChatMember::Ptr> getChatMember(boost::variant<std::int64_t, std::string> chatId,
-                                          std::int64_t userId) const;
+  dd::task<ChatMember::Ptr> getChatMember(int_or_str chatId, std::int64_t userId) const;
 
   /**
    * @brief Use this method to set a new group sticker set for a supergroup.
@@ -1544,8 +1531,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> setChatStickerSet(boost::variant<std::int64_t, std::string> chatId,
-                                   const std::string& stickerSetName) const;
+  dd::task<bool> setChatStickerSet(int_or_str chatId, const std::string& stickerSetName) const;
 
   /**
    * @brief Use this method to delete a group sticker set from a supergroup.
@@ -1559,7 +1545,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> deleteChatStickerSet(boost::variant<std::int64_t, std::string> chatId) const;
+  dd::task<bool> deleteChatStickerSet(int_or_str chatId) const;
 
   /**
    * @brief Use this method to get custom emoji stickers, which can be used as a forum topic icon by any user.
@@ -1585,8 +1571,8 @@ class TGBM_API Api {
    *
    * @return Returns information about the created topic as a ForumTopic object.
    */
-  dd::task<ForumTopic::Ptr> createForumTopic(boost::variant<std::int64_t, std::string> chatId,
-                                             const std::string& name, std::int32_t iconColor = 0,
+  dd::task<ForumTopic::Ptr> createForumTopic(int_or_str chatId, const std::string& name,
+                                             std::int32_t iconColor = 0,
                                              const std::string& iconCustomEmojiId = "") const;
 
   /**
@@ -1606,9 +1592,8 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> editForumTopic(boost::variant<std::int64_t, std::string> chatId,
-                                std::int32_t messageThreadId, const std::string& name = "",
-                                boost::variant<std::int32_t, std::string> iconCustomEmojiId = 0) const;
+  dd::task<bool> editForumTopic(int_or_str chatId, std::int32_t messageThreadId, const std::string& name = "",
+                                int_or_str iconCustomEmojiId = 0) const;
 
   /**
    * @brief Use this method to close an open topic in a forum supergroup chat.
@@ -1622,8 +1607,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> closeForumTopic(boost::variant<std::int64_t, std::string> chatId,
-                                 std::int32_t messageThreadId) const;
+  dd::task<bool> closeForumTopic(int_or_str chatId, std::int32_t messageThreadId) const;
 
   /**
    * @brief Use this method to reopen a closed topic in a forum supergroup chat.
@@ -1637,8 +1621,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> reopenForumTopic(boost::variant<std::int64_t, std::string> chatId,
-                                  std::int32_t messageThreadId) const;
+  dd::task<bool> reopenForumTopic(int_or_str chatId, std::int32_t messageThreadId) const;
 
   /**
    * @brief Use this method to delete a forum topic along with all its messages in a forum supergroup chat.
@@ -1652,8 +1635,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> deleteForumTopic(boost::variant<std::int64_t, std::string> chatId,
-                                  std::int32_t messageThreadId) const;
+  dd::task<bool> deleteForumTopic(int_or_str chatId, std::int32_t messageThreadId) const;
 
   /**
    * @brief Use this method to clear the list of pinned messages in a forum topic.
@@ -1667,8 +1649,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> unpinAllForumTopicMessages(boost::variant<std::int64_t, std::string> chatId,
-                                            std::int32_t messageThreadId) const;
+  dd::task<bool> unpinAllForumTopicMessages(int_or_str chatId, std::int32_t messageThreadId) const;
 
   /**
    * @brief Use this method to edit the name of the 'General' topic in a forum supergroup chat.
@@ -1682,8 +1663,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> editGeneralForumTopic(boost::variant<std::int64_t, std::string> chatId,
-                                       std::string name) const;
+  dd::task<bool> editGeneralForumTopic(int_or_str chatId, std::string name) const;
 
   /**
    * @brief Use this method to close an open 'General' topic in a forum supergroup chat.
@@ -1696,7 +1676,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> closeGeneralForumTopic(boost::variant<std::int64_t, std::string> chatId) const;
+  dd::task<bool> closeGeneralForumTopic(int_or_str chatId) const;
 
   /**
    * @brief Use this method to reopen a closed 'General' topic in a forum supergroup chat.
@@ -1709,7 +1689,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> reopenGeneralForumTopic(boost::variant<std::int64_t, std::string> chatId) const;
+  dd::task<bool> reopenGeneralForumTopic(int_or_str chatId) const;
 
   /**
    * @brief Use this method to hide the 'General' topic in a forum supergroup chat.
@@ -1722,7 +1702,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> hideGeneralForumTopic(boost::variant<std::int64_t, std::string> chatId) const;
+  dd::task<bool> hideGeneralForumTopic(int_or_str chatId) const;
 
   /**
    * @brief Use this method to unhide the 'General' topic in a forum supergroup chat.
@@ -1735,7 +1715,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> unhideGeneralForumTopic(boost::variant<std::int64_t, std::string> chatId) const;
+  dd::task<bool> unhideGeneralForumTopic(int_or_str chatId) const;
 
   /**
    * @brief Use this method to clear the list of pinned messages in a General forum topic.
@@ -1748,7 +1728,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> unpinAllGeneralForumTopicMessages(boost::variant<std::int64_t, std::string> chatId) const;
+  dd::task<bool> unpinAllGeneralForumTopicMessages(int_or_str chatId) const;
 
   /**
    * @brief Use this method to send answers to callback queries sent from inline keyboards.
@@ -1786,8 +1766,7 @@ class TGBM_API Api {
    *
    * @return Returns a UserChatBoosts object.
    */
-  dd::task<UserChatBoosts::Ptr> getUserChatBoosts(boost::variant<std::int64_t, std::string> chatId,
-                                                  std::int32_t userId) const;
+  dd::task<UserChatBoosts::Ptr> getUserChatBoosts(int_or_str chatId, std::int32_t userId) const;
 
   /**
    * @brief Use this method to get information about the connection of the bot with a business account.
@@ -1981,8 +1960,8 @@ class TGBM_API Api {
    * otherwise nullptr is returned.
    */
   dd::task<Message::Ptr> editMessageText(
-      const std::string& text, boost::variant<std::int64_t, std::string> chatId = 0,
-      std::int32_t messageId = 0, const std::string& inlineMessageId = "", const std::string& parseMode = "",
+      const std::string& text, int_or_str chatId = 0, std::int32_t messageId = 0,
+      const std::string& inlineMessageId = "", const std::string& parseMode = "",
       LinkPreviewOptions::Ptr linkPreviewOptions = nullptr, InlineKeyboardMarkup::Ptr replyMarkup = nullptr,
       const std::vector<MessageEntity::Ptr>& entities = std::vector<MessageEntity::Ptr>()) const;
 
@@ -2006,9 +1985,9 @@ class TGBM_API Api {
    * otherwise nullptr is returned.
    */
   dd::task<Message::Ptr> editMessageCaption(
-      boost::variant<std::int64_t, std::string> chatId = 0, std::int32_t messageId = 0,
-      const std::string& caption = "", const std::string& inlineMessageId = "",
-      GenericReply::Ptr replyMarkup = nullptr, const std::string& parseMode = "",
+      int_or_str chatId = 0, std::int32_t messageId = 0, const std::string& caption = "",
+      const std::string& inlineMessageId = "", GenericReply::Ptr replyMarkup = nullptr,
+      const std::string& parseMode = "",
       const std::vector<MessageEntity::Ptr>& captionEntities = std::vector<MessageEntity::Ptr>()) const;
 
   /**
@@ -2030,8 +2009,7 @@ class TGBM_API Api {
    * @return On success, if the edited message is not an inline message, the edited Message is returned,
    * otherwise nullptr is returned.
    */
-  dd::task<Message::Ptr> editMessageMedia(InputMedia::Ptr media,
-                                          boost::variant<std::int64_t, std::string> chatId = 0,
+  dd::task<Message::Ptr> editMessageMedia(InputMedia::Ptr media, int_or_str chatId = 0,
                                           std::int32_t messageId = 0, const std::string& inlineMessageId = "",
                                           GenericReply::Ptr replyMarkup = nullptr) const;
 
@@ -2049,8 +2027,7 @@ class TGBM_API Api {
    * @return On success, if the edited message is not an inline message, the edited Message is returned,
    * otherwise nullptr is returned.
    */
-  dd::task<Message::Ptr> editMessageReplyMarkup(boost::variant<std::int64_t, std::string> chatId = 0,
-                                                std::int32_t messageId = 0,
+  dd::task<Message::Ptr> editMessageReplyMarkup(int_or_str chatId = 0, std::int32_t messageId = 0,
                                                 const std::string& inlineMessageId = "",
                                                 GenericReply::Ptr replyMarkup = nullptr) const;
 
@@ -2065,7 +2042,7 @@ class TGBM_API Api {
    * @return On success, the stopped Poll is returned.
    */
   dd::task<Poll::Ptr> stopPoll(
-      boost::variant<std::int64_t, std::string> chatId, std::int64_t messageId,
+      int_or_str chatId, std::int64_t messageId,
       InlineKeyboardMarkup::Ptr replyMarkup = std::make_shared<InlineKeyboardMarkup>()) const;
 
   /**
@@ -2087,8 +2064,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> deleteMessage(boost::variant<std::int64_t, std::string> chatId,
-                               std::int32_t messageId) const;
+  dd::task<bool> deleteMessage(int_or_str chatId, std::int32_t messageId) const;
 
   /**
    * @brief Use this method to delete multiple messages simultaneously.
@@ -2102,8 +2078,7 @@ class TGBM_API Api {
    *
    * @return Returns True on success.
    */
-  dd::task<bool> deleteMessages(boost::variant<std::int64_t, std::string> chatId,
-                                const std::vector<std::int32_t>& messageIds) const;
+  dd::task<bool> deleteMessages(int_or_str chatId, const std::vector<std::int32_t>& messageIds) const;
 
   /**
    * @brief Use this method to send static .WEBP, [animated](https://telegram.org/blog/animated-stickers)
@@ -2132,8 +2107,7 @@ class TGBM_API Api {
    *
    * @return On success, the sent Message is returned.
    */
-  dd::task<Message::Ptr> sendSticker(boost::variant<std::int64_t, std::string> chatId,
-                                     boost::variant<InputFile::Ptr, std::string> sticker,
+  dd::task<Message::Ptr> sendSticker(int_or_str chatId, thumbnail_t sticker,
                                      ReplyParameters::Ptr replyParameters = nullptr,
                                      GenericReply::Ptr replyMarkup = nullptr,
                                      bool disableNotification = false, std::int32_t messageThreadId = 0,
@@ -2325,8 +2299,7 @@ class TGBM_API Api {
    * @return Returns True on success.
    */
   dd::task<bool> setStickerSetThumbnail(const std::string& name, std::int64_t userId,
-                                        const std::string& format,
-                                        boost::variant<InputFile::Ptr, std::string> thumbnail = "") const;
+                                        const std::string& format, thumbnail_t thumbnail = "") const;
 
   /**
    * @brief Use this method to set the thumbnail of a custom emoji sticker set.
@@ -2439,13 +2412,13 @@ class TGBM_API Api {
    * @return On success, the sent Message is returned.
    */
   dd::task<Message::Ptr> sendInvoice(
-      boost::variant<std::int64_t, std::string> chatId, const std::string& title,
-      const std::string& description, const std::string& payload, const std::string& providerToken,
-      const std::string& currency, const std::vector<LabeledPrice::Ptr>& prices,
-      const std::string& providerData = "", const std::string& photoUrl = "", std::int32_t photoSize = 0,
-      std::int32_t photoWidth = 0, std::int32_t photoHeight = 0, bool needName = false,
-      bool needPhoneNumber = false, bool needEmail = false, bool needShippingAddress = false,
-      bool sendPhoneNumberToProvider = false, bool sendEmailToProvider = false, bool isFlexible = false,
+      int_or_str chatId, const std::string& title, const std::string& description, const std::string& payload,
+      const std::string& providerToken, const std::string& currency,
+      const std::vector<LabeledPrice::Ptr>& prices, const std::string& providerData = "",
+      const std::string& photoUrl = "", std::int32_t photoSize = 0, std::int32_t photoWidth = 0,
+      std::int32_t photoHeight = 0, bool needName = false, bool needPhoneNumber = false,
+      bool needEmail = false, bool needShippingAddress = false, bool sendPhoneNumberToProvider = false,
+      bool sendEmailToProvider = false, bool isFlexible = false,
       ReplyParameters::Ptr replyParameters = nullptr, GenericReply::Ptr replyMarkup = nullptr,
       bool disableNotification = false, std::int32_t messageThreadId = 0, std::int32_t maxTipAmount = 0,
       const std::vector<std::int32_t>& suggestedTipAmounts = std::vector<std::int32_t>(),
@@ -2636,16 +2609,24 @@ class TGBM_API Api {
                                                               std::int32_t messageId = 0,
                                                               const std::string& inlineMessageId = "") const;
 
+  // TODO alias Integer type from api / String
+
+  // TODO понять какое дефолтное значение у offset и что делает тг если не представлен этот параметр
+  // dd::task<std::vector<StarTransaction>> getStarTransactions(std::int64_t offset = -1,
+  //                                                           std::int64_t limit = 100) const;
+  dd::task<bool> refundStarPayment(std::int64_t user_id, std::string telegram_payment_charge_id) const;
+  // TODO вынести в какой-то апи враппер, это отдельные методы по сути оборачивающие вызовы апи
+
   /**
    * @brief Download a file from Telegram and save it in memory.
    *
    * @param filePath Telegram file path from Api::getFile
-   * @param args Additional api parameters
    *
    * @return File content in a string.
    */
-  dd::task<std::string> downloadFile(const std::string& filePath,
-                                     const std::vector<HttpReqArg>& args = std::vector<HttpReqArg>());
+  // TODO принимать аргумент для обработки записи (чтобы по частям можно было в файлик складывать вместо
+  // строки в памяти)
+  dd::task<std::string> downloadFile(const std::string& filePath);
 
   /**
    * @brief Check if user has blocked the bot
@@ -2661,11 +2642,28 @@ class TGBM_API Api {
  protected:
   // TODO аргументы передавать не надо, они используются только чтобы сгенерить реквест
   // можно сразу application/json
-  dd::task<boost::property_tree::ptree> sendRequest(
-      const std::string& method, const std::vector<HttpReqArg>& args = std::vector<HttpReqArg>()) const;
+  dd::task<boost::property_tree::ptree> sendRequest(http_request) const;
 
   const std::string _token;
   const TgTypeParser _tgTypeParser;
   const std::string _url;
 };
 }  // namespace tgbm
+
+namespace fmt {
+
+template <>
+struct fmt::formatter<::tgbm::int_or_str> {
+  static constexpr auto parse(fmt::format_parse_context& ctx) -> decltype(ctx.begin()) {
+    return ctx.end();
+  }
+
+  static auto format(const ::tgbm::int_or_str& s, auto& ctx) -> decltype(ctx.out()) {
+    if (const int64_t* i = std::get_if<int64_t>(&s))
+      return fmt::format_to(ctx.out(), "{}", *i);
+    else
+      return fmt::format_to(ctx.out(), "{}", std::get<std::string>(s));
+  }
+};
+
+}  // namespace fmt

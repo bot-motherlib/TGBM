@@ -2,7 +2,6 @@
 
 #include <charconv>
 #include <cstddef>
-#include <vector>
 
 #include "tgbm/scope_exit.h"
 #include "tgbm/net/asio_awaiters.h"
@@ -12,7 +11,6 @@ namespace tgbm {
 BoostHttpOnlySslClient::BoostHttpOnlySslClient(boost::asio::io_context& ctx, std::string host,
                                                size_t connections_max_count)
     : io_ctx(ctx),
-      _httpParser(),
       connections(
           connections_max_count, [io = &io_ctx, h = std::move(host)]() { return create_connection(*io, h); },
           exe) {
@@ -59,7 +57,7 @@ dd::task<BoostHttpOnlySslClient::connection_t> BoostHttpOnlySslClient::create_co
   co_return connection;
 }
 
-dd::task<std::string> BoostHttpOnlySslClient::makeRequest(Url url, std::vector<HttpReqArg> args) {
+dd::task<std::string> BoostHttpOnlySslClient::makeRequest(http_request request) {
   namespace asio = boost::asio;
   using tcp = asio::ip::tcp;
 
@@ -70,16 +68,19 @@ dd::task<std::string> BoostHttpOnlySslClient::makeRequest(Url url, std::vector<H
     // avoid drop connection on timeout (handle.destroy())
     if (std::uncaught_exceptions())
       handle.drop();
+    else
+      socket.lowest_layer().cancel();
   };
   io_error_code ec;
-  std::string requestText = _httpParser.generateRequest(url, args, /*isKeepAlive=*/true);
-  LOG_DEBUG("generated request:\n{}", requestText);
-  size_t transfered = co_await async_write(socket, asio::buffer(requestText), ec);
+  LOG_DEBUG("generated request:\n HEADERS:\n{}\nBODY:\n{}", request.headers, request.body);
+  std::array<asio::const_buffer, 2> headers_and_body{asio::buffer(request.headers),
+                                                     asio::buffer(request.body)};
+  size_t transfered = co_await async_write(socket, headers_and_body, ec);
   if (ec)
     throw http_exception("[http] cannot write to {} socket, err: {}", (void*)&socket, ec.message());
-  assert(transfered == requestText.size());
+  assert(transfered == (request.headers.size() + request.body.size()));
   // TODO timeout на весь сокет сразу одну штуку(точнее на одну операцию(корутину)...)
-
+  // TODO reuse memory from http request
   std::string data;
   // TODO нужно возвращать вектор байт вместо строки 1. это выгоднее (sso не нужно)
   // 2. там могут быть \0, т.к. это в том числе загрузка файлов

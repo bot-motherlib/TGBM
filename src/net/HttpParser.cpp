@@ -1,17 +1,14 @@
 #include "tgbm/net/HttpParser.h"
 
-#include "tgbm/tools/StringTools.h"
+#include "tgbm/scope_exit.h"
 
 #include <boost/algorithm/string.hpp>
 
 #include <cstddef>
 #include <fmt/format.h>
 #include <string>
-#include <vector>
 #include <unordered_map>
 
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
 #include <rapidjson/document.h>
 
 using namespace std;
@@ -19,129 +16,63 @@ using namespace boost;
 
 namespace tgbm {
 
-struct rapidjson_string_buffer {
-  std::string& buf;
-
-  using Ch = std::string::traits_type::char_type;
-
-  void Put(char c) {
-    buf.push_back(c);
-  }
-  static void Flush() noexcept {
-  }
-};
-
-std::string HttpParser::generateApplicationJson(const std::vector<HttpReqArg>& args) {
-  assert(!args.empty());
-  std::string result;
-  result.reserve(args.size() * 20);  // TODO may be calculate better
-  rapidjson_string_buffer buffer(result);
-  rapidjson::Writer writer(buffer);
-  writer.StartObject();
-  for (auto& arg : args) {
-    writer.Key(arg.name);
-    writer.String(arg.value);
-  }
-  writer.EndObject();
-  return result;
+std::string generate_http_headers_get(const Url& url, bool keep_alive) {
+  // TODO optimized inlined version
+  return generate_http_headers(url, keep_alive, {}, {});
 }
-
-string HttpParser::generateRequest(const Url& url, const vector<HttpReqArg>& args, bool isKeepAlive) const {
+std::string generate_http_headers(const Url& url, bool keep_alive, std::string_view body,
+                                  std::string_view content_type) {
+  assert(body != "{}" && "empty json object provided");
+  std::string body_sz_str = fmt::format("{}", body.size());
+  size_t size_bytes = [&] {
+    using namespace std::string_view_literals;
+    size_t headers_size = 0;
+    headers_size += body.empty() ? "GET "sv.size() : "POST "sv.size();
+    headers_size += url.path.size();
+    if (!url.query.empty())
+      headers_size += url.query.size() + 1;  // "?"
+    headers_size += " HTTP/1.1\r\nHost: "sv.size() + url.host.size() + "\r\nConnection: "sv.size() +
+                    (keep_alive ? "keep-alive"sv.size() : "close"sv.size());
+    headers_size += "\r\n"sv.size();
+    if (body.empty()) {
+      headers_size += "\r\n"sv.size();
+      return headers_size;
+    }
+    headers_size += "Content-Type: "sv.size() + content_type.size() + "\r\nContent-Length: "sv.size() +
+                    body_sz_str.size() + "\r\n\r\n"sv.size();
+    return headers_size;
+  }();
   string result;
-  if (args.empty()) {
+  // TODO resize + format to char* (separate GET / POST)
+  result.reserve(size_bytes);
+  on_scope_exit {
+    assert(result.size() == size_bytes && "not exactly equal size reserved, logical error");
+  };
+  if (body.empty())
     result += "GET ";
-  } else {
+  else
     result += "POST ";
-  }
   result += url.path;
   result += url.query.empty() ? "" : "?" + url.query;
-  result += " HTTP/1.1\r\n";
-  result += "Host: ";
+  result +=
+      " HTTP/1.1\r\n"
+      "Host: ";
   result += url.host;
   result += "\r\nConnection: ";
-  if (isKeepAlive) {
+  if (keep_alive)
     result += "keep-alive";
-  } else {
+  else
     result += "close";
-  }
   result += "\r\n";
-  if (args.empty()) {
+  if (body.empty()) {
     result += "\r\n";
-  } else {
-    string requestData;
-
-    string bondary = generateMultipartBoundary(args);
-    if (bondary.empty()) {
-      result += "Content-Type: application/json\r\n";
-      requestData = generateApplicationJson(args);
-    } else {
-      result += "Content-Type: multipart/form-data; boundary=";
-      result += bondary;
-      result += "\r\n";
-      requestData = generateMultipartFormData(args, bondary);
-    }
-
-    result += "Content-Length: ";
-    result += std::to_string(requestData.length());
-    result += "\r\n\r\n";
-    result += requestData;
+    return result;
   }
-  return result;
-}
-// TODO используется когда хотя бы 1 аргумент - файл, нужно обдумать когда это вообще
-string HttpParser::generateMultipartFormData(const vector<HttpReqArg>& args, const string& boundary) const {
-  string result;
-  for (const HttpReqArg& item : args) {
-    result += "--";
-    result += boundary;
-    result += "\r\nContent-Disposition: form-data; name=\"";
-    result += item.name;
-    if (item.isFile) {
-      result += "\"; filename=\"" + item.fileName;
-    }
-    result += "\"\r\n";
-    if (item.isFile) {
-      result += "Content-Type: ";
-      result += item.mimeType;
-      result += "\r\n";
-    }
-    result += "\r\n";
-    result += item.value;
-    result += "\r\n";
-  }
-  result += "--" + boundary + "--\r\n";
-  return result;
-}
-
-string HttpParser::generateMultipartBoundary(const vector<HttpReqArg>& args) const {
-  string result;
-  // TODO нужно смотреть что вообще тут происходит по http спеке, странное что-то
-  // насколько понял boundary должно не содержаться в файле и стоит в начале и конце, и так он генерит его..
-  for (const HttpReqArg& item : args) {
-    if (item.isFile) {
-      while (result.empty() || item.value.find(result) != string::npos) {
-        result += StringTools::generateRandomString(4);
-      }
-    }
-  }
-  return result;
-}
-
-string HttpParser::generateWwwFormUrlencoded(const vector<HttpReqArg>& args) const {
-  string result;
-
-  bool firstRun = true;
-  for (const HttpReqArg& item : args) {
-    if (firstRun) {
-      firstRun = false;
-    } else {
-      result += '&';
-    }
-    result += StringTools::urlEncode(item.name);
-    result += '=';
-    result += StringTools::urlEncode(item.value);
-  }
-
+  result += "Content-Type: ";
+  result += content_type;
+  result += "\r\nContent-Length: ";
+  result += body_sz_str;
+  result += "\r\n\r\n";
   return result;
 }
 
@@ -203,15 +134,6 @@ unordered_map<string, string> HttpParser::parseHeader(const string& data, bool i
   }
 
   return headers;
-}
-
-string HttpParser::extractBody(const string& data) const {
-  std::size_t headerEnd = data.find("\r\n\r\n");
-  if (headerEnd == string::npos) {
-    return data;
-  }
-  headerEnd += 4;
-  return data.substr(headerEnd);
 }
 
 }  // namespace tgbm

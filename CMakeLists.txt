@@ -80,3 +80,4 @@ if (TGBM_ENABLE_TESTS)
     include(CTest)
     add_subdirectory(test)
 endif()
+

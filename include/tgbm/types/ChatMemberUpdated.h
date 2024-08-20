@@ -9,7 +9,7 @@
 #include <memory>
 
 namespace tgbm {
-
+// TODO tojson/from причём from непонятно какого джсона, лучше бы не рапида for all types (automatic)
 /**
  * @brief This object represents changes in the status of a chat member.
  *

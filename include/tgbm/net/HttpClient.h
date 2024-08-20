@@ -1,12 +1,9 @@
 #pragma once
 
-#include "tgbm/net/Url.h"
-#include "tgbm/net/HttpReqArg.h"
-
 #include <string>
-#include <vector>
 #include <cstdint>
 #include <fmt/format.h>
+#include <tgbm/net/HttpParser.h>
 
 #include <kelcoro/task.hpp>
 
@@ -48,24 +45,17 @@ class TGBM_API HttpClient {
    * If at least 1 arg is marked as file, the content type of a request will be multipart/form-data, otherwise
    * it will be application/x-www-form-urlencoded.
    */
-  // TODO вот здесь главный асинх должен произойти
-  // TODO? сразу сюда принимать не аргументы, а сгенеренный body?. Крч надо сразу json сделать и положить его
-  // в application/json, вместо сначала создания вектора
-  virtual dd::task<std::string> makeRequest(Url url, std::vector<HttpReqArg> args) = 0;
+  virtual dd::task<std::string> makeRequest(http_request request) = 0;
   // TODO передавать таймаут в makeRequest, количество ретраев вероятно тоже. И std::chrono::seconds вместо
   // int
   std::int32_t _timeout = 25;
 
-  /**
-   * @brief Get the maximum number of makeRequest() retries before giving up and throwing an exception.
-   */
+  // TODO remove rettries, timeout etc from here
+
   virtual int getRequestMaxRetries() const {
     return requestMaxRetries;
   }
 
-  /**
-   * @brief Get the makeRequest() backoff duration between retries, in seconds.
-   */
   virtual int getRequestBackoff() const {
     return requestBackoff;
   }

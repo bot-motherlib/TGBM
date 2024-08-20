@@ -852,6 +852,8 @@ class TGBM_API TgTypeParser {
 
   inline boost::property_tree::ptree parseJson(const std::string& json) const {
     boost::property_tree::ptree tree;
+    if (json.empty())
+      return tree;
     std::istringstream input(json);
     boost::property_tree::read_json(input, tree);
     return tree;
