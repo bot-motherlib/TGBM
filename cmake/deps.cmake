@@ -23,6 +23,7 @@ CPMAddPackage(
   Version 1.3.1
   GIT_REPOSITORY https://github.com/madler/zlib
   GIT_TAG v1.3.1
+  OPTIONS "ZLIB_BUILD_EXAMPLES OFF"
 )
 find_package(ZLIB REQUIRED)
 
