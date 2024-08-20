@@ -11,7 +11,7 @@
 
 using namespace std;
 
-namespace StringTools {
+namespace tgbm::utils {
 
 void split(const string& str, char delimiter, vector<string>& dest) {
   istringstream stream(str);
@@ -79,4 +79,4 @@ string urlDecode(const string& value) {
   return result;
 }
 
-}  // namespace StringTools
+}  // namespace tgbm::utils

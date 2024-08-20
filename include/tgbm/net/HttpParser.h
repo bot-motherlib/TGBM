@@ -76,10 +76,10 @@ struct application_x_www_form_urlencoded {
   }
 
   void arg(std::string_view k, const auto& value) {
-    StringTools::urlEncode(k, body);
+    utils::urlEncode(k, body);
     body.push_back('=');
     // TODO url encode wrapper around output iterator?
-    StringTools::urlEncode(fmt::format("{}", value), body);
+    utils::urlEncode(fmt::format("{}", value), body);
     body.push_back('&');
   }
 };
@@ -92,14 +92,14 @@ struct application_multipart_form_data {
 
  public:
   application_multipart_form_data(size_t reserve = 0) {
-    boundary = StringTools::generate_multipart_boundary(16);
+    boundary = utils::generate_multipart_boundary(16);
     body.reserve(reserve);
   }
   explicit application_multipart_form_data(std::string boudary, size_t reserve = 0) {
     if (boundary.size() > 69)
       throw std::invalid_argument("HTTP boundary should be [1-69] symbols");
     if (boudary.empty())
-      boudary = StringTools::generate_multipart_boundary(16);
+      boudary = utils::generate_multipart_boundary(16);
     body.reserve(reserve);
   }
 
@@ -120,7 +120,7 @@ struct application_multipart_form_data {
                    "Content-Disposition: form-data; name=\"{}\"; filename=\"{}\"\r\n"
                    "Content-Type: {}\r\n\r\n"
                    "{}\r\n",
-                   boundary, k, StringTools::url_encoded(filename), mime_type, data);
+                   boundary, k, utils::url_encoded(filename), mime_type, data);
   }
   void arg(std::string_view k, const auto& value) {
     fmt::format_to(std::back_inserter(body),

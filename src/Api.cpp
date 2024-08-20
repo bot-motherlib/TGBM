@@ -2238,8 +2238,8 @@ dd::task<std::vector<GameHighScore::Ptr>> Api::getGameHighScores(std::int64_t us
 //   _tgTypeParser.parseJsonAndGetArray<StarTransaction>(&TgTypeParser::parseJsonAndGetStarTransaction,
 //                                                                 json);
 // }
-dd::task<bool> Api::refundStarPayment(std::int64_t user_id, std::string telegram_payment_charge_id) const {
-}
+// dd::task<bool> Api::refundStarPayment(std::int64_t user_id, std::string telegram_payment_charge_id) const {
+//}
 
 // TODO understand why 'args' presented?? Что туда блин передавать то можно?
 dd::task<std::string> Api::downloadFile(const std::string &filePath) {
