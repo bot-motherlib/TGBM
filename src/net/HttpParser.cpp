@@ -1,14 +1,12 @@
 #include "tgbm/net/HttpParser.h"
 
 #include "tgbm/scope_exit.h"
-#include "tgbm/tools/StringTools.h"
 
 #include <boost/algorithm/string.hpp>
 
 #include <cstddef>
 #include <fmt/format.h>
 #include <string>
-#include <vector>
 #include <unordered_map>
 
 #include <rapidjson/document.h>
@@ -17,34 +15,6 @@ using namespace std;
 using namespace boost;
 
 namespace tgbm {
-
-std::string HttpParser::generateApplicationJson(const std::vector<HttpReqArg>& args) {
-  struct rapidjson_string_buffer {
-    std::string& buf;
-
-    using Ch = char;
-
-    void Put(char c) {
-      buf.push_back(c);
-    }
-    static void Flush() noexcept {
-    }
-  };
-
-  std::string result;
-  if (args.empty())
-    return result;
-  result.reserve(args.size() * 20);  // TODO may be calculate better
-  rapidjson_string_buffer buffer(result);
-  rapidjson::Writer writer(buffer);
-  writer.StartObject();
-  for (auto& arg : args) {
-    writer.Key(arg.name);
-    writer.String(arg.value);
-  }
-  writer.EndObject();
-  return result;
-}
 
 std::string generate_http_headers_get(const Url& url, bool keep_alive) {
   // TODO optimized inlined version
@@ -73,7 +43,7 @@ std::string generate_http_headers(const Url& url, bool keep_alive, std::string_v
     return headers_size;
   }();
   string result;
-  // TODO resize
+  // TODO resize + format to char* (separate GET / POST)
   result.reserve(size_bytes);
   on_scope_exit {
     assert(result.size() == size_bytes && "not exactly equal size reserved, logical error");
@@ -103,104 +73,6 @@ std::string generate_http_headers(const Url& url, bool keep_alive, std::string_v
   result += "\r\nContent-Length: ";
   result += body_sz_str;
   result += "\r\n\r\n";
-  return result;
-}
-// TODO remove
-string HttpParser::generateRequest(const Url& url, const vector<HttpReqArg>& args, bool isKeepAlive) const {
-  string result;
-  if (args.empty()) {
-    result += "GET ";
-  } else {
-    result += "POST ";
-  }
-  result += url.path;
-  result += url.query.empty() ? "" : "?" + url.query;
-  result += " HTTP/1.1\r\n";
-  result += "Host: ";
-  result += url.host;
-  result += "\r\nConnection: ";
-  if (isKeepAlive) {
-    result += "keep-alive";
-  } else {
-    result += "close";
-  }
-  result += "\r\n";
-  if (args.empty()) {
-    result += "\r\n";
-  } else {
-    string requestData;
-
-    string bondary = generateMultipartBoundary(args);
-    if (bondary.empty()) {
-      result += "Content-Type: application/json\r\n";
-      requestData = generateApplicationJson(args);
-    } else {
-      result += "Content-Type: multipart/form-data; boundary=";
-      result += bondary;
-      result += "\r\n";
-      requestData = generateMultipartFormData(args, bondary);
-    }
-
-    result += "Content-Length: ";
-    result += std::to_string(requestData.length());
-    result += "\r\n\r\n";
-    result += requestData;
-  }
-  return result;
-}
-
-// TODO используется когда хотя бы 1 аргумент - файл, нужно обдумать когда это вообще
-string HttpParser::generateMultipartFormData(const vector<HttpReqArg>& args, const string& boundary) const {
-  string result;
-  for (const HttpReqArg& item : args) {
-    result += "--";
-    result += boundary;
-    result += "\r\nContent-Disposition: form-data; name=\"";
-    result += item.name;
-    if (item.isFile) {
-      result += "\"; filename=\"" + item.fileName;
-    }
-    result += "\"\r\n";
-    if (item.isFile) {
-      result += "Content-Type: ";
-      result += item.mimeType;
-      result += "\r\n";
-    }
-    result += "\r\n";
-    result += item.value;
-    result += "\r\n";
-  }
-  result += "--" + boundary + "--\r\n";
-  return result;
-}
-
-string HttpParser::generateMultipartBoundary(const vector<HttpReqArg>& args) const {
-  string result;
-  for (const HttpReqArg& item : args) {
-    if (item.isFile) {
-      while (result.empty() || item.value.find(result) != string::npos) {
-        result += StringTools::generate_multipart_boundary(4);
-      }
-    }
-  }
-  return result;
-}
-
-string HttpParser::generateWwwFormUrlencoded(const vector<HttpReqArg>& args) const {
-  string result;
-
-  bool firstRun = true;
-  for (const HttpReqArg& item : args) {
-    if (firstRun) {
-      firstRun = false;
-    } else {
-      result += '&';
-    }
-    StringTools::urlEncode(item.name, result);
-    result += '=';
-    StringTools::urlEncode(item.value, result);
-  }
-
   return result;
 }
 
@@ -262,15 +134,6 @@ unordered_map<string, string> HttpParser::parseHeader(const string& data, bool i
   }
 
   return headers;
-}
-
-string HttpParser::extractBody(const string& data) const {
-  std::size_t headerEnd = data.find("\r\n\r\n");
-  if (headerEnd == string::npos) {
-    return data;
-  }
-  headerEnd += 4;
-  return data.substr(headerEnd);
 }
 
 }  // namespace tgbm

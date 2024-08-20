@@ -108,6 +108,8 @@ class TGBM_API Api {
   Api(std::string token, HttpClient& httpClient KELCORO_LIFETIMEBOUND, std::string url);
 
   // TODO rewrite, no useless work str -> str -> Url parse str.. -> split
+  // нужно типизировать url типа сразу раскладыавть в хост и т.д. и только метод оставить отдельно и
+  // передавать его
   std::string get_url(std::string_view method) const {
     return fmt::format("{}/bot{}/{}", _url, _token, method);
   }
@@ -818,6 +820,8 @@ class TGBM_API Api {
    *
    * @return On success, the edited Message is returned.
    */
+  // TODO https://core.telegram.org/bots/api#editmessagelivelocation
+  // чёто вообще не совпадает, много параметров не хватает
   dd::task<Message::Ptr> editMessageLiveLocation(
       float latitude, float longitude, int_or_str chatId = "", std::int32_t messageId = 0,
       const std::string& inlineMessageId = "",
@@ -2605,6 +2609,12 @@ class TGBM_API Api {
                                                               std::int32_t messageId = 0,
                                                               const std::string& inlineMessageId = "") const;
 
+  // TODO alias Integer type from api / String
+
+  // TODO понять какое дефолтное значение у offset и что делает тг если не представлен этот параметр
+  // dd::task<std::vector<StarTransaction>> getStarTransactions(std::int64_t offset = -1,
+  //                                                           std::int64_t limit = 100) const;
+  dd::task<bool> refundStarPayment(std::int64_t user_id, std::string telegram_payment_charge_id) const;
   // TODO вынести в какой-то апи враппер, это отдельные методы по сути оборачивающие вызовы апи
 
   /**

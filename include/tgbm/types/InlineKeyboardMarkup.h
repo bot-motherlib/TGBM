@@ -15,6 +15,7 @@ namespace tgbm {
  *
  * @ingroup types
  */
+// TODO 7.3 api version etc
 class InlineKeyboardMarkup : public GenericReply {
  public:
   typedef std::shared_ptr<InlineKeyboardMarkup> Ptr;

@@ -2,7 +2,6 @@
 
 #include <charconv>
 #include <cstddef>
-#include <vector>
 
 #include "tgbm/scope_exit.h"
 #include "tgbm/net/asio_awaiters.h"
@@ -12,7 +11,6 @@ namespace tgbm {
 BoostHttpOnlySslClient::BoostHttpOnlySslClient(boost::asio::io_context& ctx, std::string host,
                                                size_t connections_max_count)
     : io_ctx(ctx),
-      _httpParser(),
       connections(
           connections_max_count, [io = &io_ctx, h = std::move(host)]() { return create_connection(*io, h); },
           exe) {

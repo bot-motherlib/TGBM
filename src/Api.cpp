@@ -986,7 +986,7 @@ dd::task<UserProfilePhotos::Ptr> Api::getUserProfilePhotos(std::int64_t userId, 
   application_json_body body;
 
   body.arg("user_id", userId);
-  if (offset)
+  if (offset != 0)
     body.arg("offset", offset);
   if (limit != 100)
     body.arg("limit", std::max(1, std::min(100, limit)));
@@ -2223,6 +2223,22 @@ dd::task<std::vector<GameHighScore::Ptr>> Api::getGameHighScores(std::int64_t us
   boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
   co_return _tgTypeParser.parseJsonAndGetArray<GameHighScore>(&TgTypeParser::parseJsonAndGetGameHighScore,
                                                               json);
+}
+
+// dd::task<std::vector<StarTransaction>> Api::getStarTransactions(std::int64_t offset,
+//                                                                 std::int64_t limit) const {
+//   application_json_body body;
+//   if (offset != -1)
+//     body.arg("offset", offset);
+//   if (limit != 100)
+//     body.arg("limit", limit);
+//   boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+//   // TODO better _tgTypeParser
+//   co_return
+//   _tgTypeParser.parseJsonAndGetArray<StarTransaction>(&TgTypeParser::parseJsonAndGetStarTransaction,
+//                                                                 json);
+// }
+dd::task<bool> Api::refundStarPayment(std::int64_t user_id, std::string telegram_payment_charge_id) const {
 }
 
 // TODO understand why 'args' presented?? Что туда блин передавать то можно?

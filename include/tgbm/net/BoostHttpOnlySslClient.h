@@ -1,7 +1,6 @@
 #pragma once
 
 #include "tgbm/net/HttpClient.h"
-#include "tgbm/net/HttpParser.h"
 #include "tgbm/net/ConnectionPool.h"
 #include "tgbm/logger.h"
 
@@ -73,7 +72,6 @@ class TGBM_API BoostHttpOnlySslClient : public HttpClient {
   };
 
   boost::asio::io_context &io_ctx;
-  const HttpParser _httpParser;
   pool_t<connection_t, log_events_handler_t> connections;
   dd::this_thread_executor_t exe;  // TODO change
 };

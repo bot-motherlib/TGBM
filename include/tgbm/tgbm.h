@@ -8,7 +8,6 @@
 #include "tgbm/net/BoostHttpOnlySslClient.h"
 #include "tgbm/net/HttpClient.h"
 #include "tgbm/net/HttpParser.h"
-#include "tgbm/net/HttpReqArg.h"
 #include "tgbm/net/HttpServer.h"
 #include "tgbm/net/TgLongPoll.h"
 #include "tgbm/net/TgWebhookLocalServer.h"
