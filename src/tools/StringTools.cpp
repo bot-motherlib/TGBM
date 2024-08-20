@@ -39,31 +39,6 @@ string generate_multipart_boundary(std::size_t length) {
   return result;
 }
 
-void urlEncode(std::string_view value, std::string& out) {
-  auto is_legit = [](char c) {
-    switch (c) {
-      case 'A' ... 'Z':
-      case 'a' ... 'z':
-      case '0' ... '9':
-      case '_':
-      case '.':
-      case '-':
-      case '~':
-      case ':':
-        return true;
-      default:
-        return false;
-    }
-  };
-  out.reserve(value.size());
-  for (auto const& c : value) {
-    if (is_legit(c))
-      out.push_back(c);
-    else [[unlikely]]
-      fmt::format_to(std::back_inserter(out), "%{:02X}", (unsigned)(unsigned char)c);
-  }
-}
-
 string urlDecode(const string& value) {
   string result;
   for (std::size_t i = 0, count = value.length(); i < count; ++i) {

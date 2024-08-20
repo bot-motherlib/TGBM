@@ -21,6 +21,30 @@ struct HttpParser {
   std::unordered_map<std::string, std::string> parseHeader(const std::string& data, bool isRequest) const;
 };
 
+struct rj_refbuffer_t {
+  std::string& buf;  // TODO replace with vector
+
+  using Ch = char;
+
+  void Put(char c) {
+    buf.push_back(c);
+  }
+  static void Flush() noexcept {
+  }
+};
+
+struct rj_urlencoded_refbuffer_t {
+  std::string& buf;  // TODO replace with vector
+
+  using Ch = char;
+
+  void Put(char c) {
+    utils::url_encode(c, std::back_inserter(buf));
+  }
+  static void Flush() noexcept {
+  }
+};
+
 struct application_json_body {
  private:
   struct buffer_type {
@@ -57,14 +81,14 @@ struct application_json_body {
     rj_tojson(writer, value);
   }
 };
-
+// TODO test with complex objects and arrays
 struct application_x_www_form_urlencoded {
  private:
   std::string body;
 
  public:
   application_x_www_form_urlencoded() = default;
-  application_x_www_form_urlencoded(size_t reserve) {
+  explicit application_x_www_form_urlencoded(size_t reserve) {
     body.reserve(reserve);
   }
   std::string take() noexcept {
@@ -76,22 +100,28 @@ struct application_x_www_form_urlencoded {
   }
 
   void arg(std::string_view k, const auto& value) {
-    utils::urlEncode(k, body);
+    fmt::format_to(std::back_inserter(body), "{}", utils::url_encoded(k));
     body.push_back('=');
-    // TODO url encode wrapper around output iterator?
-    utils::urlEncode(fmt::format("{}", value), body);
+    rj_urlencoded_refbuffer_t b(body);
+    using namespace rapidjson;
+    constexpr auto flag = std::is_convertible_v<decltype(value), std::string_view>
+                              ? WriteFlag::kWriteUnquotedString
+                              : WriteFlag::kWriteDefaultFlags;
+    Writer<rj_urlencoded_refbuffer_t, UTF8<>, UTF8<>, CrtAllocator, flag> writer(b);
+    rj_tojson(writer, value);
     body.push_back('&');
   }
 };
 
 // just hopes that 'boundary' is not contained in arguments
+// TODO test with complex object and arrays
 struct application_multipart_form_data {
  private:
   std::string boundary;
   std::string body;
 
  public:
-  application_multipart_form_data(size_t reserve = 0) {
+  explicit application_multipart_form_data(size_t reserve = 0) {
     boundary = utils::generate_multipart_boundary(16);
     body.reserve(reserve);
   }
@@ -122,12 +152,22 @@ struct application_multipart_form_data {
                    "{}\r\n",
                    boundary, k, utils::url_encoded(filename), mime_type, data);
   }
+
   void arg(std::string_view k, const auto& value) {
+    constexpr std::string_view content_type =
+        std::is_convertible_v<decltype(value), std::string_view> ? "text/plain" : "application/json";
     fmt::format_to(std::back_inserter(body),
                    "--{}\r\n"
-                   "Content-Disposition: form-data; name=\"{}\"\r\n\r\n"
-                   "{}\r\n",
-                   boundary, k, value);
+                   "Content-Disposition: form-data; name=\"{}\"\r\n"
+                   "Content-Type: {}\r\n\r\n",
+                   boundary, k, content_type);
+    rj_refbuffer_t b(body);
+    using namespace rapidjson;
+    constexpr auto flag =
+        content_type == "text/plain" ? WriteFlag::kWriteUnquotedString : WriteFlag::kWriteDefaultFlags;
+    Writer<rj_refbuffer_t, UTF8<>, UTF8<>, CrtAllocator, flag> writer(b);
+    rj_tojson(writer, value);
+    body += "\r\n";
   }
 };
 
