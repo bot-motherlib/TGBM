@@ -17,22 +17,44 @@ struct [[clang::trivial_abi]] box {
   box() = default;
 
   constexpr ~box() {
-    if (ptr)
-      delete ptr;
+    reset();
   }
-  constexpr box(T& value) : ptr(new T(value)) {
-  }
-  constexpr box(const T& value) : ptr(new T(value)) {
-  }
-  constexpr box(T&& value) : ptr(new T(std::move(value))) {
-  }
+
   constexpr box(const box& other) {
     if (!other.ptr)
       return;
     ptr = new T(*other.ptr);
   }
-  constexpr box(box&& other) noexcept(std::is_nothrow_move_constructible_v<T>)
-      : ptr(std::exchange(other.ptr, nullptr)) {
+  constexpr box(box&& other) noexcept : ptr(std::exchange(other.ptr, nullptr)) {
+  }
+
+  template <typename... Args>
+  constexpr box(std::in_place_t, Args&&... args) : ptr(new T(std::forward<Args>(args)...)) {
+  }
+  template <typename... Args>
+  constexpr T& emplace(Args&&... args) {
+    *this = box(std::in_place, std::forward<Args>(args)...);
+    return *ptr;
+  }
+  constexpr box(T& value) : box(std::in_place, value) {
+  }
+  constexpr box(const T& value) : box(std::in_place, value) {
+  }
+  constexpr box(T&& value) : box(std::in_place, std::move(value)) {
+  }
+
+  // assumes 'ptr' may be released with 'delete'
+  static constexpr box from_raw(T* ptr) noexcept {
+    box b;
+    b.ptr = ptr;
+    return b;
+  }
+  constexpr void reset() noexcept {
+    static_assert(sizeof(T));
+    if (ptr) {
+      delete ptr;
+      ptr = nullptr;
+    }
   }
 
   constexpr void swap(box& other) noexcept {
@@ -54,18 +76,25 @@ struct [[clang::trivial_abi]] box {
     return ptr != nullptr;
   }
   constexpr T* operator->() noexcept {
-    assert(ptr);
     return ptr;
   }
   constexpr T* operator->() const noexcept {
-    assert(ptr);
     return ptr;
   }
+
   [[nodiscard]] constexpr T* get() noexcept {
     return ptr;
   }
   [[nodiscard]] constexpr T* get() const noexcept {
     return ptr;
+  }
+  constexpr T& operator*() noexcept {
+    assert(ptr);
+    return *ptr;
+  }
+  constexpr const T& operator*() const noexcept {
+    assert(ptr);
+    return *ptr;
   }
 };
 

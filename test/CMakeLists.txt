@@ -1,4 +1,4 @@
-set(TGBM_TEST_PARTS connection_pool string_switch)
+set(TGBM_TEST_PARTS connection_pool tools)
 foreach(PART ${TGBM_TEST_PARTS})
   add_executable(${PART} "${CMAKE_CURRENT_SOURCE_DIR}/test_${PART}.cpp")
   target_link_libraries(${PART} PUBLIC tgbmlib)

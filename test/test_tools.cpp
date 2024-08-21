@@ -19,6 +19,27 @@ consteval int sstest3() {
 }
 static_assert(sstest3() == 15);
 
+#include "tgbm/tools/box.h"
+
+consteval bool boxtest1() {
+  tgbm::box b(5);
+  static_assert(std::is_same_v<decltype(b), tgbm::box<int>>);
+  b.emplace(15);
+  if (!b || *b != 15)
+    throw 42;
+  b.reset();
+  if (b)
+    throw 42;
+  tgbm::box b2 = std::string("hello world");
+  if (!b2 || *b2 != "hello world")
+    throw 42;
+  b2.reset();
+  if (b2)
+    throw 42;
+  return true;
+}
+static_assert(boxtest1());
+
 int main() {
   return 0;
 }
