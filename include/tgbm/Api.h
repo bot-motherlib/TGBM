@@ -105,17 +105,15 @@ class TGBM_API Api {
   friend class Bot;
 
  public:
-  Api(std::string token, HttpClient& httpClient KELCORO_LIFETIMEBOUND, std::string url);
+  Api(std::string_view token, HttpClient& httpClient KELCORO_LIFETIMEBOUND, std::string url);
 
-  // TODO rewrite, no useless work str -> str -> Url parse str.. -> split
-  // нужно типизировать url типа сразу раскладыавть в хост и т.д. и только метод оставить отдельно и
-  // передавать его
-  std::string get_url(std::string_view method) const {
-    return fmt::format("{}/bot{}/{}", _url, _token, method);
+  tg_url_view get_url(std::string_view method) const KELCORO_LIFETIMEBOUND {
+    return tg_url_view{.host = _url, .path = _cached_path, .method = method};
   }
 
   std::string_view get_token() const noexcept KELCORO_LIFETIMEBOUND {
-    return _token;
+    enum { prefix_len = sizeof("/bot") - 1 };
+    return std::string_view(_cached_path.data() + prefix_len, _cached_path.size() - 1 - prefix_len);
   }
   /**
    * @brief Use this method to receive incoming updates using long polling
@@ -2644,9 +2642,9 @@ class TGBM_API Api {
   // можно сразу application/json
   dd::task<boost::property_tree::ptree> sendRequest(http_request) const;
 
-  const std::string _token;
   const TgTypeParser _tgTypeParser;
   const std::string _url;
+  const std::string _cached_path;
 };
 }  // namespace tgbm
 

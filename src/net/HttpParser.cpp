@@ -16,11 +16,11 @@ using namespace boost;
 
 namespace tgbm {
 
-std::string generate_http_headers_get(const Url& url, bool keep_alive) {
+std::string generate_http_headers_get(const tg_url_view& url, bool keep_alive) {
   // TODO optimized inlined version
   return generate_http_headers(url, keep_alive, {}, {});
 }
-std::string generate_http_headers(const Url& url, bool keep_alive, std::string_view body,
+std::string generate_http_headers(const tg_url_view& url, bool keep_alive, std::string_view body,
                                   std::string_view content_type) {
   assert(body != "{}" && "empty json object provided");
   std::string body_sz_str = fmt::format("{}", body.size());
@@ -28,9 +28,7 @@ std::string generate_http_headers(const Url& url, bool keep_alive, std::string_v
     using namespace std::string_view_literals;
     size_t headers_size = 0;
     headers_size += body.empty() ? "GET "sv.size() : "POST "sv.size();
-    headers_size += url.path.size();
-    if (!url.query.empty())
-      headers_size += url.query.size() + 1;  // "?"
+    headers_size += url.path.size() + url.method.size();
     headers_size += " HTTP/1.1\r\nHost: "sv.size() + url.host.size() + "\r\nConnection: "sv.size() +
                     (keep_alive ? "keep-alive"sv.size() : "close"sv.size());
     headers_size += "\r\n"sv.size();
@@ -53,7 +51,7 @@ std::string generate_http_headers(const Url& url, bool keep_alive, std::string_v
   else
     result += "POST ";
   result += url.path;
-  result += url.query.empty() ? "" : "?" + url.query;
+  result += url.method;
   result +=
       " HTTP/1.1\r\n"
       "Host: ";

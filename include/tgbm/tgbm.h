@@ -13,7 +13,6 @@
 #include "tgbm/net/TgWebhookLocalServer.h"
 #include "tgbm/net/TgWebhookServer.h"
 #include "tgbm/net/TgWebhookTcpServer.h"
-#include "tgbm/net/Url.h"
 #include "tgbm/tools/FileTools.h"
 #include "tgbm/tools/StringTools.h"
 #include "tgbm/types/Animation.h"

@@ -21,13 +21,10 @@ class TGBM_API Bot {
   explicit Bot(std::string token, HttpClient& httpClient KELCORO_LIFETIMEBOUND,
                std::string url = "https://api.telegram.org");
 
-  /**
-   * @return Token for accessing api.
-   */
   std::string_view get_token() const noexcept KELCORO_LIFETIMEBOUND {
     return _api.get_token();
   }
-
+  // TODO вынести обёртывающие апи методы как раз сюда?
   /**
    * @return Object which can execute Telegram Bot API methods.
    */

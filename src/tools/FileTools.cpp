@@ -9,6 +9,7 @@ using namespace std;
 namespace FileTools {
 
 string read(const string& filePath) {
+  // TODO boost filesystem random access file?))
   ifstream in(filePath, ios::in | ios::binary);
   in.exceptions(ifstream::failbit | ifstream::badbit);
   ostringstream contents;

@@ -22,7 +22,6 @@ set(TGBM_SRC_LIST
     src/net/BoostHttpOnlySslClient.cpp
     src/net/HttpParser.cpp
     src/net/TgLongPoll.cpp
-    src/net/Url.cpp
     src/tools/FileTools.cpp
     src/tools/StringTools.cpp
     src/types/BotCommandScope.cpp

@@ -28,8 +28,11 @@ static bool is_empty_thumbnail(const thumbnail_t &x) {
 // name of function should be same as in API https://core.telegram.org/bots/api
 #define $METHOD ::std::string_view(__func__)
 
-Api::Api(std::string token, HttpClient &httpClient, std::string url)
-    : _httpClient(httpClient), _token(std::move(token)), _tgTypeParser(), _url(std::move(url)) {
+Api::Api(std::string_view token, HttpClient &httpClient, std::string url)
+    : _httpClient(httpClient),
+      _cached_path(std::format("/bot{}/", token)),
+      _tgTypeParser(),
+      _url(std::move(url)) {
 }
 
 dd::task<std::vector<Update::Ptr>> Api::getUpdates(std::int32_t offset, std::int32_t limit,
@@ -2245,13 +2248,10 @@ dd::task<std::vector<GameHighScore::Ptr>> Api::getGameHighScores(std::int64_t us
 
 // TODO understand why 'args' presented?? Что туда блин передавать то можно?
 dd::task<std::string> Api::downloadFile(const std::string &filePath) {
-  std::string url(_url);
-  url += "/file/bot";
-  url += _token;
-  url += "/";
-  url += filePath;
+  std::string path = fmt::format("/file/bot{}/{}", get_token(), filePath);
+  tg_url_view v{.host = _url, .path = path, .method = filePath};
   // TODO нужно возвращать вектор байт, очевидно стринга не подходит
-  http_response rsp = co_await _httpClient.makeRequest(http_request(url));
+  http_response rsp = co_await _httpClient.makeRequest(http_request(v));
   co_return std::move(rsp.body);
 }
 

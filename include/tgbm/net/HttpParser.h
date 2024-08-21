@@ -1,7 +1,5 @@
 #pragma once
 
-#include "tgbm/net/Url.h"
-
 #include <string>
 #include <unordered_map>
 #include <cassert>
@@ -12,6 +10,12 @@
 #include <fmt/format.h>
 
 namespace tgbm {
+
+struct tg_url_view {
+  std::string_view host;
+  std::string_view path;  // path without method part, e.g. "/bot123/"
+  std::string_view method;
+};
 
 // TODO wtf это всё статические функции вообще
 struct HttpParser {
@@ -171,9 +175,9 @@ struct application_multipart_form_data {
   }
 };
 
-std::string generate_http_headers_get(const Url& url, bool keep_alive);
+std::string generate_http_headers_get(const tg_url_view& url, bool keep_alive);
 // GET if body.empty(), POST otherwise
-std::string generate_http_headers(const Url& url, bool keep_alive, std::string_view body,
+std::string generate_http_headers(const tg_url_view& url, bool keep_alive, std::string_view body,
                                   std::string_view content_type);
 
 struct http_request {
@@ -181,14 +185,14 @@ struct http_request {
   std::string headers;  // TODO vectors (?allocs?)
 
   // TODO rm url/keep alive
-  http_request(const Url& url, application_json_body&& b, bool keep_alive = true)
+  http_request(tg_url_view url, application_json_body&& b, bool keep_alive = true)
       : body(b.take()), headers(generate_http_headers(url, keep_alive, body, "application/json")) {
   }
-  http_request(const Url& url, application_x_www_form_urlencoded&& b, bool keep_alive = true)
+  http_request(tg_url_view url, application_x_www_form_urlencoded&& b, bool keep_alive = true)
       : body(b.take()),
         headers(generate_http_headers(url, keep_alive, body, "application/x-www-form-urlencoded")) {
   }
-  http_request(const Url& url, application_multipart_form_data&& b, bool keep_alive = true)
+  http_request(tg_url_view url, application_multipart_form_data&& b, bool keep_alive = true)
       : body(b.take()),
         headers(generate_http_headers(
             // https://datatracker.ietf.org/doc/html/rfc2046#section-5.1.1
@@ -196,7 +200,7 @@ struct http_request {
   }
 
   // GET request
-  explicit http_request(const Url& url, bool keep_alive = true)
+  explicit http_request(tg_url_view url, bool keep_alive = true)
       : headers(generate_http_headers_get(url, keep_alive)) {
   }
 };
