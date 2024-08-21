@@ -3,7 +3,7 @@
 #include <charconv>
 #include <cstddef>
 
-#include "tgbm/scope_exit.h"
+#include "tgbm/tools/scope_exit.h"
 #include "tgbm/net/asio_awaiters.h"
 
 namespace tgbm {

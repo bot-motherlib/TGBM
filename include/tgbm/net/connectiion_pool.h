@@ -9,7 +9,7 @@
 #include <cassert>
 #include <mutex>
 
-#include "tgbm/scope_exit.h"
+#include "tgbm/tools/scope_exit.h"
 
 namespace tgbm {
 

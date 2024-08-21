@@ -32,7 +32,7 @@ struct http_exception : network_exception {
  *
  * @ingroup net
  */
-class TGBM_API HttpClient {
+class HttpClient {
  public:
   virtual ~HttpClient() = default;
 

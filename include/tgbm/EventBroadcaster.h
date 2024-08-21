@@ -1,6 +1,5 @@
 #pragma once
 
-#include "tgbm/export.h"
 #include "tgbm/types/Message.h"
 #include "tgbm/types/InlineQuery.h"
 #include "tgbm/types/ChosenInlineResult.h"
@@ -27,7 +26,7 @@ class EventHandler;
  *
  * @ingroup general
  */
-class TGBM_API EventBroadcaster {
+class EventBroadcaster {
   friend EventHandler;
 
  public:

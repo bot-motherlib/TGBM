@@ -1,13 +1,9 @@
 #pragma once
 
-#include "tgbm/export.h"
-
 #include <cstddef>
-#include <vector>
 #include <string>
 #include <optional>
 #include <cassert>
-#include <concepts>
 
 #include <fmt/format.h>
 
@@ -42,20 +38,9 @@ O url_encode(char c, O out) {
 }
 
 /**
- * Splits string to smaller substrings which have between them a delimiter. Resulting substrings won't have
- * delimiter.
- * @param str Source string
- * @param delimiter Delimiter
- * @param dest Array to which substrings will be saved.
- */
-TGBM_API
-void split(const std::string& str, char delimiter, std::vector<std::string>& dest);
-
-/**
  * Generates pseudo random string. It's recommended to call srand before this method.
  * @param length Length of resulting string.
  */
-TGBM_API
 std::string generate_multipart_boundary(std::size_t length);
 
 // used for fmt formatting
@@ -68,21 +53,7 @@ struct url_encoded {
  * @param value Encoded url string
  * @return Decoded url string
  */
-TGBM_API
 std::string urlDecode(const std::string& value);
-
-/**
- * Splits string to smaller substrings which have between them a delimiter. Resulting substrings won't have
- * delimiter.
- * @param str Source string
- * @param delimiter Delimiter
- * @return Array of substrings
- */
-inline std::vector<std::string> split(const std::string& str, char delimiter) {
-  std::vector<std::string> result;
-  split(str, delimiter, result);
-  return result;
-}
 
 template <typename T, typename R = T>
 struct string_switch {

@@ -99,7 +99,7 @@ void rj_tojson(rjson_writer auto& writer, const int_or_str& v) {
  *
  * @ingroup general
  */
-class TGBM_API Api {
+class Api {
   typedef std::shared_ptr<std::vector<std::string>> StringArrayPtr;
 
   friend class Bot;

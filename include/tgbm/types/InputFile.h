@@ -1,7 +1,5 @@
 #pragma once
 
-#include "tgbm/export.h"
-
 #include <memory>
 #include <string>
 
@@ -12,7 +10,7 @@ namespace tgbm {
  *
  * @ingroup types
  */
-class TGBM_API InputFile {
+class InputFile {
  public:
   typedef std::shared_ptr<InputFile> Ptr;
 

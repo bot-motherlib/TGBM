@@ -1,6 +1,5 @@
 #pragma once
 
-#include "tgbm/export.h"
 #include "tgbm/types/Update.h"
 #include "tgbm/types/WebhookInfo.h"
 #include "tgbm/types/User.h"
@@ -202,7 +201,7 @@
 
 namespace tgbm {
 
-class TGBM_API TgTypeParser {
+class TgTypeParser {
  public:
   template <typename T>
   using JsonToTgTypeFunc = std::shared_ptr<T> (TgTypeParser::*)(const boost::property_tree::ptree&) const;

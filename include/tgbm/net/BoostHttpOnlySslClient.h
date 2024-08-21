@@ -1,7 +1,7 @@
 #pragma once
 
 #include "tgbm/net/HttpClient.h"
-#include "tgbm/net/ConnectionPool.h"
+#include "tgbm/net/connectiion_pool.h"
 #include "tgbm/logger.h"
 
 // TODO wrap asio/detail/config.hpp (using include_next)
@@ -33,7 +33,7 @@ struct asio_connection_t : std::enable_shared_from_this<asio_connection_t> {
  * @ingroup net
  */
 // TODO? shared from this?...
-class TGBM_API BoostHttpOnlySslClient : public HttpClient {
+class BoostHttpOnlySslClient : public HttpClient {
  public:
   using connection_t = std::shared_ptr<asio_connection_t>;
 

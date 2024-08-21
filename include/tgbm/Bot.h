@@ -16,7 +16,7 @@ class HttpClient;
  *
  * @ingroup general
  */
-class TGBM_API Bot {
+class Bot {
  public:
   explicit Bot(std::string token, HttpClient& httpClient KELCORO_LIFETIMEBOUND,
                std::string url = "https://api.telegram.org");

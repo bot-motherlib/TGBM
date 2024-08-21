@@ -1,7 +1,5 @@
 #pragma once
 
-#include "tgbm/export.h"
-
 #include <string>
 
 /**
@@ -15,7 +13,6 @@ namespace FileTools {
  * @throws exception of type std::ifstream::failure if reading fails
  * @return string with file contents
  */
-TGBM_API
 std::string read(const std::string& filePath);
 
 /**
@@ -23,7 +20,6 @@ std::string read(const std::string& filePath);
  * @param filePath Path to a file
  * @throws exception of type std::ifstream::failure if writing fails
  */
-TGBM_API
 void write(const std::string& content, const std::string& filePath);
 
 }  // namespace FileTools

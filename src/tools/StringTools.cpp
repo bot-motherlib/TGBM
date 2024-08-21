@@ -13,14 +13,6 @@ using namespace std;
 
 namespace tgbm::utils {
 
-void split(const string& str, char delimiter, vector<string>& dest) {
-  istringstream stream(str);
-  string s;
-  while (getline(stream, s, delimiter)) {
-    dest.push_back(s);
-  }
-}
-
 static std::size_t generate_random_seed() noexcept {
   size_t seed = std::random_device{}();
   boost::hash_combine(seed, std::hash<std::thread::id>{}(std::this_thread::get_id()));

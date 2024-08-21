@@ -10,7 +10,7 @@
 
 namespace tgbm {
 
-class TGBM_API EventHandler {
+class EventHandler {
  public:
   explicit EventHandler(const EventBroadcaster& broadcaster) : _broadcaster(broadcaster) {
   }

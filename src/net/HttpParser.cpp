@@ -1,6 +1,6 @@
 #include "tgbm/net/HttpParser.h"
 
-#include "tgbm/scope_exit.h"
+#include "tgbm/tools/scope_exit.h"
 
 #include <boost/algorithm/string.hpp>
 

@@ -98,4 +98,6 @@ struct [[clang::trivial_abi]] box {
   }
 };
 
+// TODO? pointer union (llvm) integrated into box
+
 }  // namespace tgbm
