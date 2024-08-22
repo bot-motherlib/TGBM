@@ -19,7 +19,7 @@ set(TGBM_SRC_LIST
     src/Bot.cpp
     src/EventHandler.cpp
     src/TgTypeParser.cpp
-    src/net/BoostHttpOnlySslClient.cpp
+    src/net/boost_http_client.cpp
     src/net/HttpParser.cpp
     src/net/TgLongPoll.cpp
     src/tools/FileTools.cpp
@@ -49,6 +49,7 @@ target_link_libraries(tgbmlib PUBLIC
     Boost::system
     Boost::asio
     Boost::property_tree
+    Boost::beast
     fmt::fmt
     rapidjsonlib
 )

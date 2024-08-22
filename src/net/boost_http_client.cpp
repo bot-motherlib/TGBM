@@ -1,4 +1,4 @@
-#include "tgbm/net/BoostHttpOnlySslClient.h"
+#include "tgbm/net/boost_http_client.h"
 
 #include <charconv>
 #include <cstddef>
@@ -8,17 +8,7 @@
 
 namespace tgbm {
 
-BoostHttpOnlySslClient::BoostHttpOnlySslClient(boost::asio::io_context& ctx, std::string host,
-                                               size_t connections_max_count)
-    : io_ctx(ctx),
-      connections(
-          connections_max_count, [io = &io_ctx, h = std::move(host)]() { return create_connection(*io, h); },
-          exe) {
-}
-
-BoostHttpOnlySslClient::~BoostHttpOnlySslClient() = default;
-
-dd::task<BoostHttpOnlySslClient::connection_t> BoostHttpOnlySslClient::create_connection(
+dd::task<std::shared_ptr<asio_connection_t>> create_connection(
     boost::asio::io_context& io_ctx KELCORO_LIFETIMEBOUND, std::string host) {
   namespace asio = boost::asio;
   namespace ssl = asio::ssl;
@@ -56,31 +46,27 @@ dd::task<BoostHttpOnlySslClient::connection_t> BoostHttpOnlySslClient::create_co
   co_return connection;
 }
 
-dd::task<http_response> BoostHttpOnlySslClient::makeRequest(http_request request) {
+dd::task<http_response> send_request(std::shared_ptr<asio_connection_t> con, http_request& request) {
   namespace asio = boost::asio;
   using tcp = asio::ip::tcp;
+  assert(con);
+  auto& socket = con->socket;
 
-  // TODO? retry if throw?
-  auto handle = co_await connections.borrow();
-  auto& socket = handle.get()->get()->socket;
-  on_scope_failure(drop_socket) {
-    // avoid drop connection on timeout (handle.destroy())
-    if (std::uncaught_exceptions())
-      handle.drop();
-    else
-      socket.lowest_layer().cancel();
-  };
   io_error_code ec;
+  auto handle_timeout = [](io_error_code& ec) -> bool {
+    if (ec == asio::error::operation_aborted) {
+      throw timeout_exception("[send request] timed out");
+    }
+    return true;  // for chaining
+  };
   LOG_DEBUG("generated request:\nHEADERS:\n{}\nBODY:\n{}", request.headers, request.body);
   std::array<asio::const_buffer, 2> headers_and_body{asio::buffer(request.headers),
                                                      asio::buffer(request.body)};
   size_t transfered = co_await async_write(socket, headers_and_body, ec);
-  if (ec)
+  if (ec && handle_timeout(ec))
     throw http_exception("[http] cannot write to {} socket, err: {}", (void*)&socket, ec.message());
   assert(transfered == (request.headers.size() + request.body.size()));
-  // TODO timeout на весь сокет сразу одну штуку(точнее на одну операцию(корутину)...)
   request.headers.clear();
-  request.body.clear();
   // TODO нужно возвращать вектор байт вместо строки 1. это выгоднее (sso не нужно)
   // 2. там могут быть \0, т.к. это в том числе загрузка файлов
 
@@ -90,7 +76,7 @@ dd::task<http_response> BoostHttpOnlySslClient::makeRequest(http_request request
   // read http headers
   std::string::size_type headers_end_pos =
       co_await async_read_until(socket, request.headers, headers_end_marker, ec);
-  if (ec)
+  if (ec && handle_timeout(ec))
     throw http_exception("[http] error while reading http headers: {}", ec.message());
   static constexpr std::string_view content_length_header = "Content-Length:";
   auto content_len_pos = request.headers.find(content_length_header);
@@ -117,13 +103,56 @@ dd::task<http_response> BoostHttpOnlySslClient::makeRequest(http_request request
   LOG_DEBUG("response headers:\n{}", request.headers);
   transfered = co_await async_read(
       socket, asio::buffer(request.body.data() + overriden_bytes, content_length - overriden_bytes), ec);
-  if (ec)
+  if (ec && handle_timeout(ec))
     throw http_exception("[http] error while reading body: {}", ec.message());
   assert(transfered == content_length - overriden_bytes);
-  drop_socket.no_longer_needed();
   LOG_DEBUG("response body:\n{}", request.body);
   // reuses memory
   co_return http_response{.body = std::move(request.body), .headers = std::move(request.headers)};
+}
+
+// TODO передавать таймаут в операцию (и удалить тот клиент который не поддерживает)
+dd::task<http_response> boost_singlethread_client::send_request(http_request request, duration_t timeout) {
+  // TODO borrow connection with timeout
+  auto handle = co_await connections.borrow();
+
+  boost::asio::steady_timer timer(io_ctx);
+  timer.expires_after(timeout);
+  timer.async_wait([socket = &handle.get()->get()->socket](const io_error_code& ec) {
+    if (ec == boost::asio::error::operation_aborted)
+      return;
+    // if im working and ctx on one thread, then now coroutine suspended
+    socket->lowest_layer().cancel();
+    // coro should be resumed and operation_aborted (coro ended with exception)
+  });
+  on_scope_failure(drop_connection) {
+    handle.drop();
+  };
+  on_scope_exit {
+    timer.cancel();
+  };
+  http_response rsp = co_await tgbm::send_request(*handle.get(), request);
+  drop_connection.no_longer_needed();
+  co_return rsp;
+}
+
+void boost_singlethread_client::run() {
+  // TODO check not invoked already
+  if (io_ctx.stopped())
+    io_ctx.restart();
+  io_ctx.run();
+}
+
+bool boost_singlethread_client::run_one(duration_t timeout) {
+  // TODO check not invoked already
+  if (io_ctx.stopped())
+    io_ctx.restart();
+  auto count = io_ctx.run_one_for(timeout);
+  return count > 0;
+}
+
+void boost_singlethread_client::stop() {
+  io_ctx.stop();
 }
 
 }  // namespace tgbm

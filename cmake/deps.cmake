@@ -8,7 +8,7 @@ CPMAddPackage(
   EXCLUDE_FROM_ALL YES
   SYSTEM OFF
 )
-set(BOOST_INCLUDE_LIBRARIES system asio property_tree)
+set(BOOST_INCLUDE_LIBRARIES system asio property_tree beast)
 CPMAddPackage(
   NAME Boost
   VERSION 1.84.0

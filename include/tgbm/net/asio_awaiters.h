@@ -36,10 +36,6 @@ struct asio_awaiter {
 
   void await_suspend(std::coroutine_handle<> handle) noexcept {
     auto cb = [this, handle](const io_error_code& ec, T data) {
-      if (ec == boost::asio::error::operation_aborted) {
-        handle.destroy();
-        return;
-      }
       _ec = ec;
       std::construct_at(std::addressof(_data), std::move(data));
       handle.resume();

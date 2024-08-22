@@ -1,8 +1,9 @@
 #pragma once
 
 #include <string>
-#include <cstdint>
+
 #include <fmt/format.h>
+
 #include <tgbm/net/HttpParser.h>
 
 #include <kelcoro/task.hpp>
@@ -23,9 +24,14 @@ struct network_exception : std::exception {
   }
 };
 
+struct timeout_exception : network_exception {
+  using network_exception::network_exception;
+};
 struct http_exception : network_exception {
   using network_exception::network_exception;
 };
+
+using duration_t = std::chrono::steady_clock::duration;
 
 /**
  * @brief This class makes http requests.
@@ -36,33 +42,12 @@ class HttpClient {
  public:
   virtual ~HttpClient() = default;
 
-  // TODO add prepare function?
-
-  /**
-   * @brief Sends a request to the url.
-   *
-   * If there's no args specified, a GET request will be sent, otherwise a POST request will be sent.
-   * If at least 1 arg is marked as file, the content type of a request will be multipart/form-data, otherwise
-   * it will be application/x-www-form-urlencoded.
-   */
-  virtual dd::task<http_response> makeRequest(http_request request) = 0;
-  // TODO передавать таймаут в makeRequest, количество ретраев вероятно тоже. И std::chrono::seconds вместо
-  // int
-  std::int32_t _timeout = 25;
-
-  // TODO remove rettries, timeout etc from here
-
-  virtual int getRequestMaxRetries() const {
-    return requestMaxRetries;
-  }
-
-  virtual int getRequestBackoff() const {
-    return requestBackoff;
-  }
-
- private:
-  int requestMaxRetries = 3;
-  int requestBackoff = 1;
+  virtual dd::task<http_response> send_request(http_request request, duration_t timeout) = 0;
+  // run until all work done
+  virtual void run() = 0;
+  // run until some work done, returns false if no one executed
+  virtual bool run_one(duration_t timeout) = 0;
+  virtual void stop() = 0;
 };
 
 }  // namespace tgbm

@@ -99,22 +99,38 @@ void rj_tojson(rjson_writer auto& writer, const int_or_str& v) {
  *
  * @ingroup general
  */
-class Api {
-  typedef std::shared_ptr<std::vector<std::string>> StringArrayPtr;
-
-  friend class Bot;
+struct Api {
+ private:
+  TgTypeParser _tgTypeParser;  // TODO rm empty field
+  std::string _host;
+  std::string _cached_path;
+  duration_t _timeout;
+  HttpClient& _httpClient;
 
  public:
-  Api(std::string_view token, HttpClient& httpClient KELCORO_LIFETIMEBOUND, std::string url);
+  typedef std::shared_ptr<std::vector<std::string>> StringArrayPtr;
+
+  // Note: for 'getUpdate' which has its own timeout effective timeout = getUpdate.timeout + api.timeout()
+  Api(std::string_view token, HttpClient& httpClient KELCORO_LIFETIMEBOUND, std::string host,
+      duration_t timeout = duration_t::max());
 
   tg_url_view get_url(std::string_view method) const KELCORO_LIFETIMEBOUND {
-    return tg_url_view{.host = _url, .path = _cached_path, .method = method};
+    return tg_url_view{.host = _host, .path = _cached_path, .method = method};
   }
 
   std::string_view get_token() const noexcept KELCORO_LIFETIMEBOUND {
     enum { prefix_len = sizeof("/bot") - 1 };
     return std::string_view(_cached_path.data() + prefix_len, _cached_path.size() - 1 - prefix_len);
   }
+
+  std::string_view get_host() const noexcept KELCORO_LIFETIMEBOUND {
+    return _host;
+  }
+
+  void set_timeout(duration_t timeout) noexcept {
+    _timeout = timeout;
+  }
+
   /**
    * @brief Use this method to receive incoming updates using long polling
    * ([wiki](https://en.wikipedia.org/wiki/Push_technology#Long_polling)).
@@ -159,7 +175,7 @@ class Api {
    *
    * Notes
    * - You will not be able to receive updates using Api::getUpdates for as long as an outgoing webhook is set
-   * up.
+   * up. // TODO read it and rewrite comment
    * - To use a self-signed certificate, you need to upload your [public key
    * certificate](https://core.telegram.org/bots/self-signed) using certificate parameter. Please upload as
    * InputFile, sending a String will not work.
@@ -2635,17 +2651,11 @@ class Api {
    */
   dd::task<bool> blockedByUser(std::int64_t chatId) const;
 
-  HttpClient& _httpClient;
-
  protected:
-  // TODO аргументы передавать не надо, они используются только чтобы сгенерить реквест
-  // можно сразу application/json
-  dd::task<boost::property_tree::ptree> sendRequest(http_request) const;
-
-  const TgTypeParser _tgTypeParser;
-  const std::string _url;
-  const std::string _cached_path;
+  // TODO этот метод уйдёт когда будет возвращаться напрямую джсон-строка
+  dd::task<boost::property_tree::ptree> sendRequest(http_request, duration_t timeout) const;
 };
+
 }  // namespace tgbm
 
 namespace fmt {

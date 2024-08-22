@@ -1,11 +1,8 @@
 #include "tgbm/Api.h"
 
 #include <chrono>
-#include <thread>
 
 #include <fmt/ranges.h>
-
-#include "tgbm/logger.h"
 
 namespace tgbm {
 
@@ -27,12 +24,17 @@ static bool is_empty_thumbnail(const thumbnail_t &x) {
 
 // name of function should be same as in API https://core.telegram.org/bots/api
 #define $METHOD ::std::string_view(__func__)
+#define $POST_REQUEST co_await sendRequest({get_url($METHOD), std::move(body)}, _timeout)
+#define $GET_REQUEST co_await sendRequest(http_request(get_url($METHOD)), _timeout)
 
-Api::Api(std::string_view token, HttpClient &httpClient, std::string url)
+Api::Api(std::string_view token, HttpClient &httpClient, std::string host, duration_t timeout)
     : _httpClient(httpClient),
-      _cached_path(std::format("/bot{}/", token)),
+      _cached_path(fmt::format("/bot{}/", token)),
       _tgTypeParser(),
-      _url(std::move(url)) {
+      _host(std::move(host)),
+      _timeout(timeout) {
+  if (_host.empty() || _host.starts_with("https://") || _host.starts_with("http://"))
+    throw std::invalid_argument("host should be not full url, for example \"api.telegram.org\"");
 }
 
 dd::task<std::vector<Update::Ptr>> Api::getUpdates(std::int32_t offset, std::int32_t limit,
@@ -49,7 +51,9 @@ dd::task<std::vector<Update::Ptr>> Api::getUpdates(std::int32_t offset, std::int
     body.arg("timeout", timeout);
   if (allowedUpdates)
     body.arg("allowed_updates", *allowedUpdates);
-  boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD), std::move(body)));
+  // sets timeout to be greater then long pool timeout
+  boost::property_tree::ptree json =
+      co_await sendRequest({get_url($METHOD), std::move(body)}, _timeout + std::chrono::seconds(timeout));
   co_return _tgTypeParser.parseJsonAndGetArray<Update>(&TgTypeParser::parseJsonAndGetUpdate, json);
 }
 
@@ -75,11 +79,11 @@ dd::task<bool> Api::setWebhook(const std::string &url, InputFile::Ptr certificat
     application_multipart_form_data body;
     body.file_arg("certificate", certificate->mimeType, certificate->fileName, certificate->data);
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   } else {
     default_body_t body;
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   }
   co_return json.get<bool>("", false);
 }
@@ -88,12 +92,12 @@ dd::task<bool> Api::deleteWebhook(bool dropPendingUpdates) const {
   default_body_t body;
   if (dropPendingUpdates)
     body.arg("drop_pending_updates", dropPendingUpdates);
-  boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD), std::move(body)));
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
 dd::task<WebhookInfo::Ptr> Api::getWebhookInfo() const {
-  boost::property_tree::ptree p = co_await sendRequest(http_request(get_url($METHOD)));
+  boost::property_tree::ptree p = $GET_REQUEST;
 
   if (!p.get_child_optional("url"))
     co_return nullptr;
@@ -104,17 +108,17 @@ dd::task<WebhookInfo::Ptr> Api::getWebhookInfo() const {
 }
 
 dd::task<User::Ptr> Api::getMe() const {
-  boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD)));
+  boost::property_tree::ptree json = $GET_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetUser(json);
 }
 
 dd::task<bool> Api::logOut() const {
-  boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD)));
+  boost::property_tree::ptree json = $GET_REQUEST;
   co_return json.get<bool>("", false);
 }
 
 dd::task<bool> Api::close() const {
-  boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD)));
+  boost::property_tree::ptree json = $GET_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -161,7 +165,7 @@ dd::task<std::vector<Message::Ptr>> Api::sendMessage(
     body.arg("reply_parameters", _tgTypeParser.parseReplyParameters(replyParameters));
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
-  boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD), std::move(body)));
+  boost::property_tree::ptree json = $POST_REQUEST;
   msgs.push_back(_tgTypeParser.parseJsonAndGetMessage(json));
   co_return msgs;
 }
@@ -179,7 +183,7 @@ dd::task<Message::Ptr> Api::forwardMessage(int_or_str chatId, int_or_str fromCha
   if (protectContent)
     body.arg("protect_content", protectContent);
   body.arg("message_id", messageId);
-  boost::property_tree::ptree json = co_await sendRequest(http_request(get_url($METHOD), std::move(body)));
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 
@@ -200,7 +204,7 @@ dd::task<std::vector<MessageId::Ptr>> Api::forwardMessages(int_or_str chatId, in
     body.arg("disable_notification", disableNotification);
   if (protectContent)
     body.arg("protect_content", protectContent);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetArray<MessageId>(&TgTypeParser::parseJsonAndGetMessageId, json);
 }
 
@@ -234,7 +238,7 @@ dd::task<MessageId::Ptr> Api::copyMessage(int_or_str chatId, int_or_str fromChat
     body.arg("reply_parameters", _tgTypeParser.parseReplyParameters(replyParameters));
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetMessageId(json);
 }
 
@@ -258,7 +262,7 @@ dd::task<std::vector<MessageId::Ptr>> Api::copyMessages(int_or_str chatId, int_o
     body.arg("protect_content", protectContent);
   if (removeCaption)
     body.arg("remove_caption", removeCaption);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetArray<MessageId>(&TgTypeParser::parseJsonAndGetMessageId, json);
 }
 
@@ -299,12 +303,12 @@ dd::task<Message::Ptr> Api::sendPhoto(int_or_str chatId, thumbnail_t photo, cons
     assert(*file);
     body.file_arg("photo", file->get()->mimeType, file->get()->fileName, file->get()->data);
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   } else {
     default_body_t body;
     body.arg("photo", *std::get_if<std::string>(&photo));
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   }
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
@@ -365,7 +369,7 @@ dd::task<Message::Ptr> Api::sendAudio(int_or_str chatId, thumbnail_t audio, cons
         body.arg("thumbnail", str);
     }
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   } else {
     default_body_t body;
     body.arg("audio", std::get<std::string>(audio));
@@ -373,7 +377,7 @@ dd::task<Message::Ptr> Api::sendAudio(int_or_str chatId, thumbnail_t audio, cons
     if (!str.empty())
       body.arg("thumbnail", str);
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   }
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
@@ -430,7 +434,7 @@ dd::task<Message::Ptr> Api::sendDocument(int_or_str chatId, thumbnail_t document
         body.arg("thumbnail", str);
     }
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   } else {
     default_body_t body;
     body.arg("document", std::get<std::string>(document));
@@ -438,7 +442,7 @@ dd::task<Message::Ptr> Api::sendDocument(int_or_str chatId, thumbnail_t document
     if (!str.empty())
       body.arg("thumbnail", str);
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   }
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
@@ -504,7 +508,7 @@ dd::task<Message::Ptr> Api::sendVideo(int_or_str chatId, thumbnail_t video, bool
         body.arg("thumbnail", str);
     }
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   } else {
     default_body_t body;
     body.arg("video", std::get<std::string>(video));
@@ -512,7 +516,7 @@ dd::task<Message::Ptr> Api::sendVideo(int_or_str chatId, thumbnail_t video, bool
     if (!str.empty())
       body.arg("thumbnail", str);
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   }
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
@@ -576,7 +580,7 @@ dd::task<Message::Ptr> Api::sendAnimation(int_or_str chatId, thumbnail_t animati
         body.arg("thumbnail", str);
     }
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   } else {
     default_body_t body;
     body.arg("animation", std::get<std::string>(animation));
@@ -584,7 +588,7 @@ dd::task<Message::Ptr> Api::sendAnimation(int_or_str chatId, thumbnail_t animati
     if (!str.empty())
       body.arg("thumbnail", str);
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   }
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
@@ -629,12 +633,12 @@ dd::task<Message::Ptr> Api::sendVoice(int_or_str chatId, thumbnail_t voice, cons
     assert(*file);
     body.file_arg("voice", file->get()->fileName, file->get()->mimeType, file->get()->data);
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   } else {
     default_body_t body;
     body.arg("voice", std::get<std::string>(voice));
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   }
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
@@ -684,7 +688,7 @@ dd::task<Message::Ptr> Api::sendVideoNote(int_or_str chatId, thumbnail_t videoNo
         body.arg("thumbnail", str);
     }
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   } else {
     default_body_t body;
     body.arg("video_note", std::get<std::string>(videoNote));
@@ -692,7 +696,7 @@ dd::task<Message::Ptr> Api::sendVideoNote(int_or_str chatId, thumbnail_t videoNo
     if (!str.empty())
       body.arg("thumbnail", str);
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   }
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
@@ -718,7 +722,7 @@ dd::task<std::vector<Message::Ptr>> Api::sendMediaGroup(int_or_str chatId,
   if (replyParameters)
     body.arg("reply_parameters", _tgTypeParser.parseReplyParameters(replyParameters));
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetArray<Message>(&TgTypeParser::parseJsonAndGetMessage, json);
 }
 
@@ -754,7 +758,7 @@ dd::task<Message::Ptr> Api::sendLocation(int_or_str chatId, float latitude, floa
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 // TODO floats?.. use to_chars?
@@ -783,7 +787,7 @@ dd::task<Message::Ptr> Api::editMessageLiveLocation(float latitude, float longit
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseInlineKeyboardMarkup(replyMarkup));
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 
@@ -800,7 +804,7 @@ dd::task<Message::Ptr> Api::stopMessageLiveLocation(int_or_str chatId, std::int3
     body.arg("inline_message_id", inlineMessageId);
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseInlineKeyboardMarkup(replyMarkup));
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 
@@ -839,7 +843,7 @@ dd::task<Message::Ptr> Api::sendVenue(int_or_str chatId, float latitude, float l
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 
@@ -871,7 +875,7 @@ dd::task<Message::Ptr> Api::sendContact(int_or_str chatId, const std::string &ph
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 
@@ -924,7 +928,7 @@ dd::task<Message::Ptr> Api::sendPoll(int_or_str chatId, const std::string &quest
     body.arg("reply_parameters", _tgTypeParser.parseReplyParameters(replyParameters));
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 
@@ -950,7 +954,7 @@ dd::task<Message::Ptr> Api::sendDice(int_or_str chatId, bool disableNotification
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 
@@ -966,7 +970,7 @@ dd::task<bool> Api::setMessageReaction(int_or_str chatId, std::int32_t messageId
   if (isBig)
     body.arg("is_big", isBig);
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -982,7 +986,7 @@ dd::task<bool> Api::sendChatAction(std::int64_t chatId, const std::string &actio
   if (messageThreadId != 0)
     body.arg("message_thread_id", messageThreadId);
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -996,7 +1000,7 @@ dd::task<UserProfilePhotos::Ptr> Api::getUserProfilePhotos(std::int64_t userId, 
   if (limit != 100)
     body.arg("limit", std::max(1, std::min(100, limit)));
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetUserProfilePhotos(json);
 }
 
@@ -1004,7 +1008,7 @@ dd::task<File::Ptr> Api::getFile(const std::string &fileId) const {
   default_body_t body;
 
   body.arg("file_id", fileId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetFile(json);
 }
 
@@ -1018,7 +1022,7 @@ dd::task<bool> Api::banChatMember(int_or_str chatId, std::int64_t userId, std::i
     body.arg("until_date", untilDate);
   if (revokeMessages)
     body.arg("revoke_messages", revokeMessages);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1029,7 +1033,7 @@ dd::task<bool> Api::unbanChatMember(int_or_str chatId, std::int64_t userId, bool
   body.arg("user_id", userId);
   if (onlyIfBanned)
     body.arg("only_if_banned", onlyIfBanned);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1045,7 +1049,7 @@ dd::task<bool> Api::restrictChatMember(int_or_str chatId, std::int64_t userId,
     body.arg("use_independent_chat_permissions", useIndependentChatPermissions);
   if (untilDate != 0)
     body.arg("until_date", untilDate);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1090,7 +1094,7 @@ dd::task<bool> Api::promoteChatMember(int_or_str chatId, std::int64_t userId, bo
   if (canManageTopics)
     body.arg("can_manage_topics", canManageTopics);
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1102,7 +1106,7 @@ dd::task<bool> Api::setChatAdministratorCustomTitle(int_or_str chatId, std::int6
   body.arg("user_id", userId);
   body.arg("custom_title", customTitle);
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1112,7 +1116,7 @@ dd::task<bool> Api::banChatSenderChat(int_or_str chatId, std::int64_t senderChat
   body.arg("chat_id", chatId);
   body.arg("sender_chat_id", senderChatId);
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1122,7 +1126,7 @@ dd::task<bool> Api::unbanChatSenderChat(int_or_str chatId, std::int64_t senderCh
   body.arg("chat_id", chatId);
   body.arg("sender_chat_id", senderChatId);
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1135,7 +1139,7 @@ dd::task<bool> Api::setChatPermissions(int_or_str chatId, ChatPermissions::Ptr p
   if (useIndependentChatPermissions)
     body.arg("use_independent_chat_permissions", useIndependentChatPermissions);
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1144,7 +1148,7 @@ dd::task<std::string> Api::exportChatInviteLink(int_or_str chatId) const {
 
   body.arg("chat_id", chatId);
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get("", "");
 }
 
@@ -1162,7 +1166,7 @@ dd::task<ChatInviteLink::Ptr> Api::createChatInviteLink(int_or_str chatId, std::
     body.arg("member_limit", memberLimit);
   if (createsJoinRequest)
     body.arg("createsJoinRequest", createsJoinRequest);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetChatInviteLink(json);
 }
 
@@ -1183,7 +1187,7 @@ dd::task<ChatInviteLink::Ptr> Api::editChatInviteLink(int_or_str chatId, const s
   if (createsJoinRequest)
     body.arg("createsJoinRequest", createsJoinRequest);
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetChatInviteLink(json);
 }
 
@@ -1194,7 +1198,7 @@ dd::task<ChatInviteLink::Ptr> Api::revokeChatInviteLink(int_or_str chatId,
   body.arg("chat_id", chatId);
   body.arg("invite_link", inviteLink);
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetChatInviteLink(json);
 }
 
@@ -1204,7 +1208,7 @@ dd::task<bool> Api::approveChatJoinRequest(int_or_str chatId, std::int64_t userI
   body.arg("chat_id", chatId);
   body.arg("user_id", userId);
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1214,7 +1218,7 @@ dd::task<bool> Api::declineChatJoinRequest(int_or_str chatId, std::int64_t userI
   body.arg("chat_id", chatId);
   body.arg("user_id", userId);
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1224,7 +1228,7 @@ dd::task<bool> Api::setChatPhoto(int_or_str chatId, const InputFile::Ptr photo) 
   body.arg("chat_id", chatId);
   body.file_arg("photo", photo->fileName, photo->mimeType, photo->data);
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1232,7 +1236,7 @@ dd::task<bool> Api::deleteChatPhoto(int_or_str chatId) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1241,7 +1245,7 @@ dd::task<bool> Api::setChatTitle(int_or_str chatId, const std::string &title) co
 
   body.arg("chat_id", chatId);
   body.arg("title", title);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1251,7 +1255,7 @@ dd::task<bool> Api::setChatDescription(int_or_str chatId, const std::string &des
   body.arg("chat_id", chatId);
   if (!description.empty())
     body.arg("description", description);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1263,7 +1267,7 @@ dd::task<bool> Api::pinChatMessage(int_or_str chatId, std::int32_t messageId,
   body.arg("message_id", messageId);
   if (disableNotification)
     body.arg("disable_notification", disableNotification);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1273,7 +1277,7 @@ dd::task<bool> Api::unpinChatMessage(int_or_str chatId, std::int32_t messageId) 
   body.arg("chat_id", chatId);
   if (messageId != 0)
     body.arg("message_id", messageId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1281,7 +1285,7 @@ dd::task<bool> Api::unpinAllChatMessages(int_or_str chatId) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1289,7 +1293,7 @@ dd::task<bool> Api::leaveChat(int_or_str chatId) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1297,7 +1301,7 @@ dd::task<Chat::Ptr> Api::getChat(int_or_str chatId) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetChat(json);
 }
 
@@ -1305,7 +1309,7 @@ dd::task<std::vector<ChatMember::Ptr>> Api::getChatAdministrators(int_or_str cha
   default_body_t body;
 
   body.arg("chat_id", chatId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetArray<ChatMember>(&TgTypeParser::parseJsonAndGetChatMember, json);
 }
 
@@ -1313,7 +1317,7 @@ dd::task<int32_t> Api::getChatMemberCount(int_or_str chatId) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<int32_t>("", 0);
 }
 
@@ -1322,7 +1326,7 @@ dd::task<ChatMember::Ptr> Api::getChatMember(int_or_str chatId, std::int64_t use
 
   body.arg("chat_id", chatId);
   body.arg("user_id", userId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetChatMember(json);
 }
 
@@ -1331,7 +1335,7 @@ dd::task<bool> Api::setChatStickerSet(int_or_str chatId, const std::string &stic
 
   body.arg("chat_id", chatId);
   body.arg("sticker_set_name	", stickerSetName);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1339,12 +1343,12 @@ dd::task<bool> Api::deleteChatStickerSet(int_or_str chatId) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
 dd::task<std::vector<Sticker::Ptr>> Api::getForumTopicIconStickers() const {
-  boost::property_tree::ptree json = co_await sendRequest(http_request{get_url($METHOD)});
+  boost::property_tree::ptree json = $GET_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetArray<Sticker>(&TgTypeParser::parseJsonAndGetSticker, json);
 }
 
@@ -1359,7 +1363,7 @@ dd::task<ForumTopic::Ptr> Api::createForumTopic(int_or_str chatId, const std::st
     body.arg("icon_color", iconColor);
   if (!iconCustomEmojiId.empty())
     body.arg("icon_custom_emoji_id", iconCustomEmojiId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetForumTopic(json);
 }
 
@@ -1373,7 +1377,7 @@ dd::task<bool> Api::editForumTopic(int_or_str chatId, std::int32_t messageThread
     body.arg("name", name);
   if (!is_empty_chatid(iconCustomEmojiId))
     body.arg("icon_custom_emoji_id", iconCustomEmojiId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1382,7 +1386,7 @@ dd::task<bool> Api::closeForumTopic(int_or_str chatId, std::int32_t messageThrea
 
   body.arg("chat_id", chatId);
   body.arg("message_thread_id", messageThreadId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1391,7 +1395,7 @@ dd::task<bool> Api::reopenForumTopic(int_or_str chatId, std::int32_t messageThre
 
   body.arg("chat_id", chatId);
   body.arg("message_thread_id", messageThreadId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1400,7 +1404,7 @@ dd::task<bool> Api::deleteForumTopic(int_or_str chatId, std::int32_t messageThre
 
   body.arg("chat_id", chatId);
   body.arg("message_thread_id", messageThreadId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1409,7 +1413,7 @@ dd::task<bool> Api::unpinAllForumTopicMessages(int_or_str chatId, std::int32_t m
 
   body.arg("chat_id", chatId);
   body.arg("message_thread_id", messageThreadId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1418,7 +1422,7 @@ dd::task<bool> Api::editGeneralForumTopic(int_or_str chatId, std::string name) c
 
   body.arg("chat_id", chatId);
   body.arg("name", name);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1426,7 +1430,7 @@ dd::task<bool> Api::closeGeneralForumTopic(int_or_str chatId) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1434,7 +1438,7 @@ dd::task<bool> Api::reopenGeneralForumTopic(int_or_str chatId) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1442,7 +1446,7 @@ dd::task<bool> Api::hideGeneralForumTopic(int_or_str chatId) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1450,7 +1454,7 @@ dd::task<bool> Api::unhideGeneralForumTopic(int_or_str chatId) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1458,7 +1462,7 @@ dd::task<bool> Api::unpinAllGeneralForumTopicMessages(int_or_str chatId) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1476,7 +1480,7 @@ dd::task<bool> Api::answerCallbackQuery(const std::string &callbackQueryId, cons
     body.arg("url", url);
   if (cacheTime)
     body.arg("cache_time", cacheTime);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1485,7 +1489,7 @@ dd::task<UserChatBoosts::Ptr> Api::getUserChatBoosts(int_or_str chatId, std::int
 
   body.arg("chat_id", chatId);
   body.arg("user_id", userId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetUserChatBoosts(json);
 }
 
@@ -1493,7 +1497,7 @@ dd::task<BusinessConnection::Ptr> Api::getBusinessConnection(const std::string &
   default_body_t body;
 
   body.arg("business_connection_id", businessConnectionId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetBusinessConnection(json);
 }
 
@@ -1506,7 +1510,7 @@ dd::task<bool> Api::setMyCommands(const std::vector<BotCommand::Ptr> &commands, 
     body.arg("scope", _tgTypeParser.parseBotCommandScope(scope));
   if (!languageCode.empty())
     body.arg("language_code", languageCode);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1517,7 +1521,7 @@ dd::task<bool> Api::deleteMyCommands(BotCommandScope::Ptr scope, const std::stri
     body.arg("scope", _tgTypeParser.parseBotCommandScope(scope));
   if (!languageCode.empty())
     body.arg("language_code", languageCode);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1529,7 +1533,7 @@ dd::task<std::vector<BotCommand::Ptr>> Api::getMyCommands(BotCommandScope::Ptr s
     body.arg("scope", _tgTypeParser.parseBotCommandScope(scope));
   if (!languageCode.empty())
     body.arg("language_code", languageCode);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetArray<BotCommand>(&TgTypeParser::parseJsonAndGetBotCommand, json);
 }
 
@@ -1540,7 +1544,7 @@ dd::task<bool> Api::setMyName(const std::string &name, const std::string &langua
     body.arg("name", name);
   if (!languageCode.empty())
     body.arg("language_code", languageCode);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1549,7 +1553,7 @@ dd::task<BotName::Ptr> Api::getMyName(const std::string &languageCode) const {
 
   if (!languageCode.empty())
     body.arg("language_code", languageCode);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetBotName(json);
 }
 
@@ -1560,7 +1564,7 @@ dd::task<bool> Api::setMyDescription(const std::string &description, const std::
     body.arg("description", description);
   if (!languageCode.empty())
     body.arg("language_code", languageCode);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1569,7 +1573,7 @@ dd::task<BotDescription::Ptr> Api::getMyDescription(const std::string &languageC
 
   if (!languageCode.empty())
     body.arg("language_code", languageCode);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetBotDescription(json);
 }
 
@@ -1581,7 +1585,7 @@ dd::task<bool> Api::setMyShortDescription(const std::string &shortDescription,
     body.arg("short_description", shortDescription);
   if (!languageCode.empty())
     body.arg("language_code", languageCode);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1590,7 +1594,7 @@ dd::task<BotShortDescription::Ptr> Api::getMyShortDescription(const std::string 
 
   if (!languageCode.empty())
     body.arg("language_code", languageCode);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetBotShortDescription(json);
 }
 
@@ -1601,7 +1605,7 @@ dd::task<bool> Api::setChatMenuButton(std::int64_t chatId, MenuButton::Ptr menuB
     body.arg("chat_id", chatId);
   if (menuButton)
     body.arg("menu_button", _tgTypeParser.parseMenuButton(menuButton));
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1610,7 +1614,7 @@ dd::task<MenuButton::Ptr> Api::getChatMenuButton(std::int64_t chatId) const {
 
   if (chatId != 0)
     body.arg("chat_id", chatId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetMenuButton(json);
 }
 
@@ -1622,7 +1626,7 @@ dd::task<bool> Api::setMyDefaultAdministratorRights(ChatAdministratorRights::Ptr
     body.arg("rights", _tgTypeParser.parseChatAdministratorRights(rights));
   if (forChannels)
     body.arg("for_channels", forChannels);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1631,7 +1635,7 @@ dd::task<ChatAdministratorRights::Ptr> Api::getMyDefaultAdministratorRights(bool
 
   if (forChannels)
     body.arg("for_channels", forChannels);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetChatAdministratorRights(json);
 }
 
@@ -1661,7 +1665,7 @@ dd::task<Message::Ptr> Api::editMessageText(const std::string &text, int_or_str 
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseInlineKeyboardMarkup(replyMarkup));
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   if (!json.get_child_optional("message_id"))
     co_return nullptr;
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
@@ -1689,7 +1693,7 @@ dd::task<Message::Ptr> Api::editMessageCaption(int_or_str chatId, std::int32_t m
   }
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   if (!json.get_child_optional("message_id"))
     co_return nullptr;
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
@@ -1710,7 +1714,7 @@ dd::task<Message::Ptr> Api::editMessageMedia(InputMedia::Ptr media, int_or_str c
     body.arg("inline_message_id", inlineMessageId);
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   if (!json.get_child_optional("message_id"))
     co_return nullptr;
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
@@ -1730,7 +1734,7 @@ dd::task<Message::Ptr> Api::editMessageReplyMarkup(int_or_str chatId, std::int32
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
 
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   if (!json.get_child_optional("message_id"))
     co_return nullptr;
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
@@ -1744,7 +1748,7 @@ dd::task<Poll::Ptr> Api::stopPoll(int_or_str chatId, std::int64_t messageId,
   body.arg("message_id", messageId);
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetPoll(json);
 }
 
@@ -1753,7 +1757,7 @@ dd::task<bool> Api::deleteMessage(int_or_str chatId, std::int32_t messageId) con
 
   body.arg("chat_id", chatId);
   body.arg("message_id", messageId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1763,7 +1767,7 @@ dd::task<bool> Api::deleteMessages(int_or_str chatId, const std::vector<std::int
   body.arg("chat_id", chatId);
   if (!messageIds.empty())
     body.arg("message_ids", messageIds);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1797,12 +1801,12 @@ dd::task<Message::Ptr> Api::sendSticker(int_or_str chatId, thumbnail_t sticker,
     assert(*file);
     body.file_arg("sticker", file->get()->fileName, file->get()->mimeType, file->get()->data);
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   } else {
     default_body_t body;
     body.arg("sticker", std::get<std::string>(sticker));
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   }
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
@@ -1811,7 +1815,7 @@ dd::task<StickerSet::Ptr> Api::getStickerSet(const std::string &name) const {
   default_body_t body;
 
   body.arg("name", name);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetStickerSet(json);
 }
 
@@ -1820,7 +1824,7 @@ dd::task<std::vector<Sticker::Ptr>> Api::getCustomEmojiStickers(
   default_body_t body;
   // TODO check vector of strings correctly escapes in json
   body.arg("custom_emoji_ids", customEmojiIds);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetArray<Sticker>(&TgTypeParser::parseJsonAndGetSticker, json);
 }
 
@@ -1831,7 +1835,7 @@ dd::task<File::Ptr> Api::uploadStickerFile(std::int64_t userId, InputFile::Ptr s
   body.arg("user_id", userId);
   body.file_arg("sticker", sticker->fileName, sticker->mimeType, sticker->data);
   body.arg("sticker_format", stickerFormat);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetFile(json);
 }
 
@@ -1858,7 +1862,7 @@ dd::task<bool> Api::createNewStickerSet(std::int64_t userId, const std::string &
   }
   if (needsRepainting)
     body.arg("needs_repainting", needsRepainting);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1869,7 +1873,7 @@ dd::task<bool> Api::addStickerToSet(std::int64_t userId, const std::string &name
   body.arg("user_id", userId);
   body.arg("name", name);
   body.arg("sticker", _tgTypeParser.parseInputSticker(sticker));
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1878,7 +1882,7 @@ dd::task<bool> Api::setStickerPositionInSet(const std::string &sticker, std::int
 
   body.arg("sticker", sticker);
   body.arg("position", position);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1886,7 +1890,7 @@ dd::task<bool> Api::deleteStickerFromSet(const std::string &sticker) const {
   default_body_t body;
 
   body.arg("sticker", sticker);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1898,7 +1902,7 @@ dd::task<bool> Api::replaceStickerInSet(std::int64_t userId, const std::string &
   body.arg("name", name);
   body.arg("old_sticker", oldSticker);
   body.arg("sticker", _tgTypeParser.parseInputSticker(sticker));
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1908,7 +1912,7 @@ dd::task<bool> Api::setStickerEmojiList(const std::string &sticker,
 
   body.arg("sticker", sticker);
   body.arg("emoji_list", emojiList);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1919,7 +1923,7 @@ dd::task<bool> Api::setStickerKeywords(const std::string &sticker,
   body.arg("sticker", sticker);
   if (!keywords.empty())
     body.arg("keywords", keywords);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1929,7 +1933,7 @@ dd::task<bool> Api::setStickerMaskPosition(const std::string &sticker, MaskPosit
   body.arg("sticker", sticker);
   if (maskPosition)
     body.arg("mask_position", _tgTypeParser.parseMaskPosition(maskPosition));
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1938,7 +1942,7 @@ dd::task<bool> Api::setStickerSetTitle(const std::string &name, const std::strin
 
   body.arg("name", name);
   body.arg("title", title);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1957,12 +1961,12 @@ dd::task<bool> Api::setStickerSetThumbnail(const std::string &name, std::int64_t
     if (auto &file_ptr = *file)
       body.file_arg("thumbnail", file_ptr->fileName, file_ptr->mimeType, file_ptr->data);
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   } else {
     default_body_t body;
     body.arg("thumbnail", std::get<std::string>(thumbnail));
     fillbody(body);
-    json = co_await sendRequest({get_url($METHOD), std::move(body)});
+    json = $POST_REQUEST;
   }
   co_return json.get<bool>("", false);
 }
@@ -1974,7 +1978,7 @@ dd::task<bool> Api::setCustomEmojiStickerSetThumbnail(const std::string &name,
   body.arg("name", name);
   if (!customEmojiId.empty())
     body.arg("custom_emoji_id", customEmojiId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -1982,7 +1986,7 @@ dd::task<bool> Api::deleteStickerSet(const std::string &name) const {
   default_body_t body;
 
   body.arg("name", name);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -2003,7 +2007,7 @@ dd::task<bool> Api::answerInlineQuery(const std::string &inlineQueryId,
     body.arg("next_offset", nextOffset);
   if (button)
     body.arg("button", _tgTypeParser.parseInlineQueryResultsButton(button));
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -2013,7 +2017,7 @@ dd::task<SentWebAppMessage::Ptr> Api::answerWebAppQuery(const std::string &webAp
 
   body.arg("web_app_query_id", webAppQueryId);
   body.arg("result", _tgTypeParser.parseInlineQueryResult(result));
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetSentWebAppMessage(json);
 }
 
@@ -2076,7 +2080,7 @@ dd::task<Message::Ptr> Api::sendInvoice(
     body.arg("reply_parameters", _tgTypeParser.parseReplyParameters(replyParameters));
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 
@@ -2123,7 +2127,7 @@ dd::task<std::string> Api::createInvoiceLink(
     body.arg("send_email_to_provider", sendEmailToProvider);
   if (isFlexible)
     body.arg("is_flexible", isFlexible);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<std::string>("", "");
 }
 
@@ -2140,7 +2144,7 @@ dd::task<bool> Api::answerShippingQuery(const std::string &shippingQueryId, bool
   }
   if (!errorMessage.empty())
     body.arg("error_message", errorMessage);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -2152,7 +2156,7 @@ dd::task<bool> Api::answerPreCheckoutQuery(const std::string &preCheckoutQueryId
   body.arg("ok", ok);
   if (!errorMessage.empty())
     body.arg("error_message", errorMessage);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -2163,7 +2167,7 @@ dd::task<bool> Api::setPassportDataErrors(std::int64_t userId,
   body.arg("user_id", userId);
   body.arg("errors",
            _tgTypeParser.parseArray<PassportElementError>(&TgTypeParser::parsePassportElementError, errors));
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return json.get<bool>("", false);
 }
 
@@ -2188,7 +2192,7 @@ dd::task<Message::Ptr> Api::sendGame(std::int64_t chatId, const std::string &gam
     body.arg("reply_parameters", _tgTypeParser.parseReplyParameters(replyParameters));
   if (replyMarkup)
     body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 
@@ -2209,7 +2213,7 @@ dd::task<Message::Ptr> Api::setGameScore(std::int64_t userId, std::int32_t score
     body.arg("message_id", messageId);
   if (!inlineMessageId.empty())
     body.arg("inline_message_id", inlineMessageId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 
@@ -2225,7 +2229,7 @@ dd::task<std::vector<GameHighScore::Ptr>> Api::getGameHighScores(std::int64_t us
     body.arg("message_id", messageId);
   if (!inlineMessageId.empty())
     body.arg("inline_message_id", inlineMessageId);
-  boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+  boost::property_tree::ptree json = $POST_REQUEST;
   co_return _tgTypeParser.parseJsonAndGetArray<GameHighScore>(&TgTypeParser::parseJsonAndGetGameHighScore,
                                                               json);
 }
@@ -2237,7 +2241,7 @@ dd::task<std::vector<GameHighScore::Ptr>> Api::getGameHighScores(std::int64_t us
 //     body.arg("offset", offset);
 //   if (limit != 100)
 //     body.arg("limit", limit);
-//   boost::property_tree::ptree json = co_await sendRequest({get_url($METHOD), std::move(body)});
+//   boost::property_tree::ptree json = $POST_REQUEST;
 //   // TODO better _tgTypeParser
 //   co_return
 //   _tgTypeParser.parseJsonAndGetArray<StarTransaction>(&TgTypeParser::parseJsonAndGetStarTransaction,
@@ -2249,9 +2253,9 @@ dd::task<std::vector<GameHighScore::Ptr>> Api::getGameHighScores(std::int64_t us
 // TODO understand why 'args' presented?? Что туда блин передавать то можно?
 dd::task<std::string> Api::downloadFile(const std::string &filePath) {
   std::string path = fmt::format("/file/bot{}/{}", get_token(), filePath);
-  tg_url_view v{.host = _url, .path = path, .method = filePath};
+  tg_url_view v{.host = _host, .path = path, .method = filePath};
   // TODO нужно возвращать вектор байт, очевидно стринга не подходит
-  http_response rsp = co_await _httpClient.makeRequest(http_request(v));
+  http_response rsp = co_await _httpClient.send_request(http_request(v), duration_t::max());
   co_return std::move(rsp.body);
 }
 
@@ -2265,46 +2269,31 @@ dd::task<bool> Api::blockedByUser(std::int64_t chatId) const {
   }
 }
 
-dd::task<boost::property_tree::ptree> Api::sendRequest(http_request request) const {
-  int requestRetryBackoff = _httpClient.getRequestBackoff();
-  int retries = 0;
-  for (;;) {
-    try {
-      // TODO parse http response
-      std::string serverResponse = (co_await _httpClient.makeRequest(std::move(request))).body;
-      if (serverResponse.starts_with(
-              "<html>"))  // TODO проверить работоспособность этой ветки с неправильным токеном
-        throw TGBM_TG_EXCEPTION(tg_errc::HtmlResponse,
-                                "TGBM library have got html page instead of json response. "
-                                "Maybe you entered wrong bot token.");
+dd::task<boost::property_tree::ptree> Api::sendRequest(http_request request, duration_t timeout) const {
+  // TODO parse http response
+  http_response response = co_await _httpClient.send_request(std::move(request), timeout);
+  if (response.body.starts_with(
+          "<html>"))  // TODO проверить работоспособность этой ветки с неправильным токеном
+    throw TGBM_TG_EXCEPTION(tg_errc::HtmlResponse,
+                            "TGBM library have got html page instead of json response. "
+                            "Maybe you entered wrong bot token or incorrect host");
 
-      boost::property_tree::ptree result;
-      try {
-        result = _tgTypeParser.parseJson(serverResponse);
-      } catch (boost::property_tree::ptree_error &e) {
-        throw TGBM_TG_EXCEPTION(tg_errc::InvalidJson, "TGBM library can't parse json response. {}", e.what());
-      }
-
-      if (!result.get<bool>("ok", false))
-        throw TGBM_TG_EXCEPTION(tg_errc(result.get<size_t>("error_code", 0u)), "{}",
-                                result.get("description", ""));
-      // TODO тоже копирование мда
-      co_return result.get_child("result");
-    } catch (std::exception &e) {
-      LOG_ERR("[send request] thrown exception: {}", e.what());
-      int max_retries = _httpClient.getRequestMaxRetries();
-      if ((max_retries >= 0) && (retries == max_retries)) {
-        throw;
-      } else {
-        // TODO remove wtf (or smth like...)
-        std::this_thread::sleep_for(std::chrono::seconds(requestRetryBackoff));
-        retries++;
-        continue;
-      }
-    }
+  boost::property_tree::ptree result;
+  try {
+    result = _tgTypeParser.parseJson(response.body);
+  } catch (boost::property_tree::ptree_error &e) {
+    throw TGBM_TG_EXCEPTION(tg_errc::InvalidJson, "TGBM library can't parse json response. {}", e.what());
   }
+
+  if (!result.get<bool>("ok", false))
+    throw TGBM_TG_EXCEPTION(tg_errc(result.get<size_t>("error_code", 0u)), "{}",
+                            result.get("description", ""));
+  // TODO тоже копирование мда
+  co_return result.get_child("result");
 }
 
 }  // namespace tgbm
 
 #undef $METHOD
+#undef $POST_REQUEST
+#undef $GET_REQUEST
