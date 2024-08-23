@@ -1,0 +1,95 @@
+#pragma once
+#include "tgbm/api_types/common.h"
+
+namespace tgbm::api {
+struct Message {
+  Integer message_id;
+  Integer message_thread_id;
+  User from;
+  Chat sender_chat;
+  Integer sender_boost_count;
+  User sender_business_bot;
+  Integer date;
+  String business_connection_id;
+  Chat chat;
+  MessageOrigin forward_origin;
+  Message reply_to_message;
+  ExternalReplyInfo external_reply;
+  TextQuote quote;
+  Story reply_to_story;
+  User via_bot;
+  Integer edit_date;
+  String media_group_id;
+  String author_signature;
+  String text;
+  arrayof<MessageEntity> entities;
+  String effect_id;
+  Animation animation;
+  Audio audio;
+  Document document;
+  PaidMediaInfo paid_media_info;
+  arrayof<PhotoSize> photo_size;
+  Sticker sticker;
+  Story story;
+  Video video;
+  VideoNote video_note;
+  Voice voice;
+  arrayof<String> caption;
+  arrayof<MessageEntity> caption_entities;
+  Contact contact;
+  Dice dice;
+  Game game;
+  Poll poll;
+  Venue venue;
+  Location location;
+  arrayof<User> new_chat_members;
+  User left_chat_member;
+  String new_chat_title;
+  arrayof<PhotoSize> new_chat_photo;
+  MessageAutoDeleteTimerChanged message_auto_delete_timer_changed;
+  Integer migrate_to_chat_id;
+  Integer migrate_from_chat_id;
+  MaybeInaccessibleMessage pinned_message;
+  Invoice invoice;
+  SuccessfulPayment successful_payment;
+  RefundedPayment refunded_payment;
+  UsersShared users_shared;
+  ChatShared chat_shared;
+  String connected_website;
+  WriteAccessAllowed write_access_allowed;
+  PassportData passport_data;
+  ProximityAlertTriggered proximity_alert_triggered;
+  ChatBoostAdded box;
+  ChatBackground chat_background_set;
+  ForumTopicCreated forum_topic_created;
+  ForumTopicEdited forum_topic_edited;
+  ForumTopicClosed forum_topic_closed;
+  ForumTopicReopened forum_topic_reopened;
+  GeneralForumTopicHidden general_forum_topic_hidden;
+  GeneralForumTopicUnhidden general_forum_topic_unhidden;
+  GiveawayCreated giveaway_created;
+  Giveaway giveaway;
+  GiveawayWinners giveaway_winners;
+  GiveawayCompleted giveaway_completed;
+  VideoChatScheduled video_chat_scheduled;
+  VideoChatStarted video_chat_started;
+  VideoChatEnded video_chat_ended;
+  VideoChatParticipantsInvited video_chat_participants_invited;
+  WebAppData web_app_data;
+  InlineKeyboardMarkup reply_markup;
+  optional<True> is_topic_message;
+  optional<True> is_automatic_forward;
+  optional<True> has_protected_content;
+  optional<True> is_from_offline;
+  optional<True> show_caption_above_media;
+  optional<True> has_media_spoiler;
+  optional<True> delete_chat_photo;
+  optional<True> group_chat_created;
+  optional<True> supergroup_chat_created;
+  optional<True> channel_chat_created;
+
+  static consteval bool is_optional_field(std::string_view name) {
+    return utils::string_switch<bool>(name).or_default(false);
+  }
+};
+}  // namespace tgbm::api

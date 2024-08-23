@@ -1,0 +1,135 @@
+
+#ifndef FIELD
+#define FIELD(Type, Name)
+#endif
+
+#ifndef INTEGER
+#define INTEGER(Name) FIELD(Integer, Name)
+#endif
+
+#ifndef BOOLEAN
+#define BOOLEAN(Name) FIELD(Boolean, Name)
+#endif
+
+#ifndef TRUE_FIELD
+#define TRUE_FIELD(Name) FIELD(True, Name)
+#endif
+
+#ifndef STRING
+#define STRING(Name) FIELD(String, Name)
+#endif
+
+#ifndef ARRAYOF
+#define ARRAYOF(Type, Name) FIELD(arrayof<Type>, Name)
+#endif
+
+// #define OPTIONAL(TYPEMACRO, ...) TYPEMACRO(__VA_ARGS__)
+// #define MANDATORY(TYPEMACRO, ...) TYPEMACRO(__VA_ARGS__)
+#ifndef OPTIONAL
+#define OPTIONAL(...)
+#endif
+
+#ifndef MANDATORY
+#define MANDATORY(...)
+#endif
+
+#ifndef API_TYPE
+#define API_TYPE(...)
+#endif
+
+API_TYPE(Message)
+
+MANDATORY(INTEGER, message_id)
+OPTIONAL(INTEGER, message_thread_id)
+OPTIONAL(FIELD, User, from)
+OPTIONAL(FIELD, Chat, sender_chat)
+OPTIONAL(INTEGER, sender_boost_count)
+OPTIONAL(FIELD, User, sender_business_bot)
+OPTIONAL(INTEGER, date)
+OPTIONAL(STRING, business_connection_id)
+OPTIONAL(FIELD, Chat, chat)
+OPTIONAL(FIELD, MessageOrigin, forward_origin)
+OPTIONAL(TRUE_FIELD, is_topic_message)
+OPTIONAL(TRUE_FIELD, is_automatic_forward)
+OPTIONAL(FIELD, Message, reply_to_message)
+OPTIONAL(FIELD, ExternalReplyInfo, external_reply)
+OPTIONAL(FIELD, TextQuote, quote)
+OPTIONAL(FIELD, Story, reply_to_story)
+OPTIONAL(FIELD, User, via_bot)
+OPTIONAL(INTEGER, edit_date)
+OPTIONAL(TRUE_FIELD, has_protected_content)
+OPTIONAL(TRUE_FIELD, is_from_offline)
+OPTIONAL(STRING, media_group_id)
+OPTIONAL(STRING, author_signature)
+OPTIONAL(STRING, text)
+OPTIONAL(ARRAYOF, MessageEntity, entities)
+OPTIONAL(STRING, effect_id)
+OPTIONAL(FIELD, Animation, animation)
+OPTIONAL(FIELD, Audio, audio)
+OPTIONAL(FIELD, Document, document)
+OPTIONAL(FIELD, PaidMediaInfo, paid_media_info)
+OPTIONAL(ARRAYOF, PhotoSize, photo_size)
+OPTIONAL(FIELD, Sticker, sticker)
+OPTIONAL(FIELD, Story, story)
+OPTIONAL(FIELD, Video, video)
+OPTIONAL(FIELD, VideoNote, video_note)
+OPTIONAL(FIELD, Voice, voice)
+OPTIONAL(ARRAYOF, String, caption)
+OPTIONAL(ARRAYOF, MessageEntity, caption_entities)
+OPTIONAL(TRUE_FIELD, show_caption_above_media)
+OPTIONAL(TRUE_FIELD, has_media_spoiler)
+OPTIONAL(FIELD, Contact, contact)
+OPTIONAL(FIELD, Dice, dice)
+OPTIONAL(FIELD, Game, game)
+OPTIONAL(FIELD, Poll, poll)
+OPTIONAL(FIELD, Venue, venue)
+OPTIONAL(FIELD, Location, location)
+OPTIONAL(ARRAYOF, User, new_chat_members)
+OPTIONAL(FIELD, User, left_chat_member)
+OPTIONAL(STRING, new_chat_title)
+OPTIONAL(ARRAYOF, PhotoSize, new_chat_photo)
+OPTIONAL(TRUE_FIELD, delete_chat_photo)
+OPTIONAL(TRUE_FIELD, group_chat_created)
+OPTIONAL(TRUE_FIELD, supergroup_chat_created)
+OPTIONAL(TRUE_FIELD, channel_chat_created)
+OPTIONAL(FIELD, MessageAutoDeleteTimerChanged, message_auto_delete_timer_changed)
+OPTIONAL(INTEGER, migrate_to_chat_id)
+OPTIONAL(INTEGER, migrate_from_chat_id)
+OPTIONAL(FIELD, MaybeInaccessibleMessage, pinned_message)
+OPTIONAL(FIELD, Invoice, invoice)
+OPTIONAL(FIELD, SuccessfulPayment, successful_payment)
+OPTIONAL(FIELD, RefundedPayment, refunded_payment)
+OPTIONAL(FIELD, UsersShared, users_shared)
+OPTIONAL(FIELD, ChatShared, chat_shared)
+OPTIONAL(STRING, connected_website)
+OPTIONAL(FIELD, WriteAccessAllowed, write_access_allowed)
+OPTIONAL(FIELD, PassportData, passport_data)
+OPTIONAL(FIELD, ProximityAlertTriggered, proximity_alert_triggered)
+OPTIONAL(FIELD, ChatBoostAdded, box)
+OPTIONAL(FIELD, ChatBackground, chat_background_set)
+OPTIONAL(FIELD, ForumTopicCreated, forum_topic_created)
+OPTIONAL(FIELD, ForumTopicEdited, forum_topic_edited)
+OPTIONAL(FIELD, ForumTopicClosed, forum_topic_closed)
+OPTIONAL(FIELD, ForumTopicReopened, forum_topic_reopened)
+OPTIONAL(FIELD, GeneralForumTopicHidden, general_forum_topic_hidden)
+OPTIONAL(FIELD, GeneralForumTopicUnhidden, general_forum_topic_unhidden)
+OPTIONAL(FIELD, GiveawayCreated, giveaway_created)
+OPTIONAL(FIELD, Giveaway, giveaway)
+OPTIONAL(FIELD, GiveawayWinners, giveaway_winners)
+OPTIONAL(FIELD, GiveawayCompleted, giveaway_completed)
+OPTIONAL(FIELD, VideoChatScheduled, video_chat_scheduled)
+OPTIONAL(FIELD, VideoChatStarted, video_chat_started)
+OPTIONAL(FIELD, VideoChatEnded, video_chat_ended)
+OPTIONAL(FIELD, VideoChatParticipantsInvited, video_chat_participants_invited)
+OPTIONAL(FIELD, WebAppData, web_app_data)
+OPTIONAL(FIELD, InlineKeyboardMarkup, reply_markup)
+
+#undef FIELD
+#undef INTEGER
+#undef BOOLEAN
+#undef TRUE_FIELD
+#undef STRING
+#undef ARRAYOF
+#undef OPTIONAL
+#undef MANDATORY
+#undef API_TYPE
