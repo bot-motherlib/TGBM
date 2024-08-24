@@ -1,0 +1,10 @@
+#undef FIELD
+#undef INTEGER
+#undef BOOLEAN
+#undef TRUE_FIELD
+#undef STRING
+#undef ARRAYOF
+#undef OPTIONAL
+#undef REQUIRED
+#undef API_TYPE
+#undef COMPOUND

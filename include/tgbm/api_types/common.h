@@ -1,4 +1,3 @@
-#ifndef TGBM_GENERATION_IN_PROCESS
 
 #include <string>
 #include <vector>
@@ -18,5 +17,3 @@ template <typename T>
 using optional = std::optional<T>;
 
 }  // namespace tgbm::api
-
-#endif

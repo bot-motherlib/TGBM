@@ -1,135 +1,260 @@
-
-#ifndef FIELD
-#define FIELD(Type, Name)
-#endif
-
-#ifndef INTEGER
-#define INTEGER(Name) FIELD(Integer, Name)
-#endif
-
-#ifndef BOOLEAN
-#define BOOLEAN(Name) FIELD(Boolean, Name)
-#endif
-
-#ifndef TRUE_FIELD
-#define TRUE_FIELD(Name) FIELD(True, Name)
-#endif
-
-#ifndef STRING
-#define STRING(Name) FIELD(String, Name)
-#endif
-
-#ifndef ARRAYOF
-#define ARRAYOF(Type, Name) FIELD(arrayof<Type>, Name)
-#endif
-
-// #define OPTIONAL(TYPEMACRO, ...) TYPEMACRO(__VA_ARGS__)
-// #define MANDATORY(TYPEMACRO, ...) TYPEMACRO(__VA_ARGS__)
-#ifndef OPTIONAL
-#define OPTIONAL(...)
-#endif
-
-#ifndef MANDATORY
-#define MANDATORY(...)
-#endif
-
-#ifndef API_TYPE
-#define API_TYPE(...)
-#endif
+#include "tgbm/api_types/def/generators/begin_file.h"
 
 API_TYPE(Message)
 
-MANDATORY(INTEGER, message_id)
-OPTIONAL(INTEGER, message_thread_id)
-OPTIONAL(FIELD, User, from)
-OPTIONAL(FIELD, Chat, sender_chat)
-OPTIONAL(INTEGER, sender_boost_count)
-OPTIONAL(FIELD, User, sender_business_bot)
-OPTIONAL(INTEGER, date)
-OPTIONAL(STRING, business_connection_id)
-OPTIONAL(FIELD, Chat, chat)
-OPTIONAL(FIELD, MessageOrigin, forward_origin)
-OPTIONAL(TRUE_FIELD, is_topic_message)
-OPTIONAL(TRUE_FIELD, is_automatic_forward)
-OPTIONAL(FIELD, Message, reply_to_message)
-OPTIONAL(FIELD, ExternalReplyInfo, external_reply)
-OPTIONAL(FIELD, TextQuote, quote)
-OPTIONAL(FIELD, Story, reply_to_story)
-OPTIONAL(FIELD, User, via_bot)
-OPTIONAL(INTEGER, edit_date)
-OPTIONAL(TRUE_FIELD, has_protected_content)
-OPTIONAL(TRUE_FIELD, is_from_offline)
-OPTIONAL(STRING, media_group_id)
-OPTIONAL(STRING, author_signature)
-OPTIONAL(STRING, text)
-OPTIONAL(ARRAYOF, MessageEntity, entities)
-OPTIONAL(STRING, effect_id)
-OPTIONAL(FIELD, Animation, animation)
-OPTIONAL(FIELD, Audio, audio)
-OPTIONAL(FIELD, Document, document)
-OPTIONAL(FIELD, PaidMediaInfo, paid_media_info)
-OPTIONAL(ARRAYOF, PhotoSize, photo_size)
-OPTIONAL(FIELD, Sticker, sticker)
-OPTIONAL(FIELD, Story, story)
-OPTIONAL(FIELD, Video, video)
-OPTIONAL(FIELD, VideoNote, video_note)
-OPTIONAL(FIELD, Voice, voice)
-OPTIONAL(ARRAYOF, String, caption)
-OPTIONAL(ARRAYOF, MessageEntity, caption_entities)
-OPTIONAL(TRUE_FIELD, show_caption_above_media)
-OPTIONAL(TRUE_FIELD, has_media_spoiler)
-OPTIONAL(FIELD, Contact, contact)
-OPTIONAL(FIELD, Dice, dice)
-OPTIONAL(FIELD, Game, game)
-OPTIONAL(FIELD, Poll, poll)
-OPTIONAL(FIELD, Venue, venue)
-OPTIONAL(FIELD, Location, location)
-OPTIONAL(ARRAYOF, User, new_chat_members)
-OPTIONAL(FIELD, User, left_chat_member)
-OPTIONAL(STRING, new_chat_title)
-OPTIONAL(ARRAYOF, PhotoSize, new_chat_photo)
-OPTIONAL(TRUE_FIELD, delete_chat_photo)
-OPTIONAL(TRUE_FIELD, group_chat_created)
-OPTIONAL(TRUE_FIELD, supergroup_chat_created)
-OPTIONAL(TRUE_FIELD, channel_chat_created)
-OPTIONAL(FIELD, MessageAutoDeleteTimerChanged, message_auto_delete_timer_changed)
-OPTIONAL(INTEGER, migrate_to_chat_id)
-OPTIONAL(INTEGER, migrate_from_chat_id)
-OPTIONAL(FIELD, MaybeInaccessibleMessage, pinned_message)
-OPTIONAL(FIELD, Invoice, invoice)
-OPTIONAL(FIELD, SuccessfulPayment, successful_payment)
-OPTIONAL(FIELD, RefundedPayment, refunded_payment)
-OPTIONAL(FIELD, UsersShared, users_shared)
-OPTIONAL(FIELD, ChatShared, chat_shared)
-OPTIONAL(STRING, connected_website)
-OPTIONAL(FIELD, WriteAccessAllowed, write_access_allowed)
-OPTIONAL(FIELD, PassportData, passport_data)
-OPTIONAL(FIELD, ProximityAlertTriggered, proximity_alert_triggered)
-OPTIONAL(FIELD, ChatBoostAdded, box)
-OPTIONAL(FIELD, ChatBackground, chat_background_set)
-OPTIONAL(FIELD, ForumTopicCreated, forum_topic_created)
-OPTIONAL(FIELD, ForumTopicEdited, forum_topic_edited)
-OPTIONAL(FIELD, ForumTopicClosed, forum_topic_closed)
-OPTIONAL(FIELD, ForumTopicReopened, forum_topic_reopened)
-OPTIONAL(FIELD, GeneralForumTopicHidden, general_forum_topic_hidden)
-OPTIONAL(FIELD, GeneralForumTopicUnhidden, general_forum_topic_unhidden)
-OPTIONAL(FIELD, GiveawayCreated, giveaway_created)
-OPTIONAL(FIELD, Giveaway, giveaway)
-OPTIONAL(FIELD, GiveawayWinners, giveaway_winners)
-OPTIONAL(FIELD, GiveawayCompleted, giveaway_completed)
-OPTIONAL(FIELD, VideoChatScheduled, video_chat_scheduled)
-OPTIONAL(FIELD, VideoChatStarted, video_chat_started)
-OPTIONAL(FIELD, VideoChatEnded, video_chat_ended)
-OPTIONAL(FIELD, VideoChatParticipantsInvited, video_chat_participants_invited)
-OPTIONAL(FIELD, WebAppData, web_app_data)
-OPTIONAL(FIELD, InlineKeyboardMarkup, reply_markup)
+// Unique message identifier inside this chat
+REQUIRED(INTEGER, message_id)
 
-#undef FIELD
-#undef INTEGER
-#undef BOOLEAN
-#undef TRUE_FIELD
-#undef STRING
-#undef ARRAYOF
-#undef OPTIONAL
-#undef MANDATORY
-#undef API_TYPE
+// Unique identifier of a message thread to which the message belongs; for supergroups only
+OPTIONAL(INTEGER, message_thread_id)
+
+// Sender of the message; may be empty for messages sent to channels. For backward compatibility, if the message was sent on behalf of a chat, the field contains a fake sender user in non-channel chats
+OPTIONAL(COMPOUND, User, from)
+
+// Sender of the message when sent on behalf of a chat. For example, the supergroup itself for messages sent by its anonymous administrators or a linked channel for messages automatically forwarded to the channel's discussion group. For backward compatibility, if the message was sent on behalf of a chat, the fieldfromcontains a fake sender user in non-channel chats.
+OPTIONAL(COMPOUND, Chat, sender_chat)
+
+// If the sender of the message boosted the chat, the number of boosts added by the user
+OPTIONAL(INTEGER, sender_boost_count)
+
+// The bot that actually sent the message on behalf of the business account. Available only for outgoing messages sent on behalf of the connected business account.
+OPTIONAL(COMPOUND, User, sender_business_bot)
+
+// Date the message was sent in Unix time. It is always a positive number, representing a valid date.
+REQUIRED(INTEGER, date)
+
+// Unique identifier of the business connection from which the message was received. If non-empty, the message belongs to a chat of the corresponding business account that is independent from any potential bot chat which might share the same identifier.
+OPTIONAL(STRING, business_connection_id)
+
+// Chat the message belongs to
+REQUIRED(COMPOUND, Chat, chat)
+
+// Information about the original message for forwarded messages
+OPTIONAL(COMPOUND, MessageOrigin, forward_origin)
+
+// rue, if the message is sent to a forum topic
+OPTIONAL(TRUE_FIELD, is_topic_message)
+
+// rue, if the message is a channel post that was automatically forwarded to the connected discussion group
+OPTIONAL(TRUE_FIELD, is_automatic_forward)
+
+// For replies in the same chat and message thread, the original message. Note that the Message object in this field will not contain furtherreply_to_messagefields even if it itself is a reply.
+OPTIONAL(COMPOUND, Message, reply_to_message)
+
+// Information about the message that is being replied to, which may come from another chat or forum topic
+OPTIONAL(COMPOUND, ExternalReplyInfo, external_reply)
+
+// For replies that quote part of the original message, the quoted part of the message
+OPTIONAL(COMPOUND, TextQuote, quote)
+
+// For replies to a story, the original story
+OPTIONAL(COMPOUND, Story, reply_to_story)
+
+// Bot through which the message was sent
+OPTIONAL(COMPOUND, User, via_bot)
+
+// Date the message was last edited in Unix time
+OPTIONAL(INTEGER, edit_date)
+
+// rue, if the message can't be forwarded
+OPTIONAL(TRUE_FIELD, has_protected_content)
+
+// True, if the message was sent by an implicit action, for example, as an away or a greeting business message, or as a scheduled message
+OPTIONAL(TRUE_FIELD, is_from_offline)
+
+// The unique identifier of a media message group this message belongs to
+OPTIONAL(STRING, media_group_id)
+
+// Signature of the post author for messages in channels, or the custom title of an anonymous group administrator
+OPTIONAL(STRING, author_signature)
+
+// For text messages, the actual UTF-8 text of the message
+OPTIONAL(STRING, text)
+
+// For text messages, special entities like usernames, URLs, bot commands, etc. that appear in the text
+OPTIONAL(ARRAYOF, COMPOUND, MessageEntity, entities)
+
+// Options used for link preview generation for the message, if it is a text message and link preview options were changed
+OPTIONAL(COMPOUND, LinkPreviewOptions, link_preview_options)
+
+// Unique identifier of the message effect added to the message
+OPTIONAL(STRING, effect_id)
+
+// Message is an animation, information about the animation. For backward compatibility, when this field is set, thedocumentfield will also be set
+OPTIONAL(COMPOUND, Animation, animation)
+
+// Message is an audio file, information about the file
+OPTIONAL(COMPOUND, Audio, audio)
+
+// Message is a general file, information about the file
+OPTIONAL(COMPOUND, Document, document)
+
+// Message contains paid media; information about the paid media
+OPTIONAL(COMPOUND, PaidMediaInfo, paid_media)
+
+// Message is a photo, available sizes of the photo
+OPTIONAL(ARRAYOF, COMPOUND, PhotoSize, photo)
+
+// Message is a sticker, information about the sticker
+OPTIONAL(COMPOUND, Sticker, sticker)
+
+// Message is a forwarded story
+OPTIONAL(COMPOUND, Story, story)
+
+// Message is a video, information about the video
+OPTIONAL(COMPOUND, Video, video)
+
+// Message is avideo note, information about the video message
+OPTIONAL(COMPOUND, VideoNote, video_note)
+
+// Message is a voice message, information about the file
+OPTIONAL(COMPOUND, Voice, voice)
+
+// Caption for the animation, audio, document, paid media, photo, video or voice
+OPTIONAL(STRING, caption)
+
+// For messages with a caption, special entities like usernames, URLs, bot commands, etc. that appear in the caption
+OPTIONAL(ARRAYOF, COMPOUND, MessageEntity, caption_entities)
+
+// True, if the caption must be shown above the message media
+OPTIONAL(TRUE_FIELD, show_caption_above_media)
+
+// rue, if the message media is covered by a spoiler animation
+OPTIONAL(TRUE_FIELD, has_media_spoiler)
+
+// Message is a shared contact, information about the contact
+OPTIONAL(COMPOUND, Contact, contact)
+
+// Message is a dice with random value
+OPTIONAL(COMPOUND, Dice, dice)
+
+// Message is a game, information about the game.More about games »
+OPTIONAL(COMPOUND, Game, game)
+
+// Message is a native poll, information about the poll
+OPTIONAL(COMPOUND, Poll, poll)
+
+// Message is a venue, information about the venue. For backward compatibility, when this field is set, thelocationfield will also be set
+OPTIONAL(COMPOUND, Venue, venue)
+
+// Message is a shared location, information about the location
+OPTIONAL(COMPOUND, Location, location)
+
+// New members that were added to the group or supergroup and information about them (the bot itself may be one of these members)
+OPTIONAL(ARRAYOF, COMPOUND, User, new_chat_members)
+
+// A member was removed from the group, information about them (this member may be the bot itself)
+OPTIONAL(COMPOUND, User, left_chat_member)
+
+// A chat title was changed to this value
+OPTIONAL(STRING, new_chat_title)
+
+// A chat photo was change to this value
+OPTIONAL(ARRAYOF, COMPOUND, PhotoSize, new_chat_photo)
+
+// Service message: the chat photo was deleted
+OPTIONAL(TRUE_FIELD, delete_chat_photo)
+
+// Service message: the group has been created
+OPTIONAL(TRUE_FIELD, group_chat_created)
+
+// Service message: the supergroup has been created. This field can't be received in a message coming through updates, because bot can't be a member of a supergroup when it is created. It can only be found in reply_to_message if someone replies to a very first message in a directly created supergroup.
+OPTIONAL(TRUE_FIELD, supergroup_chat_created)
+
+// Service message: the channel has been created. This field can't be received in a message coming through updates, because bot can't be a member of a channel when it is created. It can only be found in reply_to_message if someone replies to a very first message in a channel.
+OPTIONAL(TRUE_FIELD, channel_chat_created)
+
+// Service message: auto-delete timer settings changed in the chat
+OPTIONAL(COMPOUND, MessageAutoDeleteTimerChanged, message_auto_delete_timer_changed)
+
+// The group has been migrated to a supergroup with the specified identifier. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this identifier.
+OPTIONAL(INTEGER, migrate_to_chat_id)
+
+// The supergroup has been migrated from a group with the specified identifier. This number may have more than 32 significant bits and some programming languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit integer or double-precision float type are safe for storing this identifier.
+OPTIONAL(INTEGER, migrate_from_chat_id)
+
+// Specified message was pinned. Note that the Message object in this field will not contain furtherreply_to_messagefields even if it itself is a reply.
+OPTIONAL(COMPOUND, MaybeInaccessibleMessage, pinned_message)
+
+// Message is an invoice for apayment, information about the invoice.More about payments »
+OPTIONAL(COMPOUND, Invoice, invoice)
+
+// Message is a service message about a successful payment, information about the payment.More about payments »
+OPTIONAL(COMPOUND, SuccessfulPayment, successful_payment)
+
+// Message is a service message about a refunded payment, information about the payment.More about payments »
+OPTIONAL(COMPOUND, RefundedPayment, refunded_payment)
+
+// Service message: users were shared with the bot
+OPTIONAL(COMPOUND, UsersShared, users_shared)
+
+// Service message: a chat was shared with the bot
+OPTIONAL(COMPOUND, ChatShared, chat_shared)
+
+// The domain name of the website on which the user has logged in.More about Telegram Login »
+OPTIONAL(STRING, connected_website)
+
+// Service message: the user allowed the bot to write messages after adding it to the attachment or side menu, launching a Web App from a link, or accepting an explicit request from a Web App sent by the methodrequestWriteAccess
+OPTIONAL(COMPOUND, WriteAccessAllowed, write_access_allowed)
+
+// Telegram Passport data
+OPTIONAL(COMPOUND, PassportData, passport_data)
+
+// Service message. A user in the chat triggered another user's proximity alert while sharing Live Location.
+OPTIONAL(COMPOUND, ProximityAlertTriggered, proximity_alert_triggered)
+
+// Service message: user boosted the chat
+OPTIONAL(COMPOUND, ChatBoostAdded, boost_added)
+
+// Service message: chat background set
+OPTIONAL(COMPOUND, ChatBackground, chat_background_set)
+
+// Service message: forum topic created
+OPTIONAL(COMPOUND, ForumTopicCreated, forum_topic_created)
+
+// Service message: forum topic edited
+OPTIONAL(COMPOUND, ForumTopicEdited, forum_topic_edited)
+
+// Service message: forum topic closed
+OPTIONAL(COMPOUND, ForumTopicClosed, forum_topic_closed)
+
+// Service message: forum topic reopened
+OPTIONAL(COMPOUND, ForumTopicReopened, forum_topic_reopened)
+
+// Service message: the 'General' forum topic hidden
+OPTIONAL(COMPOUND, GeneralForumTopicHidden, general_forum_topic_hidden)
+
+// Service message: the 'General' forum topic unhidden
+OPTIONAL(COMPOUND, GeneralForumTopicUnhidden, general_forum_topic_unhidden)
+
+// Service message: a scheduled giveaway was created
+OPTIONAL(COMPOUND, GiveawayCreated, giveaway_created)
+
+// The message is a scheduled giveaway message
+OPTIONAL(COMPOUND, Giveaway, giveaway)
+
+// A giveaway with public winners was completed
+OPTIONAL(COMPOUND, GiveawayWinners, giveaway_winners)
+
+// Service message: a giveaway without public winners was completed
+OPTIONAL(COMPOUND, GiveawayCompleted, giveaway_completed)
+
+// Service message: video chat scheduled
+OPTIONAL(COMPOUND, VideoChatScheduled, video_chat_scheduled)
+
+// Service message: video chat started
+OPTIONAL(COMPOUND, VideoChatStarted, video_chat_started)
+
+// Service message: video chat ended
+OPTIONAL(COMPOUND, VideoChatEnded, video_chat_ended)
+
+// Service message: new participants invited to a video chat
+OPTIONAL(COMPOUND, VideoChatParticipantsInvited, video_chat_participants_invited)
+
+// Service message: data sent by a Web App
+OPTIONAL(COMPOUND, WebAppData, web_app_data)
+
+// Inline keyboard attached to the message.login_urlbuttons are represented as ordinaryurlbuttons.
+OPTIONAL(COMPOUND, InlineKeyboardMarkup, reply_markup)
+
+#include "tgbm/api_types/def/generators/end_file.h"

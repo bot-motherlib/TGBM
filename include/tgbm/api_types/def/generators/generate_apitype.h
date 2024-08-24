@@ -14,7 +14,7 @@ struct
 {
   // mandatory fields
 #define FIELD(Type, Name) Type Name;
-#define MANDATORY(TYPEMACRO, ...) TYPEMACRO(__VA_ARGS__)
+#define REQUIRED(TYPEMACRO, ...) TYPEMACRO(__VA_ARGS__)
 #include API_TYPE_PATH
 
 // optional fields

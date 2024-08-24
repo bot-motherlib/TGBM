@@ -5,9 +5,6 @@ cmake_minimum_required(VERSION 3.10)
 
 file(GLOB TGBM_API_TYPES_FILES "${CMAKE_CURRENT_SOURCE_DIR}/def/*.def")
 
-#add_custom_target(preprocess_api_types ALL
-#    COMMAND ${CMAKE_COMMAND} -E echo "Processing files in ${CMAKE_CURRENT_SOURCE_DIR}/def..."
-#)
 set(TGBM_INC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../..") # <project root>/include
 message(STATUS "INCLUDES ${TGBM_INC_DIR}")
 foreach(FILE IN LISTS TGBM_API_TYPES_FILES)
@@ -16,12 +13,11 @@ foreach(FILE IN LISTS TGBM_API_TYPES_FILES)
     message(STATUS "Handling ${FILE}")
     execute_process(
         COMMAND clang
-                ${CMAKE_CURRENT_SOURCE_DIR}/def/api_type_file_template.h
+                ${CMAKE_CURRENT_SOURCE_DIR}/def/generators/api_type_file_template.h
                 -E
                 -P
                 -I ${TGBM_INC_DIR}
                 -nostdinc
-                -DTGBM_GENERATION_IN_PROCESS
                 -DAPI_TYPE_PATH="${CMAKE_CURRENT_SOURCE_DIR}/def/${FILENAME}.def"
                 -o ${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}_TEMP.h
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
