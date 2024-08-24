@@ -1,4 +1,4 @@
-set(TGBM_TEST_PARTS connection_pool tools)
+set(TGBM_TEST_PARTS connection_pool tools basic_api_types)
 foreach(PART ${TGBM_TEST_PARTS})
   add_executable(${PART} "${CMAKE_CURRENT_SOURCE_DIR}/test_${PART}.cpp")
   target_link_libraries(${PART} PUBLIC tgbmlib)

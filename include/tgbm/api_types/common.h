@@ -1,19 +1,18 @@
+#pragma once
 
 #include <string>
 #include <vector>
-#include <optional>  // TODO own optional
+
+#include "tgbm/api_types/Integer.h"
+#include "tgbm/api_types/optional.h"
 
 namespace tgbm::api {
 
 using String = std::string;
-using Integer = int64_t;
 using Boolean = bool;
 using True = std::true_type;
 
 template <typename T>
 using arrayof = std::vector<T>;
-
-template <typename T>
-using optional = std::optional<T>;
 
 }  // namespace tgbm::api
