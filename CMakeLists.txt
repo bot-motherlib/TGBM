@@ -49,7 +49,6 @@ target_link_libraries(tgbmlib PUBLIC
     Boost::system
     Boost::asio
     Boost::property_tree
-    Boost::beast
     fmt::fmt
     rapidjsonlib
 )
