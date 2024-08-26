@@ -3,8 +3,8 @@
 #include <string>
 #include <vector>
 
-#include "tgbm/api_types/Integer.h"
-#include "tgbm/api_types/optional.h"
+#include "tgbm/api_types/Integer.hpp"
+#include "tgbm/api_types/optional.hpp"
 
 namespace tgbm::api {
 

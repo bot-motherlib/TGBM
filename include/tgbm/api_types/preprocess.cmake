@@ -28,7 +28,7 @@ foreach(FILE IN LISTS TGBM_API_TYPES_FILES)
 
     file(READ ${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}_TEMP.h FILE_CONTENT)
     file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}.h
-            "#pragma once\n#include \"tgbm/api_types/common.h\"\n${FILE_CONTENT}")
+            "#pragma once\n#include \"tgbm/api_types/common.hpp\"\n${FILE_CONTENT}")
     file(REMOVE ${CMAKE_CURRENT_SOURCE_DIR}/${FILENAME}_TEMP.h)
   
     # format

@@ -8,7 +8,7 @@
 #include "tgbm/net/boost_http_client.h"
 #include "tgbm/net/HttpClient.h"
 #include "tgbm/net/HttpParser.h"
-#include "tgbm/net/TgLongPoll.h"
+#include "tgbm/net/long_poll.hpp"
 #include "tgbm/tools/FileTools.h"
 #include "tgbm/tools/StringTools.h"
 #include "tgbm/types/Animation.h"

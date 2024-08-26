@@ -1,6 +1,6 @@
-#include "tgbm/api_types/Integer.h"
-#include "tgbm/api_types/common.h"
-#include "tgbm/api_types/optional.h"
+#include "tgbm/api_types/Integer.hpp"
+#include "tgbm/api_types/common.hpp"
+#include "tgbm/api_types/optional.hpp"
 #include "tgbm/tools/box_union.hpp"
 
 #include <vector>

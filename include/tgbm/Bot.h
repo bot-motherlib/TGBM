@@ -2,7 +2,7 @@
 
 #include "tgbm/Api.h"
 #include "tgbm/EventHandler.h"
-#include "tgbm/net/TgLongPoll.h"
+#include "tgbm/net/long_poll.hpp"
 
 #include <memory>
 #include <string>

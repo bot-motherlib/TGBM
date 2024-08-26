@@ -3,7 +3,7 @@
 #error API_TYPE_PATH should be defined
 #endif
 
-#include "tgbm/api_types/common.h"
+#include "tgbm/api_types/common.hpp"
 
 namespace tgbm::api {
 

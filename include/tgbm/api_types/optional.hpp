@@ -5,7 +5,7 @@
 #include <cassert>
 #include <compare>
 
-#include "tgbm/api_types/Integer.h"
+#include "tgbm/api_types/Integer.hpp"
 
 namespace tgbm::api {
 

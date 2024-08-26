@@ -21,7 +21,7 @@ set(TGBM_SRC_LIST
     src/TgTypeParser.cpp
     src/net/boost_http_client.cpp
     src/net/HttpParser.cpp
-    src/net/TgLongPoll.cpp
+    src/net/long_poll.cpp
     src/tools/FileTools.cpp
     src/tools/StringTools.cpp
     src/types/BotCommandScope.cpp

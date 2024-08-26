@@ -1,5 +1,6 @@
 
 #include "tgbm/tools/StringTools.h"
+#include "tgbm/tools/box.hpp"
 
 consteval int sstest1() {
   std::string_view str = "hello";
@@ -18,8 +19,6 @@ consteval int sstest3() {
   return tgbm::utils::string_switch<int>(str).case_("hi", 1).cases("world", 15).or_default(15);
 }
 static_assert(sstest3() == 15);
-
-#include "tgbm/tools/box.h"
 
 consteval bool boxtest1() {
   tgbm::box b(5);

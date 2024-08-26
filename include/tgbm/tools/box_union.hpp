@@ -12,7 +12,7 @@
 #include "anyany/noexport/file_begin.hpp"
 
 #include "tgbm/tools/meta.hpp"
-#include "tgbm/tools/box.h"
+#include "tgbm/tools/box.hpp"
 
 namespace tgbm {
 

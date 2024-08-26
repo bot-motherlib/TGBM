@@ -1,4 +1,4 @@
-#include "tgbm/net/TgLongPoll.h"
+#include "tgbm/net/long_poll.hpp"
 
 #include "tgbm/Api.h"
 
