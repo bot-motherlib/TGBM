@@ -5,3 +5,6 @@ AllowShortLambdasOnASingleLine: true
 AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 SortIncludes: false
+DerivePointerAlignment: false # disables 'Google' option which forces ignoring my rules
+PointerAlignment: Left
+ReferenceAlignment: Left

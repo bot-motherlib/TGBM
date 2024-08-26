@@ -4,13 +4,15 @@
 #include <utility>
 #include <cassert>
 
+#include "tgbm/tools/macro.hpp"
+
 namespace tgbm {
 
-// TODO clang::trivial_abi macro
 template <typename T>
-struct [[clang::trivial_abi]] box {
+struct TGBM_TRIVIAL_ABI box {
  private:
   static_assert(std::is_same_v<T, std::decay_t<T>>);
+
   T* ptr = nullptr;
 
  public:
@@ -49,6 +51,10 @@ struct [[clang::trivial_abi]] box {
     b.ptr = ptr;
     return b;
   }
+
+  [[nodiscard]] T* release() noexcept {
+    return std::exchange(ptr, nullptr);
+  }
   constexpr void reset() noexcept {
     static_assert(sizeof(T));
     if (ptr) {
@@ -69,6 +75,10 @@ struct [[clang::trivial_abi]] box {
   }
   constexpr box& operator=(box&& other) noexcept {
     swap(other);
+    return *this;
+  }
+  constexpr box& operator=(std::nullptr_t) noexcept {
+    reset();
     return *this;
   }
 
