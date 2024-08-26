@@ -12,6 +12,7 @@
 #include "anyany/noexport/file_begin.hpp"
 
 #include "tgbm/tools/meta.hpp"
+#include "tgbm/tools/box.h"
 
 namespace tgbm {
 
@@ -25,26 +26,24 @@ struct punned_ptr {
  public:
   static_assert(sizeof(Ptr) == sizeof(intptr_t));
 
-  // Asserts that allow us to let the compiler implement the destructor and
-  // copy/move constructors
   static_assert(std::is_trivially_destructible_v<Ptr>);
   static_assert(std::is_trivially_copy_constructible_v<Ptr>);
   static_assert(std::is_trivially_move_constructible_v<Ptr>);
 
   constexpr punned_ptr() = default;
-  explicit constexpr punned_ptr(intptr_t i) {
+  explicit constexpr punned_ptr(intptr_t i) noexcept {
     *this = i;
   }
 
-  constexpr intptr_t as_int() const {
+  constexpr intptr_t as_int() const noexcept {
     return std::bit_cast<intptr_t>(data);
   }
 
-  constexpr operator intptr_t() const {
+  constexpr operator intptr_t() const noexcept {
     return as_int();
   }
 
-  constexpr punned_ptr& operator=(intptr_t v) {
+  constexpr punned_ptr& operator=(intptr_t v) noexcept {
     std::memcpy(+data, &v, sizeof(data));
     return *this;
   }
@@ -82,28 +81,23 @@ struct pointer_int_pair {
       return (value >> int_shift) & int_mask;
     }
 
-    static intptr_t update_ptr(intptr_t OrigValue, void* Ptr) {
-      intptr_t PtrWord = reinterpret_cast<intptr_t>(PtrTraits::to_void_ptr(Ptr));
-      assert((PtrWord & ~ptr_bitmask) == 0 && "Pointer is not sufficiently aligned");
+    static intptr_t update_ptr(intptr_t origval, void* Ptr) {
+      intptr_t ptr_word = reinterpret_cast<intptr_t>(PtrTraits::to_void_ptr(Ptr));
+      assert((ptr_word & ~ptr_bitmask) == 0 && "Pointer is not sufficiently aligned");
       // Preserve all low bits, just update the pointer.
-      return PtrWord | (OrigValue & ~ptr_bitmask);
+      return ptr_word | (origval & ~ptr_bitmask);
     }
 
-    static intptr_t update_int(intptr_t OrigValue, intptr_t Int) {
-      intptr_t IntWord = static_cast<intptr_t>(Int);
-      assert((IntWord & ~int_mask) == 0 && "Integer too large for field");
+    static intptr_t update_int(intptr_t origval, intptr_t Int) {
+      intptr_t int_word = static_cast<intptr_t>(Int);
+      assert((int_word & ~int_mask) == 0 && "Integer too large for field");
       // Preserve all bits other than the ones we are updating.
-      return (OrigValue & ~shifted_int_mask) | IntWord << int_shift;
+      return (origval & ~shifted_int_mask) | int_word << int_shift;
     }
   };
 
  public:
-  constexpr pointer_int_pair() = default;
-
-  enum {
-    max_int_val = PtrTraits::num_low_bits_available ? ((1 << PtrTraits::num_low_bits_available) - 1) : 0
-  };
-  static_assert(((1 << IntBits) - 1) <= max_int_val);
+  pointer_int_pair() = default;
 
   pointer_int_pair(void* ptr_val, unsigned int_val) {
     set_ptr_and_int(ptr_val, int_val);
@@ -125,10 +119,6 @@ struct pointer_int_pair {
     value = info::update_int(value, static_cast<intptr_t>(int_val));
   }
 
-  void init_with_ptr(void* ptr_val) & {
-    value = info::update_ptr(0, ptr_val);
-  }
-
   void set_ptr_and_int(void* ptr_val, unsigned int_val) & {
     value = info::update_int(info::update_ptr(0, ptr_val), intptr_t(int_val));
   }
@@ -140,11 +130,9 @@ struct pointer_int_pair_fallback {
   unsigned i;
 
  public:
-  constexpr pointer_int_pair_fallback() = default;
+  pointer_int_pair_fallback() = default;
 
-  enum { max_int_val = std::numeric_limits<unsigned>::max() };
-
-  pointer_int_pair_fallback(void* ptr_val, unsigned int_val) {
+  pointer_int_pair_fallback(void* ptr_val, unsigned int_val) noexcept {
     set_ptr_and_int(ptr_val, int_val);
   }
 
@@ -164,11 +152,6 @@ struct pointer_int_pair_fallback {
     i = int_val;
   }
 
-  void init_with_ptr(void* ptr_val) & {
-    ptr = ptr_val;
-    i = 0;
-  }
-
   void set_ptr_and_int(void* ptr_val, unsigned int_val) & {
     ptr = ptr_val;
     i = int_val;
@@ -181,66 +164,34 @@ consteval int bits_required(unsigned n) {
   return n > 1 ? 1 + bits_required((n + 1) / 2) : 0;
 }
 
-// friend of pointer_union
-struct data_getter {
-  static auto& get_data(auto& x) noexcept {
-    if constexpr (requires { x.get_data(); }) {
-      return x.get_data();
-    } else {
-      return x.data;
-    }
-  }
-};
-
-template <typename CRTP, typename T, size_t Index>
-struct pointer_union_member1 {
-  pointer_union_member1() = default;
-  pointer_union_member1(T* v) {
-    // set ptr and index into ptr_int pair in the pointer_union
-    data_getter::get_data(static_cast<CRTP&>(*this))
-        .set_ptr_and_int(const_cast<void*>(static_cast<const void*>(v)), Index);
-  }
-
-  CRTP& operator=(T* v) {
-    data_getter::get_data(static_cast<CRTP&>(*this))
-        .set_ptr_and_int(const_cast<void*>(static_cast<const void*>(v)), Index);
-    return static_cast<CRTP&>(*this);
-  };
-};
-
-template <typename CRTP, typename T, size_t I>
+template <typename CRTP, typename T>
 struct box_union_member1 {
   box_union_member1() = default;
 
+  CRTP& self() {
+    return static_cast<CRTP&>(*this);
+  }
+  const CRTP& self() const {
+    return static_cast<const CRTP&>(*this);
+  }
   box_union_member1(const T& value) {
-    data_getter::get_data(static_cast<CRTP&>(*this)).set_ptr_and_int(new T(value), I);
+    self().set_ptr(new T(value));
   }
   box_union_member1(T&& value) {
-    data_getter::get_data(static_cast<CRTP&>(*this)).set_ptr_and_int(new T(std::move(value)), I);
+    self().set_ptr(new T(std::move(value)));
   }
   CRTP& operator=(const T& value) {
-    CRTP& self = static_cast<CRTP&>(*this);
-    return self = CRTP(std::in_place_type<T>, value);
+    return self() = CRTP(std::in_place_type<T>, value);
   }
   CRTP& operator=(T&& value) {
-    CRTP& self = static_cast<CRTP&>(*this);
-    return self = CRTP(std::in_place_type<T>, std::move(value));
-  }
-  // assumes 'ptr' may be released with 'delete'
-  static CRTP from_ptr(T* ptr) noexcept {
-    assert(((uintptr_t)ptr % __STDCPP_DEFAULT_NEW_ALIGNMENT__) == 0);
-    CRTP s;
-    data_getter::get_data(s).set_ptr_and_int(ptr, I);
-    return s;
+    return self() = CRTP(std::in_place_type<T>, std::move(value));
   }
   bool operator==(const T& x) const {
-    const CRTP& self = static_cast<const CRTP&>(*this);
-    const T* ptr = self.template get_if<T>();
+    const T* ptr = self().template get_if<T>();
     return ptr && *ptr == x;
   }
   std::strong_ordering operator<=>(const T& x) const {
-    const CRTP& self = static_cast<const CRTP&>(*this);
-    const T* ptr = self.template get_if<T>();
+    const T* ptr = self().template get_if<T>();
     if (!ptr)
       return std::strong_ordering::less;
     return *ptr <=> x;
@@ -266,21 +217,28 @@ using box_union_data_t =
 
 }  // namespace noexport
 
-// behaves similar to std::variant<box<Types>...>, but has trivial abi and sizeof(box_union) ==
-// sizeof(void*) if (sizeof...(Types) - 1) >= log2(__STDCPP_DEFAULT_NEW_ALIGNMENT__), then sizeof may be 2 *
-// void* always contains implicit 'nullptr_t' type as first
+// passed to visit if box_union is empty (has no value), similar to std::monostate
+struct nothing_t {
+  std::strong_ordering operator<=>(const nothing_t&) const = default;
+};
+
+// behaves similar to std::variant<box<Types>...>,
+// but has trivial abi and sizeof(box_union) == sizeof(void*)
+// if (sizeof...(Types) - 1) >= log2(__STDCPP_DEFAULT_NEW_ALIGNMENT__),
+// then sizeof may be 2 * void*
 template <typename... Types>
 struct [[clang::trivial_abi]] AA_MSVC_EBO box_union
-    : noexport::box_union_data_t<Types...>,
-      noexport::box_union_member1<box_union<Types...>, Types, find_first<Types, Types...>>... {
+    : private noexport::box_union_data_t<Types...>,
+      noexport::box_union_member1<box_union<Types...>, Types>... {
   // invariant: our pointers allocated by 'new'
   using data_t = noexport::box_union_data_t<Types...>;
 
  private:
-  friend struct noexport::data_getter;
+  template <typename CRTP, typename T>
+  friend struct noexport::box_union_member1;
 
   static_assert(is_unique_types<Types...>());
-  static_assert((!std::is_same_v<Types, nullptr_t> && ...));
+  static_assert((!std::is_same_v<Types, nothing_t> && ...));
   static_assert((std::is_same_v<Types, std::decay_t<Types>> && ...));
 
   data_t& get_data() {
@@ -290,16 +248,38 @@ struct [[clang::trivial_abi]] AA_MSVC_EBO box_union
     return static_cast<const data_t&>(*this);
   }
 
- public:
-  using noexport::box_union_member1<box_union<Types...>, Types,
-                                    find_first<Types, Types...>>::box_union_member1...;
-  using noexport::box_union_member1<box_union<Types...>, Types, find_first<Types, Types...>>::operator=...;
-  using noexport::box_union_member1<box_union<Types...>, Types, find_first<Types, Types...>>::from_ptr...;
-  using noexport::box_union_member1<box_union<Types...>, Types, find_first<Types, Types...>>::operator==...;
-  using noexport::box_union_member1<box_union<Types...>, Types, find_first<Types, Types...>>::operator<=>...;
+  template <oneof<Types...> T>
+  void set_ptr(T* ptr) noexcept {
+    assert(((uintptr_t)ptr % __STDCPP_DEFAULT_NEW_ALIGNMENT__) == 0);
+    get_data().set_ptr_and_int(ptr, find_first<T, Types...>());
+  }
 
-  // postcondition: index() == sizeof...(Types), stored 'nullptr_t'
-  box_union() noexcept : data_t(nullptr, sizeof...(Types)) {
+ public:
+  using noexport::box_union_member1<box_union<Types...>, Types>::box_union_member1...;
+  using noexport::box_union_member1<box_union<Types...>, Types>::operator=...;
+  using noexport::box_union_member1<box_union<Types...>, Types>::operator==...;
+  using noexport::box_union_member1<box_union<Types...>, Types>::operator<=>...;
+
+  // assumes, that data is correct (for example) from 'release'
+  static box_union from_raw(data_t data) noexcept {
+    box_union u;
+    u.get_data() = data;
+    return u;
+  }
+  // precondition: 'ptr' may be released with 'delete', correctly aligned
+  template <oneof<Types...> T>
+  static box_union from_ptr(T* ptr) noexcept {
+    box_union u;
+    u.set_ptr(ptr);
+    return u;
+  }
+  // returns such data, which when used in 'from_raw' creates empty box_union
+  static data_t empty_state() noexcept {
+    return data_t(nullptr, sizeof...(Types));
+  }
+
+  // postcondition: index() == sizeof...(Types), stored 'nothing_t'
+  box_union() noexcept : data_t(empty_state()) {
   }
   box_union(std::nullptr_t) noexcept : box_union() {
   }
@@ -308,19 +288,20 @@ struct [[clang::trivial_abi]] AA_MSVC_EBO box_union
   }
 
   box_union(const box_union& other) : box_union() {
-    other.visit_ptr(matcher{[&](nullptr_t) {},
+    other.visit_ptr(matcher{[&](nothing_t) {},
                             [&]<typename T>(const T* x) {
-                              get_data().set_ptr_and_int(x ? new T(*x) : nullptr, find_first<T, Types...>);
+                              if (x)
+                                emplace<T>(*x);
                             }});
   }
   box_union(box_union&& other) noexcept : data_t(other.get_data()) {
-    other.get_data().set_ptr_and_int(nullptr, sizeof...(Types));
+    other.get_data() = empty_state();
   }
 
   template <typename T, typename... Args>
   box_union(std::in_place_type_t<T>, Args&&... args)
-      : data_t(new T(std::forward<Args>(args)...), find_first<T, Types...>) {
-    static_assert(find_first<T, Types...> != -1);
+      : data_t(new T(std::forward<Args>(args)...), find_first<T, Types...>()) {
+    static_assert(contains_type<T, Types...>());
   }
   template <size_t I, typename... Args>
   box_union(std::in_place_index_t<I>, Args&&... args)
@@ -328,8 +309,7 @@ struct [[clang::trivial_abi]] AA_MSVC_EBO box_union
   }
   template <typename T, typename... Args>
   T& emplace(Args&&... args) {
-    static_assert(!std::is_same_v<T, nullptr_t>);
-    static_assert(find_first<T, Types...> != -1);
+    static_assert(contains_type<T, Types...>());
     *this = box_union(std::in_place_type<T>, std::forward<Args>(args)...);
     return *get_if<T>();
   }
@@ -339,17 +319,17 @@ struct [[clang::trivial_abi]] AA_MSVC_EBO box_union
   }
 
   [[nodiscard]] data_t release() noexcept {
-    return std::exchange(get_data(), nullptr);
+    return std::exchange(get_data(), empty_state());
   }
   // postcondition: is_null()
   void reset() noexcept {
     static_assert((sizeof(Types) && ...));
-    visit_ptr(matcher{[](nullptr_t) {},
+    visit_ptr(matcher{[](nothing_t) {},
                       [](auto* p) {
                         if (p)
                           delete p;
                       }});
-    get_data().set_ptr_and_int(nullptr, sizeof...(Types));
+    get_data() = empty_state();
     assert(is_null());
   }
 
@@ -372,6 +352,30 @@ struct [[clang::trivial_abi]] AA_MSVC_EBO box_union
     return *this;
   }
 
+  // from boxes
+
+  template <oneof<Types...> T>
+  box_union(box<T>&& b) noexcept {
+    // detect cases when Types... contain box<int>, int, ambigious
+    static_assert(!contains_type<box<T>, Types...>());
+    set_ptr(b.release());
+  }
+  template <oneof<Types...> T>
+  box_union(const box<T>& b) : box_union(box<T>(b)) {
+  }
+  template <oneof<Types...> T>
+  box_union& operator=(box<T>&& b) noexcept {
+    // detect cases when Types... contain box<int>, int, ambigious
+    static_assert(!contains_type<box<T>, Types...>());
+    reset();
+    set_ptr(b.release());
+    return *this;
+  }
+  template <oneof<Types...> T>
+  box_union& operator=(const box<T>& b) noexcept {
+    return *this = box<T>(b);
+  }
+
   // no matter what stored, checks if it nullptr
   [[nodiscard]] bool is_null() const noexcept {
     return get_data().get_ptr() == nullptr;
@@ -381,7 +385,7 @@ struct [[clang::trivial_abi]] AA_MSVC_EBO box_union
   }
 
   // postcondition: 0 <= index() <= sizeof...(Types)
-  // index() == sizeof...(Types) means 'nullptr_t' stored
+  // index() == sizeof...(Types) means 'nothing_t' stored
   [[nodiscard]] size_t index() const noexcept {
     assert(get_data().get_int() <= sizeof...(Types));
     return size_t(get_data().get_int());
@@ -390,16 +394,16 @@ struct [[clang::trivial_abi]] AA_MSVC_EBO box_union
   // Note: it is possible, that stored T but returned nullptr, because stored (T*)nullptr
   template <typename T>
   [[nodiscard]] T* get_if() noexcept {
-    static_assert(find_first<T, Types...> != -1);
-    if (index() != find_first<T, Types...>)
+    static_assert(contains_type<T, Types...>());
+    if (index() != find_first<T, Types...>())
       return nullptr;
     return static_cast<T*>(get_data().get_ptr());
   }
   // Note: it is possible, that stored T but returned nullptr, because stored (T*)nullptr
   template <typename T>
   [[nodiscard]] const T* get_if() const noexcept {
-    static_assert(find_first<T, Types...> != -1);
-    if (index() != find_first<T, Types...>)
+    static_assert(contains_type<T, Types...>());
+    if (index() != find_first<T, Types...>())
       return nullptr;
     return static_cast<const T*>(get_data().get_ptr());
   }
@@ -411,30 +415,27 @@ struct [[clang::trivial_abi]] AA_MSVC_EBO box_union
   const auto* get_if() const noexcept {
     return get_if<element_at_t<I, Types...>>();
   }
-  // TODO не нуллпатр, а что то другое, чтобы не конвертилось абы во что
 
-  // passes 'nullptr_t' empty or stored nullptr
+  // passes 'nothing_t' empty
   template <typename V>
   decltype(auto) visit_ptr(V&& vtor) {
     auto i = index();
     if (is_null())
-      return vtor(nullptr);
+      return vtor(nothing_t{});
     assert(i < sizeof...(Types) && "internal logic failure");
     return visit_index<sizeof...(Types) - 1>([&]<size_t I>() -> decltype(auto) { return vtor(get_if<I>()); },
                                              i);
   }
-  // passes 'nullptr_t' if empty
+  // passes 'nothing_t' if empty
   template <typename V>
   decltype(auto) visit_ptr(V&& vtor) const {
     auto i = index();
     if (is_null())
-      return vtor(nullptr);
+      return vtor(nothing_t{});
     assert(i < sizeof...(Types) && "internal logic failure");
     return visit_index<sizeof...(Types) - 1>([&]<size_t I>() -> decltype(auto) { return vtor(get_if<I>()); },
                                              i);
   }
-  // TODO конструкторы и операторы= от box очевидно!
-  // TODO убрать nullptr_t
 
   // no matter what stored, checks if it nullptr
   bool operator==(std::nullptr_t) const noexcept {
@@ -443,7 +444,7 @@ struct [[clang::trivial_abi]] AA_MSVC_EBO box_union
   friend bool operator==(const box_union& l, const box_union& r) noexcept {
     if (l.index() != r.index())
       return false;
-    return l.visit_ptr(matcher{[](nullptr_t) { return true; },
+    return l.visit_ptr(matcher{[](nothing_t) { return true; },
                                [&]<typename T>(const T* p) {
                                  const T* lptr = p;
                                  const T* rptr = r.template get_if<T>();
@@ -461,7 +462,7 @@ struct [[clang::trivial_abi]] AA_MSVC_EBO box_union
       return std::strong_ordering::greater;
     if (l.index() != r.index())
       return l.index() <=> r.index();
-    return l.visit_ptr(matcher{[](nullptr_t) -> std::strong_ordering { KELCORO_UNREACHABLE; },
+    return l.visit_ptr(matcher{[](nothing_t) -> std::strong_ordering { KELCORO_UNREACHABLE; },
                                [&]<typename T>(const T* p) { return *p <=> *r.template get_if<T>(); }});
   }
 };

@@ -42,6 +42,7 @@ constexpr decltype(auto) visit_index(auto&& f, size_t i) {
 #undef $TGBM_SWITCH_CASE32
 #undef $TGBM_SWITCH_CASE64
 }
+
 template <typename... Foos>
 struct matcher : Foos... {
   using Foos::operator()...;
@@ -68,15 +69,18 @@ consteval size_t log2_constexpr(size_t n) {
 }
 
 template <typename T, typename... Ts>
-constexpr size_t find_first =
-    [] {
-      size_t result = -1;
-      size_t i = -1;
-      // for guaranteed sequence
-      (void)std::initializer_list<bool>{((++i, std::is_same_v<T, Ts>)&&result == -1 && (result = i))...};
-      return result;
-    }  // INVOKED HERE
-();
+consteval size_t find_first() {
+  size_t result = -1;
+  size_t i = -1;
+  // for guaranteed sequence
+  (void)std::initializer_list<bool>{((++i, std::is_same_v<T, Ts>)&&result == -1 && (result = i))...};
+  return result;
+}
+
+template <typename T, typename... Ts>
+consteval bool contains_type() {
+  return find_first<T, Ts...>() != -1;
+}
 
 // 'npos' for types
 union not_a_type {};
@@ -99,14 +103,17 @@ using element_at_t = std::tuple_element_t<I, std::tuple<Types...>>;
 
 template <typename... Ts>
 consteval bool is_unique_types() {
-  size_t is[] = {find_first<Ts, Ts...>..., size_t(-1) /* avoid empty array */};
+  size_t is[] = {find_first<Ts, Ts...>()..., size_t(-1) /* avoid empty array */};
   auto count = [&is](size_t val) {
     size_t c = 0;
     for (size_t x : is)
       c += val == x;
     return c;
   };
-  return ((count(find_first<Ts, Ts...>) == 1) && ...);
+  return ((count(find_first<Ts, Ts...>()) == 1) && ...);
 }
+
+template <typename T, typename... Types>
+concept oneof = (std::same_as<T, Types> || ...);
 
 }  // namespace tgbm
