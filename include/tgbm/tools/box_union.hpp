@@ -227,9 +227,8 @@ struct nothing_t {
 // if (sizeof...(Types) - 1) >= log2(__STDCPP_DEFAULT_NEW_ALIGNMENT__),
 // then sizeof may be 2 * void*
 template <typename... Types>
-struct [[clang::trivial_abi]] AA_MSVC_EBO box_union
-    : private noexport::box_union_data_t<Types...>,
-      noexport::box_union_member1<box_union<Types...>, Types>... {
+struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data_t<Types...>,
+                                                noexport::box_union_member1<box_union<Types...>, Types>... {
   // invariant: our pointers allocated by 'new'
   using data_t = noexport::box_union_data_t<Types...>;
 

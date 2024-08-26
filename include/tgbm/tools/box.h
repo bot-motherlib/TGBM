@@ -4,11 +4,12 @@
 #include <utility>
 #include <cassert>
 
+#include "tgbm/tools/macro.hpp"
+
 namespace tgbm {
 
-// TODO clang::trivial_abi macro
 template <typename T>
-struct [[clang::trivial_abi]] box {
+struct TGBM_TRIVIAL_ABI box {
  private:
   static_assert(std::is_same_v<T, std::decay_t<T>>);
 
