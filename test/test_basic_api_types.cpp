@@ -6,8 +6,13 @@
 #include <vector>
 #include <memory>
 
+#define TEST(name) void test_##name()
+#define error_if(...)  \
+  if (!!(__VA_ARGS__)) \
+  exit(__LINE__)
+
 template <typename T>
-constexpr int opttest() {
+constexpr bool opttest() {
   tgbm::api::optional<T> opt = std::nullopt;
   if (opt)
     throw;
@@ -25,17 +30,14 @@ constexpr int opttest() {
   if (opt != opt)
     throw;
   T& x = opt.value();
-  return 1;
+  return true;
 }
-static_assert(opttest<tgbm::api::Integer>());
-static_assert(opttest<tgbm::api::String>());
-static_assert(opttest<int>());
 
-consteval int test1() {
-  tgbm::api::Integer i = 1;
-  if (i.value != 1)
-    throw;
-  return 0;
+TEST(optional) {
+  static_assert(opttest<tgbm::api::Integer>());
+  static_assert(opttest<tgbm::api::String>());
+  static_assert(opttest<int>());
+  error_if(!opttest<tgbm::api::Boolean>());
 }
 
 template <int>
@@ -56,9 +58,6 @@ static_assert(tgbm::log2_constexpr(4) == 2);
 static_assert(tgbm::log2_constexpr(7) == 2);
 static_assert(tgbm::log2_constexpr(16) == 4);
 
-#define error_if(...)  \
-  if (!!(__VA_ARGS__)) \
-  exit(__LINE__)
 template <typename... Types>
 void box_union_test(Types... vars) {
   auto test1_init = [&]<typename T>(const T& var) {
@@ -121,7 +120,21 @@ void box_union_test(Types... vars) {
   (test_var(std::move(vars)), ...);
 }
 
-void box_union_test_basic() {
+TEST(box_union_all) {
+  //  3
+  box_union_test(int(4), float(4.f), std::string("hello world"));
+  // 17 (big)
+  bool bbb = false;
+  int i = 42;
+  box_union_test(4, float(4.f), unsigned(i), std::string("hello world"), true, 'c', double(4.),
+                 std::vector<int>{1, 2, 3},
+                 std::vector<std::string>{std::string("hello"), std::string("world")}, std::shared_ptr<int>{},
+                 std::shared_ptr<std::string>(new std::string("u")),
+                 std::vector<std::vector<int>>{{1, 2}, {3, 4}}, (void*)nullptr, "char*", &bbb, &i,
+                 std::vector<int*>{&i});
+}
+
+TEST(box_union_basic) {
   tgbm::box_union<int, float, std::string> u;
   u = "hello world";
   error_if(u.is_null());
@@ -129,7 +142,7 @@ void box_union_test_basic() {
   error_if(u != std::string("hello world"));
 }
 
-void box_union_test_box() {
+TEST(box_union_from_box) {
   tgbm::box_union<int, std::string, tgbm::box<int>> u;
   tgbm::box b(std::string("hello world"));
   u = std::move(b);
@@ -144,35 +157,22 @@ void box_union_test_box() {
   error_if("hello" != u2);
 }
 
-int main() {
-  box_union_test_box();
-  box_union_test_basic();
-  //  3
-  box_union_test(int(4), float(4.f), std::string("hello world"));
-  // 17 (big)
-  bool bbb = false;
-  int i = 42;
-  box_union_test(4, float(4.f), unsigned(i), std::string("hello world"), true, 'c', double(4.),
-                 std::vector<int>{1, 2, 3},
-                 std::vector<std::string>{std::string("hello"), std::string("world")}, std::shared_ptr<int>{},
-                 std::shared_ptr<std::string>(new std::string("u")),
-                 std::vector<std::vector<int>>{{1, 2}, {3, 4}}, (void*)nullptr, "char*", &bbb, &i,
-                 std::vector<int*>{&i});
-
-  static_assert(sizeof(tgbm::box_union<int, float, std::string>) <= sizeof(void*));
-  static_assert(sizeof(tgbm::box_union<E<0>, E<1>, E<2>, E<3>, E<4>, E<5>, E<6>, E<7>, E<8>, E<9>, E<10>,
-                                       E<11>, E<12>, E<13>, E<14>, E<15>>) <= sizeof(void*) * 2);
-  tgbm::box_union<int, std::string> us;
-  tgbm::box_union<int, std::string> us2;
-  tgbm::box_union<E<1>, int, E<0>> u3(42);  // 1 comparable type + 1 incomparable
+TEST(box_union_release) {
+  tgbm::box_union<E<1>, int, E<0>> u3(42);
   error_if(u3 != 42);
   delete (int*)u3.release().get_ptr();  // check release
 
-  tgbm::box_union<E<1>, int, E<0>> u4(42);  // 1 comparable type + 1 incomparable
+  tgbm::box_union<E<1>, int, E<0>> u4(42);
   auto u4_copy = std::move(u4);
   error_if(u4);
   delete (int*)u4_copy.release().get_ptr();
-
+}
+TEST(box_union_compare) {
+  tgbm::box_union<int, std::string> us;
+  tgbm::box_union<int, std::string> us2;
+  tgbm::box_union<E<1>, int, E<0>> u3 = 42;
+  error_if(u3 != 42);
+  error_if(41 >= u3);
   error_if(us2 == 0);
   error_if(us2 == "");
   error_if(us != us2);
@@ -185,22 +185,31 @@ int main() {
   error_if(us.index() != 1);  // index of string
   us2 = us;
   error_if(us != us2);
-  // cannot be constexpr evaluated because of union
-  if (!opttest<tgbm::api::Boolean>())
-    throw;
+}
+
+TEST(boolean) {
   tgbm::api::optional<tgbm::api::Boolean> b;
   bool& y = b.emplace();
-  if (y)
-    throw;
-  if (!b)
-    throw;
+  error_if(y);
+  error_if(!b);
   bool& x = *b;
-  if (x)
-    throw;
+  error_if(x);
   b.reset();
-  if (b)
-    throw;
+  error_if(b);
   b = true;
-  if (!b || !*b)
-    throw;
+  error_if(!b || !*b);
+}
+
+int main() {
+  test_optional();
+  test_box_union_release();
+  test_box_union_compare();
+  test_box_union_from_box();
+  test_box_union_basic();
+  test_box_union_all();
+  test_boolean();
+
+  static_assert(sizeof(tgbm::box_union<int, float, std::string>) <= sizeof(void*));
+  static_assert(sizeof(tgbm::box_union<E<0>, E<1>, E<2>, E<3>, E<4>, E<5>, E<6>, E<7>, E<8>, E<9>, E<10>,
+                                       E<11>, E<12>, E<13>, E<14>, E<15>>) <= sizeof(void*) * 2);
 }
