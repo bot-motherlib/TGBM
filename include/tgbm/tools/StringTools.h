@@ -156,9 +156,8 @@ struct string_switch {
   };
   // used to expand like
   //   T result = (string_switch(str) | ... | case_t(keys_pack, values_pack)).or_default(val)
-  string_switch& operator|(case_t p) {
-    Case(p.first, p.second);
-    return *this;
+  constexpr string_switch& operator|(case_t p) {
+    return case_(p.key, p.value);
   }
 
   [[nodiscard]] constexpr R or_default(T value) {

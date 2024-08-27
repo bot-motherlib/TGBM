@@ -15,7 +15,14 @@ class HttpClient;
 std::unique_ptr<HttpClient> default_http_client(std::string host);
 
 // short cut for creating http client, api, updater(long pool or smth) and update visitor
-class Bot {
+struct Bot {
+ private:
+  // invariant: != nullptr
+  std::unique_ptr<HttpClient> _client;
+  Api _api;
+  std::unique_ptr<EventBroadcaster> _eventBroadcaster;
+  EventHandler _eventHandler;
+
  public:
   // uses default http client
   explicit Bot(std::string token, std::string host = "api.telegram.org");
@@ -49,12 +56,6 @@ class Bot {
 
  private:
   dd::task<void> get_and_handle_updates(std::chrono::seconds update_wait_timeout);
-
-  // invariant: != nullptr
-  std::unique_ptr<HttpClient> _client;
-  Api _api;
-  std::unique_ptr<EventBroadcaster> _eventBroadcaster;
-  EventHandler _eventHandler;
 };
 
 }  // namespace tgbm

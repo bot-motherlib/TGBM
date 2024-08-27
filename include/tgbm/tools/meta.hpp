@@ -6,6 +6,9 @@
 
 namespace tgbm {
 
+template <typename T>
+inline constexpr bool is_decayed_v = std::is_same_v<T, std::decay_t<T>>;
+
 enum { VISIT_INDEX_MAX = 64 - 1 };
 // switch 'i' up to 64 for better code generatrion
 // 'F' should be like [] <size_t I> {}

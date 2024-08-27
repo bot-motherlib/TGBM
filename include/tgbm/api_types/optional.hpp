@@ -6,11 +6,9 @@
 #include <compare>
 
 #include "tgbm/api_types/Integer.hpp"
+#include "tgbm/tools/meta.hpp"
 
 namespace tgbm::api {
-
-template <typename T>
-inline constexpr bool is_decayed_v = std::is_same_v<T, std::decay_t<T>>;
 
 template <typename T>
 struct optional {
