@@ -25,30 +25,20 @@ dd::task<int> test_factory() {
   co_return i.fetch_add(1);
 }
 
-struct test_exe {
-  dd::task_node* node = nullptr;
-  void attach(dd::task_node* n) {
-    node = n;
-  }
-};
 TEST(base) {
   using namespace tgbm;
-  test_exe exe;
   enum { MAX_POOL_SIZE = 10 };
-  pool_t<int> pool(
-      MAX_POOL_SIZE, [] { return test_factory(); }, exe);
+  pool_t<int> pool(MAX_POOL_SIZE, [] { return test_factory(); });
   using handle_t = pool_t<int>::handle_t;
   std::vector<handle_t> handles;
   for (int i = 0; i < MAX_POOL_SIZE; ++i) {
     handles.push_back(pool.borrow().get());
     error_if(*handles.back().get() != i);
   }
-  error_if(exe.node != nullptr);
   auto handle = pool.borrow().start_and_detach();
-  handles.pop_back();  // return one
-  error_if(exe.node == nullptr);
-  error_if(exe.node->task != handle);
-  exe.node->task.resume();  // get data
+  handles.pop_back();  // return one (and not inserted waiteer goes into borrowed)
+  handles.clear();     // return all borrowed handles
+  pool.shutdown();
 }
 
 int main() {

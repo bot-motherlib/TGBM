@@ -119,4 +119,10 @@ consteval bool is_unique_types() {
 template <typename T, typename... Types>
 concept oneof = (std::same_as<T, Types> || ...);
 
+template <typename Enum>
+constexpr auto to_underlying(Enum e) noexcept {
+  static_assert(std::is_enum_v<Enum>);
+  return static_cast<std::underlying_type_t<Enum>>(e);
+}
+
 }  // namespace tgbm

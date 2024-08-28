@@ -1,9 +1,11 @@
 #pragma once
 
+#include <span>
 #include <string>
 #include <unordered_map>
 #include <cassert>
 
+#include "tgbm/tools/macro.hpp"
 #include "tgbm/tools/StringTools.h"
 #include "tgbm/tools/rapidjson_to_json.h"
 
@@ -11,10 +13,11 @@
 
 namespace tgbm {
 
-struct tg_url_view {
-  std::string_view host;
-  std::string_view path;  // path without method part, e.g. "/bot123/"
-  std::string_view method;
+using bytes_t = std::vector<uint8_t>;
+
+struct http_body {
+  std::string content_type;
+  bytes_t data;
 };
 
 // TODO wtf это всё статические функции вообще
@@ -24,9 +27,9 @@ struct HttpParser {
                                bool isKeepAlive) const;
   std::unordered_map<std::string, std::string> parseHeader(const std::string& data, bool isRequest) const;
 };
-
+// TODO boost serializer
 struct rj_refbuffer_t {
-  std::string& buf;  // TODO replace with vector
+  bytes_t& buf;
 
   using Ch = char;
 
@@ -38,7 +41,7 @@ struct rj_refbuffer_t {
 };
 
 struct rj_urlencoded_refbuffer_t {
-  std::string& buf;  // TODO replace with vector
+  bytes_t& buf;
 
   using Ch = char;
 
@@ -52,7 +55,7 @@ struct rj_urlencoded_refbuffer_t {
 struct application_json_body {
  private:
   struct buffer_type {
-    std::string buf;  // TODO replace with vector
+    bytes_t buf;
 
     using Ch = char;
 
@@ -71,13 +74,16 @@ struct application_json_body {
     body.buf.reserve(reserve);
     rj_assume(writer.StartObject());
   }
-  std::string take() noexcept {
+  http_body take() noexcept {
     if (body.buf.size() == 1) {
       assert(body.buf.front() == '{');
       body.buf.clear();
     } else
       rj_assume(writer.EndObject());
-    return std::move(body.buf);
+    return http_body{
+        .content_type = "application/json",
+        .data = std::move(body.buf),
+    };
   }
 
   void arg(std::string_view k, const auto& value) {
@@ -88,19 +94,22 @@ struct application_json_body {
 // TODO test with complex objects and arrays
 struct application_x_www_form_urlencoded {
  private:
-  std::string body;
+  bytes_t body;
 
  public:
   application_x_www_form_urlencoded() = default;
   explicit application_x_www_form_urlencoded(size_t reserve) {
     body.reserve(reserve);
   }
-  std::string take() noexcept {
+  http_body take() noexcept {
     if (!body.empty()) {
       assert(body.back() == '&');
       body.pop_back();
     }
-    return std::move(body);
+    return http_body{
+        .content_type = "application/x-www-form-urlencoded",
+        .data = std::move(body),
+    };
   }
 
   void arg(std::string_view k, const auto& value) {
@@ -122,7 +131,7 @@ struct application_x_www_form_urlencoded {
 struct application_multipart_form_data {
  private:
   std::string boundary;
-  std::string body;
+  bytes_t body;
 
  public:
   explicit application_multipart_form_data(size_t reserve = 0) {
@@ -141,10 +150,13 @@ struct application_multipart_form_data {
     return boundary;
   }
 
-  std::string take() noexcept {
+  http_body take() noexcept {
     if (!body.empty())
       fmt::format_to(std::back_inserter(body), "\r\n--{}--\r\n", boundary);
-    return std::move(body);
+    return http_body{
+        .content_type = fmt::format("multipart/form-data; boundary=\"{}\"", get_boundary()),
+        .data = std::move(body),
+    };
   }
 
   void file_arg(std::string_view k, std::string_view filename, std::string_view mime_type,
@@ -171,44 +183,25 @@ struct application_multipart_form_data {
         content_type == "text/plain" ? WriteFlag::kWriteUnquotedString : WriteFlag::kWriteDefaultFlags;
     Writer<rj_refbuffer_t, UTF8<>, UTF8<>, CrtAllocator, flag> writer(b);
     rj_tojson(writer, value);
-    body += "\r\n";
+    body.push_back('\r');
+    body.push_back('\n');
   }
 };
 
-std::string generate_http_headers_get(const tg_url_view& url, bool keep_alive);
-// GET if body.empty(), POST otherwise
-std::string generate_http_headers(const tg_url_view& url, bool keep_alive, std::string_view body,
-                                  std::string_view content_type);
-
+// client knows authority and scheme and sets it
 struct http_request {
-  std::string body;
-  std::string headers;  // TODO vectors (?allocs?)
+  // TODO custom headers?
+  // TODO cow 'path' string? And may be in api (optional strings)?
 
-  // TODO rm url/keep alive
-  http_request(tg_url_view url, application_json_body&& b, bool keep_alive = true)
-      : body(b.take()), headers(generate_http_headers(url, keep_alive, body, "application/json")) {
-  }
-  http_request(tg_url_view url, application_x_www_form_urlencoded&& b, bool keep_alive = true)
-      : body(b.take()),
-        headers(generate_http_headers(url, keep_alive, body, "application/x-www-form-urlencoded")) {
-  }
-  http_request(tg_url_view url, application_multipart_form_data&& b, bool keep_alive = true)
-      : body(b.take()),
-        headers(generate_http_headers(
-            // https://datatracker.ietf.org/doc/html/rfc2046#section-5.1.1
-            url, keep_alive, body, fmt::format("multipart/form-data; boundary=\"{}\"", b.get_boundary()))) {
-  }
-
-  // GET request
-  explicit http_request(tg_url_view url, bool keep_alive = true)
-      : headers(generate_http_headers_get(url, keep_alive)) {
-  }
+  // usually something like /bot<token>/<method>
+  // must be setted to not empty string
+  std::string path;
+  http_body body;
 };
 
 struct http_response {
-  std::string body;
-  std::string headers;  // TODO vectors (?allocs?)
-  // TODO parse status string (error code, msg, http version)
+  bytes_t headers;
+  bytes_t body;
 };
 
 }  // namespace tgbm

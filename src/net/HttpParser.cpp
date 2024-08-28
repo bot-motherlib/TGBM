@@ -16,64 +16,6 @@ using namespace boost;
 
 namespace tgbm {
 
-std::string generate_http_headers_get(const tg_url_view& url, bool keep_alive) {
-  // TODO optimized inlined version
-  return generate_http_headers(url, keep_alive, {}, {});
-}
-std::string generate_http_headers(const tg_url_view& url, bool keep_alive, std::string_view body,
-                                  std::string_view content_type) {
-  assert(body != "{}" && "empty json object provided");
-  std::string body_sz_str = fmt::format("{}", body.size());
-  size_t size_bytes = [&] {
-    using namespace std::string_view_literals;
-    size_t headers_size = 0;
-    headers_size += body.empty() ? "GET "sv.size() : "POST "sv.size();
-    headers_size += url.path.size() + url.method.size();
-    headers_size += " HTTP/1.1\r\nHost: "sv.size() + url.host.size() + "\r\nConnection: "sv.size() +
-                    (keep_alive ? "keep-alive"sv.size() : "close"sv.size());
-    headers_size += "\r\n"sv.size();
-    if (body.empty()) {
-      headers_size += "\r\n"sv.size();
-      return headers_size;
-    }
-    headers_size += "Content-Type: "sv.size() + content_type.size() + "\r\nContent-Length: "sv.size() +
-                    body_sz_str.size() + "\r\n\r\n"sv.size();
-    return headers_size;
-  }();
-  string result;
-  // TODO resize + format to char* (separate GET / POST)
-  result.reserve(size_bytes);
-  on_scope_exit {
-    assert(result.size() == size_bytes && "not exactly equal size reserved, logical error");
-  };
-  if (body.empty())
-    result += "GET ";
-  else
-    result += "POST ";
-  result += url.path;
-  result += url.method;
-  result +=
-      " HTTP/1.1\r\n"
-      "Host: ";
-  result += url.host;
-  result += "\r\nConnection: ";
-  if (keep_alive)
-    result += "keep-alive";
-  else
-    result += "close";
-  result += "\r\n";
-  if (body.empty()) {
-    result += "\r\n";
-    return result;
-  }
-  result += "Content-Type: ";
-  result += content_type;
-  result += "\r\nContent-Length: ";
-  result += body_sz_str;
-  result += "\r\n\r\n";
-  return result;
-}
-
 string HttpParser::generateResponse(const string& data, const string& mimeType, unsigned short statusCode,
                                     const string& statusStr, bool isKeepAlive) const {
   // TODO по сути из statusCode выводится statusStr, не нужно это отдельным аргументом

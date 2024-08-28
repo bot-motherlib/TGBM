@@ -1,5 +1,7 @@
 #pragma once
 
+#include "tgbm/net/errors.hpp"
+
 #include "tgbm/TgTypeParser.h"
 #include "tgbm/net/HttpClient.h"
 #include "tgbm/types/User.h"
@@ -75,13 +77,6 @@ constexpr std::string_view e2str(tg_errc e) noexcept {
       return "Unexpected error";
   }
 }
-#define TGBM_TG_EXCEPTION(ERRC, FMT_STR, ...) \
-  ::tgbm::tg_exception(FMT_STR " errc: {}" __VA_OPT__(, ) __VA_ARGS__, e2str(ERRC))
-
-// thrown when Telegram refuses API request
-struct tg_exception : http_exception {
-  using http_exception::http_exception;
-};
 
 using int_or_str = std::variant<std::int64_t, std::string>;
 using thumbnail_t = std::variant<InputFile::Ptr, std::string>;
@@ -102,33 +97,32 @@ void rj_tojson(rjson_writer auto& writer, const int_or_str& v) {
 struct Api {
  private:
   TgTypeParser _tgTypeParser;  // TODO rm empty field
-  std::string _host;
-  std::string _cached_path;
   duration_t _timeout;
+  std::string _token;
   HttpClient& _httpClient;
 
  public:
   typedef std::shared_ptr<std::vector<std::string>> StringArrayPtr;
+  // TODO COW string here
+  std::string get_path(std::string_view method) const {
+    return fmt::format("/bot{}/{}", _token, method);
+  }
+  std::string_view get_token() const noexcept {
+    return _token;
+  }
+  void set_token(std::string tok) noexcept {
+    _token = std::move(tok);
+  }
 
   // Note: for 'getUpdate' which has its own timeout effective timeout = getUpdate.timeout + api.timeout()
-  Api(std::string_view token, HttpClient& httpClient KELCORO_LIFETIMEBOUND, std::string host,
+  Api(std::string token, HttpClient& httpClient KELCORO_LIFETIMEBOUND,
       duration_t timeout = duration_t::max());
-
-  tg_url_view get_url(std::string_view method) const KELCORO_LIFETIMEBOUND {
-    return tg_url_view{.host = _host, .path = _cached_path, .method = method};
-  }
-
-  std::string_view get_token() const noexcept KELCORO_LIFETIMEBOUND {
-    enum { prefix_len = sizeof("/bot") - 1 };
-    return std::string_view(_cached_path.data() + prefix_len, _cached_path.size() - 1 - prefix_len);
-  }
-
-  std::string_view get_host() const noexcept KELCORO_LIFETIMEBOUND {
-    return _host;
-  }
 
   void set_timeout(duration_t timeout) noexcept {
     _timeout = timeout;
+  }
+  duration_t get_timeout() const noexcept {
+    return _timeout;
   }
 
   /**
@@ -2640,7 +2634,7 @@ struct Api {
    */
   // TODO принимать аргумент для обработки записи (чтобы по частям можно было в файлик складывать вместо
   // строки в памяти)
-  dd::task<std::string> downloadFile(const std::string& filePath);
+  dd::task<http_response> downloadFile(const std::string& filePath);
 
   /**
    * @brief Check if user has blocked the bot

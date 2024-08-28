@@ -12,7 +12,7 @@ namespace tgbm {
 class EventBroadcaster;
 class HttpClient;
 
-std::unique_ptr<HttpClient> default_http_client(std::string host);
+std::unique_ptr<HttpClient> default_http_client(std::string_view host);
 
 // short cut for creating http client, api, updater(long pool or smth) and update visitor
 struct Bot {
@@ -27,11 +27,15 @@ struct Bot {
   // uses default http client
   explicit Bot(std::string token, std::string host = "api.telegram.org");
 
-  explicit Bot(std::string token, std::unique_ptr<HttpClient> client, std::string host = "api.telegram.org");
-  // TODO remove .get отсюда
+  explicit Bot(std::string token, std::unique_ptr<HttpClient> client);
+
   std::string_view get_token() const noexcept KELCORO_LIFETIMEBOUND {
     return _api.get_token();
   }
+  std::string_view get_host() const noexcept {
+    return _client->get_host();
+  }
+
   const Api& get_api() const {
     return _api;
   }
@@ -44,6 +48,9 @@ struct Bot {
     _api.set_timeout(timeout);
   }
 
+  duration_t get_timeout() const noexcept {
+    return _api.get_timeout();
+  }
   /**
    * @return Object which holds all event listeners.
    */
@@ -53,6 +60,8 @@ struct Bot {
 
   // stops only after exception in getting or handling updates
   void run(std::chrono::seconds update_wait_timeout = std::chrono::seconds(10));
+
+  void stop();
 
  private:
   dd::task<void> get_and_handle_updates(std::chrono::seconds update_wait_timeout);
