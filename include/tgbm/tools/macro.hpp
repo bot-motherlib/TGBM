@@ -8,19 +8,19 @@
 #define TGBM_TRIVIAL_ABI
 #endif
 
-#ifndef TGBM_DEBUG
-#define TGBM_DEBUG NDEBUG
+#ifndef TGBM_ENABLE_DEBUG
+#define TGBM_ENABLE_DEBUG NDEBUG
 #endif
 
-#ifdef TGBM_DEBUG
+#ifdef TGBM_ENABLE_DEBUG
 // clang-format off
 #define TGBM_ON_DEBUG(...) do { [&]() __VA_ARGS__(); } while (false)
-#define DEBUG_FIELD(type, field) type field
+#define TGBM_DEBUG_FIELD(name, ...) __VA_ARGS__ name
 
 #else
 
 #define TGBM_ON_DEBUG(...) do {} while (false)
-#define DEBUG_FIELD(type, field)
+#define TGBM_DEBUG_FIELD(name, ...)
 // clang-format on
 
 #endif
