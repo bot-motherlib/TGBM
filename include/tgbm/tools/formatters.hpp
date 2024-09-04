@@ -29,14 +29,19 @@ struct formatter<T> : formatter<std::string_view> {
   format_context::iterator format(const T& t, fmt::format_context& ctx) const {
     auto out = ctx.out();
     out = fmt::format_to(out, "{}: [{}]", T::discriminator, to_string_view(t.type()));
-    t.data.visit_ptr(tgbm::matcher{[&](auto field) {
-                                     if (field) {
-                                       out = fmt::format_to(out, ", {}", *field);
-                                     } else {
-                                       out = fmt::format_to(out, ", <empty>");
-                                     }
-                                   },
-                                   [](tgbm::nothing_t) {}});
+    // clang-format off
+    auto visiter = tgbm::matcher{
+      [&](auto field) {
+        if (field) {
+          out = fmt::format_to(out, ", {}", *field);
+        } else {
+          out = fmt::format_to(out, ", <empty>");
+        }
+      },
+      [&](tgbm::nothing_t) { out = fmt::format_to(out, ", <empty>"); }
+    };
+    // clang-format on
+    t.data.visit_ptr(visiter);
     return out;
   }
 };
