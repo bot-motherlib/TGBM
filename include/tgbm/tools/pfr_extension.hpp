@@ -14,14 +14,14 @@ struct field_info {
 
 namespace details {
 template <std::size_t I>
-constexpr void one_field_consume(auto& t, auto& functor) {
+constexpr void one_field_consume(auto&& t, auto& functor) {
   using T = std::remove_cvref_t<decltype(t)>;
   using Info = field_info<I, boost::pfr::get_name<I, T>()>;
-  functor.template operator()<Info>(boost::pfr::get<I>(t));
+  functor.template operator()<Info>(boost::pfr::get<I>(FWD(t)));
 }
 template <std::size_t... I>
 constexpr void visit_object_helper(auto&& t, auto&& functor, std::integer_sequence<std::size_t, I...>) {
-  (one_field_consume<I>(t, functor), ...);
+  (one_field_consume<I>(FWD(t), functor), ...);
 }
 }  // namespace details
 

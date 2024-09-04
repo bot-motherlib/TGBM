@@ -7,3 +7,20 @@
 #else
 #define TGBM_TRIVIAL_ABI
 #endif
+
+#ifndef TGBM_DEBUG
+#define TGBM_DEBUG NDEBUG
+#endif
+
+#ifdef TGBM_DEBUG
+
+#define TGBM_ON_DEBUG(...) do {[&]()__VA_ARGS__();} while(false)
+#define DEBUG_FIELD(type, field) type field
+
+#else
+
+#define TGBM_ON_DEBUG(...) do {[&]()__VA_ARGS__();} while(true)
+#define DEBUG_FIELD(type, field)
+
+#endif
+
