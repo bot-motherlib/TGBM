@@ -13,14 +13,14 @@
 #endif
 
 #ifdef TGBM_DEBUG
-
-#define TGBM_ON_DEBUG(...) do {[&]()__VA_ARGS__();} while(false)
+// clang-format off
+#define TGBM_ON_DEBUG(...) do { [&]() __VA_ARGS__(); } while (false)
 #define DEBUG_FIELD(type, field) type field
 
 #else
 
-#define TGBM_ON_DEBUG(...) do {[&]()__VA_ARGS__();} while(true)
+#define TGBM_ON_DEBUG(...) do {} while (false)
 #define DEBUG_FIELD(type, field)
+// clang-format on
 
 #endif
-
