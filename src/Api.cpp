@@ -8,15 +8,15 @@ namespace tgbm {
 
 using default_body_t = application_json_body;
 
-static bool is_empty_chatid(const int_or_str &x) {
-  if (auto *i = std::get_if<int64_t>(&x))
+static bool is_empty_chatid(const int_or_str& x) {
+  if (auto* i = std::get_if<int64_t>(&x))
     return *i == 0;
   else
     return std::get_if<std::string>(&x)->empty();
 }
 
-static bool is_empty_thumbnail(const thumbnail_t &x) {
-  if (auto *i = std::get_if<InputFile::Ptr>(&x))
+static bool is_empty_thumbnail(const thumbnail_t& x) {
+  if (auto* i = std::get_if<InputFile::Ptr>(&x))
     return *i == nullptr;
   else
     return std::get_if<std::string>(&x)->empty();
@@ -27,7 +27,7 @@ static bool is_empty_thumbnail(const thumbnail_t &x) {
 #define $POST_REQUEST co_await sendRequest({get_url($METHOD), std::move(body)}, _timeout)
 #define $GET_REQUEST co_await sendRequest(http_request(get_url($METHOD)), _timeout)
 
-Api::Api(std::string_view token, HttpClient &httpClient, std::string host, duration_t timeout)
+Api::Api(std::string_view token, HttpClient& httpClient, std::string host, duration_t timeout)
     : _httpClient(httpClient),
       _cached_path(fmt::format("/bot{}/", token)),
       _tgTypeParser(),
@@ -39,7 +39,7 @@ Api::Api(std::string_view token, HttpClient &httpClient, std::string host, durat
 
 dd::task<std::vector<Update::Ptr>> Api::getUpdates(std::int32_t offset, std::int32_t limit,
                                                    std::int32_t timeout,
-                                                   const StringArrayPtr &allowedUpdates) const {
+                                                   const StringArrayPtr& allowedUpdates) const {
   // TODO declare structs and default arguments (autogenerate this code)
   // TODO reserve везде в body примерное количество байт (можно и точно посчитать)
   default_body_t body;
@@ -57,12 +57,12 @@ dd::task<std::vector<Update::Ptr>> Api::getUpdates(std::int32_t offset, std::int
   co_return _tgTypeParser.parseJsonAndGetArray<Update>(&TgTypeParser::parseJsonAndGetUpdate, json);
 }
 
-dd::task<bool> Api::setWebhook(const std::string &url, InputFile::Ptr certificate,
-                               std::int32_t maxConnections, const StringArrayPtr &allowedUpdates,
-                               const std::string &ipAddress, bool dropPendingUpdates,
-                               const std::string &secretToken) const {
+dd::task<bool> Api::setWebhook(const std::string& url, InputFile::Ptr certificate,
+                               std::int32_t maxConnections, const StringArrayPtr& allowedUpdates,
+                               const std::string& ipAddress, bool dropPendingUpdates,
+                               const std::string& secretToken) const {
   boost::property_tree::ptree json;
-  auto fillbody = [&](auto &body) {
+  auto fillbody = [&](auto& body) {
     body.arg("url", url);
     if (!ipAddress.empty())
       body.arg("ip_address", ipAddress);
@@ -188,7 +188,7 @@ dd::task<Message::Ptr> Api::forwardMessage(int_or_str chatId, int_or_str fromCha
 }
 
 dd::task<std::vector<MessageId::Ptr>> Api::forwardMessages(int_or_str chatId, int_or_str fromChatId,
-                                                           const std::vector<std::int32_t> &messageIds,
+                                                           const std::vector<std::int32_t>& messageIds,
                                                            std::int32_t messageThreadId,
                                                            bool disableNotification,
                                                            bool protectContent) const {
@@ -209,8 +209,8 @@ dd::task<std::vector<MessageId::Ptr>> Api::forwardMessages(int_or_str chatId, in
 }
 
 dd::task<MessageId::Ptr> Api::copyMessage(int_or_str chatId, int_or_str fromChatId, std::int32_t messageId,
-                                          const std::string &caption, const std::string &parseMode,
-                                          const std::vector<MessageEntity::Ptr> &captionEntities,
+                                          const std::string& caption, const std::string& parseMode,
+                                          const std::vector<MessageEntity::Ptr>& captionEntities,
                                           bool disableNotification, ReplyParameters::Ptr replyParameters,
                                           GenericReply::Ptr replyMarkup, bool protectContent,
                                           std::int32_t messageThreadId) const {
@@ -243,7 +243,7 @@ dd::task<MessageId::Ptr> Api::copyMessage(int_or_str chatId, int_or_str fromChat
 }
 
 dd::task<std::vector<MessageId::Ptr>> Api::copyMessages(int_or_str chatId, int_or_str fromChatId,
-                                                        const std::vector<std::int32_t> &messageIds,
+                                                        const std::vector<std::int32_t>& messageIds,
                                                         std::int32_t messageThreadId,
                                                         bool disableNotification, bool protectContent,
                                                         bool removeCaption) const {
@@ -266,14 +266,14 @@ dd::task<std::vector<MessageId::Ptr>> Api::copyMessages(int_or_str chatId, int_o
   co_return _tgTypeParser.parseJsonAndGetArray<MessageId>(&TgTypeParser::parseJsonAndGetMessageId, json);
 }
 
-dd::task<Message::Ptr> Api::sendPhoto(int_or_str chatId, thumbnail_t photo, const std::string &caption,
+dd::task<Message::Ptr> Api::sendPhoto(int_or_str chatId, thumbnail_t photo, const std::string& caption,
                                       ReplyParameters::Ptr replyParameters, GenericReply::Ptr replyMarkup,
-                                      const std::string &parseMode, bool disableNotification,
-                                      const std::vector<MessageEntity::Ptr> &captionEntities,
+                                      const std::string& parseMode, bool disableNotification,
+                                      const std::vector<MessageEntity::Ptr>& captionEntities,
                                       std::int32_t messageThreadId, bool protectContent, bool hasSpoiler,
-                                      const std::string &businessConnectionId) const {
+                                      const std::string& businessConnectionId) const {
   boost::property_tree::ptree json;
-  auto fillbody = [&](auto &body) {
+  auto fillbody = [&](auto& body) {
     if (!businessConnectionId.empty())
       body.arg("business_connection_id", businessConnectionId);
     body.arg("chat_id", chatId);
@@ -298,7 +298,7 @@ dd::task<Message::Ptr> Api::sendPhoto(int_or_str chatId, thumbnail_t photo, cons
     if (replyMarkup)
       body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
   };
-  if (auto *file = std::get_if<InputFile::Ptr>(&photo)) {
+  if (auto* file = std::get_if<InputFile::Ptr>(&photo)) {
     application_multipart_form_data body;
     assert(*file);
     body.file_arg("photo", file->get()->mimeType, file->get()->fileName, file->get()->data);
@@ -313,17 +313,17 @@ dd::task<Message::Ptr> Api::sendPhoto(int_or_str chatId, thumbnail_t photo, cons
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 
-dd::task<Message::Ptr> Api::sendAudio(int_or_str chatId, thumbnail_t audio, const std::string &caption,
-                                      std::int32_t duration, const std::string &performer,
-                                      const std::string &title, thumbnail_t thumbnail,
+dd::task<Message::Ptr> Api::sendAudio(int_or_str chatId, thumbnail_t audio, const std::string& caption,
+                                      std::int32_t duration, const std::string& performer,
+                                      const std::string& title, thumbnail_t thumbnail,
                                       ReplyParameters::Ptr replyParameters, GenericReply::Ptr replyMarkup,
-                                      const std::string &parseMode, bool disableNotification,
-                                      const std::vector<MessageEntity::Ptr> &captionEntities,
+                                      const std::string& parseMode, bool disableNotification,
+                                      const std::vector<MessageEntity::Ptr>& captionEntities,
                                       std::int32_t messageThreadId, bool protectContent,
-                                      const std::string &businessConnectionId) const {
+                                      const std::string& businessConnectionId) const {
   boost::property_tree::ptree json;
 
-  auto fillbody = [&](auto &body) {
+  auto fillbody = [&](auto& body) {
     if (!businessConnectionId.empty())
       body.arg("business_connection_id", businessConnectionId);
     body.arg("chat_id", chatId);
@@ -354,17 +354,17 @@ dd::task<Message::Ptr> Api::sendAudio(int_or_str chatId, thumbnail_t audio, cons
 
   if (audio.index() == 0 || thumbnail.index() == 0) {  // InputFile::Ptr
     application_multipart_form_data body;
-    if (auto *file = std::get_if<InputFile::Ptr>(&audio)) {
+    if (auto* file = std::get_if<InputFile::Ptr>(&audio)) {
       assert(*file);
       body.file_arg("audio", file->get()->fileName, file->get()->mimeType, file->get()->data);
     } else {
       body.arg("audio", std::get<std::string>(audio));
     }
-    if (auto *file = std::get_if<InputFile::Ptr>(&thumbnail)) {
+    if (auto* file = std::get_if<InputFile::Ptr>(&thumbnail)) {
       assert(*file);
       body.file_arg("thumbnail", file->get()->fileName, file->get()->mimeType, file->get()->data);
     } else {
-      auto &str = std::get<std::string>(thumbnail);
+      auto& str = std::get<std::string>(thumbnail);
       if (!str.empty())
         body.arg("thumbnail", str);
     }
@@ -373,7 +373,7 @@ dd::task<Message::Ptr> Api::sendAudio(int_or_str chatId, thumbnail_t audio, cons
   } else {
     default_body_t body;
     body.arg("audio", std::get<std::string>(audio));
-    auto &str = *std::get_if<1>(&thumbnail);
+    auto& str = *std::get_if<1>(&thumbnail);
     if (!str.empty())
       body.arg("thumbnail", str);
     fillbody(body);
@@ -383,15 +383,15 @@ dd::task<Message::Ptr> Api::sendAudio(int_or_str chatId, thumbnail_t audio, cons
 }
 
 dd::task<Message::Ptr> Api::sendDocument(int_or_str chatId, thumbnail_t document, thumbnail_t thumbnail,
-                                         const std::string &caption, ReplyParameters::Ptr replyParameters,
-                                         GenericReply::Ptr replyMarkup, const std::string &parseMode,
+                                         const std::string& caption, ReplyParameters::Ptr replyParameters,
+                                         GenericReply::Ptr replyMarkup, const std::string& parseMode,
                                          bool disableNotification,
-                                         const std::vector<MessageEntity::Ptr> &captionEntities,
+                                         const std::vector<MessageEntity::Ptr>& captionEntities,
                                          bool disableContentTypeDetection, std::int32_t messageThreadId,
-                                         bool protectContent, const std::string &businessConnectionId) const {
+                                         bool protectContent, const std::string& businessConnectionId) const {
   boost::property_tree::ptree json;
 
-  auto fillbody = [&](auto &body) {
+  auto fillbody = [&](auto& body) {
     if (!businessConnectionId.empty())
       body.arg("business_connection_id", businessConnectionId);
     body.arg("chat_id", chatId);
@@ -419,17 +419,17 @@ dd::task<Message::Ptr> Api::sendDocument(int_or_str chatId, thumbnail_t document
 
   if (document.index() == 0 || thumbnail.index() == 0) {  // InputFile::Ptr
     application_multipart_form_data body;
-    if (auto *file = std::get_if<InputFile::Ptr>(&document)) {
+    if (auto* file = std::get_if<InputFile::Ptr>(&document)) {
       assert(*file);
       body.file_arg("document", file->get()->fileName, file->get()->mimeType, file->get()->data);
     } else {
       body.arg("document", std::get<std::string>(document));
     }
-    if (auto *file = std::get_if<InputFile::Ptr>(&thumbnail)) {
+    if (auto* file = std::get_if<InputFile::Ptr>(&thumbnail)) {
       assert(*file);
       body.file_arg("thumbnail", file->get()->fileName, file->get()->mimeType, file->get()->data);
     } else {
-      auto &str = std::get<std::string>(thumbnail);
+      auto& str = std::get<std::string>(thumbnail);
       if (!str.empty())
         body.arg("thumbnail", str);
     }
@@ -438,7 +438,7 @@ dd::task<Message::Ptr> Api::sendDocument(int_or_str chatId, thumbnail_t document
   } else {
     default_body_t body;
     body.arg("document", std::get<std::string>(document));
-    auto &str = *std::get_if<1>(&thumbnail);
+    auto& str = *std::get_if<1>(&thumbnail);
     if (!str.empty())
       body.arg("thumbnail", str);
     fillbody(body);
@@ -449,15 +449,15 @@ dd::task<Message::Ptr> Api::sendDocument(int_or_str chatId, thumbnail_t document
 
 dd::task<Message::Ptr> Api::sendVideo(int_or_str chatId, thumbnail_t video, bool supportsStreaming,
                                       std::int32_t duration, std::int32_t width, std::int32_t height,
-                                      thumbnail_t thumbnail, const std::string &caption,
+                                      thumbnail_t thumbnail, const std::string& caption,
                                       ReplyParameters::Ptr replyParameters, GenericReply::Ptr replyMarkup,
-                                      const std::string &parseMode, bool disableNotification,
-                                      const std::vector<MessageEntity::Ptr> &captionEntities,
+                                      const std::string& parseMode, bool disableNotification,
+                                      const std::vector<MessageEntity::Ptr>& captionEntities,
                                       std::int32_t messageThreadId, bool protectContent, bool hasSpoiler,
-                                      const std::string &businessConnectionId) const {
+                                      const std::string& businessConnectionId) const {
   boost::property_tree::ptree json;
 
-  auto fillbody = [&](auto &body) {
+  auto fillbody = [&](auto& body) {
     if (!businessConnectionId.empty())
       body.arg("business_connection_id", businessConnectionId);
     body.arg("chat_id", chatId);
@@ -493,17 +493,17 @@ dd::task<Message::Ptr> Api::sendVideo(int_or_str chatId, thumbnail_t video, bool
 
   if (video.index() == 0 || thumbnail.index() == 0) {  // InputFile::Ptr
     application_multipart_form_data body;
-    if (auto *file = std::get_if<InputFile::Ptr>(&video)) {
+    if (auto* file = std::get_if<InputFile::Ptr>(&video)) {
       assert(*file);
       body.file_arg("video", file->get()->fileName, file->get()->mimeType, file->get()->data);
     } else {
       body.arg("video", std::get<std::string>(video));
     }
-    if (auto *file = std::get_if<InputFile::Ptr>(&thumbnail)) {
+    if (auto* file = std::get_if<InputFile::Ptr>(&thumbnail)) {
       assert(*file);
       body.file_arg("thumbnail", file->get()->fileName, file->get()->mimeType, file->get()->data);
     } else {
-      auto &str = std::get<std::string>(thumbnail);
+      auto& str = std::get<std::string>(thumbnail);
       if (!str.empty())
         body.arg("thumbnail", str);
     }
@@ -512,7 +512,7 @@ dd::task<Message::Ptr> Api::sendVideo(int_or_str chatId, thumbnail_t video, bool
   } else {
     default_body_t body;
     body.arg("video", std::get<std::string>(video));
-    auto &str = *std::get_if<1>(&thumbnail);
+    auto& str = *std::get_if<1>(&thumbnail);
     if (!str.empty())
       body.arg("thumbnail", str);
     fillbody(body);
@@ -523,15 +523,15 @@ dd::task<Message::Ptr> Api::sendVideo(int_or_str chatId, thumbnail_t video, bool
 
 dd::task<Message::Ptr> Api::sendAnimation(int_or_str chatId, thumbnail_t animation, std::int32_t duration,
                                           std::int32_t width, std::int32_t height, thumbnail_t thumbnail,
-                                          const std::string &caption, ReplyParameters::Ptr replyParameters,
-                                          GenericReply::Ptr replyMarkup, const std::string &parseMode,
+                                          const std::string& caption, ReplyParameters::Ptr replyParameters,
+                                          GenericReply::Ptr replyMarkup, const std::string& parseMode,
                                           bool disableNotification,
-                                          const std::vector<MessageEntity::Ptr> &captionEntities,
+                                          const std::vector<MessageEntity::Ptr>& captionEntities,
                                           std::int32_t messageThreadId, bool protectContent, bool hasSpoiler,
-                                          const std::string &businessConnectionId) const {
+                                          const std::string& businessConnectionId) const {
   boost::property_tree::ptree json;
 
-  auto fillbody = [&](auto &body) {
+  auto fillbody = [&](auto& body) {
     if (!businessConnectionId.empty())
       body.arg("business_connection_id", businessConnectionId);
     body.arg("chat_id", chatId);
@@ -565,17 +565,17 @@ dd::task<Message::Ptr> Api::sendAnimation(int_or_str chatId, thumbnail_t animati
 
   if (animation.index() == 0 || thumbnail.index() == 0) {  // InputFile::Ptr
     application_multipart_form_data body;
-    if (auto *file = std::get_if<InputFile::Ptr>(&animation)) {
+    if (auto* file = std::get_if<InputFile::Ptr>(&animation)) {
       assert(*file);
       body.file_arg("animation", file->get()->fileName, file->get()->mimeType, file->get()->data);
     } else {
       body.arg("animation", std::get<std::string>(animation));
     }
-    if (auto *file = std::get_if<InputFile::Ptr>(&thumbnail)) {
+    if (auto* file = std::get_if<InputFile::Ptr>(&thumbnail)) {
       assert(*file);
       body.file_arg("thumbnail", file->get()->fileName, file->get()->mimeType, file->get()->data);
     } else {
-      auto &str = std::get<std::string>(thumbnail);
+      auto& str = std::get<std::string>(thumbnail);
       if (!str.empty())
         body.arg("thumbnail", str);
     }
@@ -584,7 +584,7 @@ dd::task<Message::Ptr> Api::sendAnimation(int_or_str chatId, thumbnail_t animati
   } else {
     default_body_t body;
     body.arg("animation", std::get<std::string>(animation));
-    auto &str = *std::get_if<1>(&thumbnail);
+    auto& str = *std::get_if<1>(&thumbnail);
     if (!str.empty())
       body.arg("thumbnail", str);
     fillbody(body);
@@ -593,16 +593,16 @@ dd::task<Message::Ptr> Api::sendAnimation(int_or_str chatId, thumbnail_t animati
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 
-dd::task<Message::Ptr> Api::sendVoice(int_or_str chatId, thumbnail_t voice, const std::string &caption,
+dd::task<Message::Ptr> Api::sendVoice(int_or_str chatId, thumbnail_t voice, const std::string& caption,
                                       std::int32_t duration, ReplyParameters::Ptr replyParameters,
-                                      GenericReply::Ptr replyMarkup, const std::string &parseMode,
+                                      GenericReply::Ptr replyMarkup, const std::string& parseMode,
                                       bool disableNotification,
-                                      const std::vector<MessageEntity::Ptr> &captionEntities,
+                                      const std::vector<MessageEntity::Ptr>& captionEntities,
                                       std::int32_t messageThreadId, bool protectContent,
-                                      const std::string &businessConnectionId) const {
+                                      const std::string& businessConnectionId) const {
   boost::property_tree::ptree json;
 
-  auto fillbody = [&](auto &body) {
+  auto fillbody = [&](auto& body) {
     if (!businessConnectionId.empty())
       body.arg("business_connection_id", businessConnectionId);
     body.arg("chat_id", chatId);
@@ -628,7 +628,7 @@ dd::task<Message::Ptr> Api::sendVoice(int_or_str chatId, thumbnail_t voice, cons
       body.arg("reply_markup", _tgTypeParser.parseGenericReply(replyMarkup));
   };
 
-  if (auto *file = std::get_if<InputFile::Ptr>(&voice)) {  // InputFile::Ptr
+  if (auto* file = std::get_if<InputFile::Ptr>(&voice)) {  // InputFile::Ptr
     application_multipart_form_data body;
     assert(*file);
     body.file_arg("voice", file->get()->fileName, file->get()->mimeType, file->get()->data);
@@ -648,10 +648,10 @@ dd::task<Message::Ptr> Api::sendVideoNote(int_or_str chatId, thumbnail_t videoNo
                                           std::int32_t duration, std::int32_t length, thumbnail_t thumbnail,
                                           GenericReply::Ptr replyMarkup, std::int32_t messageThreadId,
                                           bool protectContent,
-                                          const std::string &businessConnectionId) const {
+                                          const std::string& businessConnectionId) const {
   boost::property_tree::ptree json;
 
-  auto fillbody = [&](auto &body) {
+  auto fillbody = [&](auto& body) {
     if (!businessConnectionId.empty())
       body.arg("business_connection_id", businessConnectionId);
     body.arg("chat_id", chatId);
@@ -673,17 +673,17 @@ dd::task<Message::Ptr> Api::sendVideoNote(int_or_str chatId, thumbnail_t videoNo
 
   if (videoNote.index() == 0 || thumbnail.index() == 0) {  // InputFile::Ptr
     application_multipart_form_data body;
-    if (auto *file = std::get_if<InputFile::Ptr>(&videoNote)) {
+    if (auto* file = std::get_if<InputFile::Ptr>(&videoNote)) {
       assert(*file);
       body.file_arg("video_note", file->get()->fileName, file->get()->mimeType, file->get()->data);
     } else {
       body.arg("video_note", std::get<std::string>(videoNote));
     }
-    if (auto *file = std::get_if<InputFile::Ptr>(&thumbnail)) {
+    if (auto* file = std::get_if<InputFile::Ptr>(&thumbnail)) {
       assert(*file);
       body.file_arg("thumbnail", file->get()->fileName, file->get()->mimeType, file->get()->data);
     } else {
-      auto &str = std::get<std::string>(thumbnail);
+      auto& str = std::get<std::string>(thumbnail);
       if (!str.empty())
         body.arg("thumbnail", str);
     }
@@ -692,7 +692,7 @@ dd::task<Message::Ptr> Api::sendVideoNote(int_or_str chatId, thumbnail_t videoNo
   } else {
     default_body_t body;
     body.arg("video_note", std::get<std::string>(videoNote));
-    auto &str = *std::get_if<1>(&thumbnail);
+    auto& str = *std::get_if<1>(&thumbnail);
     if (!str.empty())
       body.arg("thumbnail", str);
     fillbody(body);
@@ -702,11 +702,11 @@ dd::task<Message::Ptr> Api::sendVideoNote(int_or_str chatId, thumbnail_t videoNo
 }
 
 dd::task<std::vector<Message::Ptr>> Api::sendMediaGroup(int_or_str chatId,
-                                                        const std::vector<InputMedia::Ptr> &media,
+                                                        const std::vector<InputMedia::Ptr>& media,
                                                         bool disableNotification,
                                                         ReplyParameters::Ptr replyParameters,
                                                         std::int32_t messageThreadId, bool protectContent,
-                                                        const std::string &businessConnectionId) const {
+                                                        const std::string& businessConnectionId) const {
   default_body_t body;
 
   if (!businessConnectionId.empty())
@@ -731,7 +731,7 @@ dd::task<Message::Ptr> Api::sendLocation(int_or_str chatId, float latitude, floa
                                          GenericReply::Ptr replyMarkup, bool disableNotification,
                                          float horizontalAccuracy, std::int32_t heading,
                                          std::int32_t proximityAlertRadius, std::int32_t messageThreadId,
-                                         bool protectContent, const std::string &businessConnectionId) const {
+                                         bool protectContent, const std::string& businessConnectionId) const {
   default_body_t body;
 
   if (!businessConnectionId.empty())
@@ -764,7 +764,7 @@ dd::task<Message::Ptr> Api::sendLocation(int_or_str chatId, float latitude, floa
 // TODO floats?.. use to_chars?
 dd::task<Message::Ptr> Api::editMessageLiveLocation(float latitude, float longitude, int_or_str chatId,
                                                     std::int32_t messageId,
-                                                    const std::string &inlineMessageId,
+                                                    const std::string& inlineMessageId,
                                                     InlineKeyboardMarkup::Ptr replyMarkup,
                                                     float horizontalAccuracy, std::int32_t heading,
                                                     std::int32_t proximityAlertRadius) const {
@@ -792,7 +792,7 @@ dd::task<Message::Ptr> Api::editMessageLiveLocation(float latitude, float longit
 }
 
 dd::task<Message::Ptr> Api::stopMessageLiveLocation(int_or_str chatId, std::int32_t messageId,
-                                                    const std::string &inlineMessageId,
+                                                    const std::string& inlineMessageId,
                                                     InlineKeyboardMarkup::Ptr replyMarkup) const {
   default_body_t body;
 
@@ -809,12 +809,12 @@ dd::task<Message::Ptr> Api::stopMessageLiveLocation(int_or_str chatId, std::int3
 }
 
 dd::task<Message::Ptr> Api::sendVenue(int_or_str chatId, float latitude, float longitude,
-                                      const std::string &title, const std::string &address,
-                                      const std::string &foursquareId, const std::string &foursquareType,
+                                      const std::string& title, const std::string& address,
+                                      const std::string& foursquareId, const std::string& foursquareType,
                                       bool disableNotification, ReplyParameters::Ptr replyParameters,
-                                      GenericReply::Ptr replyMarkup, const std::string &googlePlaceId,
-                                      const std::string &googlePlaceType, std::int32_t messageThreadId,
-                                      bool protectContent, const std::string &businessConnectionId) const {
+                                      GenericReply::Ptr replyMarkup, const std::string& googlePlaceId,
+                                      const std::string& googlePlaceType, std::int32_t messageThreadId,
+                                      bool protectContent, const std::string& businessConnectionId) const {
   default_body_t body;
 
   if (!businessConnectionId.empty())
@@ -847,12 +847,12 @@ dd::task<Message::Ptr> Api::sendVenue(int_or_str chatId, float latitude, float l
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 
-dd::task<Message::Ptr> Api::sendContact(int_or_str chatId, const std::string &phoneNumber,
-                                        const std::string &firstName, const std::string &lastName,
-                                        const std::string &vcard, bool disableNotification,
+dd::task<Message::Ptr> Api::sendContact(int_or_str chatId, const std::string& phoneNumber,
+                                        const std::string& firstName, const std::string& lastName,
+                                        const std::string& vcard, bool disableNotification,
                                         ReplyParameters::Ptr replyParameters, GenericReply::Ptr replyMarkup,
                                         std::int32_t messageThreadId, bool protectContent,
-                                        const std::string &businessConnectionId) const {
+                                        const std::string& businessConnectionId) const {
   default_body_t body;
 
   if (!businessConnectionId.empty())
@@ -879,16 +879,16 @@ dd::task<Message::Ptr> Api::sendContact(int_or_str chatId, const std::string &ph
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 
-dd::task<Message::Ptr> Api::sendPoll(int_or_str chatId, const std::string &question,
-                                     const std::vector<std::string> &options, bool disableNotification,
+dd::task<Message::Ptr> Api::sendPoll(int_or_str chatId, const std::string& question,
+                                     const std::vector<std::string>& options, bool disableNotification,
                                      ReplyParameters::Ptr replyParameters, GenericReply::Ptr replyMarkup,
-                                     bool isAnonymous, const std::string &type, bool allowsMultipleAnswers,
-                                     std::int32_t correctOptionId, const std::string &explanation,
-                                     const std::string &explanationParseMode,
-                                     const std::vector<MessageEntity::Ptr> &explanationEntities,
+                                     bool isAnonymous, const std::string& type, bool allowsMultipleAnswers,
+                                     std::int32_t correctOptionId, const std::string& explanation,
+                                     const std::string& explanationParseMode,
+                                     const std::vector<MessageEntity::Ptr>& explanationEntities,
                                      std::int32_t openPeriod, std::int32_t closeDate, bool isClosed,
                                      std::int32_t messageThreadId, bool protectContent,
-                                     const std::string &businessConnectionId) const {
+                                     const std::string& businessConnectionId) const {
   default_body_t body;
 
   if (!businessConnectionId.empty())
@@ -934,8 +934,8 @@ dd::task<Message::Ptr> Api::sendPoll(int_or_str chatId, const std::string &quest
 
 dd::task<Message::Ptr> Api::sendDice(int_or_str chatId, bool disableNotification,
                                      ReplyParameters::Ptr replyParameters, GenericReply::Ptr replyMarkup,
-                                     const std::string &emoji, std::int32_t messageThreadId,
-                                     bool protectContent, const std::string &businessConnectionId) const {
+                                     const std::string& emoji, std::int32_t messageThreadId,
+                                     bool protectContent, const std::string& businessConnectionId) const {
   default_body_t body;
 
   if (!businessConnectionId.empty())
@@ -959,7 +959,7 @@ dd::task<Message::Ptr> Api::sendDice(int_or_str chatId, bool disableNotification
 }
 
 dd::task<bool> Api::setMessageReaction(int_or_str chatId, std::int32_t messageId,
-                                       const std::vector<ReactionType::Ptr> &reaction, bool isBig) const {
+                                       const std::vector<ReactionType::Ptr>& reaction, bool isBig) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
@@ -974,9 +974,9 @@ dd::task<bool> Api::setMessageReaction(int_or_str chatId, std::int32_t messageId
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::sendChatAction(std::int64_t chatId, const std::string &action,
+dd::task<bool> Api::sendChatAction(std::int64_t chatId, const std::string& action,
                                    std::int32_t messageThreadId,
-                                   const std::string &businessConnectionId) const {
+                                   const std::string& businessConnectionId) const {
   default_body_t body;
 
   if (!businessConnectionId.empty())
@@ -1004,7 +1004,7 @@ dd::task<UserProfilePhotos::Ptr> Api::getUserProfilePhotos(std::int64_t userId, 
   co_return _tgTypeParser.parseJsonAndGetUserProfilePhotos(json);
 }
 
-dd::task<File::Ptr> Api::getFile(const std::string &fileId) const {
+dd::task<File::Ptr> Api::getFile(const std::string& fileId) const {
   default_body_t body;
 
   body.arg("file_id", fileId);
@@ -1099,7 +1099,7 @@ dd::task<bool> Api::promoteChatMember(int_or_str chatId, std::int64_t userId, bo
 }
 
 dd::task<bool> Api::setChatAdministratorCustomTitle(int_or_str chatId, std::int64_t userId,
-                                                    const std::string &customTitle) const {
+                                                    const std::string& customTitle) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
@@ -1153,7 +1153,7 @@ dd::task<std::string> Api::exportChatInviteLink(int_or_str chatId) const {
 }
 
 dd::task<ChatInviteLink::Ptr> Api::createChatInviteLink(int_or_str chatId, std::int32_t expireDate,
-                                                        std::int32_t memberLimit, const std::string &name,
+                                                        std::int32_t memberLimit, const std::string& name,
                                                         bool createsJoinRequest) const {
   default_body_t body;
 
@@ -1170,9 +1170,9 @@ dd::task<ChatInviteLink::Ptr> Api::createChatInviteLink(int_or_str chatId, std::
   co_return _tgTypeParser.parseJsonAndGetChatInviteLink(json);
 }
 
-dd::task<ChatInviteLink::Ptr> Api::editChatInviteLink(int_or_str chatId, const std::string &inviteLink,
+dd::task<ChatInviteLink::Ptr> Api::editChatInviteLink(int_or_str chatId, const std::string& inviteLink,
                                                       std::int32_t expireDate, std::int32_t memberLimit,
-                                                      const std::string &name,
+                                                      const std::string& name,
                                                       bool createsJoinRequest) const {
   default_body_t body;
 
@@ -1192,7 +1192,7 @@ dd::task<ChatInviteLink::Ptr> Api::editChatInviteLink(int_or_str chatId, const s
 }
 
 dd::task<ChatInviteLink::Ptr> Api::revokeChatInviteLink(int_or_str chatId,
-                                                        const std::string &inviteLink) const {
+                                                        const std::string& inviteLink) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
@@ -1240,7 +1240,7 @@ dd::task<bool> Api::deleteChatPhoto(int_or_str chatId) const {
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::setChatTitle(int_or_str chatId, const std::string &title) const {
+dd::task<bool> Api::setChatTitle(int_or_str chatId, const std::string& title) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
@@ -1249,7 +1249,7 @@ dd::task<bool> Api::setChatTitle(int_or_str chatId, const std::string &title) co
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::setChatDescription(int_or_str chatId, const std::string &description) const {
+dd::task<bool> Api::setChatDescription(int_or_str chatId, const std::string& description) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
@@ -1330,7 +1330,7 @@ dd::task<ChatMember::Ptr> Api::getChatMember(int_or_str chatId, std::int64_t use
   co_return _tgTypeParser.parseJsonAndGetChatMember(json);
 }
 
-dd::task<bool> Api::setChatStickerSet(int_or_str chatId, const std::string &stickerSetName) const {
+dd::task<bool> Api::setChatStickerSet(int_or_str chatId, const std::string& stickerSetName) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
@@ -1352,9 +1352,9 @@ dd::task<std::vector<Sticker::Ptr>> Api::getForumTopicIconStickers() const {
   co_return _tgTypeParser.parseJsonAndGetArray<Sticker>(&TgTypeParser::parseJsonAndGetSticker, json);
 }
 
-dd::task<ForumTopic::Ptr> Api::createForumTopic(int_or_str chatId, const std::string &name,
+dd::task<ForumTopic::Ptr> Api::createForumTopic(int_or_str chatId, const std::string& name,
                                                 std::int32_t iconColor,
-                                                const std::string &iconCustomEmojiId) const {
+                                                const std::string& iconCustomEmojiId) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
@@ -1367,7 +1367,7 @@ dd::task<ForumTopic::Ptr> Api::createForumTopic(int_or_str chatId, const std::st
   co_return _tgTypeParser.parseJsonAndGetForumTopic(json);
 }
 
-dd::task<bool> Api::editForumTopic(int_or_str chatId, std::int32_t messageThreadId, const std::string &name,
+dd::task<bool> Api::editForumTopic(int_or_str chatId, std::int32_t messageThreadId, const std::string& name,
                                    int_or_str iconCustomEmojiId) const {
   default_body_t body;
 
@@ -1466,8 +1466,8 @@ dd::task<bool> Api::unpinAllGeneralForumTopicMessages(int_or_str chatId) const {
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::answerCallbackQuery(const std::string &callbackQueryId, const std::string &text,
-                                        bool showAlert, const std::string &url,
+dd::task<bool> Api::answerCallbackQuery(const std::string& callbackQueryId, const std::string& text,
+                                        bool showAlert, const std::string& url,
                                         std::int32_t cacheTime) const {
   default_body_t body;
 
@@ -1493,7 +1493,7 @@ dd::task<UserChatBoosts::Ptr> Api::getUserChatBoosts(int_or_str chatId, std::int
   co_return _tgTypeParser.parseJsonAndGetUserChatBoosts(json);
 }
 
-dd::task<BusinessConnection::Ptr> Api::getBusinessConnection(const std::string &businessConnectionId) const {
+dd::task<BusinessConnection::Ptr> Api::getBusinessConnection(const std::string& businessConnectionId) const {
   default_body_t body;
 
   body.arg("business_connection_id", businessConnectionId);
@@ -1501,8 +1501,8 @@ dd::task<BusinessConnection::Ptr> Api::getBusinessConnection(const std::string &
   co_return _tgTypeParser.parseJsonAndGetBusinessConnection(json);
 }
 
-dd::task<bool> Api::setMyCommands(const std::vector<BotCommand::Ptr> &commands, BotCommandScope::Ptr scope,
-                                  const std::string &languageCode) const {
+dd::task<bool> Api::setMyCommands(const std::vector<BotCommand::Ptr>& commands, BotCommandScope::Ptr scope,
+                                  const std::string& languageCode) const {
   default_body_t body;
 
   body.arg("commands", _tgTypeParser.parseArray<BotCommand>(&TgTypeParser::parseBotCommand, commands));
@@ -1514,7 +1514,7 @@ dd::task<bool> Api::setMyCommands(const std::vector<BotCommand::Ptr> &commands, 
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::deleteMyCommands(BotCommandScope::Ptr scope, const std::string &languageCode) const {
+dd::task<bool> Api::deleteMyCommands(BotCommandScope::Ptr scope, const std::string& languageCode) const {
   default_body_t body;
 
   if (scope)
@@ -1526,7 +1526,7 @@ dd::task<bool> Api::deleteMyCommands(BotCommandScope::Ptr scope, const std::stri
 }
 
 dd::task<std::vector<BotCommand::Ptr>> Api::getMyCommands(BotCommandScope::Ptr scope,
-                                                          const std::string &languageCode) const {
+                                                          const std::string& languageCode) const {
   default_body_t body;
 
   if (scope)
@@ -1537,7 +1537,7 @@ dd::task<std::vector<BotCommand::Ptr>> Api::getMyCommands(BotCommandScope::Ptr s
   co_return _tgTypeParser.parseJsonAndGetArray<BotCommand>(&TgTypeParser::parseJsonAndGetBotCommand, json);
 }
 
-dd::task<bool> Api::setMyName(const std::string &name, const std::string &languageCode) const {
+dd::task<bool> Api::setMyName(const std::string& name, const std::string& languageCode) const {
   default_body_t body;
 
   if (!name.empty())
@@ -1548,7 +1548,7 @@ dd::task<bool> Api::setMyName(const std::string &name, const std::string &langua
   co_return json.get<bool>("", false);
 }
 
-dd::task<BotName::Ptr> Api::getMyName(const std::string &languageCode) const {
+dd::task<BotName::Ptr> Api::getMyName(const std::string& languageCode) const {
   default_body_t body;
 
   if (!languageCode.empty())
@@ -1557,7 +1557,7 @@ dd::task<BotName::Ptr> Api::getMyName(const std::string &languageCode) const {
   co_return _tgTypeParser.parseJsonAndGetBotName(json);
 }
 
-dd::task<bool> Api::setMyDescription(const std::string &description, const std::string &languageCode) const {
+dd::task<bool> Api::setMyDescription(const std::string& description, const std::string& languageCode) const {
   default_body_t body;
 
   if (!description.empty())
@@ -1568,7 +1568,7 @@ dd::task<bool> Api::setMyDescription(const std::string &description, const std::
   co_return json.get<bool>("", false);
 }
 
-dd::task<BotDescription::Ptr> Api::getMyDescription(const std::string &languageCode) const {
+dd::task<BotDescription::Ptr> Api::getMyDescription(const std::string& languageCode) const {
   default_body_t body;
 
   if (!languageCode.empty())
@@ -1577,8 +1577,8 @@ dd::task<BotDescription::Ptr> Api::getMyDescription(const std::string &languageC
   co_return _tgTypeParser.parseJsonAndGetBotDescription(json);
 }
 
-dd::task<bool> Api::setMyShortDescription(const std::string &shortDescription,
-                                          const std::string &languageCode) const {
+dd::task<bool> Api::setMyShortDescription(const std::string& shortDescription,
+                                          const std::string& languageCode) const {
   default_body_t body;
 
   if (!shortDescription.empty())
@@ -1589,7 +1589,7 @@ dd::task<bool> Api::setMyShortDescription(const std::string &shortDescription,
   co_return json.get<bool>("", false);
 }
 
-dd::task<BotShortDescription::Ptr> Api::getMyShortDescription(const std::string &languageCode) const {
+dd::task<BotShortDescription::Ptr> Api::getMyShortDescription(const std::string& languageCode) const {
   default_body_t body;
 
   if (!languageCode.empty())
@@ -1639,12 +1639,12 @@ dd::task<ChatAdministratorRights::Ptr> Api::getMyDefaultAdministratorRights(bool
   co_return _tgTypeParser.parseJsonAndGetChatAdministratorRights(json);
 }
 
-dd::task<Message::Ptr> Api::editMessageText(const std::string &text, int_or_str chatId,
-                                            std::int32_t messageId, const std::string &inlineMessageId,
-                                            const std::string &parseMode,
+dd::task<Message::Ptr> Api::editMessageText(const std::string& text, int_or_str chatId,
+                                            std::int32_t messageId, const std::string& inlineMessageId,
+                                            const std::string& parseMode,
                                             LinkPreviewOptions::Ptr linkPreviewOptions,
                                             InlineKeyboardMarkup::Ptr replyMarkup,
-                                            const std::vector<MessageEntity::Ptr> &entities) const {
+                                            const std::vector<MessageEntity::Ptr>& entities) const {
   default_body_t body;
 
   if (!is_empty_chatid(chatId))
@@ -1672,9 +1672,9 @@ dd::task<Message::Ptr> Api::editMessageText(const std::string &text, int_or_str 
 }
 
 dd::task<Message::Ptr> Api::editMessageCaption(int_or_str chatId, std::int32_t messageId,
-                                               const std::string &caption, const std::string &inlineMessageId,
-                                               GenericReply::Ptr replyMarkup, const std::string &parseMode,
-                                               const std::vector<MessageEntity::Ptr> &captionEntities) const {
+                                               const std::string& caption, const std::string& inlineMessageId,
+                                               GenericReply::Ptr replyMarkup, const std::string& parseMode,
+                                               const std::vector<MessageEntity::Ptr>& captionEntities) const {
   default_body_t body;
   if (!is_empty_chatid(chatId))
     body.arg("chat_id", chatId);
@@ -1700,7 +1700,7 @@ dd::task<Message::Ptr> Api::editMessageCaption(int_or_str chatId, std::int32_t m
 }
 
 dd::task<Message::Ptr> Api::editMessageMedia(InputMedia::Ptr media, int_or_str chatId, std::int32_t messageId,
-                                             const std::string &inlineMessageId,
+                                             const std::string& inlineMessageId,
                                              GenericReply::Ptr replyMarkup) const {
   default_body_t body;
 
@@ -1721,7 +1721,7 @@ dd::task<Message::Ptr> Api::editMessageMedia(InputMedia::Ptr media, int_or_str c
 }
 
 dd::task<Message::Ptr> Api::editMessageReplyMarkup(int_or_str chatId, std::int32_t messageId,
-                                                   const std::string &inlineMessageId,
+                                                   const std::string& inlineMessageId,
                                                    const GenericReply::Ptr replyMarkup) const {
   default_body_t body;
 
@@ -1761,7 +1761,7 @@ dd::task<bool> Api::deleteMessage(int_or_str chatId, std::int32_t messageId) con
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::deleteMessages(int_or_str chatId, const std::vector<std::int32_t> &messageIds) const {
+dd::task<bool> Api::deleteMessages(int_or_str chatId, const std::vector<std::int32_t>& messageIds) const {
   default_body_t body;
 
   body.arg("chat_id", chatId);
@@ -1774,9 +1774,9 @@ dd::task<bool> Api::deleteMessages(int_or_str chatId, const std::vector<std::int
 dd::task<Message::Ptr> Api::sendSticker(int_or_str chatId, thumbnail_t sticker,
                                         ReplyParameters::Ptr replyParameters, GenericReply::Ptr replyMarkup,
                                         bool disableNotification, std::int32_t messageThreadId,
-                                        bool protectContent, const std::string &emoji,
-                                        const std::string &businessConnectionId) const {
-  auto fillbody = [&](auto &body) {
+                                        bool protectContent, const std::string& emoji,
+                                        const std::string& businessConnectionId) const {
+  auto fillbody = [&](auto& body) {
     if (!businessConnectionId.empty())
       body.arg("business_connection_id", businessConnectionId);
     body.arg("chat_id", chatId);
@@ -1796,7 +1796,7 @@ dd::task<Message::Ptr> Api::sendSticker(int_or_str chatId, thumbnail_t sticker,
 
   boost::property_tree::ptree json;
 
-  if (auto *file = std::get_if<InputFile::Ptr>(&sticker)) {
+  if (auto* file = std::get_if<InputFile::Ptr>(&sticker)) {
     application_multipart_form_data body;
     assert(*file);
     body.file_arg("sticker", file->get()->fileName, file->get()->mimeType, file->get()->data);
@@ -1811,7 +1811,7 @@ dd::task<Message::Ptr> Api::sendSticker(int_or_str chatId, thumbnail_t sticker,
   co_return _tgTypeParser.parseJsonAndGetMessage(json);
 }
 
-dd::task<StickerSet::Ptr> Api::getStickerSet(const std::string &name) const {
+dd::task<StickerSet::Ptr> Api::getStickerSet(const std::string& name) const {
   default_body_t body;
 
   body.arg("name", name);
@@ -1820,7 +1820,7 @@ dd::task<StickerSet::Ptr> Api::getStickerSet(const std::string &name) const {
 }
 
 dd::task<std::vector<Sticker::Ptr>> Api::getCustomEmojiStickers(
-    const std::vector<std::string> &customEmojiIds) const {
+    const std::vector<std::string>& customEmojiIds) const {
   default_body_t body;
   // TODO check vector of strings correctly escapes in json
   body.arg("custom_emoji_ids", customEmojiIds);
@@ -1829,7 +1829,7 @@ dd::task<std::vector<Sticker::Ptr>> Api::getCustomEmojiStickers(
 }
 
 dd::task<File::Ptr> Api::uploadStickerFile(std::int64_t userId, InputFile::Ptr sticker,
-                                           const std::string &stickerFormat) const {
+                                           const std::string& stickerFormat) const {
   application_multipart_form_data body;
 
   body.arg("user_id", userId);
@@ -1839,9 +1839,9 @@ dd::task<File::Ptr> Api::uploadStickerFile(std::int64_t userId, InputFile::Ptr s
   co_return _tgTypeParser.parseJsonAndGetFile(json);
 }
 
-dd::task<bool> Api::createNewStickerSet(std::int64_t userId, const std::string &name,
-                                        const std::string &title,
-                                        const std::vector<InputSticker::Ptr> &stickers,
+dd::task<bool> Api::createNewStickerSet(std::int64_t userId, const std::string& name,
+                                        const std::string& title,
+                                        const std::vector<InputSticker::Ptr>& stickers,
                                         Sticker::Type stickerType, bool needsRepainting) const {
   default_body_t body;
 
@@ -1866,7 +1866,7 @@ dd::task<bool> Api::createNewStickerSet(std::int64_t userId, const std::string &
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::addStickerToSet(std::int64_t userId, const std::string &name,
+dd::task<bool> Api::addStickerToSet(std::int64_t userId, const std::string& name,
                                     InputSticker::Ptr sticker) const {
   default_body_t body;
 
@@ -1877,7 +1877,7 @@ dd::task<bool> Api::addStickerToSet(std::int64_t userId, const std::string &name
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::setStickerPositionInSet(const std::string &sticker, std::int32_t position) const {
+dd::task<bool> Api::setStickerPositionInSet(const std::string& sticker, std::int32_t position) const {
   default_body_t body;
 
   body.arg("sticker", sticker);
@@ -1886,7 +1886,7 @@ dd::task<bool> Api::setStickerPositionInSet(const std::string &sticker, std::int
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::deleteStickerFromSet(const std::string &sticker) const {
+dd::task<bool> Api::deleteStickerFromSet(const std::string& sticker) const {
   default_body_t body;
 
   body.arg("sticker", sticker);
@@ -1894,8 +1894,8 @@ dd::task<bool> Api::deleteStickerFromSet(const std::string &sticker) const {
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::replaceStickerInSet(std::int64_t userId, const std::string &name,
-                                        const std::string &oldSticker, InputSticker::Ptr sticker) const {
+dd::task<bool> Api::replaceStickerInSet(std::int64_t userId, const std::string& name,
+                                        const std::string& oldSticker, InputSticker::Ptr sticker) const {
   default_body_t body;
 
   body.arg("user_id", userId);
@@ -1906,8 +1906,8 @@ dd::task<bool> Api::replaceStickerInSet(std::int64_t userId, const std::string &
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::setStickerEmojiList(const std::string &sticker,
-                                        const std::vector<std::string> &emojiList) const {
+dd::task<bool> Api::setStickerEmojiList(const std::string& sticker,
+                                        const std::vector<std::string>& emojiList) const {
   default_body_t body;
 
   body.arg("sticker", sticker);
@@ -1916,8 +1916,8 @@ dd::task<bool> Api::setStickerEmojiList(const std::string &sticker,
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::setStickerKeywords(const std::string &sticker,
-                                       const std::vector<std::string> &keywords) const {
+dd::task<bool> Api::setStickerKeywords(const std::string& sticker,
+                                       const std::vector<std::string>& keywords) const {
   default_body_t body;
 
   body.arg("sticker", sticker);
@@ -1927,7 +1927,7 @@ dd::task<bool> Api::setStickerKeywords(const std::string &sticker,
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::setStickerMaskPosition(const std::string &sticker, MaskPosition::Ptr maskPosition) const {
+dd::task<bool> Api::setStickerMaskPosition(const std::string& sticker, MaskPosition::Ptr maskPosition) const {
   default_body_t body;
 
   body.arg("sticker", sticker);
@@ -1937,7 +1937,7 @@ dd::task<bool> Api::setStickerMaskPosition(const std::string &sticker, MaskPosit
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::setStickerSetTitle(const std::string &name, const std::string &title) const {
+dd::task<bool> Api::setStickerSetTitle(const std::string& name, const std::string& title) const {
   default_body_t body;
 
   body.arg("name", name);
@@ -1946,19 +1946,19 @@ dd::task<bool> Api::setStickerSetTitle(const std::string &name, const std::strin
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::setStickerSetThumbnail(const std::string &name, std::int64_t userId,
-                                           const std::string &format, thumbnail_t thumbnail) const {
+dd::task<bool> Api::setStickerSetThumbnail(const std::string& name, std::int64_t userId,
+                                           const std::string& format, thumbnail_t thumbnail) const {
   boost::property_tree::ptree json;
 
-  auto fillbody = [&](auto &body) {
+  auto fillbody = [&](auto& body) {
     body.arg("name", name);
     body.arg("user_id", userId);
     body.arg("format", format);
   };
 
-  if (auto *file = std::get_if<InputFile::Ptr>(&thumbnail)) {
+  if (auto* file = std::get_if<InputFile::Ptr>(&thumbnail)) {
     application_multipart_form_data body;
-    if (auto &file_ptr = *file)
+    if (auto& file_ptr = *file)
       body.file_arg("thumbnail", file_ptr->fileName, file_ptr->mimeType, file_ptr->data);
     fillbody(body);
     json = $POST_REQUEST;
@@ -1971,8 +1971,8 @@ dd::task<bool> Api::setStickerSetThumbnail(const std::string &name, std::int64_t
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::setCustomEmojiStickerSetThumbnail(const std::string &name,
-                                                      const std::string &customEmojiId) const {
+dd::task<bool> Api::setCustomEmojiStickerSetThumbnail(const std::string& name,
+                                                      const std::string& customEmojiId) const {
   default_body_t body;
 
   body.arg("name", name);
@@ -1982,7 +1982,7 @@ dd::task<bool> Api::setCustomEmojiStickerSetThumbnail(const std::string &name,
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::deleteStickerSet(const std::string &name) const {
+dd::task<bool> Api::deleteStickerSet(const std::string& name) const {
   default_body_t body;
 
   body.arg("name", name);
@@ -1990,9 +1990,9 @@ dd::task<bool> Api::deleteStickerSet(const std::string &name) const {
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::answerInlineQuery(const std::string &inlineQueryId,
-                                      const std::vector<InlineQueryResult::Ptr> &results,
-                                      std::int32_t cacheTime, bool isPersonal, const std::string &nextOffset,
+dd::task<bool> Api::answerInlineQuery(const std::string& inlineQueryId,
+                                      const std::vector<InlineQueryResult::Ptr>& results,
+                                      std::int32_t cacheTime, bool isPersonal, const std::string& nextOffset,
                                       InlineQueryResultsButton::Ptr button) const {
   default_body_t body;
 
@@ -2011,7 +2011,7 @@ dd::task<bool> Api::answerInlineQuery(const std::string &inlineQueryId,
   co_return json.get<bool>("", false);
 }
 
-dd::task<SentWebAppMessage::Ptr> Api::answerWebAppQuery(const std::string &webAppQueryId,
+dd::task<SentWebAppMessage::Ptr> Api::answerWebAppQuery(const std::string& webAppQueryId,
                                                         InlineQueryResult::Ptr result) const {
   default_body_t body;
 
@@ -2022,15 +2022,15 @@ dd::task<SentWebAppMessage::Ptr> Api::answerWebAppQuery(const std::string &webAp
 }
 
 dd::task<Message::Ptr> Api::sendInvoice(
-    int_or_str chatId, const std::string &title, const std::string &description, const std::string &payload,
-    const std::string &providerToken, const std::string &currency,
-    const std::vector<LabeledPrice::Ptr> &prices, const std::string &providerData,
-    const std::string &photoUrl, std::int32_t photoSize, std::int32_t photoWidth, std::int32_t photoHeight,
+    int_or_str chatId, const std::string& title, const std::string& description, const std::string& payload,
+    const std::string& providerToken, const std::string& currency,
+    const std::vector<LabeledPrice::Ptr>& prices, const std::string& providerData,
+    const std::string& photoUrl, std::int32_t photoSize, std::int32_t photoWidth, std::int32_t photoHeight,
     bool needName, bool needPhoneNumber, bool needEmail, bool needShippingAddress,
     bool sendPhoneNumberToProvider, bool sendEmailToProvider, bool isFlexible,
     ReplyParameters::Ptr replyParameters, GenericReply::Ptr replyMarkup, bool disableNotification,
     std::int32_t messageThreadId, std::int32_t maxTipAmount,
-    const std::vector<std::int32_t> &suggestedTipAmounts, const std::string &startParameter,
+    const std::vector<std::int32_t>& suggestedTipAmounts, const std::string& startParameter,
     bool protectContent) const {
   default_body_t body;
 
@@ -2085,11 +2085,11 @@ dd::task<Message::Ptr> Api::sendInvoice(
 }
 
 dd::task<std::string> Api::createInvoiceLink(
-    const std::string &title, const std::string &description, const std::string &payload,
-    const std::string &providerToken, const std::string &currency,
-    const std::vector<LabeledPrice::Ptr> &prices, std::int32_t maxTipAmount,
-    const std::vector<std::int32_t> &suggestedTipAmounts, const std::string &providerData,
-    const std::string &photoUrl, std::int32_t photoSize, std::int32_t photoWidth, std::int32_t photoHeight,
+    const std::string& title, const std::string& description, const std::string& payload,
+    const std::string& providerToken, const std::string& currency,
+    const std::vector<LabeledPrice::Ptr>& prices, std::int32_t maxTipAmount,
+    const std::vector<std::int32_t>& suggestedTipAmounts, const std::string& providerData,
+    const std::string& photoUrl, std::int32_t photoSize, std::int32_t photoWidth, std::int32_t photoHeight,
     bool needName, bool needPhoneNumber, bool needEmail, bool needShippingAddress,
     bool sendPhoneNumberToProvider, bool sendEmailToProvider, bool isFlexible) const {
   default_body_t body;
@@ -2131,9 +2131,9 @@ dd::task<std::string> Api::createInvoiceLink(
   co_return json.get<std::string>("", "");
 }
 
-dd::task<bool> Api::answerShippingQuery(const std::string &shippingQueryId, bool ok,
-                                        const std::vector<ShippingOption::Ptr> &shippingOptions,
-                                        const std::string &errorMessage) const {
+dd::task<bool> Api::answerShippingQuery(const std::string& shippingQueryId, bool ok,
+                                        const std::vector<ShippingOption::Ptr>& shippingOptions,
+                                        const std::string& errorMessage) const {
   default_body_t body;
 
   body.arg("shipping_query_id", shippingQueryId);
@@ -2148,8 +2148,8 @@ dd::task<bool> Api::answerShippingQuery(const std::string &shippingQueryId, bool
   co_return json.get<bool>("", false);
 }
 
-dd::task<bool> Api::answerPreCheckoutQuery(const std::string &preCheckoutQueryId, bool ok,
-                                           const std::string &errorMessage) const {
+dd::task<bool> Api::answerPreCheckoutQuery(const std::string& preCheckoutQueryId, bool ok,
+                                           const std::string& errorMessage) const {
   default_body_t body;
 
   body.arg("pre_checkout_query_id", preCheckoutQueryId);
@@ -2161,7 +2161,7 @@ dd::task<bool> Api::answerPreCheckoutQuery(const std::string &preCheckoutQueryId
 }
 
 dd::task<bool> Api::setPassportDataErrors(std::int64_t userId,
-                                          const std::vector<PassportElementError::Ptr> &errors) const {
+                                          const std::vector<PassportElementError::Ptr>& errors) const {
   default_body_t body;
 
   body.arg("user_id", userId);
@@ -2171,11 +2171,11 @@ dd::task<bool> Api::setPassportDataErrors(std::int64_t userId,
   co_return json.get<bool>("", false);
 }
 
-dd::task<Message::Ptr> Api::sendGame(std::int64_t chatId, const std::string &gameShortName,
+dd::task<Message::Ptr> Api::sendGame(std::int64_t chatId, const std::string& gameShortName,
                                      ReplyParameters::Ptr replyParameters,
                                      InlineKeyboardMarkup::Ptr replyMarkup, bool disableNotification,
                                      std::int32_t messageThreadId, bool protectContent,
-                                     const std::string &businessConnectionId) const {
+                                     const std::string& businessConnectionId) const {
   default_body_t body;
 
   if (!businessConnectionId.empty())
@@ -2198,7 +2198,7 @@ dd::task<Message::Ptr> Api::sendGame(std::int64_t chatId, const std::string &gam
 
 dd::task<Message::Ptr> Api::setGameScore(std::int64_t userId, std::int32_t score, bool force,
                                          bool disableEditMessage, std::int64_t chatId, std::int32_t messageId,
-                                         const std::string &inlineMessageId) const {
+                                         const std::string& inlineMessageId) const {
   default_body_t body;
 
   body.arg("user_id", userId);
@@ -2219,7 +2219,7 @@ dd::task<Message::Ptr> Api::setGameScore(std::int64_t userId, std::int32_t score
 
 dd::task<std::vector<GameHighScore::Ptr>> Api::getGameHighScores(std::int64_t userId, std::int64_t chatId,
                                                                  std::int32_t messageId,
-                                                                 const std::string &inlineMessageId) const {
+                                                                 const std::string& inlineMessageId) const {
   default_body_t body;
 
   body.arg("user_id", userId);
@@ -2251,7 +2251,7 @@ dd::task<std::vector<GameHighScore::Ptr>> Api::getGameHighScores(std::int64_t us
 //}
 
 // TODO understand why 'args' presented?? Что туда блин передавать то можно?
-dd::task<std::string> Api::downloadFile(const std::string &filePath) {
+dd::task<std::string> Api::downloadFile(const std::string& filePath) {
   std::string path = fmt::format("/file/bot{}/{}", get_token(), filePath);
   tg_url_view v{.host = _host, .path = path, .method = filePath};
   // TODO нужно возвращать вектор байт, очевидно стринга не подходит
@@ -2263,7 +2263,7 @@ dd::task<bool> Api::blockedByUser(std::int64_t chatId) const {
   try {
     (void)co_await sendChatAction(chatId, "typing");
     co_return false;
-  } catch (std::exception &e) {
+  } catch (std::exception& e) {
     // TODO somehow check its working
     co_return std::string_view("Forbidden: bot was blocked by the user") == e.what();
   }
@@ -2281,7 +2281,7 @@ dd::task<boost::property_tree::ptree> Api::sendRequest(http_request request, dur
   boost::property_tree::ptree result;
   try {
     result = _tgTypeParser.parseJson(response.body);
-  } catch (boost::property_tree::ptree_error &e) {
+  } catch (boost::property_tree::ptree_error& e) {
     throw TGBM_TG_EXCEPTION(tg_errc::InvalidJson, "TGBM library can't parse json response. {}", e.what());
   }
 

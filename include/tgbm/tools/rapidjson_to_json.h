@@ -2,17 +2,9 @@
 
 #include <cstdint>
 #include <rapidjson/writer.h>
+#include <tgbm/tools/traits.hpp>
 
 namespace tgbm {
-
-template <typename T, typename... Types>
-concept any_of = (std::is_same_v<T, Types> || ...);
-
-template <typename T>
-concept char_type_like = any_of<T, char, signed char, unsigned char, char8_t, char16_t, char32_t, wchar_t>;
-
-template <typename T>
-concept numeric = std::is_integral_v<T> && !char_type_like<T> && !std::is_same_v<T, bool>;
 
 template <typename T>
 concept rjson_writer = requires(T& w) {
@@ -42,10 +34,7 @@ static_assert(rjson_writer<rapidjson::Writer<int>>);
   (void)b;
 }
 
-template <std::ranges::range R>
-void rj_tojson(rjson_writer auto& writer, const R& rng)
-  requires(!std::convertible_to<R, std::string_view>)
-{
+void rj_tojson(rjson_writer auto& writer, const array_like auto& rng) {
   rj_assume(writer.StartArray());
   for (auto&& item : rng)
     rj_tojson(writer, item);
@@ -56,7 +45,7 @@ void rj_tojson(rjson_writer auto& writer, bool b) {
   rj_assume(writer.Bool(b));
 }
 
-void rj_tojson(rjson_writer auto& writer, std::convertible_to<std::string_view> auto&& v) {
+void rj_tojson(rjson_writer auto& writer, string_like auto&& v) {
   std::string_view str = v;
   rj_assume(writer.String(str.data(), str.size()));
 }

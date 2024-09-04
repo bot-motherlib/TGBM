@@ -1,5 +1,7 @@
 #pragma once
 
+#include <compare>
+#include <concepts>
 #include <type_traits>
 #include <utility>
 #include <cassert>
@@ -17,6 +19,9 @@ struct TGBM_TRIVIAL_ABI box {
 
  public:
   box() = default;
+
+  constexpr box(std::nullptr_t) {
+  }
 
   constexpr ~box() {
     reset();
@@ -105,6 +110,29 @@ struct TGBM_TRIVIAL_ABI box {
   constexpr const T& operator*() const noexcept {
     assert(ptr);
     return *ptr;
+  }
+
+  friend constexpr std::strong_ordering operator<=>(const box<T>& lhs, const box<T>& rhs) noexcept {
+    if (lhs && rhs) {
+      return *lhs.ptr <=> *rhs.ptr;
+    }
+    if (lhs) {
+      return std::strong_ordering::greater;
+    }
+    if (rhs) {
+      return std::strong_ordering::less;
+    }
+    return std::strong_ordering::equal;
+  }
+
+  friend constexpr bool operator==(const box<T>& lhs, const box<T>& rhs) noexcept {
+    if (!lhs && !rhs) {
+      return true;
+    }
+    if (!lhs || !rhs) {
+      return false;
+    }
+    return *lhs.ptr == *rhs.ptr;
   }
 };
 

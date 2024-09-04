@@ -21,29 +21,29 @@ struct asio_connection_t : std::enable_shared_from_this<asio_connection_t> {
   boost::asio::ssl::context sslctx;  // required all time while socket alive
   boost::asio::ssl::stream<boost::asio::ip::tcp::socket> socket;
 
-  explicit asio_connection_t(boost::asio::io_context &ctx KELCORO_LIFETIMEBOUND,
+  explicit asio_connection_t(boost::asio::io_context& ctx KELCORO_LIFETIMEBOUND,
                              boost::asio::ssl::context _ssl_ctx)
       : sslctx(std::move(_ssl_ctx)), socket(ctx, sslctx) {
   }
 };
 // TODO чекнуть работу таймаутов на очень маленьком таймауте каком то
 // reuses memory of http_request, so lvalue ref
-dd::task<http_response> send_request(std::shared_ptr<asio_connection_t>, http_request &KELCORO_LIFETIMEBOUND);
-dd::task<std::shared_ptr<asio_connection_t>> create_connection(boost::asio::io_context &KELCORO_LIFETIMEBOUND,
+dd::task<http_response> send_request(std::shared_ptr<asio_connection_t>, http_request& KELCORO_LIFETIMEBOUND);
+dd::task<std::shared_ptr<asio_connection_t>> create_connection(boost::asio::io_context& KELCORO_LIFETIMEBOUND,
                                                                std::string host);
 
 struct log_events_handler_t {
-  static void dropped(const std::shared_ptr<asio_connection_t> &c) {
-    LOG("[socket] {} dropped", (void *)&c->socket);
+  static void dropped(const std::shared_ptr<asio_connection_t>& c) {
+    LOG("[socket] {} dropped", (void*)&c->socket);
   }
-  static void reused(const std::shared_ptr<asio_connection_t> &c) {
-    LOG("[socket] {} reused", (void *)&c->socket);
+  static void reused(const std::shared_ptr<asio_connection_t>& c) {
+    LOG("[socket] {} reused", (void*)&c->socket);
   }
-  static void created(const std::shared_ptr<asio_connection_t> &c) {
-    LOG("[socket] {} created", (void *)&c->socket);
+  static void created(const std::shared_ptr<asio_connection_t>& c) {
+    LOG("[socket] {} created", (void*)&c->socket);
   }
-  static void deleted(const std::shared_ptr<asio_connection_t> &c) {
-    LOG("[socket] {} deleted", (void *)&c->socket);
+  static void deleted(const std::shared_ptr<asio_connection_t>& c) {
+    LOG("[socket] {} deleted", (void*)&c->socket);
   }
 };
 

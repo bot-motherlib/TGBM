@@ -1,11 +1,12 @@
 #pragma once
 
+#include <limits>
 #include <optional>
 #include <bit>
 #include <cassert>
 #include <compare>
 
-#include "tgbm/api_types/Integer.hpp"
+#include "tgbm/api/Integer.hpp"
 #include "tgbm/tools/meta.hpp"
 
 namespace tgbm::api {
@@ -169,7 +170,19 @@ struct optional<bool> {
   constexpr bool operator==(std::nullopt_t) const noexcept {
     return !has_value();
   }
-  // no <=> for bool
+
+  friend constexpr std::strong_ordering operator<=>(const optional& lhs, const optional& rhs) noexcept {
+    if (lhs && rhs) {
+      return *lhs <=> *rhs;
+    }
+    if (lhs) {
+      return std::strong_ordering::greater;
+    }
+    if (rhs) {
+      return std::strong_ordering::less;
+    }
+    return std::strong_ordering::equal;
+  }
 };
 
 template <typename T>
@@ -178,7 +191,7 @@ struct optional<T> {
   using value_type = T;
 
   static_assert(is_decayed_v<T>);
-  static constinit T _dummy;
+  static inline constinit T _dummy;
 
  private:
   bool _val = false;
@@ -249,6 +262,18 @@ struct optional<T> {
   }
   constexpr bool operator==(std::nullopt_t) const noexcept {
     return !has_value();
+  }
+  friend constexpr std::strong_ordering operator<=>(const optional& lhs, const optional& rhs) noexcept {
+    if (lhs && rhs) {
+      return *lhs <=> *rhs;
+    }
+    if (lhs) {
+      return std::strong_ordering::greater;
+    }
+    if (rhs) {
+      return std::strong_ordering::less;
+    }
+    return std::strong_ordering::equal;
   }
 };
 
