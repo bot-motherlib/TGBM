@@ -5,6 +5,7 @@ project(tgbm) # telegram bot mother library
 option(TGBM_SANITIZE_THREAD "" OFF)
 option(TGBM_SANITIZE "" OFF)
 option(TGBM_ENABLE_TESTS "Set to ON to enable building of tests" OFF)
+option(TGBM_ENABLE_BENCHS "Set to ON to enable building of benchs" OFF)
 
 if (TGBM_SANITIZE_THREAD)
   if (TGBM_SANITIZE)
@@ -18,6 +19,7 @@ set(TGBM_SRC_LIST
     src/net/http2_client.cpp
     src/net/http2/huffman.cpp
     src/Api.cpp
+    # src/api.cpp
     src/Bot.cpp
     src/EventHandler.cpp
     src/TgTypeParser.cpp
@@ -86,4 +88,8 @@ if (TGBM_ENABLE_TESTS)
     include(CTest)
     add_subdirectory(test)
     add_subdirectory(gtest)
+endif()
+
+if (TGBM_ENABLE_BENCHS)
+    add_subdirectory(gbench)
 endif()

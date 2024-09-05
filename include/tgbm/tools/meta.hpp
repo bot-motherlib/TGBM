@@ -9,7 +9,7 @@ namespace tgbm {
 template <typename T>
 inline constexpr bool is_decayed_v = std::is_same_v<T, std::decay_t<T>>;
 
-enum { VISIT_INDEX_MAX = 64 - 1 };
+enum { VISIT_INDEX_MAX = 128 - 1 };
 // switch 'i' up to 64 for better code generatrion
 // 'F' should be like [] <size_t I> {}
 // Max - index until 'f' will be instanciated, assumes i <= MAX
@@ -17,8 +17,6 @@ template <std::size_t Max>
 constexpr decltype(auto) visit_index(auto&& f, std::size_t i) {
   static_assert(Max <= VISIT_INDEX_MAX);
   assert(i <= VISIT_INDEX_MAX);
-  if constexpr (Max == 0)
-    return;
   switch (i) {
 #define $TGBM_SWITCH_CASE(INDEX)             \
   case INDEX: {                              \
@@ -34,8 +32,8 @@ constexpr decltype(auto) visit_index(auto&& f, std::size_t i) {
 #define $TGBM_SWITCH_CASE16(I) $TGBM_SWITCH_CASE8(I) $TGBM_SWITCH_CASE8(I + 8)
 #define $TGBM_SWITCH_CASE32(I) $TGBM_SWITCH_CASE16(I) $TGBM_SWITCH_CASE16(I + 16)
 #define $TGBM_SWITCH_CASE64(I) $TGBM_SWITCH_CASE32(I) $TGBM_SWITCH_CASE32(I + 32)
-
-    $TGBM_SWITCH_CASE64(0);
+#define $TGBM_SWITCH_CASE128(I) $TGBM_SWITCH_CASE64(I) $TGBM_SWITCH_CASE64(I + 64)
+    $TGBM_SWITCH_CASE128(0);
   }  // end switch
   unreachable();
 #undef $TGBM_SWITCH_CASE
@@ -123,6 +121,20 @@ template <typename Enum>
 constexpr auto to_underlying(Enum e) noexcept {
   static_assert(std::is_enum_v<Enum>);
   return static_cast<std::underlying_type_t<Enum>>(e);
+}
+
+template <std::size_t N>
+constexpr void for_each_index(auto&& cb) {
+  [&]<std::size_t... I>(std::index_sequence<I>...) {
+    (cb.template operator()<I>(), ...);
+  }(std::make_index_sequence<N>{});
+}
+
+template <std::size_t N>
+constexpr decltype(auto) call_on_indexes(auto&& cb) {
+  return [&]<std::size_t... I>(std::index_sequence<I...>) {
+    return cb.template operator()<I...>();
+  }(std::make_index_sequence<N>{});
 }
 
 }  // namespace tgbm

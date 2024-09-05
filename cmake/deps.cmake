@@ -8,6 +8,7 @@ CPMAddPackage(
   EXCLUDE_FROM_ALL YES
   SYSTEM OFF
 )
+
 set(BOOST_INCLUDE_LIBRARIES system asio property_tree pfr json)
 CPMAddPackage(
   NAME Boost
@@ -47,12 +48,24 @@ CPMAddPackage(
   GIT_TAG        origin/master
 )
 
-CPMAddPackage(
-  NAME googletest
-  GITHUB_REPOSITORY google/googletest
-  GIT_TAG release-1.12.1
-  VERSION 1.12.1
-  OPTIONS "INSTALL_GTEST OFF"
-)
+if (TGBM_ENABLE_TESTS)
+  CPMAddPackage(
+    NAME googletest
+    GITHUB_REPOSITORY google/googletest
+    GIT_TAG release-1.12.1
+    VERSION 1.12.1
+    OPTIONS "INSTALL_GTEST OFF"
+  )
+endif()
+
+
+if (TGBM_ENABLE_BENCHS)
+  CPMAddPackage(
+    NAME benchmark
+    GITHUB_REPOSITORY google/benchmark
+    VERSION 1.7.1
+    OPTIONS "BENCHMARK_ENABLE_TESTING Off"
+  )
+endif()
 
 find_package(Threads REQUIRED)

@@ -2,6 +2,13 @@ include(GoogleTest)
 
 add_executable(${PROJECT_NAME}_gtests 
     test_parser.cpp
+    parsers/test_basic.cpp
+    parsers/test_tree.cpp
+    parsers/test_optional.cpp
+    parsers/test_object.cpp
+    parsers/test_array.cpp
+    parsers/test_oneof.cpp
+    parsers/test_oneof_field.cpp
     api/test_message.cpp
 )
 

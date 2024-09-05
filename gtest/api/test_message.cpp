@@ -5,7 +5,7 @@
 #include <tgbm/tools/to_boost_json.h>
 #include <tgbm/api/types_all.hpp>
 #include <tgbm/tools/from_boost_json.h>
-#include <tgbm/tools/json_parser/all.h>
+#include <tgbm/tools/json_tools/parser/all.h>
 #include <tgbm/tools/random.h>
 #include "chaotic_test.hpp"
 #include <helper.hpp>
