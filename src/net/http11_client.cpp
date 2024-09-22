@@ -1,9 +1,9 @@
 
-#include "tgbm/net/boost_http_client.h"
+#include "tgbm/net/http11_client.hpp"
 
 #include <cstddef>
 
-#include "tgbm/net/asio_awaiters.h"
+#include "tgbm/net/asio_awaiters.hpp"
 
 #include "tgbm/net/errors.hpp"
 
@@ -127,14 +127,14 @@ static asio::ssl::context make_ssl_context_for_http11() {
   return sslctx;
 }
 
-boost_singlethread_client::boost_singlethread_client(size_t connections_max_count, std::string_view host)
-    : HttpClient(host), io_ctx(1), connections(connections_max_count, [this]() {
+http11_client::http11_client(size_t connections_max_count, std::string_view host)
+    : http_client(host), io_ctx(1), connections(connections_max_count, [this]() {
         // Do not reuses ssl ctx because... just because + multithread no one knows how to work
         return asio_ssl_connection::create(io_ctx, std::string(get_host()), make_ssl_context_for_http11());
       }) {
 }
 
-dd::task<http_response> boost_singlethread_client::send_request(http_request request, duration_t timeout) {
+dd::task<http_response> http11_client::send_request(http_request request, duration_t timeout) {
   // TODO borrow connection with timeout
   if (stop_requested)
     throw client_stopped{};
@@ -172,14 +172,14 @@ dd::task<http_response> boost_singlethread_client::send_request(http_request req
   co_return rsp;
 }
 
-void boost_singlethread_client::run() {
+void http11_client::run() {
   stop_requested = false;
   if (io_ctx.stopped())
     io_ctx.restart();
   io_ctx.run();
 }
 
-bool boost_singlethread_client::run_one(duration_t timeout) {
+bool http11_client::run_one(duration_t timeout) {
   stop_requested = false;
   if (io_ctx.stopped())
     io_ctx.restart();
@@ -187,7 +187,7 @@ bool boost_singlethread_client::run_one(duration_t timeout) {
   return count > 0;
 }
 
-void boost_singlethread_client::stop() {
+void http11_client::stop() {
   // avoids situations when stop() itself produces next stop()
   // for example in scope_exit on some coroutine which will be stopped while stopping
   if (stop_requested)

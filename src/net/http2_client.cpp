@@ -84,7 +84,7 @@ fill response), initiates drop_connection() on network error and on unexpected e
 #include "tgbm/net/http2/hpack.hpp"
 #include "tgbm/net/http2/protocol.hpp"
 #include "tgbm/net/http2_client.hpp"
-#include "tgbm/net/asio_awaiters.h"
+#include "tgbm/net/asio_awaiters.hpp"
 #include "tgbm/logger.h"
 #include "tgbm/tools/scope_exit.h"
 #include "tgbm/tools/macro.hpp"
@@ -1016,7 +1016,7 @@ http2_client::~http2_client() {
   stop();
 }
 
-http2_client::http2_client(std::string_view host) : HttpClient(host), io_ctx(1) {
+http2_client::http2_client(std::string_view host) : http_client(host), io_ctx(1) {
 }
 
 noexport::waiter_of_connection::~waiter_of_connection() {

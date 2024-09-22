@@ -11,13 +11,7 @@ namespace tgbm {
 
 using duration_t = std::chrono::steady_clock::duration;
 
-/**
- * @brief This class makes http requests.
- *
- * @ingroup net
- */
-// TODO rename etc
-class HttpClient {
+struct http_client {
  protected:
   std::string host;
 
@@ -26,9 +20,9 @@ class HttpClient {
     return host;
   }
 
-  HttpClient(std::string_view host);
+  http_client(std::string_view host);
 
-  virtual ~HttpClient() = default;
+  virtual ~http_client() = default;
 
   virtual dd::task<http_response> send_request(http_request request, duration_t timeout) = 0;
 
