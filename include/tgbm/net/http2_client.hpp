@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tgbm/net/HttpClient.h"
+#include "tgbm/net/http_client.hpp"
 #include "tgbm/net/http2/errors.hpp"
 
 #include <kelcoro/job.hpp>
@@ -58,7 +58,7 @@ struct connection_lock_t {
 
 namespace tgbm {
 
-struct http2_client : HttpClient {
+struct http2_client : http_client {
  private:
   friend noexport::waiter_of_connection;
 

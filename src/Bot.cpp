@@ -11,8 +11,8 @@
 
 namespace tgbm {
 // TODO any client
-std::unique_ptr<HttpClient> default_http_client(std::string_view host) {
-  return std::unique_ptr<HttpClient>(new http2_client(host));
+std::unique_ptr<http_client> default_http_client(std::string_view host) {
+  return std::unique_ptr<http_client>(new http2_client(host));
 }
 
 Bot::Bot(std::string token, std::string host)
@@ -22,7 +22,7 @@ Bot::Bot(std::string token, std::string host)
       _eventHandler(*_eventBroadcaster) {
 }
 
-Bot::Bot(std::string token, std::unique_ptr<HttpClient> httpClient)
+Bot::Bot(std::string token, std::unique_ptr<http_client> httpClient)
     : _client(std::move(httpClient)),
       _api(token, *_client),
       // TODO rm эти штуки, заменить на update_visitor + updater типа того

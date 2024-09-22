@@ -10,15 +10,15 @@
 namespace tgbm {
 
 class EventBroadcaster;
-class HttpClient;
+struct http_client;
 
-std::unique_ptr<HttpClient> default_http_client(std::string_view host);
+std::unique_ptr<http_client> default_http_client(std::string_view host);
 
 // short cut for creating http client, api, updater(long pool or smth) and update visitor
 struct Bot {
  private:
   // invariant: != nullptr
-  std::unique_ptr<HttpClient> _client;
+  std::unique_ptr<http_client> _client;
   Api _api;
   std::unique_ptr<EventBroadcaster> _eventBroadcaster;
   EventHandler _eventHandler;
@@ -27,7 +27,7 @@ struct Bot {
   // uses default http client
   explicit Bot(std::string token, std::string host = "api.telegram.org");
 
-  explicit Bot(std::string token, std::unique_ptr<HttpClient> client);
+  explicit Bot(std::string token, std::unique_ptr<http_client> client);
 
   std::string_view get_token() const noexcept KELCORO_LIFETIMEBOUND {
     return _api.get_token();
@@ -39,7 +39,7 @@ struct Bot {
   const Api& get_api() const {
     return _api;
   }
-  const HttpClient& get_client() const {
+  const http_client& get_client() const {
     return *_client;
   }
 

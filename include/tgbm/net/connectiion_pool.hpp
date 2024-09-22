@@ -19,7 +19,6 @@
 
 #include "tgbm/tools/macro.hpp"
 
-// TODO rename file into just pool
 namespace tgbm {
 
 template <typename EventHandler, typename T>

@@ -2,8 +2,8 @@
 
 #include <string_view>
 
-#include "tgbm/net/HttpClient.h"
-#include "tgbm/net/connectiion_pool.h"
+#include "tgbm/net/http_client.hpp"
+#include "tgbm/net/connectiion_pool.hpp"
 #include "tgbm/logger.h"
 
 #include "tgbm/net/asio_ssl_connection.hpp"
@@ -12,7 +12,7 @@ namespace tgbm {
 
 namespace asio = boost::asio;
 
-struct boost_singlethread_client : HttpClient {
+struct http11_client : http_client {
  private:
   // invariant: .run() invoked on 0 or 1 threads
   asio::io_context io_ctx;
@@ -22,8 +22,7 @@ struct boost_singlethread_client : HttpClient {
   bool stop_requested = false;
 
  public:
-  explicit boost_singlethread_client(size_t connections_max_count = 64,
-                                     std::string_view host = "api.telegram.org");
+  explicit http11_client(size_t connections_max_count = 64, std::string_view host = "api.telegram.org");
 
   dd::task<http_response> send_request(http_request, duration_t timeout) override;
 

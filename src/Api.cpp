@@ -30,7 +30,7 @@ static bool is_empty_thumbnail(const thumbnail_t& x) {
 #define $POST_REQUEST co_await sendRequest(http_request{get_path($METHOD), body.take()}, _timeout)
 #define $GET_REQUEST co_await sendRequest(http_request(get_path($METHOD)), _timeout)
 
-Api::Api(std::string token, HttpClient& httpClient, duration_t timeout)
+Api::Api(std::string token, http_client& httpClient, duration_t timeout)
     : _timeout(timeout), _token(std::move(token)), _httpClient(httpClient) {
 }
 

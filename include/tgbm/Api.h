@@ -3,7 +3,7 @@
 #include "tgbm/net/errors.hpp"
 
 #include "tgbm/TgTypeParser.h"
-#include "tgbm/net/HttpClient.h"
+#include "tgbm/net/http_client.hpp"
 #include "tgbm/types/User.h"
 #include "tgbm/types/Message.h"
 #include "tgbm/types/MessageId.h"
@@ -99,7 +99,7 @@ struct Api {
   TgTypeParser _tgTypeParser;  // TODO rm empty field
   duration_t _timeout;
   std::string _token;
-  HttpClient& _httpClient;
+  http_client& _httpClient;
 
  public:
   typedef std::shared_ptr<std::vector<std::string>> StringArrayPtr;
@@ -115,7 +115,7 @@ struct Api {
   }
 
   // Note: for 'getUpdate' which has its own timeout effective timeout = getUpdate.timeout + api.timeout()
-  Api(std::string token, HttpClient& httpClient KELCORO_LIFETIMEBOUND,
+  Api(std::string token, http_client& httpClient KELCORO_LIFETIMEBOUND,
       duration_t timeout = duration_t::max());
 
   void set_timeout(duration_t timeout) noexcept {
