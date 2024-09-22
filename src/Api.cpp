@@ -4,6 +4,9 @@
 
 #include <fmt/ranges.h>
 
+#include "tgbm/tools/algorithm.hpp"
+#include "tgbm/logger.h"
+
 namespace tgbm {
 
 using default_body_t = application_json_body;
@@ -24,17 +27,11 @@ static bool is_empty_thumbnail(const thumbnail_t& x) {
 
 // name of function should be same as in API https://core.telegram.org/bots/api
 #define $METHOD ::std::string_view(__func__)
-#define $POST_REQUEST co_await sendRequest({get_url($METHOD), std::move(body)}, _timeout)
-#define $GET_REQUEST co_await sendRequest(http_request(get_url($METHOD)), _timeout)
+#define $POST_REQUEST co_await sendRequest(http_request{get_path($METHOD), body.take()}, _timeout)
+#define $GET_REQUEST co_await sendRequest(http_request(get_path($METHOD)), _timeout)
 
-Api::Api(std::string_view token, HttpClient& httpClient, std::string host, duration_t timeout)
-    : _httpClient(httpClient),
-      _cached_path(fmt::format("/bot{}/", token)),
-      _tgTypeParser(),
-      _host(std::move(host)),
-      _timeout(timeout) {
-  if (_host.empty() || _host.starts_with("https://") || _host.starts_with("http://"))
-    throw std::invalid_argument("host should be not full url, for example \"api.telegram.org\"");
+Api::Api(std::string token, HttpClient& httpClient, duration_t timeout)
+    : _timeout(timeout), _token(std::move(token)), _httpClient(httpClient) {
 }
 
 dd::task<std::vector<Update::Ptr>> Api::getUpdates(std::int32_t offset, std::int32_t limit,
@@ -52,8 +49,8 @@ dd::task<std::vector<Update::Ptr>> Api::getUpdates(std::int32_t offset, std::int
   if (allowedUpdates)
     body.arg("allowed_updates", *allowedUpdates);
   // sets timeout to be greater then long pool timeout
-  boost::property_tree::ptree json =
-      co_await sendRequest({get_url($METHOD), std::move(body)}, _timeout + std::chrono::seconds(timeout));
+  boost::property_tree::ptree json = co_await sendRequest({.path = get_path($METHOD), .body = body.take()},
+                                                          _timeout + std::chrono::seconds(timeout));
   co_return _tgTypeParser.parseJsonAndGetArray<Update>(&TgTypeParser::parseJsonAndGetUpdate, json);
 }
 
@@ -2251,12 +2248,10 @@ dd::task<std::vector<GameHighScore::Ptr>> Api::getGameHighScores(std::int64_t us
 //}
 
 // TODO understand why 'args' presented?? Что туда блин передавать то можно?
-dd::task<std::string> Api::downloadFile(const std::string& filePath) {
-  std::string path = fmt::format("/file/bot{}/{}", get_token(), filePath);
-  tg_url_view v{.host = _host, .path = path, .method = filePath};
-  // TODO нужно возвращать вектор байт, очевидно стринга не подходит
-  http_response rsp = co_await _httpClient.send_request(http_request(v), duration_t::max());
-  co_return std::move(rsp.body);
+dd::task<http_response> Api::downloadFile(const std::string& filePath) {
+  http_response rsp = co_await _httpClient.send_request(
+      http_request{.path = fmt::format("/file/bot{}/{}", get_token(), filePath)}, duration_t::max());
+  co_return rsp;
 }
 
 dd::task<bool> Api::blockedByUser(std::int64_t chatId) const {
@@ -2272,22 +2267,28 @@ dd::task<bool> Api::blockedByUser(std::int64_t chatId) const {
 dd::task<boost::property_tree::ptree> Api::sendRequest(http_request request, duration_t timeout) const {
   // TODO parse http response
   http_response response = co_await _httpClient.send_request(std::move(request), timeout);
-  if (response.body.starts_with(
-          "<html>"))  // TODO проверить работоспособность этой ветки с неправильным токеном
+  if (tgbm::starts_with(response.body,
+                        "<html>"))  // TODO проверить работоспособность этой ветки с неправильным токеном
     throw TGBM_TG_EXCEPTION(tg_errc::HtmlResponse,
                             "TGBM library have got html page instead of json response. "
                             "Maybe you entered wrong bot token or incorrect host");
 
   boost::property_tree::ptree result;
   try {
-    result = _tgTypeParser.parseJson(response.body);
+    // TODO better
+    result = _tgTypeParser.parseJson(std::string((char*)response.body.data(), response.body.size()));
   } catch (boost::property_tree::ptree_error& e) {
     throw TGBM_TG_EXCEPTION(tg_errc::InvalidJson, "TGBM library can't parse json response. {}", e.what());
   }
-
-  if (!result.get<bool>("ok", false))
-    throw TGBM_TG_EXCEPTION(tg_errc(result.get<size_t>("error_code", 0u)), "{}",
-                            result.get("description", ""));
+  if (!result.get<bool>("ok", false)) {
+    auto x = result.get_optional<bool>("ok");
+    if (x && !*x) {
+      LOG_ERR("json with error: {}", std::string_view((char*)response.body.data(), response.body.size()));
+    } else {
+      throw TGBM_TG_EXCEPTION(tg_errc(result.get<size_t>("error_code", 0u)), "{}",
+                              result.get("description", ""));
+    }
+  }
   // TODO тоже копирование мда
   co_return result.get_child("result");
 }

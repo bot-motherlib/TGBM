@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 
-#define TEST(name) void test_##name()
+#define TEST(name) static void test_##name()
 #define error_if(...)  \
   if (!!(__VA_ARGS__)) \
   exit(__LINE__)

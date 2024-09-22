@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <fmt/format.h>
-
+// TODO rename to TGBM_LOG etc
 #define LOG(FMT_STR, ...) \
   ::fmt::format_to(::std::ostreambuf_iterator(std::cout), FMT_STR "\n" __VA_OPT__(, ) __VA_ARGS__)
 #define LOG_ERR(FMT_STR, ...) \

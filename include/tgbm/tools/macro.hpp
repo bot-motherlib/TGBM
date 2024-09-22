@@ -24,3 +24,15 @@
 // clang-format on
 
 #endif
+namespace tgbm {
+// forbids move for type without breaking 'is_aggregate'
+struct pin {
+  pin() = default;
+  pin(pin&&) = delete;
+  void operator=(pin&&) = delete;
+};
+
+}  // namespace tgbm
+
+// must be used as field in type, makes it unmovable without breaking is_aggregate
+#define TGBM_PIN KELCORO_NO_UNIQUE_ADDRESS ::tgbm::pin _pin_;

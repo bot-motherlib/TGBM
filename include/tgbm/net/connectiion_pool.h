@@ -1,41 +1,26 @@
 #pragma once
-
 #include <cassert>
 #include <coroutine>
 #include <anyany/anyany.hpp>
-
 #include <kelcoro/task.hpp>
-
 #include <cassert>
 #include <mutex>
 
 #include "tgbm/tools/scope_exit.h"
 
+#include <boost/intrusive/list_hook.hpp>
+#include <boost/intrusive/list.hpp>
+#include <boost/intrusive/slist.hpp>
+#include <boost/intrusive/slist_hook.hpp>
+
+#include "tgbm/tools/boost_intrusive.hpp"
+
+#include "tgbm/logger.h"
+
+#include "tgbm/tools/macro.hpp"
+
+// TODO rename file into just pool
 namespace tgbm {
-
-template <typename Node>
-struct intrusive_stack {
-  Node* first = nullptr;
-
-  [[nodiscard]] bool empty() const noexcept {
-    return !first;
-  }
-
-  void push(Node* n) noexcept {
-    assert(n);
-    if (!first) {
-      n->next = nullptr;
-      first = n;
-      return;
-    }
-    n->next = std::exchange(first, n);
-  }
-
-  [[nodiscard]] Node* pop() noexcept {
-    assert(first);
-    return std::exchange(first, first->next);
-  }
-};
 
 template <typename EventHandler, typename T>
 concept pool_events_handler_for = requires(EventHandler& e, T& t) {
@@ -57,6 +42,7 @@ struct noop_events_handler_t {
   }
 };
 
+// TODO into another file or smth like, utils
 struct null_mutex {
   static constexpr void lock() noexcept {
   }
@@ -68,52 +54,55 @@ struct null_mutex {
 };
 
 // TODO coro allocator multithread (interface)
-template <typename T, pool_events_handler_for<T> H = noop_events_handler_t<T>, typename Mutex = null_mutex>
+template <typename T, pool_events_handler_for<T> H = noop_events_handler_t<T>>
 struct pool_t {
  private:
   using data_type = T;
   using factory_t = aa::any_with<aa::call<dd::task<data_type>()>>;
+
   struct node_t {
-    node_t* next = nullptr;
     data_type data;
+    bi::slist_member_hook<link_option> free_connections_hook = {};
+    TGBM_PIN;
   };
-  struct waiter_node : dd::task_node {
+  struct waiter_node : bi::list_base_hook<link_option> {
+    pool_t* pool = nullptr;
     node_t* result = nullptr;
-  };
+    std::coroutine_handle<> task;
+    TGBM_PIN;
 
-  intrusive_stack<node_t> free;
-  size_t max;
-  size_t free_count;
-  size_t borrowed_count;
-  intrusive_stack<dd::task_node> waiters;
-  factory_t factory;
-  dd::any_executor_ref exe;  // where waiters will be resumed
-  KELCORO_NO_UNIQUE_ADDRESS mutable Mutex mtx;
-
-  struct free_data_awaiter {
-    pool_t& pool;
-    waiter_node node;
+    explicit waiter_node(pool_t& p) noexcept : pool(&p) {
+    }
 
     static bool await_ready() noexcept {
       return false;
     }
-    bool await_suspend(std::coroutine_handle<> handle) noexcept {
-      node.task = handle;
-      std::unique_lock l(pool.mtx);
-      if (!pool.free.empty()) {
-        node.result = pool.free.pop();
-        l.unlock();
-        H::reused(node.result->data);
-        return false;
-      }
-      pool.waiters.push(&node);
-      return true;
+    void await_suspend(std::coroutine_handle<> handle) noexcept {
+      assert(pool->free.empty());
+      pool->waiters.push_back(*this);
+      task = handle;
     }
-    [[nodiscard]] node_t* await_resume() const noexcept {
-      H::reused(node.result->data);
-      return node.result;
+    [[nodiscard]] node_t& await_resume() const {
+      if (!result)
+        throw std::invalid_argument{""};  // TODO better (or rm?)
+      H::reused(result->data);
+      return *result;
     }
   };
+
+  using free_connections_hook_option =
+      bi::member_hook<node_t, bi::slist_member_hook<link_option>, &node_t::free_connections_hook>;
+  using waiters_t = bi::list<waiter_node, bi::cache_begin<true>, bi::cache_last<true>>;
+
+  bi::slist<node_t, free_connections_hook_option, bi::constant_time_size<true>> free;
+  size_t max = 0;
+  size_t borrowed_count = 0;
+  waiters_t waiters;
+  factory_t factory;
+
+  [[nodiscard]] waiter_node wait_free() noexcept {
+    return waiter_node(*this);
+  }
   static void destroy_node(node_t* n) noexcept {
     assert(n);
     H::deleted(n->data);
@@ -126,23 +115,13 @@ struct pool_t {
 
  public:
   // attach operation on 'e' should be thread safe, 'e' used to resume waiters on borrow
-  explicit pool_t(size_t max_count, auto&& fac, dd::any_executor_ref e)
-      : max(std::max<size_t>(1, max_count)),
-        free_count(0),
-        borrowed_count(0),
-        factory(static_cast<decltype(fac)>(fac)),
-        exe(e) {
+  explicit pool_t(size_t max_count, auto&& fac)
+      : max(std::max<size_t>(1, max_count)), borrowed_count(0), factory(static_cast<decltype(fac)>(fac)) {
     assert(factory);
   }
 
   ~pool_t() {
-    assert(borrowed_count == 0);
-    assert(free_count <= max);
-    assert(waiters.empty());
-    while (!free.empty()) {
-      node_t* n = free.pop();
-      destroy_node(n);
-    }
+    assert(empty());
   }
 
   struct handle_t {
@@ -152,7 +131,7 @@ struct pool_t {
     node_t* node = nullptr;
     pool_t* p = nullptr;
 
-    explicit handle_t(node_t* n, pool_t& pool) noexcept : node(n), p(&pool) {
+    explicit handle_t(node_t& n, pool_t& pool) noexcept : node(&n), p(&pool) {
     }
 
    public:
@@ -181,9 +160,7 @@ struct pool_t {
       H::dropped(node->data);
       if (!p)
         return;
-      p->mtx.lock();
       --p->borrowed_count;
-      p->mtx.unlock();
       p = nullptr;
     }
     [[nodiscard]] bool dropped() const noexcept {
@@ -193,49 +170,63 @@ struct pool_t {
       return !node;
     }
   };
+
+  [[nodiscard]] size_t max_count() const noexcept {
+    return max;
+  }
+
+  // returns empty handle if pool shutted down
   dd::task<handle_t> borrow() {
-    std::unique_lock l(mtx);
     if (!free.empty()) {
+      assert(borrowed_count < max);
       ++borrowed_count;
-      --free_count;
-      node_t* n = free.pop();
-      l.unlock();
-      H::reused(n->data);
+      node_t& n = free.front();
+      free.pop_front();
+      H::reused(n.data);
       co_return handle_t(n, *this);
     }
     if (borrowed_count == max) {
-      l.unlock();
-      co_return handle_t(co_await free_data_awaiter(*this), *this);
+      node_t& n = co_await wait_free();
+      co_return handle_t(n, *this);
     }
-    ++borrowed_count;
-    l.unlock();
-    // new_delete resource do not require synchronization
     void* mem = resource()->allocate(sizeof(node_t), alignof(node_t));
     on_scope_failure(free_mem) {
+      LOG_DEBUG("{} CALLED!!!", mem);
+      --borrowed_count;
       resource()->deallocate(mem, sizeof(node_t), alignof(node_t));
     };
-    node_t* node = new (mem) node_t(nullptr, co_await factory());
+    ++borrowed_count;
+    node_t* node = new (mem) node_t(co_await factory());
     H::created(node->data);
     free_mem.no_longer_needed();
-    co_return handle_t(node, *this);
+    co_return handle_t(*node, *this);
+  }
+  // stops all connections
+  void shutdown() {
+    auto f = std::move(free);
+    f.clear_and_dispose([](node_t* n) { destroy_node(n); });
+    auto w = std::move(waiters);
+    w.clear_and_dispose([&](waiter_node* n) { n->task.resume(); });
+    assert(free.empty());
+    assert(waiters.empty());
+  }
+  [[nodiscard]] bool empty() const noexcept {
+    return borrowed_count == 0 && free.size() == 0;
   }
 
  private:
   void payoff(node_t* node) noexcept {
     assert(node);
-    std::unique_lock l(mtx);
+    assert(borrowed_count != 0);
     if (!waiters.empty()) {
-      waiter_node* waiter = static_cast<waiter_node*>(waiters.pop());
-      l.unlock();
-      waiter->result = node;
-      exe.attach(waiter);
+      waiter_node& waiter = waiters.front();
+      waiters.pop_front();
+      waiter.result = node;
+      waiter.task.resume();
     } else {
       --borrowed_count;
-      ++free_count;
-      assert(free_count <= max && "not borrowed node returned");
-      free.push(node);
+      free.push_front(*node);
     }
   }
 };
-
 }  // namespace tgbm

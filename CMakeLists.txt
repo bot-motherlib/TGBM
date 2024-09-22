@@ -15,11 +15,15 @@ endif()
 include (cmake/deps.cmake)
 
 set(TGBM_SRC_LIST
+    src/net/http2_client.cpp
+    src/net/http2/huffman.cpp
     src/Api.cpp
     src/Bot.cpp
     src/EventHandler.cpp
     src/TgTypeParser.cpp
+    src/net/asio_ssl_connection.cpp
     src/net/boost_http_client.cpp
+    src/net/http_client.cpp
     src/net/HttpParser.cpp
     src/net/long_poll.cpp
     src/tools/FileTools.cpp

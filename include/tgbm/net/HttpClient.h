@@ -1,35 +1,13 @@
 #pragma once
 
 #include <string>
-
-#include <fmt/format.h>
-
-#include <tgbm/net/HttpParser.h>
+#include <string_view>
 
 #include <kelcoro/task.hpp>
 
+#include <tgbm/net/HttpParser.h>
+
 namespace tgbm {
-
-struct network_exception : std::exception {
-  std::string data;
-
-  template <typename... Args>
-  explicit network_exception(fmt::format_string<Args...> fmt_str, Args&&... args)
-      : data(fmt::format(fmt_str, std::forward<Args>(args)...)) {
-  }
-  explicit network_exception(std::string s) noexcept : data(std::move(s)) {
-  }
-  const char* what() const noexcept KELCORO_LIFETIMEBOUND override {
-    return data.c_str();
-  }
-};
-
-struct timeout_exception : network_exception {
-  using network_exception::network_exception;
-};
-struct http_exception : network_exception {
-  using network_exception::network_exception;
-};
 
 using duration_t = std::chrono::steady_clock::duration;
 
@@ -38,11 +16,22 @@ using duration_t = std::chrono::steady_clock::duration;
  *
  * @ingroup net
  */
+// TODO rename etc
 class HttpClient {
+ protected:
+  std::string host;
+
  public:
+  std::string_view get_host() const noexcept {
+    return host;
+  }
+
+  HttpClient(std::string_view host);
+
   virtual ~HttpClient() = default;
 
   virtual dd::task<http_response> send_request(http_request request, duration_t timeout) = 0;
+
   // run until all work done
   virtual void run() = 0;
   // run until some work done, returns false if no one executed
