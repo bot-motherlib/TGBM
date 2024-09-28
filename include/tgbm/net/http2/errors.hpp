@@ -3,6 +3,8 @@
 #include <exception>
 #include <string_view>
 
+#include "tgbm/net/errors.hpp"
+
 namespace tgbm::http2 {
 
 // 0 reserved for connection related
@@ -68,9 +70,6 @@ constexpr std::string_view errc2str(errc_e e) noexcept {
       return "UNKNOWN";
   }
 }
-
-// TODO size error, connection error etc
-struct protocol_error : std::exception {};
 
 struct hpack_error : protocol_error {};
 

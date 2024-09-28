@@ -39,7 +39,7 @@ struct Bot {
   const Api& get_api() const {
     return _api;
   }
-  const http_client& get_client() const {
+  http_client& get_client() const {
     return *_client;
   }
 

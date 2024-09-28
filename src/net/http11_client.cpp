@@ -9,6 +9,51 @@
 
 namespace tgbm {
 
+// placeholder
+static void parse_status_string(std::string_view& in, int& status) {
+  std::string_view tok;
+  auto eat_until = [&](std::string_view until) {
+    auto pos = in.find(until);
+    if (pos == in.npos)
+      throw protocol_error{};
+    tok = in.substr(0, pos);
+    in.remove_prefix(pos + until.length());
+  };
+  eat_until(" ");  // version
+  eat_until(" ");  // status code
+  if (tok.size() != 3)
+    throw protocol_error{};
+  auto [_, err] = std::from_chars(tok.data(), tok.data() + tok.size(), status);
+  if (err != std::errc{})
+    throw protocol_error{};
+  eat_until("\r\n");
+}
+// placeholder
+static std::pair<std::string_view, std::string_view> parse_header(std::string_view& in) {
+  std::string_view tok;
+  auto eat_until = [&](std::string_view until) {
+    auto pos = in.find(until);
+    if (pos == in.npos)
+      throw protocol_error{};
+    tok = in.substr(0, pos);
+    in.remove_prefix(pos + until.length());
+  };
+  eat_until(":");  // header
+  std::pair<std::string_view, std::string_view> result;
+  result.first = tok;
+  while (!in.empty() && in.front() == ' ')
+    in.remove_prefix(1);
+  if (in.empty())
+    throw protocol_error{};
+  eat_until("\r\n");
+  while (!tok.empty() && tok.back() == ' ')
+    tok.remove_suffix(1);
+  if (tok.empty())
+    throw protocol_error{};
+  result.second = tok;
+  return result;
+}
+
 static std::string generate_http_headers(const http_request& request, std::string_view host,
                                          std::span<const uint8_t> body, std::string_view content_type) {
   assert(!request.path.empty());
@@ -58,64 +103,90 @@ static std::string generate_http_headers(const http_request& request, std::strin
   return result;
 }
 
-static dd::task<http_response> send_request(std::shared_ptr<asio_ssl_connection> con, std::string headers,
-                                            http_request& request) {
+static dd::task<void> send_request(std::shared_ptr<asio_ssl_connection> con, on_header_fn_ptr on_header,
+                                   on_data_part_fn_ptr on_data_part, std::string headers,
+                                   http_request& request, int& status) try {
   namespace asio = boost::asio;
   using tcp = asio::ip::tcp;
   assert(con);
   auto& socket = con->socket;
-
   io_error_code ec;
-  auto handle_timeout = [](io_error_code& ec) -> bool {
-    if (ec == asio::error::operation_aborted)
-      throw timeout_exception();
-    return true;  // for chaining
-  };
+  std::string::size_type headers_end_pos = 0;
   size_t transfered = co_await net.write_many(socket, ec, std::span(headers), std::span(request.body.data));
-  if (ec && handle_timeout(ec))
-    throw http_exception("[http] cannot write to {} socket, err: {}", (void*)&socket, ec.message());
+  if (ec)
+    goto network_err;
   assert(transfered == (headers.size() + request.body.data.size()));
+  if (!on_header && !on_data_part) {
+    status = reqerr_e::done;
+    co_return;
+  }
   headers.clear();
 
-  // TODO read http status string first, return http status code too
-  // HTTP<version><whitespaces><code>
   static constexpr std::string_view headers_end_marker = "\r\n\r\n";
   // read http headers
-  std::string::size_type headers_end_pos = co_await net.read_until(socket, headers, headers_end_marker, ec);
-  if (ec && handle_timeout(ec))
-    throw http_exception("[http] error while reading http headers: {}", ec.message());
+  headers_end_pos = co_await net.read_until(socket, headers, headers_end_marker, ec);
+  if (ec)
+    goto network_err;
+  {
+    std::string_view headers_data =
+        std::string_view(headers.data(), headers_end_pos + headers_end_marker.size());
+    parse_status_string(headers_data, status);
+    if (on_header) {
+      while (headers_data != "\r\n") {
+        auto [name, value] = parse_header(headers_data);
+        (*on_header)(name, value);
+      }
+    }
+  }
+  if (!on_data_part)
+    co_return;  // status setted by parsing headers
   static constexpr std::string_view content_length_header = "Content-Length:";
-  auto content_len_pos = headers.find(content_length_header);
-  if (content_len_pos == headers.npos)
-    throw http_exception("[http] incorrect server answer");
-  content_len_pos += content_length_header.size();
-  // skip whitespaces (exactly one usually)
-  content_len_pos = headers.find_first_not_of(' ', content_len_pos);
-  assert(content_len_pos < headers_end_pos);
-  size_t content_length;
-  auto [_, err] =
-      std::from_chars(headers.data() + content_len_pos, headers.data() + headers_end_pos, content_length);
-  if (err != std::errc{})
-    throw http_exception("[http] cannot parse content length from server response: {}",
-                         std::make_error_code(err).message());
+  {
+    auto content_len_pos = headers.find(content_length_header);
+    if (content_len_pos == headers.npos)
+      goto protocol_err;
+    content_len_pos += content_length_header.size();
+    // skip whitespaces (exactly one usually)
+    content_len_pos = headers.find_first_not_of(' ', content_len_pos);
+    assert(content_len_pos < headers_end_pos);
 
-  headers_end_pos += headers_end_marker.size();
-  size_t overriden_bytes = headers.size() - headers_end_pos;
-  assert(overriden_bytes <= content_length);
-  // store overriden body and erase it from headers
-  request.body.data.resize(content_length);
-  memcpy(request.body.data.data(), headers.data() + headers_end_pos, overriden_bytes);
-  headers.erase(headers.begin() + headers_end_pos, headers.end());
-  transfered = co_await net.read(
-      socket, std::span(request.body.data.data() + overriden_bytes, content_length - overriden_bytes), ec);
-  if (ec && handle_timeout(ec))
-    throw http_exception("[http] error while reading body: {}", ec.message());
-  assert(transfered == content_length - overriden_bytes);
-  // TODO better?
-  co_return http_response{
-      .headers = bytes_t(headers.begin(), headers.end()),
-      .body = std::move(request.body.data),
-  };
+    size_t content_length;
+    auto [_, err] =
+        std::from_chars(headers.data() + content_len_pos, headers.data() + headers_end_pos, content_length);
+    if (err != std::errc{})
+      goto protocol_err;
+
+    headers_end_pos += headers_end_marker.size();
+    size_t overriden_bytes = headers.size() - headers_end_pos;
+    assert(overriden_bytes <= content_length);
+    // store overriden body and erase it from headers
+    request.body.data.resize(content_length);
+    memcpy(request.body.data.data(), headers.data() + headers_end_pos, overriden_bytes);
+    headers.erase(headers.begin() + headers_end_pos, headers.end());
+    transfered = co_await net.read(
+        socket, std::span(request.body.data.data() + overriden_bytes, content_length - overriden_bytes), ec);
+    if (ec)
+      goto network_err;
+    assert(transfered == content_length - overriden_bytes);
+  }
+  (*on_data_part)(request.body.data, true);
+  co_return;  // status setteed by parsing headers
+network_err:
+  assert(!!ec);
+  if (ec == asio::error::operation_aborted)
+    status = reqerr_e::timeout;
+  else
+    status = reqerr_e::network_err;
+  co_return;
+protocol_err:
+  status = reqerr_e::protocol_err;
+  co_return;
+} catch (protocol_error& e) {
+  status = reqerr_e::protocol_err;
+  co_return;
+} catch (...) {
+  status = reqerr_e::user_exception;
+  throw;
 }
 
 static asio::ssl::context make_ssl_context_for_http11() {
@@ -134,17 +205,18 @@ http11_client::http11_client(size_t connections_max_count, std::string_view host
       }) {
 }
 
-dd::task<http_response> http11_client::send_request(http_request request, duration_t timeout) {
+dd::task<int> http11_client::send_request(on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part,
+                                          http_request request, duration_t timeout) {
   // TODO borrow connection with timeout
   if (stop_requested)
-    throw client_stopped{};
+    co_return reqerr_e::cancelled;
   ++requests_in_progress;
   on_scope_exit {
     --requests_in_progress;
   };
   auto handle = co_await connections.borrow();
   if (handle.empty())
-    throw connection_shutted_down{};
+    co_return reqerr_e::cancelled;
   asio::steady_timer timer(io_ctx);
   timer.async_wait([con = *handle.get()](const io_error_code& ec) {
     if (ec)
@@ -157,19 +229,20 @@ dd::task<http_response> http11_client::send_request(http_request request, durati
   });
   timer.expires_after(timeout);
 
-  on_scope_failure(drop_connection) {
-    handle.get()->get()->shutdown();  // rm myself from asio queues
-    handle.drop();                    // TODO hmm
-  };
   on_scope_exit {
     timer.cancel();
   };
   std::string headers =
       generate_http_headers(request, get_host(), request.body.data, request.body.content_type);
-  LOG_DEBUG("generated headers: {}", headers);
-  http_response rsp = co_await tgbm::send_request(*handle.get(), std::move(headers), request);
-  drop_connection.no_longer_needed();
-  co_return rsp;
+  int status = reqerr_e::unknown_err;
+  co_await ::tgbm::send_request(*handle.get(), on_header, on_data_part, std::move(headers), request, status);
+  // send request throws on user exception
+  assert(status != reqerr_e::user_exception);
+  if (status < 0 && status != reqerr_e::timeout) {
+    handle.get()->get()->shutdown();  // rm myself from asio queues
+    handle.drop();
+  }
+  co_return status;
 }
 
 void http11_client::run() {

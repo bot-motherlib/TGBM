@@ -2247,11 +2247,18 @@ dd::task<std::vector<GameHighScore::Ptr>> Api::getGameHighScores(std::int64_t us
 // dd::task<bool> Api::refundStarPayment(std::int64_t user_id, std::string telegram_payment_charge_id) const {
 //}
 
-// TODO understand why 'args' presented?? Что туда блин передавать то можно?
-dd::task<http_response> Api::downloadFile(const std::string& filePath) {
-  http_response rsp = co_await _httpClient.send_request(
-      http_request{.path = fmt::format("/file/bot{}/{}", get_token(), filePath)}, duration_t::max());
-  co_return rsp;
+dd::task<int> Api::downloadFile(
+    std::string filePath, fn_ref<void(std::span<const byte_t>, bool is_last_chunk)> on_data_part) const {
+  int status = co_await _httpClient.send_request(
+      nullptr, &on_data_part, http_request{.path = fmt::format("/file/bot{}/{}", get_token(), filePath)},
+      duration_t::max());
+  co_return status;
+}
+
+dd::task<int> Api::download_file_by_id(
+    std::string fileid, fn_ref<void(std::span<const byte_t>, bool is_last_chunk)> on_data_part) const {
+  auto info = co_await getFile(fileid);
+  co_return co_await downloadFile(std::move(info->filePath), on_data_part);
 }
 
 dd::task<bool> Api::blockedByUser(std::int64_t chatId) const {

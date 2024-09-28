@@ -2625,16 +2625,12 @@ struct Api {
   dd::task<bool> refundStarPayment(std::int64_t user_id, std::string telegram_payment_charge_id) const;
   // TODO вынести в какой-то апи враппер, это отдельные методы по сути оборачивающие вызовы апи
 
-  /**
-   * @brief Download a file from Telegram and save it in memory.
-   *
-   * @param filePath Telegram file path from Api::getFile
-   *
-   * @return File content in a string.
-   */
-  // TODO принимать аргумент для обработки записи (чтобы по частям можно было в файлик складывать вместо
-  // строки в памяти)
-  dd::task<http_response> downloadFile(const std::string& filePath);
+  // returns http status
+  dd::task<int> downloadFile(std::string filePath,
+                             fn_ref<void(std::span<const byte_t>, bool is_last_chunk)>) const;
+
+  dd::task<int> download_file_by_id(std::string fileid,
+                                    fn_ref<void(std::span<const byte_t>, bool is_last_chunk)>) const;
 
   /**
    * @brief Check if user has blocked the bot

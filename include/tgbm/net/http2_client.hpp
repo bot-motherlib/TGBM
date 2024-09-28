@@ -1,7 +1,6 @@
 #pragma once
 
 #include "tgbm/net/http_client.hpp"
-#include "tgbm/net/http2/errors.hpp"
 
 #include <kelcoro/job.hpp>
 
@@ -70,7 +69,6 @@ struct http2_client : http_client {
   size_t requests_in_progress = 0;
   bool is_connecting = false;  // if connection started to establish, but not established yet
   bool stop_requested = false;
-  bool someone_waits_completely_done = false;
 
   // fills requests from raw http2 frames
   dd::job start_reader_for(std::shared_ptr<http2_connection>);
@@ -85,7 +83,7 @@ struct http2_client : http_client {
   void notify_connection_waiters(std::shared_ptr<http2_connection> result) noexcept;
 
   // postcondition: !connection
-  void drop_connection() noexcept;
+  void drop_connection(reqerr_e::values reason) noexcept;
 
   [[nodiscard]] bool already_connecting() const noexcept {
     return is_connecting;
@@ -105,10 +103,10 @@ struct http2_client : http_client {
 
   ~http2_client() override;
 
-  // Note: .destroy on handle works as canceling
   // Note: timeout is for reading side (from TG),
   // now sending big files will not be canceled by timeout (but receiving answer - will be)
-  dd::task<http_response> send_request(http_request, duration_t timeout) override;
+  dd::task<int> send_request(on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part, http_request,
+                             duration_t timeout) override;
 
   void run() override;
 

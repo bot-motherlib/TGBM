@@ -24,7 +24,8 @@ struct http11_client : http_client {
  public:
   explicit http11_client(size_t connections_max_count = 64, std::string_view host = "api.telegram.org");
 
-  dd::task<http_response> send_request(http_request, duration_t timeout) override;
+  dd::task<int> send_request(on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part, http_request,
+                             duration_t timeout) override;
 
   void run() override;
 

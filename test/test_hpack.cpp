@@ -46,7 +46,7 @@ TEST(encode_decode_integers) {
   const uint8_t* in = chars;
   try {
     (void)enc.decode_integer<uint32_t>(in, encoded_end, 6);
-  } catch (tgbm::http2::protocol_error&) {
+  } catch (tgbm::protocol_error&) {
     // must throw overflow
     return;
   }

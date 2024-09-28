@@ -54,4 +54,6 @@ struct client_stopped : std::exception {
   }
 };
 
+struct protocol_error : std::exception {};
+
 }  // namespace tgbm
