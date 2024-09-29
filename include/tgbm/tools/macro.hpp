@@ -34,7 +34,6 @@ struct pin {
 
 [[noreturn]] static void unreachable() noexcept {
   KELCORO_UNREACHABLE;
-  unreachable();  // TODO rm after fix kelcoro attr
 }
 
 }  // namespace tgbm
