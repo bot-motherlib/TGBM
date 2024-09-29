@@ -461,7 +461,7 @@ struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data
       return std::strong_ordering::greater;
     if (l.index() != r.index())
       return l.index() <=> r.index();
-    return l.visit_ptr(matcher{[](nothing_t) -> std::strong_ordering { KELCORO_UNREACHABLE; },
+    return l.visit_ptr(matcher{[](nothing_t) -> std::strong_ordering { unreachable(); },
                                [&]<typename T>(const T* p) { return *p <=> *r.template get_if<T>(); }});
   }
 };

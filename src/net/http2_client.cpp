@@ -709,7 +709,7 @@ dd::task<void> write_pending_data_frames(prepared_http_request request, size_t h
     }
     unhandled_bytes -= max_frame_len;
   }
-  KELCORO_UNREACHABLE;
+  unreachable();
 }
 
 static void fill_headers_header(const prepared_http_request& request,
@@ -819,7 +819,7 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
     default:
     case HEADERS:
     case DATA:
-      KELCORO_UNREACHABLE;
+      unreachable();
     case SETTINGS:
       settings_frame::parse(frame.header, frame.data, server_settings_filler(con.server_settings));
       return true;
@@ -879,7 +879,7 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
         node->receive_data(std::move(frame), frame.header.flags & http2::flags::END_STREAM);
         break;
       default:
-        KELCORO_UNREACHABLE;
+        unreachable();
     }
   } catch (protocol_error&) {
     return false;

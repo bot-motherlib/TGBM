@@ -21,7 +21,7 @@ dd::task<http_response> http_client::send_request(http_request request, duration
     switch (reqerr_e::values(rsp.status)) {
       case reqerr_e::done:
       case reqerr_e::user_exception:
-        KELCORO_UNREACHABLE;
+        unreachable();
       case reqerr_e::timeout:
         throw timeout_exception{};
       case reqerr_e::network_err:

@@ -32,6 +32,11 @@ struct pin {
   void operator=(pin&&) = delete;
 };
 
+[[noreturn]] static void unreachable() noexcept {
+  KELCORO_UNREACHABLE;
+  unreachable();  // TODO rm after fix kelcoro attr
+}
+
 }  // namespace tgbm
 
 // must be used as field in type, makes it unmovable without breaking is_aggregate

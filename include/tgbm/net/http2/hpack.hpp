@@ -60,12 +60,10 @@ struct default_protocol_verificator {
 // may be used if you trust to server/endpoint, boosts performance
 struct trusted_verificator {
   [[noreturn]] static void handle_protocol_error() {
-    KELCORO_UNREACHABLE;
-    throw;  // TODO fix kelcoro attr (my unreachable)
+    unreachable();
   }
   [[noreturn]] static void handle_size_error() {
-    KELCORO_UNREACHABLE;
-    throw;  // TODO fix kelcoro attr (my unreachable)
+    unreachable();
   }
   static void entry_added(std::string_view, std::string_view) {
   }

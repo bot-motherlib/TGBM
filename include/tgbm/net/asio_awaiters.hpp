@@ -313,7 +313,7 @@ struct net_t {
         co_return p;
       checked_bytes += read_bytes;
     }
-    KELCORO_UNREACHABLE;
+    unreachable();
   }
 
   // appends readen bytes to 'buffer'
@@ -332,7 +332,7 @@ struct net_t {
       if (condition(buffer))
         co_return;
     }
-    KELCORO_UNREACHABLE;
+    unreachable();
   }
 
   template <typename Timer>
