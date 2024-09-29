@@ -261,14 +261,19 @@ struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data
 
   // assumes, that data is correct (for example) from 'release'
   static box_union from_raw(data_t data) noexcept {
-    box_union u;
+    box_union u = nullptr;
+    // case when ptr is null, but index is not
+    if (!data.get_ptr())
+      return u;
     u.get_data() = data;
     return u;
   }
   // precondition: 'ptr' may be released with 'delete', correctly aligned
   template <oneof<Types...> T>
   static box_union from_ptr(T* ptr) noexcept {
-    box_union u;
+    box_union u = nullptr;
+    if (!ptr)
+      return u;
     u.set_ptr(ptr);
     return u;
   }
@@ -282,16 +287,15 @@ struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data
   }
   box_union(std::nullptr_t) noexcept : box_union() {
   }
+  box_union(nothing_t) noexcept : box_union(nullptr) {
+  }
+
   ~box_union() {
     reset();
   }
 
   box_union(const box_union& other) : box_union() {
-    other.visit_ptr(matcher{[&](nothing_t) {},
-                            [&]<typename T>(const T* x) {
-                              if (x)
-                                emplace<T>(*x);
-                            }});
+    other.visit(matcher{[](nothing_t) {}, [&]<typename T>(const T& x) { emplace<T>(x); }});
   }
   box_union(box_union&& other) noexcept : data_t(other.get_data()) {
     other.get_data() = empty_state();
@@ -323,11 +327,7 @@ struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data
   // postcondition: is_null()
   void reset() noexcept {
     static_assert((sizeof(Types) && ...));
-    visit_ptr(matcher{[](nothing_t) {},
-                      [](auto* p) {
-                        if (p)
-                          delete p;
-                      }});
+    visit(matcher{[](nothing_t) {}, [](auto& p) { delete std::addressof(p); }});
     get_data() = empty_state();
     assert(is_null());
   }
@@ -349,6 +349,9 @@ struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data
   box_union& operator=(std::nullptr_t) noexcept {
     reset();
     return *this;
+  }
+  box_union& operator=(nothing_t) noexcept {
+    return *this = nullptr;
   }
 
   // from boxes
@@ -417,22 +420,22 @@ struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data
 
   // passes 'nothing_t' empty
   template <typename V>
-  decltype(auto) visit_ptr(V&& vtor) {
-    auto i = index();
+  decltype(auto) visit(V&& vtor) {
     if (is_null())
       return vtor(nothing_t{});
+    auto i = index();
     assert(i < sizeof...(Types) && "internal logic failure");
-    return visit_index<sizeof...(Types) - 1>([&]<size_t I>() -> decltype(auto) { return vtor(get_if<I>()); },
+    return visit_index<sizeof...(Types) - 1>([&]<size_t I>() -> decltype(auto) { return vtor(*get_if<I>()); },
                                              i);
   }
   // passes 'nothing_t' if empty
   template <typename V>
-  decltype(auto) visit_ptr(V&& vtor) const {
-    auto i = index();
+  decltype(auto) visit(V&& vtor) const {
     if (is_null())
       return vtor(nothing_t{});
+    auto i = index();
     assert(i < sizeof...(Types) && "internal logic failure");
-    return visit_index<sizeof...(Types) - 1>([&]<size_t I>() -> decltype(auto) { return vtor(get_if<I>()); },
+    return visit_index<sizeof...(Types) - 1>([&]<size_t I>() -> decltype(auto) { return vtor(*get_if<I>()); },
                                              i);
   }
 
@@ -440,17 +443,17 @@ struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data
   bool operator==(std::nullptr_t) const noexcept {
     return is_null();
   }
+  bool operator==(nothing_t) const noexcept {
+    return *this == nullptr;
+  }
   friend bool operator==(const box_union& l, const box_union& r) noexcept {
     if (l.index() != r.index())
       return false;
-    return l.visit_ptr(matcher{[](nothing_t) { return true; },
-                               [&]<typename T>(const T* p) {
-                                 const T* lptr = p;
-                                 const T* rptr = r.template get_if<T>();
-                                 if (!lptr || !rptr)
-                                   return !lptr && !rptr;
-                                 return *lptr == *rptr;
-                               }});
+    return l.visit(matcher{[](nothing_t) { return true; },
+                           [&]<typename T>(const T& lptr) {
+                             const T* rptr = r.template get_if<T>();
+                             return lptr == *rptr;
+                           }});
   }
   friend std::strong_ordering operator<=>(const box_union& l, const box_union& r) noexcept {
     if (!l && !r)
@@ -461,8 +464,8 @@ struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data
       return std::strong_ordering::greater;
     if (l.index() != r.index())
       return l.index() <=> r.index();
-    return l.visit_ptr(matcher{[](nothing_t) -> std::strong_ordering { unreachable(); },
-                               [&]<typename T>(const T* p) { return *p <=> *r.template get_if<T>(); }});
+    return l.visit(matcher{[](nothing_t) -> std::strong_ordering { unreachable(); },
+                           [&]<typename T>(const T& p) { return p <=> *r.template get_if<T>(); }});
   }
 };
 
