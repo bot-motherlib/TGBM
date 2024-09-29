@@ -199,8 +199,13 @@ struct http_request {
   http_body body;
 };
 
+struct http_header_t {
+  std::string name;
+  std::string value;
+};
 struct http_response {
-  bytes_t headers;
+  int status = 0;
+  std::vector<http_header_t> headers;
   bytes_t body;
 };
 

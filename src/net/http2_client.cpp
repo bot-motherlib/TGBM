@@ -1,68 +1,25 @@
 /*
-
 possible situatuions:
   1. connection drop (must release all resources)
   2. stop (goes into connection drop) and must make client ready to .run again
 
 resources:
-1. requests (send_request):
-  * borrows and caches connection
-     -> success, just return and cache connection + stream id
-     -> client is stopping - exception
-     -> no connction OR connection is bad (dropped)
-        request goes into connection_waiters (and initiates connection creation if not yet)
-       -> success -> has connection (end of connection creation)
-       -> situations:
-            * drop_connection()  -> nothing
-            * start_connecting() (always exist for anyone in connection_waiters)
-              -> resumed with or without .result at end of connecting
-            * stop()             -> resumed by stop() without connection, exception
-
-  After borrowing request guaranteed to have connection + stream id, client not stopping
-
-  * request creates request_node and goes into connection.requests
-    * finish_request() or finish_stream_with_error() after receiving END_STREAM / RST_STREAM in reader
-      finished and unlinks request_node from all queues
-    * finish_all_with_exception - called by drop_connection()
-    * drop_connection() -> finish_all_with_exception (connection_shutted_down)
-    * stop() -> calls drop_connection() -> finish_all_with_exception
-  = request finished, request_node unlinked from requests/responses by finish_request or by node itself
-    after exception
-  Note: request normaly ends only when lands in 'responses' (END_STREAM), if request finished while in
-    'requests', then ended with exception or timeout/canceled
+1. requests
+    request borrows connection or wait in client.connection_waiters until connection done
+  * send_request creates request_node
+  * node -> into connection->requests
+  - if node ignores headers and data, owner will own node and finish it after sending data (or error)
+  - otherwise, node -> responses, writer will write its request
+  * reader read headers/data and fills request, finishes request on STREAM_END
+  * timeout/cancel(.destroy) node on any step unlinks it
+  ALL requests are ended by connection.finish_request(node, status), except node is .destroyed
 
 2. connection
-    There are 0 or 1 connection at one time, new start_connecting requests ignored when .stop_requested
-  or connection already creates. When .start_connecting() is done(success or failure) then all
-  connection_waiters resumed. .stop() also resumes connection waiters
+    There are 0 or 1 connection at one time,
+    connection initiated when request handled and no active connection or connection if out of stream ids
+    (reader handles all pending streams and goes to create new connection if someone waits it)
 
-  Only send_request can initiate or wait connection
-
-  Note: it is possible to already_connecting() && start_connecting was not called
-  when streamid is runs out, connection still works, but new requests goes to connection_waiters
-    then, when all streams done (or drop_connection()) reader will initiate new connecting
-
-  2.0 ssl stream and tcp socket
-    * drop_connection() -> connection.shutdown() shuts all down
-    * stop() -> invokes drop_connection()
-  2.1 connection.reader
-    * exists exactly 1 for each connection, if suspended, then ALWAYS suspended in asio async_read
-
-    Lifetime: destroys itself when .shutdown() (from drop_connection()) calls socket.cancel()
-     initiates drop_connection() on http protocol error, network errors, unexpected errors or
-     when receives goaway frame from server
-
-  2.2 connection.writer
-    * exists exactly 1 for each connection, its handle setted in connection only when suspended and used
-    to resume it when new request pushed
-      Writes connection.requests frames and transfers requesst to connection.responses (so reader may start
-fill response), initiates drop_connection() on network error and on unexpected exceptions.
-    Lifetime:
-      * normaly never destroyed
-      * drop_connection():
-         * if has no work, then handle setted in connection, destroyed in shutdown
-         * if works (suspended on asio writer calls) then stopped by shutdown TCP socket .cancel
-      * stop() -> calls drop_connection()
+   connection may be dropped only by its reader/writer or when stop requested
 
 3. connection_waiters:
     * drop_connection() -> nothing
@@ -90,6 +47,7 @@ fill response), initiates drop_connection() on network error and on unexpected e
 #include "tgbm/tools/macro.hpp"
 #include "tgbm/net/errors.hpp"
 #include "tgbm/tools/algorithm.hpp"
+#include "tgbm/tools/reusable_buffer.hpp"
 
 #include <fmt/ranges.h>
 
@@ -104,7 +62,7 @@ namespace tgbm {
 
 struct http2_frame_t {
   http2::frame_header header;
-  bytes_t data;
+  std::span<byte_t> data;
 };
 
 struct prepared_http_request {
@@ -117,6 +75,13 @@ struct prepared_http_request {
   }
 };
 
+struct request_node;
+
+struct writer_work {
+  prepared_http_request request;
+  request_node* node = nullptr;  // if not nullptr, then writer MUST finish it
+};
+
 // request starts in connection.requests, then goes into connection.responses
 struct request_node {
   bi::list_member_hook<link_option> requests_hook;
@@ -126,18 +91,20 @@ struct request_node {
   prepared_http_request req;
   std::chrono::time_point<std::chrono::steady_clock> deadline;
   union {
-    std::coroutine_handle<> writer_handle;                        // setted initialy before 'await_suspend'
-    std::coroutine_handle<dd::task_promise<http_response>> task;  // setted by 'await_suspend' (requester)
+    std::coroutine_handle<> writer_handle;                    // setted initialy before 'await_suspend'
+    std::coroutine_handle<dd::task<int>::promise_type> task;  // setted by 'await_suspend' (requester)
   };
   http2_connection* connection = nullptr;
   // received resonse (filled by 'reader' in connection)
-  http_response rsp;
+  on_header_fn_ptr on_header;
+  on_data_part_fn_ptr on_data_part;
+  int status = reqerr_e::unknown_err;
   TGBM_PIN;
 
   static bool await_ready() noexcept {
     return false;
   }
-  std::coroutine_handle<> await_suspend(std::coroutine_handle<dd::task_promise<http_response>> h) noexcept {
+  std::coroutine_handle<> await_suspend(std::coroutine_handle<dd::task<int>::promise_type> h) noexcept {
     // get union member and replace by another handle
     std::coroutine_handle writer_h = writer_handle;
     task = h;
@@ -146,34 +113,38 @@ struct request_node {
     return std::noop_coroutine();
   }
 
-  void await_resume() {
-    if (task.promise().exception) [[unlikely]]
-      std::rethrow_exception(task.promise().exception);
+  [[nodiscard]] int await_resume() const noexcept {
+    return status;
   }
 
   // returns false on protocol errors
   // precondition: padding removed
-  [[nodiscard]] bool receive_headers(http2_frame_t&& frame) {
+  void receive_headers(hpack::decoder<>& decoder, http2_frame_t&& frame) {
     assert(frame.header.stream_id == req.streamid);
     assert(frame.header.type == http2::frame_e::HEADERS);
     // weird things like continuations, trailers, many header frames with CONTINUE etc not supported
-    assert(rsp.headers.empty());
     if (!(frame.header.flags & http2::flags::END_HEADERS))
-      return false;
-    rsp.headers = std::move(frame.data);
-    return true;
+      throw protocol_error{};
+    const byte_t* in = frame.data.data();
+    const byte_t* e = in + frame.data.size();
+    status = decoder.decode_response_status(in, e);
+    // TODO lazy headers, then try parse first header(status), if cannot, then not set
+    // note: its possible if i ignore headers, that 'status' will be cached and dynamic table broken
+    // but it must be very strange case where implementation caches status
+    hpack::decode_headers_block(decoder, std::span(in, e),
+                                [&](std::string_view name, std::string_view value) {
+                                  if (on_header)
+                                    (*on_header)(name, value);
+                                });
   }
 
   // returns false on protocol errors
   // precondition: padding removed
-  [[nodiscard]] bool receive_data(http2_frame_t&& frame) {
+  void receive_data(http2_frame_t&& frame, bool end_stream) {
     assert(frame.header.stream_id == req.streamid);
     assert(frame.header.type == http2::frame_e::DATA);
-    if (rsp.body.empty()) [[likely]]
-      rsp.body = std::move(frame.data);
-    else
-      rsp.body.insert(rsp.body.end(), frame.data.begin(), frame.data.end());
-    return true;
+    if (on_data_part)
+      (*on_data_part)(frame.data, end_stream);
   }
   struct equal_by_streamid {
     bool operator()(const http2::stream_id_t& l, const http2::stream_id_t& r) const noexcept {
@@ -213,8 +184,8 @@ struct http2_connection : std::enable_shared_from_this<http2_connection> {
   using timers_t = bi::treap_multiset<request_node, bi::constant_time_size<true>, timers_member_hook,
                                       bi::priority<request_node::compare_by_deadline>,
                                       bi::compare<request_node::compare_by_deadline>>;
-
-  http2::settings_t settings;
+  http2::settings_t server_settings;
+  http2::settings_t client_settings;
   asio_ssl_connection asio_con;
   hpack::encoder<> encoder;
   hpack::encoder<> decoder;
@@ -267,7 +238,7 @@ struct http2_connection : std::enable_shared_from_this<http2_connection> {
       assert(connection->writer.handle == nullptr);
       connection->writer.handle = writer;
     }
-    [[nodiscard]] prepared_http_request await_resume() const noexcept {
+    [[nodiscard]] writer_work await_resume() const noexcept {
       connection->writer.handle = nullptr;
       if (connection->is_dropped())
         return {};
@@ -277,8 +248,12 @@ struct http2_connection : std::enable_shared_from_this<http2_connection> {
       connection->requests.pop_front();
       assert(connection->responses.count(node.req.streamid) == 0);
       assert(!node.responses_hook.is_linked());
-      connection->responses.insert(node);
-      return std::move(node.req);
+      writer_work work{std::move(node.req)};
+      if (!node.on_header && !node.on_data_part)
+        work.node = &node;  // node goes into writer, he will finish it
+      else
+        connection->responses.insert(node);
+      return work;
     }
   };
 
@@ -318,11 +293,10 @@ struct http2_connection : std::enable_shared_from_this<http2_connection> {
   }
 
   // precondition: node is in 'responses'
-  void finish_request(request_node& node) noexcept {
-    assert(responses.count(node.req.streamid) == 1);
-    KELCORO_ASSUME(node.responses_hook.is_linked());
-    KELCORO_ASSUME(node.timers_hook.is_linked());
+  // ALL requests must be finished by this call (except canceling by destroying node)
+  void finish_request(request_node& node, int status) noexcept {
     forget(node);
+    node.status = status;
     node.task.resume();
   }
 
@@ -331,20 +305,16 @@ struct http2_connection : std::enable_shared_from_this<http2_connection> {
     auto* node = find_response_by_streamid(rst_frame.header.stream_id);
     if (!node)
       return false;
-    node->task.promise().exception =
-        std::make_exception_ptr(http2::rst_stream_received(rst_frame.error_code));
-    finish_request(*node);
+    finish_request(*node, reqerr_e::server_cancelled_request);
     return true;
   }
 
   void finish_request_by_timeout(request_node& node) noexcept {
     LOG_DEBUG("stream {} timed out", node.req.streamid);
-    forget(node);
-    node.task.promise().exception = std::make_exception_ptr(timeout_exception{});
-    node.task.resume();
+    finish_request(node, reqerr_e::timeout);
   }
 
-  void finish_all_with_exception() {
+  void finish_all_with_exception(reqerr_e::values reason) {
     assert(is_dropped());  // must be called only while drop_connection()
 
     // assume only i have access to it
@@ -353,21 +323,10 @@ struct http2_connection : std::enable_shared_from_this<http2_connection> {
     assert(reqs.size() + rsps.size() == timers.size());
     // nodes in reqs or in rsps, timers do not own them
     timers.clear();
-    LOG_DEBUG("finish {} requests and {} responses with exception", reqs.size(), rsps.size());
-    auto set_exception_and_resume = [&](request_node* node) {
-      // its important, because send_request when gets exception from co_await .request_finished
-      // will try to delete itself from connection->requests etc, while they are moved to local
-      // variables, so it will be removing element from container without this element
-      assert(!node->requests_hook.is_linked());
-      assert(!node->responses_hook.is_linked());
-      assert(!node->timers_hook.is_linked());
-      assert(node->task);
-      assert(!node->task.promise().exception);
-      node->task.promise().exception = std::make_exception_ptr(connection_shutted_down{});
-      node->task.resume();
-    };
-    reqs.clear_and_dispose(set_exception_and_resume);
-    rsps.clear_and_dispose(set_exception_and_resume);
+    LOG_DEBUG("finish {} requests and {} responses, reason code: {}", reqs.size(), rsps.size(), (int)reason);
+    auto forget_and_resume = [&](request_node* node) { finish_request(*node, reason); };
+    reqs.clear_and_dispose(forget_and_resume);
+    rsps.clear_and_dispose(forget_and_resume);
 
     assert(requests.empty() && responses.empty() && "someone push request while connection finishes!");
   }
@@ -398,20 +357,20 @@ struct http2_connection : std::enable_shared_from_this<http2_connection> {
       return;
     // ignore stream-level control flow, its setted to max, must be enough
     if (frame.window_size_increment == 0)
-      throw http2::protocol_error{};
+      throw protocol_error{};
     // avoid overflow
     if (uint64_t(receiver_window_size) + uint64_t(frame.window_size_increment) >
         uint64_t(http2::max_window_size))
-      throw http2::protocol_error{};
+      throw protocol_error{};
     receiver_window_size += frame.window_size_increment;
   }
 
   asio::ssl::stream<asio::ip::tcp::socket>& socket() noexcept {
     return asio_con.socket;
   }
-  // TODO? destructor?
+
   // terminates on exception (must not throw)
-  void shutdown() noexcept {
+  void shutdown(reqerr_e::values reason) noexcept {
     // Note: shared ptr prevents me to be destroyed while resuming writer/reader etc
     std::shared_ptr lock = shared_from_this();
 
@@ -432,7 +391,7 @@ struct http2_connection : std::enable_shared_from_this<http2_connection> {
       // == its in asio
       // then writer must be canceled by socket.cancel() or shutdown
     }
-    finish_all_with_exception();
+    finish_all_with_exception(reason);
     asio_con.shutdown();
   }
 
@@ -447,6 +406,7 @@ struct http2_connection : std::enable_shared_from_this<http2_connection> {
     return id;
   }
   // returned value must be co_awaited
+  // await resume returns request status
   [[nodiscard]] request_node& request_finished(request_node& node) noexcept {
     assert(!node.timers_hook.is_linked());
     assert(!node.requests_hook.is_linked());
@@ -496,9 +456,6 @@ struct first_settings_frame_visitor {
   };
 };
 
-// TODO уже убрать все эти префиксы async, вместо них co_await, плюс сделать перегрузки которые исключения
-// бросают
-
 static dd::task<void> handle_ping(http2::ping_frame ping,
                                   asio::ssl::stream<asio::basic_stream_socket<asio::ip::tcp>>& socket) {
   LOG_DEBUG("received ping, data: {}", ping.get_data());
@@ -517,7 +474,8 @@ static dd::task<std::shared_ptr<http2_connection>> establish_http2_session(asio_
   using namespace http2;
   using enum http2::frame_e;
 
-  settings_t my_settings{
+  std::shared_ptr con(std::make_shared<http2_connection>(std::move(asio_con)));
+  con->client_settings = http2::settings_t{
       .header_table_size = 4096,
       .enable_push = false,
       .max_concurrent_streams =
@@ -526,8 +484,8 @@ static dd::task<std::shared_ptr<http2_connection>> establish_http2_session(asio_
       .max_frame_size = frame_len_max,
       .deprecated_priority_disabled = true,
   };
-  std::shared_ptr con(std::make_shared<http2_connection>(std::move(asio_con)));
-  con->encoder = hpack::encoder<>(my_settings.header_table_size);
+  con->encoder = hpack::encoder<>(con->client_settings.header_table_size);
+  con->my_window_size = con->client_settings.initial_window_size;
   con->stream_id = 1;  // client
 
   io_error_code ec;
@@ -536,7 +494,7 @@ static dd::task<std::shared_ptr<http2_connection>> establish_http2_session(asio_
 
   bytes_t connection_request;
 
-  form_connection_initiation(my_settings, std::back_inserter(connection_request));
+  form_connection_initiation(con->client_settings, std::back_inserter(connection_request));
   auto& socket = con->socket();
   size_t written = co_await net.write(socket, connection_request, ec);
   if (ec)
@@ -556,7 +514,7 @@ static dd::task<std::shared_ptr<http2_connection>> establish_http2_session(asio_
   if (ec)
     throw network_exception(ec);
   if (accepted_settings_frame() != header)
-    settings_frame::parse(header, bytes, first_settings_frame_visitor(con->settings));
+    settings_frame::parse(header, bytes, first_settings_frame_visitor(con->server_settings));
   // answer settings ACK as soon as possible
 
   accepted_settings_frame().send_to(buf);
@@ -585,14 +543,14 @@ static dd::task<std::shared_ptr<http2_connection>> establish_http2_session(asio_
         if (header.flags & flags::ACK) {
           if (header.length != 0 || header.stream_id != 0)
             throw protocol_error{};
-          con->decoder = hpack::encoder<>(con->settings.header_table_size);
+          con->decoder = hpack::encoder<>(con->server_settings.header_table_size);
           // TODO? if current size less then 4096, then first headers must be with dyntab update
           // and same for other changes of dynamic table size to less then maximum now
-          LOG("HTTP/2 connection successfully established, encoder size: {}",
-              con->settings.header_table_size);
+          LOG("HTTP/2 connection successfully established, decoder size: {}",
+              con->server_settings.header_table_size);
           co_return con;
         }
-        settings_frame::parse(header, bytes, filling_client_settings_visitor(con->settings));
+        settings_frame::parse(header, bytes, server_settings_filler(con->server_settings));
         continue;
       case WINDOW_UPDATE:
         con->window_update(window_update_frame::parse(header, bytes));
@@ -688,23 +646,29 @@ static bool validate_frame_header(const http2::frame_header& h) noexcept {
   return h.length <= http2::max_header_length && h.stream_id <= http2::max_header_length;
 }
 
-// TODO перегрузки с исключениями (boost io exception с error code внутри)
-// нужно только понять как эффективно дописывать в строку и вектор
-
-static bool strip_padding(bytes_t& bytes) {
+static bool strip_padding(std::span<byte_t>& bytes) {
   if (bytes.empty())
     return false;
   uint8_t padlen = bytes[0];
   if (padlen + 1 > bytes.size())
     return false;
-  bytes.erase(bytes.end() - padlen, bytes.end());
-  bytes.erase(bytes.begin());
+  // rm prefix 1, rm postfix padlen
+  byte_t* b = bytes.data() + 1;
+  byte_t* e = bytes.data() + (bytes.size() - padlen);
+  bytes = std::span(b, e);
   return true;
 }
 
 dd::task<void> write_pending_data_frames(prepared_http_request request, size_t handled_bytes,
-                                         std::shared_ptr<http2_connection> con) {
+                                         std::shared_ptr<http2_connection> con,
+                                         http2_connection::requests_t owned_node) {
   assert(con && !con->is_dropped());
+  int status = reqerr_e::unknown_err;
+  assert(owned_node.size() < 2);
+  on_scope_exit {
+    if (!owned_node.empty())
+      con->finish_request(owned_node.front(), status);
+  };
   http2::frame_header data_header{
       .length = 0,
       .type = http2::frame_e::DATA,
@@ -716,7 +680,7 @@ dd::task<void> write_pending_data_frames(prepared_http_request request, size_t h
   size_t unhandled_bytes = request.data.size() - handled_bytes;
   for (;;) {
     // load max_frame_size from settings, because it may change between co_awaits
-    const size_t max_frame_len = con->settings.max_frame_size;
+    const size_t max_frame_len = con->server_settings.max_frame_size;
     const bool last_frame = unhandled_bytes < max_frame_len;
 
     data_header.length = std::min(unhandled_bytes, max_frame_len);
@@ -730,286 +694,296 @@ dd::task<void> write_pending_data_frames(prepared_http_request request, size_t h
       if (ec != asio::error::operation_aborted)
         LOG_DEBUG("data frames for stream {} cannot be sended due network error, {}", request.streamid,
                   ec.what());
+      status = reqerr_e::network_err;
       co_return;
     }
     if (con->is_dropped()) {
       LOG_DEBUG("data frames for stream {} cannot be sended due connection failure", request.streamid);
+      status = reqerr_e::cancelled;
       co_return;
     }
     if (unhandled_bytes <= max_frame_len) {
       LOG_DEBUG("data frames for stream {} successfully sended", request.streamid);
+      status = reqerr_e::done;
       co_return;
     }
     unhandled_bytes -= max_frame_len;
   }
+  unreachable();
 }
+
+static void fill_headers_header(const prepared_http_request& request,
+                                byte_t (&out)[http2::frame_header_len]) noexcept {
+  using enum http2::frame_e;
+  using namespace http2::flags;
+  http2::frame_header header;
+  header.length = uint32_t(request.headers.size());
+  header.type = HEADERS;
+  header.flags = request.data.empty() ? END_HEADERS | END_STREAM : END_HEADERS;
+  header.stream_id = request.streamid;
+  header.send_to(out);
+};
+
+// returns count of handled bytes from 'request.data'
+[[nodiscard]] static size_t fill_data_header(prepared_http_request& request, size_t max_frame_size,
+                                             byte_t (&out)[http2::frame_header_len]) noexcept {
+  using enum http2::frame_e;
+  using namespace http2::flags;
+  assert(!request.data.empty());
+  http2::frame_header header;
+  header.length = std::min(request.data.size(), max_frame_size);
+  header.type = DATA;
+  header.flags = request.data.size() <= max_frame_size ? END_STREAM : EMPTY_FLAGS;
+  header.stream_id = request.streamid;
+  header.send_to(out);
+  return header.length;
+};
 
 // writes requests, handles control flow on sending side
 dd::job http2_client::start_writer_for(std::shared_ptr<http2_connection> con) {
   assert(con);
   io_error_code ec;
-  // current handled node
-  prepared_http_request request;
   on_scope_exit {
     LOG_DEBUG("writer for {} completed", (void*)con.get());
   };
-  using http2::frame_header;
-  using namespace http2::flags;
-  using enum http2::frame_e;
   byte_t hdrs_buf[http2::frame_header_len];
   byte_t data_buf[http2::frame_header_len];
-  frame_header headers_header;
-  headers_header.type = HEADERS;
-  headers_header.flags = END_HEADERS;
-  frame_header data_header;
-  data_header.type = DATA;
-  try {
-    for (;;) {
-      request = co_await con->wait_work();
-      if (request.empty())
-        goto connection_dropped;
-      assert(!con->is_dropped());
-      while (con->concurrent_streams_now() >= con->settings.max_concurrent_streams) {
-        LOG_DEBUG("many concurrent streams, writer is blocked, streams now: {}",
-                  con->concurrent_streams_now());
-        co_await dd::this_coro::suspend_and([&](std::coroutine_handle<> h) {
-          // set myself into end of task list while i cannot work
-          asio::post(io_ctx, h);
-        });
-        if (con->is_dropped())
-          goto connection_dropped;
-      }
-      const size_t max_frame_size = con->settings.max_frame_size;
-      const bool has_data = !request.data.empty();
-      const bool oneframe_data = request.data.size() <= max_frame_size;
 
-      if (request.headers.size() > max_frame_size) [[unlikely]]
-        LOG_DEBUG("frame too big, ignoring it and server will goaway us, mfs: {}", max_frame_size);
-
-      headers_header.length = uint32_t(request.headers.size());
-      assert(headers_header.type == HEADERS);
-      headers_header.flags = !has_data ? END_HEADERS | END_STREAM : END_HEADERS;
-      headers_header.stream_id = request.streamid;
-
-      headers_header.send_to(hdrs_buf);
-
-      if (has_data) {
-        data_header.length = std::min(request.data.size(), max_frame_size);
-        assert(data_header.type == DATA);
-        data_header.flags = oneframe_data ? END_STREAM : EMPTY_FLAGS;
-        data_header.stream_id = request.streamid;
-
-        data_header.send_to(data_buf);
-        // add window_update frame if required
-        if (con->my_window_size < http2::max_window_size / 2) [[unlikely]] {
-          LOG_DEBUG("incrementing my window by {}", http2::max_window_size - con->my_window_size);
-          http2::window_update_frame::form(0, http2::max_window_size - con->my_window_size,
-                                           std::back_inserter(request.data));
-          con->my_window_size = http2::max_window_size;
-        }
-      }
-
-      // do not handles server sending data for this stream before request sended
-      co_await net.write_many(
-          con->socket(), ec, std::span(hdrs_buf), std::span(request.headers),
-          has_data ? std::span(data_buf) : std::span<byte_t>{},
-          has_data ? std::span(request.data.data(), data_header.length) : std::span<byte_t>{});
-      if (ec) {
-        if (ec == asio::error::operation_aborted)
-          goto connection_dropped;
-        else
-          goto network_error;
-      }
-      if (con->is_dropped())
-        goto connection_dropped;
-      if (!oneframe_data) [[unlikely]]
-        write_pending_data_frames(std::move(request), data_header.length, con).start_and_detach();
+  // used for case when writer owns node and its .destroyed (unlinked from here)
+  http2_connection::requests_t owned_node;
+  for (;;) {
+    auto [request, node] = co_await con->wait_work();
+    if (request.empty())
+      goto end;
+    if (node) {
+      assert(!node->requests_hook.is_linked());
+      assert(owned_node.empty());
+      owned_node.push_back(*node);
     }
-  } catch (std::exception& e) {
-    LOG_DEBUG("writer of {} getted unexpected exception, what: {}", (void*)con.get(), e.what());
-    drop_connection();
-    co_return;
+    int status = reqerr_e::network_err;
+    on_scope_exit {
+      if (!owned_node.empty()) {
+        request_node& n = owned_node.front();
+        owned_node.pop_front();
+        con->finish_request(n, status);
+      }
+    };
+    while (con->concurrent_streams_now() >= con->server_settings.max_concurrent_streams) {
+      LOG_DEBUG("many concurrent streams, writer is blocked, streams now: {}", con->concurrent_streams_now());
+      co_await dd::this_coro::suspend_and([&](std::coroutine_handle<> h) {
+        // set myself into end of task list while i cannot work
+        asio::post(io_ctx, h);
+      });
+      if (con->is_dropped())
+        goto end;
+    }
+    // TODO if headers > con->settings.max_frame_size
+    fill_headers_header(request, hdrs_buf);
+    if (!request.data.empty()) {
+      size_t handled = fill_data_header(request, con->server_settings.max_frame_size, data_buf);
+      co_await net.write_many(con->socket(), ec, std::span(hdrs_buf), std::span(request.headers),
+                              std::span(data_buf), std::span(request.data.data(), handled));
+      if (ec || con->is_dropped())
+        goto end;
+      if (handled < request.data.size())
+        write_pending_data_frames(std::move(request), handled, con, std::move(owned_node)).start_and_detach();
+    } else {  // data empty
+      co_await net.write_many(con->socket(), ec, std::span(hdrs_buf), std::span(request.headers));
+    }
+    if (ec || con->is_dropped())
+      goto end;
+
+    status = reqerr_e::done;
+
+    // add window_update frame if required
+    if (con->my_window_size < http2::max_window_size / 2) [[unlikely]] {
+      LOG_DEBUG("incrementing my window by {}", http2::max_window_size - con->my_window_size);
+      byte_t inc_buf[http2::window_update_frame::len];
+      http2::window_update_frame::form(0, http2::max_window_size - con->my_window_size, inc_buf);
+      con->my_window_size = http2::max_window_size;
+      co_await net.write(con->socket(), std::span(inc_buf), ec);
+      if (ec || con->is_dropped())
+        goto end;
+    }
   }
-network_error:
-  // TODO в целом наверное надо больше игнорировать ошибки, чтобы в плохих сетях не пересоздавать коннекшны
-  // постоянно. Мб считать ошибки или выделять конкретные виды
-  if (ec)
-    LOG_ERR("writer drops connection after err: {}", ec.what());
-  drop_connection();
-connection_dropped:
-  LOG_DEBUG("writer of {} stopped", (void*)con.get());
+end:
+  drop_connection(reqerr_e::network_err);
 }
 
-// reads and handles utility frames, yields headers and data
-// handles control flow on my side
-dd::channel<http2_frame_t> frame_channel(http2_connection& con) {
+// handles only utility frames (not DATA / HEADERS), returns false on protocol error (may throw it too)
+static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
   using enum http2::frame_e;
   using namespace http2;
-  byte_t buf[frame_header_len];
-  io_error_code ec;
-  frame_header header;
-  // TODO reusable buffer type
-  bytes_t bytes;
 
-  while (!con.is_done_completely()) {
-    if (con.is_dropped())
-      goto connection_dropped;
-    co_await net.read(con.socket(), std::span(buf, frame_header_len), ec);
-    if (ec)
-      goto network_error;
-    if (con.is_dropped())
-      goto connection_dropped;
-    header = frame_header::parse(buf);
-    if (!validate_frame_header(header))
-      goto protocol_error;
-    bytes.resize(header.length);
-
-    co_await net.read(con.socket(), bytes, ec);
-    if (ec)
-      goto network_error;
-    if (con.is_dropped())
-      goto connection_dropped;
-    switch (header.type) {
-      case HEADERS:
-        if (header.flags & http2::flags::PRIORITY) {
-          assert(con.settings.deprecated_priority_disabled);
-          LOG_DEBUG("server sends deprecated priority HEADERS, unimplemented");
-          goto protocol_error;
-        }
-      case DATA:
-        if (header.stream_id == 0)
-          goto protocol_error;
-        if ((header.flags & flags::PADDED) && !strip_padding(bytes))
-          goto protocol_error;
-        co_yield http2_frame_t(header, std::move(bytes));
-        continue;
-      case SETTINGS:
-        settings_frame::parse(header, bytes, filling_client_settings_visitor(con.settings));
-        continue;
-      case PUSH_PROMISE:
-        assert(!con.settings.enable_push);
-        goto protocol_error;
-      case PING:
-        handle_ping(ping_frame::parse(header, bytes), con.socket()).start_and_detach();
-        continue;
-      case RST_STREAM:
-        if (!con.finish_stream_with_error(rst_stream::parse(header, bytes)))
-          LOG_DEBUG("server finished stream which is not exitsts (maybe timeout or canceled)");
-        continue;
-      case GOAWAY:
-        goaway_frame::parse_and_throw_goaway(header, bytes);
-      case WINDOW_UPDATE:
-        con.window_update(window_update_frame::parse(header, bytes));
-        continue;
-      case CONTINUATION:
-        // server should not send so big headers
-        goto protocol_error;
-      case PRIORITY_UPDATE:
-      case PRIORITY:
-        // ignore
-        continue;
-    }
+  switch (frame.header.type) {
+    default:
+    case HEADERS:
+    case DATA:
+      unreachable();
+    case SETTINGS:
+      settings_frame::parse(frame.header, frame.data, server_settings_filler(con.server_settings));
+      return true;
+    case PING:
+      handle_ping(ping_frame::parse(frame.header, frame.data), con.socket()).start_and_detach();
+      return true;
+    case RST_STREAM:
+      if (!con.finish_stream_with_error(rst_stream::parse(frame.header, frame.data)))
+        LOG_DEBUG("server finished stream which is not exitsts (maybe timeout or canceled)");
+      return true;
+    case GOAWAY:
+      goaway_frame::parse_and_throw_goaway(frame.header, frame.data);
+    case WINDOW_UPDATE:
+      con.window_update(window_update_frame::parse(frame.header, frame.data));
+      return true;
+    case PUSH_PROMISE:
+      if (con.client_settings.enable_push)
+        LOG_DEBUG("server send continuation, not supported");
+      return false;
+    case CONTINUATION:
+      LOG_DEBUG("server send continuation, not supported");
+      return false;
+    case PRIORITY_UPDATE:
+    case PRIORITY:
+      // ignore
+      return true;
   }
-  assert(con.is_done_completely());
-  co_return;
-protocol_error:
-  throw protocol_error{};
-network_error:
-  if (ec == asio::error::operation_aborted)
-    co_return;
-  else
-    throw network_exception(ec);
-connection_dropped:
-  assert(con.dropped);
 }
 
-// reads only HEADERS and DATA frames
-dd::job http2_client::start_reader_for(std::shared_ptr<http2_connection> con) {
-  assert(con);
+// handles DATA or HEADERS, returns false on protocol error
+[[nodiscard]] static bool handle_headers_or_data(http2_frame_t&& frame, http2_connection& con) noexcept {
   using enum http2::frame_e;
-  // TODO чтение с dynamic buffer в том самом кривом read_some и тд
-  // TODO boost asio executor, TODO client owner io_context(template) and clients with reference to it...
-  std::exception_ptr e = nullptr;
+
+  assert(con.client_settings.deprecated_priority_disabled);
+  if (frame.header.stream_id == 0)
+    return false;
+  if ((frame.header.flags & http2::flags::PADDED) && !strip_padding(frame.data))
+    return false;
+  if (frame.header.flags & http2::flags::PRIORITY) {
+    LOG_DEBUG("server sends deprecated priority HEADERS, unimplemented");
+    return false;
+  }
+
+  request_node* node = con.find_response_by_streamid(frame.header.stream_id);
+  if (!node)
+    return true;
+  try {
+    switch (frame.header.type) {
+      case HEADERS:
+        node->receive_headers(con.decoder, std::move(frame));
+        if ((frame.header.flags & http2::flags::END_HEADERS) && !node->on_data_part)
+          con.finish_request(*node, node->status);
+        break;
+      case DATA:
+        // applicable only to data
+        con.my_window_size -= frame.header.length;
+        node->receive_data(std::move(frame), frame.header.flags & http2::flags::END_STREAM);
+        break;
+      default:
+        unreachable();
+    }
+  } catch (protocol_error&) {
+    return false;
+  } catch (...) {
+    // user-handling exception, do not drop connection
+    node->task.promise().exception = std::current_exception();
+    node->status = reqerr_e::user_exception;
+    con.finish_request(*node, node->status);
+    return true;
+  }
+
+  if (frame.header.flags & http2::flags::END_STREAM)
+    con.finish_request(*node, node->status);
+  return true;
+}
+
+// returns false on protocol error
+[[nodiscard]] static bool handle_frame(http2_frame_t&& frame, http2_connection& con) {
+  using enum http2::frame_e;
+  using namespace http2;
+  switch (frame.header.type) {
+    case HEADERS:
+    case DATA:
+      return handle_headers_or_data(std::move(frame), con);
+    default:
+      return handle_utility_frame(std::move(frame), con);
+  }
+}
+
+dd::job http2_client::start_reader_for(std::shared_ptr<http2_connection> _con) {
+  using enum http2::frame_e;
+  using namespace http2;
+
+  assert(_con);
+  on_scope_exit {
+    LOG_DEBUG("reader for {} ended", (void*)_con.get());
+  };
+  http2_connection& con = *_con;
+  io_error_code ec;
+  reusable_buffer buffer;
+  http2_frame_t frame;
+  int reason = reqerr_e::unknown_err;
 
   try {
-    co_foreach(http2_frame_t frame, frame_channel(*con)) {
-      auto* node = con->find_response_by_streamid(frame.header.stream_id);
-      if (!node) {
-        LOG_DEBUG("server sends frame for unknown stream, maybe timeout or canceled, streamid: {}",
-                  frame.header.stream_id);
-        continue;
-      }
-      switch (frame.header.type) {
-        case HEADERS:
-          if (!node->receive_headers(std::move(frame)))
-            goto drop_connection;
-          break;
-        case DATA:
-          // applicable only to data
-          con->my_window_size -= frame.header.length;
-          if (!node->receive_data(std::move(frame)))
-            goto drop_connection;
-          break;
-        default:
-          KELCORO_UNREACHABLE;  // frame channel must not yield them
-      }
-      if (frame.header.flags & http2::flags::END_STREAM)
-        con->finish_request(*node);
+    while (!con.is_done_completely()) {
+      if (con.is_dropped())
+        goto connection_dropped;
+
+      // read header
+
+      frame.data = buffer.get_buffer(frame_header_len);
+      co_await net.read(con.socket(), frame.data, ec);
+      if (ec)
+        goto network_error;
+      if (con.is_dropped())
+        goto connection_dropped;
+
+      // parse header
+
+      frame.header =
+          frame_header::parse(std::span<const byte_t, frame_header_len>(frame.data.data(), frame_header_len));
+      if (!validate_frame_header(frame.header))
+        goto protocol_error;
+
+      // read data
+
+      frame.data = buffer.get_buffer(frame.header.length);
+      co_await net.read(con.socket(), frame.data, ec);
+      if (ec)
+        goto network_error;
+      if (con.is_dropped())
+        goto connection_dropped;
+
+      // handle data
+
+      if (!handle_frame(std::move(frame), con))
+        goto protocol_error;
     }
-  } catch (http2::protocol_error& pe) {
-    LOG_DEBUG("[HTTP2] reader for {} drops connection after protocol error, err: {}", (void*)con.get(),
-              pe.what());
+  } catch (protocol_error&) {
+    reason = reqerr_e::protocol_err;
     goto drop_connection;
-  } catch (network_exception& ne) {
-    LOG_DEBUG("[HTTP2] reader for {} drops connection after network error, err: {}", (void*)con.get(),
-              ne.what());
+  } catch (http2::goaway_frame_received&) {
+    reason = reqerr_e::server_cancelled_request;
     goto drop_connection;
-  } catch (http2::goaway_frame_received& ge) {
-    LOG_DEBUG("[HTTP2] reader for {} received goaway frame, errc: {}, info: {}", (void*)con.get(),
-              errc2str(ge.error_code), ge.debug_info);
-    goto drop_connection;
-  } catch (std::exception& e) {
-    LOG_DEBUG("[HTTP2] reader for {} initiates connection drop after unexpected exception, what: {}",
-              (void*)con.get(), e.what());
+  } catch (...) {
+    reason = reqerr_e::unknown_err;
     goto drop_connection;
   }
 
-  if (con->is_done_completely()) {
-    LOG_DEBUG("[HTTP2] connection {} normaly ends, out of stream ids", (void*)con.get());
-    drop_connection();
-    co_await dd::this_coro::suspend_and([&](std::coroutine_handle<> self) -> std::coroutine_handle<> {
-      // cache 'this', because implicit 'this' will be deleted in self.destroy()
-      auto* client = this;
-      self.destroy();
-      // allow connecting and immidiately create connection
-      if (client->someone_waits_completely_done) {
-        client->someone_waits_completely_done = false;
-        return client->start_connecting().handle;
-      }
-      return std::noop_coroutine();
-    });
-    // reader already destroyed
-    KELCORO_UNREACHABLE;
-  } else {
-    LOG_DEBUG("[HTTP2] reader for {} ended normally after receiving operation_aborted", (void*)con.get());
-  }
-  co_return;
-
+  assert(con.is_done_completely());
+  // must not resume anyone with 'done', because no pending requests (completely done)
+  reason = reqerr_e::done;
+  goto drop_connection;
+protocol_error:
+  reason = reqerr_e::protocol_err;
+  goto drop_connection;
+network_error:
+  reason = ec == asio::error::operation_aborted ? reqerr_e::cancelled : reqerr_e::network_err;
 drop_connection:
-  if (someone_waits_completely_done)
-    assert(con->is_outof_streamids());
-  // terminate if exception
-  drop_connection();
-  if (someone_waits_completely_done) {
-    // note: may be waiters.size() == 0, if canceled or timed out
-    someone_waits_completely_done = false;
-    LOG_DEBUG(
-        "[HTTP2] reader sees, that connection was already done, but handling pending streams produce a "
-        "connection drop, drop connection waiters, count: {}",
-        connection_waiters.size());
-    notify_connection_waiters(nullptr);
-  }
-  assert(!someone_waits_completely_done);
+  drop_connection(static_cast<reqerr_e::values>(reason));
+connection_dropped:
+  if (!connection_waiters.empty())
+    co_await dd::this_coro::destroy_and_transfer_control_to(start_connecting().handle);
+  co_return;
 }
 
 http2_client::~http2_client() {
@@ -1026,12 +1000,9 @@ noexport::waiter_of_connection::~waiter_of_connection() {
 }
 
 bool noexport::waiter_of_connection::await_ready() noexcept {
-  if (!client->connection || client->connection->is_dropped() || client->stop_requested)
+  assert(!client->stop_requested);
+  if (!client->connection || client->connection->is_dropped() || client->connection->is_outof_streamids())
     return false;
-  if (client->connection->is_outof_streamids()) {
-    client->someone_waits_completely_done = true;
-    return false;
-  }
   result = client->connection;
   return true;
 }
@@ -1044,11 +1015,9 @@ std::coroutine_handle<> noexport::waiter_of_connection::await_suspend(std::corou
   return client->start_connecting().handle;
 }
 
-std::shared_ptr<http2_connection> noexport::waiter_of_connection::await_resume() const {
-  if (!result || result->is_dropped())
-    throw http2::connection_error{};
-  if (client->stop_requested)
-    throw client_stopped{};
+[[nodiscard]] std::shared_ptr<http2_connection> noexport::waiter_of_connection::await_resume() const {
+  if (!result || result->is_dropped() || client->stop_requested)
+    return nullptr;
   return std::move(result);
 }
 
@@ -1091,21 +1060,22 @@ static prepared_http_request form_http2_request(const http_request& request, htt
 }
 
 // terminates on exception (because i cannot handle it)
-void http2_client::drop_connection() noexcept {
+void http2_client::drop_connection(reqerr_e::values reason) noexcept {
   auto con = std::move(connection);
   if (!con)
     return;
   // note: i have shared ptr to con, so it will not be destroyed while shutting down
   // and resuming its reader/writer
-  con->shutdown();
+  con->shutdown(reason);
 }
 
-dd::task<http_response> http2_client::send_request(http_request request, duration_t timeout) {
+dd::task<int> http2_client::send_request(on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part,
+                                         http_request request, duration_t timeout) {
   // TODO retries (in the api)
   // TODO client-pool, client with retries(template), may be client with metrics (what recived/sended)
   // how much time request etc)
   if (stop_requested)
-    throw client_stopped{};
+    co_return reqerr_e::cancelled;
   ++requests_in_progress;
   on_scope_exit {
     --requests_in_progress;
@@ -1113,28 +1083,23 @@ dd::task<http_response> http2_client::send_request(http_request request, duratio
   // calculates deadline before borrowing connection
   std::chrono::time_point deadline = std::chrono::steady_clock::now() + timeout;
   std::shared_ptr con = co_await borrow_connection();
-  assert(con && !con->is_dropped() && con->stream_id <= http2::max_stream_id && !stop_requested);
+  if (!con)
+    co_return reqerr_e::network_err;
 
   request_node node{
       .req = form_http2_request(request, con->next_streamid(), con->encoder, get_host()),
       .deadline = deadline,
       .writer_handle = std::coroutine_handle<>(con->writer.handle),
+      .on_header = on_header,
+      .on_data_part = on_data_part,
   };
 
   on_scope_exit {
     // erase node from all lists even on handle.destroy for correct request canceling
     con->forget(node);
   };
-  co_await con->request_finished(node);
-  // if hpack broken, connection cannot handle requests
-  on_scope_failure(drop_con) {
-    drop_connection();
-  };
-  hpack::decode_headers_block(con->decoder, node.rsp.headers,
-                              [](std::string_view name, std::string_view value) { (void)name, (void)value; });
-  drop_con.no_longer_needed();
-
-  co_return std::move(node.rsp);
+  int status = co_await con->request_finished(node);
+  co_return status;
 }
 
 void http2_client::run() {
@@ -1193,18 +1158,17 @@ void http2_client::stop() {
   if (stop_requested)
     return;
   stop_requested = true;
-  drop_connection();
+  drop_connection(reqerr_e::cancelled);
   while (requests_in_progress != 0)
     io_ctx.run_one();
   auto lock = lock_connections();
   notify_connection_waiters(nullptr);
-  drop_connection();
+  drop_connection(reqerr_e::cancelled);
   io_ctx.stop();
   lock.release();
   assert(!connection);
   assert(!is_connecting);
   assert(connection_waiters.empty());
-  assert(!someone_waits_completely_done);
   assert(requests_in_progress == 0);
 }
 

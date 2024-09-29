@@ -68,7 +68,7 @@ struct frame_header {
     return out;
   }
 
-  [[nodiscard]] static frame_header parse(std::span<const hpack::byte_t, 9> raw_header) {
+  [[nodiscard]] static frame_header parse(std::span<const hpack::byte_t, frame_header_len> raw_header) {
     frame_header h;
     h.length = (raw_header[0] << 16) | (raw_header[1] << 8) | raw_header[2];
     h.type = frame_e(raw_header[3]);
@@ -213,8 +213,8 @@ static_assert(sizeof(setting_t) == 6);
 
 // fills settings while parsing 'setting_t' one by one
 // client side
-struct filling_client_settings_visitor {
-  settings_t& settings;
+struct server_settings_filler {
+  settings_t& settings;  // must be server settings
 
   constexpr void operator()(setting_t s) const {
     switch (s.identifier) {
@@ -223,8 +223,8 @@ struct filling_client_settings_visitor {
         return;
       case SETTINGS_ENABLE_PUSH:
         if (s.value > 0)
-          throw protocol_error{};        // server MUST NOT send i
-        settings.enable_push = s.value;  // TODO what if not 0 or 1?
+          throw protocol_error{};  // server MUST NOT send i
+        settings.enable_push = s.value;
         return;
       case SETTINGS_MAX_CONCURRENT_STREAMS:
         settings.max_concurrent_streams = s.value;
@@ -397,7 +397,6 @@ struct goaway_frame {
 
   [[noreturn]] static void parse_and_throw_goaway(frame_header header, std::span<const byte_t> bytes) {
     goaway_frame f = parse(header, bytes);
-    LOG_DEBUG("goaway frame recived, debug info: {}", f.debug_info);
     throw goaway_frame_received(f.last_stream_id, f.error_code, std::move(f.debug_info));
   }
 
@@ -428,6 +427,7 @@ struct window_update_frame {
     Reserved (1),
     Window Size Increment (31),
   */
+  static constexpr inline size_t len = frame_header_len + 4;
 
   // id == 0 for connection-wide
   template <std::output_iterator<byte_t> O>

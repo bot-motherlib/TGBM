@@ -25,7 +25,7 @@ constexpr decltype(auto) visit_index(auto&& f, std::size_t i) {
     if constexpr (INDEX <= Max) {            \
       return f.template operator()<INDEX>(); \
     } else {                                 \
-      KELCORO_UNREACHABLE;                   \
+      unreachable();                         \
     }                                        \
   }
 #define $TGBM_SWITCH_CASE4(I) \
@@ -37,7 +37,7 @@ constexpr decltype(auto) visit_index(auto&& f, std::size_t i) {
 
     $TGBM_SWITCH_CASE64(0);
   }  // end switch
-  KELCORO_UNREACHABLE;
+  unreachable();
 #undef $TGBM_SWITCH_CASE
 #undef $TGBM_SWITCH_CASE4
 #undef $TGBM_SWITCH_CASE8

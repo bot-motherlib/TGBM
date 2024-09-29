@@ -48,10 +48,10 @@ concept protocol_verifier = requires(T& v) {
 
 struct default_protocol_verificator {
   [[noreturn]] static void handle_protocol_error() {
-    throw http2::protocol_error{};
+    throw protocol_error{};
   }
   [[noreturn]] static void handle_size_error() {
-    throw http2::protocol_error{};
+    throw protocol_error{};
   }
   static void entry_added(std::string_view, std::string_view) {
   }
@@ -60,10 +60,10 @@ struct default_protocol_verificator {
 // may be used if you trust to server/endpoint, boosts performance
 struct trusted_verificator {
   [[noreturn]] static void handle_protocol_error() {
-    KELCORO_UNREACHABLE;
+    unreachable();
   }
   [[noreturn]] static void handle_size_error() {
-    KELCORO_UNREACHABLE;
+    unreachable();
   }
   static void entry_added(std::string_view, std::string_view) {
   }
@@ -398,7 +398,7 @@ struct dynamic_table_t {
 
   void update_size(size_type new_max_size) {
     if (new_max_size > max_size())
-      throw http2::protocol_error{};
+      throw protocol_error{};
     evict_until_fits_into(new_max_size);
     _max_size = new_max_size;
   }
@@ -837,7 +837,7 @@ struct encoder {
     verifier.handle_protocol_error();
   }
 
-  // returns status code, -1 on error
+  // returns status code
   int decode_response_status(In& in, In e) {
     if (*in & 0b1000'0000) {
       // fast path, fully indexed
