@@ -70,7 +70,7 @@ void box_union_test(Types... vars) {
   auto test1_init_nullptr = []<typename T>(const T&) {
     if constexpr (sizeof...(Types) != 0) {
       tgbm::box_union<Types...> x = tgbm::box_union<Types...>::from_ptr((T*)nullptr);
-      error_if(x.index() != tgbm::find_first<T, Types...>());
+      error_if(x.index() != sizeof...(Types));
       error_if(tgbm::get_if<T>(&x) != nullptr);
       error_if(!x.is_null());
     }
@@ -88,7 +88,7 @@ void box_union_test(Types... vars) {
   error_if(u != u);
   u = std::move(u);
   error_if(u != u);
-  u.visit_ptr(tgbm::matcher{[](tgbm::nothing_t) {}, [](auto*) { error_if(true); }});
+  u.visit(tgbm::matcher{[](tgbm::nothing_t) {}, [](auto&) { error_if(true); }});
   auto test_var = [&]<typename T>(T var) {
     u = var;
     error_if(u != u);
@@ -105,7 +105,7 @@ void box_union_test(Types... vars) {
     error_if(u != u);
     u = std::move(u);
     error_if(u != u);
-    u.visit_ptr(tgbm::matcher([&](T* p) { error_if(*p != var); }, [](auto&&) { error_if(true); }));
+    u.visit(tgbm::matcher([&](T& p) { error_if(p != var); }, [](auto&&) { error_if(true); }));
     // same with move assignment
     u = std::move(var);
     error_if(u != u);
@@ -115,7 +115,7 @@ void box_union_test(Types... vars) {
     error_if(u != u);
     u = std::move(u);
     error_if(u != u);
-    u.visit_ptr(tgbm::matcher([&](T* p) {}, [](auto&&) { error_if(true); }));
+    u.visit(tgbm::matcher([&](T& p) {}, [](auto&&) { error_if(true); }));
   };
   (test_var(std::move(vars)), ...);
 }
