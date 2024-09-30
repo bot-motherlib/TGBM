@@ -99,7 +99,7 @@ struct formatter<tgbm::api::Double> : formatter<double> {
 template <typename... Ts>
 struct formatter<tgbm::box_union<Ts...>> : formatter<std::string_view> {
   static auto format(const tgbm::box_union<Ts...>& t, auto& ctx) -> decltype(ctx.out()) {
-    return t.visit_ptr([&](const auto& val) { return fmt::format_to(ctx.out(), "{}", val); });
+    return t.visit([&](const auto& val) { return fmt::format_to(ctx.out(), "{}", val); });
   }
 };
 

@@ -439,20 +439,6 @@ struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data
                                              i);
   }
 
-  template <typename V>
-  decltype(auto) visit(V&& vtor) const {
-    auto i = index();
-    if (is_null())
-      return vtor(nothing_t{});
-    assert(i < sizeof...(Types) && "internal logic failure");
-    return visit_index<sizeof...(Types) - 1>(
-        [&]<size_t I>() -> decltype(auto) {
-          auto ptr = get_if<I>();
-          return vtor(*ptr);
-        },
-        i);
-  }
-
   // no matter what stored, checks if it nullptr
   bool operator==(std::nullptr_t) const noexcept {
     return is_null();
