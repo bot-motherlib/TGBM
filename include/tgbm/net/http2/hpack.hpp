@@ -1064,10 +1064,10 @@ struct encoder {
 template <protocol_verifier Verifier = default_protocol_verificator>
 using decoder = encoder<Verifier>;
 
-template <protocol_verifier V, bool Cache = false, bool Huffman = false, Out O>
+template <bool Cache = false, bool Huffman = false, protocol_verifier V, Out O>
 O encode_headers_block(encoder<V>& enc, auto&& range_of_headers, O out) {
   for (auto&& [name, value] : range_of_headers)
-    out = enc.encode_header_memory_effective<Cache, Huffman>(name, value, out);
+    out = enc.template encode_header_memory_effective<Cache, Huffman>(name, value, out);
   return out;
 }
 

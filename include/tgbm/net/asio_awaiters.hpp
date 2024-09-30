@@ -4,9 +4,6 @@
 #include <type_traits>
 #include "tgbm/tools/memory.hpp"
 // TODO wrap asio/detail/config.hpp (using include_next)
-#ifdef _WIN32
-#define _WIN32_WINNT 0x0A00
-#endif
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ssl/context.hpp>
 #include <boost/asio/ssl/stream.hpp>
@@ -260,6 +257,8 @@ struct net_t {
   }
   // writes all buffers (order: from first to last)
   // returns count of bytes transmitted
+  // Note: there are no guarantee, that buffers will be sended contiguously!
+  // this means, many calls to 'write_many' may produce invalid sequence, if buffers was parts of one thing
   template <typename Stream, typename... Byte, size_t... Szs>
   KELCORO_CO_AWAIT_REQUIRED static auto write_many(Stream& stream KELCORO_LIFETIMEBOUND,
                                                    io_error_code& ec KELCORO_LIFETIMEBOUND,

@@ -27,8 +27,9 @@ static bool is_empty_thumbnail(const thumbnail_t& x) {
 
 // name of function should be same as in API https://core.telegram.org/bots/api
 #define $METHOD ::std::string_view(__func__)
-#define $POST_REQUEST co_await sendRequest(http_request{get_path($METHOD), body.take()}, _timeout)
-#define $GET_REQUEST co_await sendRequest(http_request(get_path($METHOD)), _timeout)
+#define $POST_REQUEST \
+  co_await sendRequest(http_request{get_path($METHOD), http_method_e::POST, body.take()}, _timeout)
+#define $GET_REQUEST co_await sendRequest(http_request(get_path($METHOD), http_method_e::GET), _timeout)
 
 Api::Api(std::string token, http_client& httpClient, duration_t timeout)
     : _timeout(timeout), _token(std::move(token)), _httpClient(httpClient) {

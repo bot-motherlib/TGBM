@@ -65,7 +65,7 @@ static void test_encode(tgbm::hpack::encoder<>& enc, tgbm::hpack::size_type expe
   std::vector<uint8_t> bytes(expected_encoded_bytes.size(), ~0);
   auto* out = bytes.data();
   for (auto&& [name, value] : headers_to_encode)
-    out = enc.encode_header_memory_effective</*Cache=*/true, Huffman>(name, value, out);
+    out = enc.template encode_header_memory_effective</*Cache=*/true, Huffman>(name, value, out);
   error_if(bytes != expected_encoded_bytes);
   error_if(enc.dyntab.current_size() != expected_dyntab_size);
   for (auto&& [name, value] : expected_dyntab_content) {

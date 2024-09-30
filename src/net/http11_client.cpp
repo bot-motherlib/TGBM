@@ -62,7 +62,7 @@ static std::string generate_http_headers(const http_request& request, std::strin
   size_t size_bytes = [&] {
     using namespace std::string_view_literals;
     size_t headers_size = 0;
-    headers_size += body.empty() ? "GET "sv.size() : "POST "sv.size();
+    headers_size += e2str(request.method).size() + 1;
     headers_size += request.path.size();
     headers_size +=
         " HTTP/1.1\r\nHost: "sv.size() + host.size() + "\r\nConnection: "sv.size() + "keep-alive"sv.size();
@@ -73,6 +73,8 @@ static std::string generate_http_headers(const http_request& request, std::strin
     }
     headers_size += "Content-Type: "sv.size() + content_type.size() + "\r\nContent-Length: "sv.size() +
                     body_sz_str.size() + "\r\n\r\n"sv.size();
+    for (auto& [name, value] : request.headers)
+      headers_size += name.size() + value.size() + 4;  // 4 == : \r\n and whitespace
     return headers_size;
   }();
   std::string result;
@@ -80,10 +82,8 @@ static std::string generate_http_headers(const http_request& request, std::strin
   on_scope_exit {
     assert(result.size() == size_bytes && "not exactly equal size reserved, logical error");
   };
-  if (body.empty())
-    result += "GET ";
-  else
-    result += "POST ";
+  result += e2str(request.method);
+  result.push_back(' ');
   result += request.path;
   result +=
       " HTTP/1.1\r\n"
@@ -92,6 +92,12 @@ static std::string generate_http_headers(const http_request& request, std::strin
   result += "\r\nConnection: ";
   result += "keep-alive";
   result += "\r\n";
+  for (auto& [name, value] : request.headers) {
+    result += name;
+    result += ": ";
+    result += value;
+    result += "\r\n";
+  }
   if (body.empty()) {
     result += "\r\n";
     return result;
@@ -104,7 +110,7 @@ static std::string generate_http_headers(const http_request& request, std::strin
   return result;
 }
 
-static dd::task<void> send_request(std::shared_ptr<asio_ssl_connection> con, on_header_fn_ptr on_header,
+static dd::task<void> send_request(tcp_connection_ptr con, on_header_fn_ptr on_header,
                                    on_data_part_fn_ptr on_data_part, std::string headers,
                                    http_request& request, int& status) try {
   namespace asio = boost::asio;
@@ -190,19 +196,12 @@ protocol_err:
   throw;
 }
 
-static asio::ssl::context make_ssl_context_for_http11() {
-  namespace ssl = asio::ssl;
-  ssl::context sslctx(ssl::context::tlsv13_client);
-  sslctx.set_options(ssl::context::default_workarounds | ssl::context::no_sslv2 |
-                     ssl::context::single_dh_use);
-  sslctx.set_default_verify_paths();
-  return sslctx;
-}
-
-http11_client::http11_client(size_t connections_max_count, std::string_view host)
-    : http_client(host), io_ctx(1), connections(connections_max_count, [this]() {
+http11_client::http11_client(size_t connections_max_count, std::string_view host,
+                             tcp_connection_options tcp_opts)
+    : http_client(host), io_ctx(1), tcp_options(tcp_opts), connections(connections_max_count, [this]() {
         // Do not reuses ssl ctx because... just because + multithread no one knows how to work
-        return asio_ssl_connection::create(io_ctx, std::string(get_host()), make_ssl_context_for_http11());
+        return tcp_connection::create(io_ctx, std::string(get_host()), make_ssl_context_for_http11(),
+                                      tcp_options);
       }) {
 }
 
@@ -224,6 +223,7 @@ dd::task<int> http11_client::send_request(on_header_fn_ptr on_header, on_data_pa
       return;
     // if im working and ctx on one thread, then now coroutine suspended
     // TODO bcs of how boost asio timers work (may be invoked with success even after .cancel)
+    // rm timers etc make http1/1 just most simple client ever
     // there are small chance to cancel not my request, but next, now ignored (not default client...)
     con->socket.lowest_layer().cancel();
     // coro should be resumed and operation_aborted (coro ended with exception)

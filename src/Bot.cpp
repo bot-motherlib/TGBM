@@ -35,9 +35,15 @@ dd::task<void> Bot::get_and_handle_updates(std::chrono::seconds update_wait_time
   on_scope_exit {
     _client->stop();
   };
-  co_foreach(Update::Ptr update,
-             long_poll(get_api(), 100, update_wait_timeout, nullptr, /*confirm_before_handle=*/true)) {
-    _eventHandler.handleUpdate(update);
+  try {
+    co_foreach(Update::Ptr update,
+               long_poll(get_api(), 100, update_wait_timeout, nullptr, /*confirm_before_handle=*/true)) {
+      _eventHandler.handleUpdate(update);
+    }
+  } catch (std::exception& e) {
+    LOG_ERR("getUpdates ended with exception, http client will be stopped, what: {}", e.what());
+  } catch (...) {
+    LOG_ERR("getUpdates ended with unknown exception, http client will be stopped");
   }
 }
 

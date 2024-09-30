@@ -109,7 +109,7 @@ struct goaway_frame_received : std::exception {
   }
 
   const char* what() const noexcept override {
-    return debug_info.c_str();
+    return errc2str(error_code).data();  // assume null terminated
   }
 };
 
