@@ -15,12 +15,15 @@ Thumbs.db
 docs/
 cmake-build-*
 .cache
+
+*methods.txt
+*types.txt
 *tgapi.html
-include/tgbm/api/generator/types.txt
-include/tgbm/api/generator/methods.txt
+
+
 include/tgbm/api/def
 include/tgbm/api/types
-src/api.cpp
+src/api_types_cmp.cpp
 include/tgbm/api/types_all.hpp
 include/tgbm/api/types_fwd.hpp
 

@@ -11,13 +11,13 @@ K_MANUALLY = 'manually'
 K_ONE_OF_FIELD_TYPES = ['Update', 'KeyboardButton', 'InlineKeyboardButton']
 
 def path_api_html(apidir):
-    return f'{apidir}/generator/tgapi.html'
+    return f'{apidir}/tgapi.html'
 
 def path_types_file(apidir):
-    return f'{apidir}/generator/types.txt'
+    return f'{apidir}/types.txt'
 
 def path_methods_file(apidir):
-    return f'{apidir}/generator/methods.txt'
+    return f'{apidir}/methods.txt'
 
 def manually_type(apidir, type_name):
     return os.path.exists(f'{apidir}/def/{type_name}.nodef')
@@ -266,7 +266,7 @@ def rewrite_sub_oneof(infos):
             process_oneof(infos, type_name, type_info)
 
 def get_all_infos(parsed_api, apidir):
-    typelist = open(f'{apidir}/generator/types.txt', 'r', encoding='utf-8')
+    typelist = open(f'{apidir}/types.txt', 'r', encoding='utf-8')
     infos = {}
     for type_name in typelist:
         type_name = type_name.strip()
@@ -281,12 +281,12 @@ def get_all_infos(parsed_api, apidir):
     return infos
 
 def generate_defs_impl(apidir, typelist=None):
-    with open(f'{apidir}/generator/tgapi.html', 'r', encoding='utf-8') as file:
+    with open(f'{apidir}/tgapi.html', 'r', encoding='utf-8') as file:
         content = file.read()
         parsed_api = BeautifulSoup(content, 'html.parser')
     infos = {}
     if typelist is None:
-        typelist = open(f'{apidir}/generator/types.txt', 'r', encoding='utf-8')
+        typelist = open(f'{apidir}/types.txt', 'r', encoding='utf-8')
     for type_name in typelist:
         type_name = type_name.strip()
         if not manually_type(apidir, type_name):
@@ -335,7 +335,7 @@ def postprocess_hpp(file_path, infos, fwd_file, all_file, apidir):
 
 
 def postprocess(apidir):
-    with open(f'{apidir}/generator/tgapi.html', 'r', encoding='utf-8') as file:
+    with open(f'{apidir}/tgapi.html', 'r', encoding='utf-8') as file:
         content = file.read()
         parsed_api = BeautifulSoup(content, 'html.parser')
 
@@ -359,7 +359,7 @@ def postprocess(apidir):
 def main():
     parser = argparse.ArgumentParser(description='Extract fields and descriptions for a given type from the Telegram Bot API.')
     parser.add_argument('--generate_defs', action='store_true', help='Generate .def files')
-    parser.add_argument('--apidir', type=str, help="path to /api folder in project", default='.')
+    parser.add_argument('--apidir', type=str, help="path to /api folder in project", default='/include/tgbm/api')
     parser.add_argument('--get_methods', action='store_true', help="gets all api methods and exits")
     parser.add_argument('--get_classes', action='store_true', help="gets all api classes and exits")
     parser.add_argument('--load_api', type=str, help="loads from internet TG API to file, usage: --load_api=<path>")
