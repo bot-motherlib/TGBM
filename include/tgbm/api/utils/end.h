@@ -9,7 +9,6 @@
 #undef OPTIONAL
 #undef REQUIRED
 #undef COMPOUND
-#undef API_TYPE
 #undef INT_OR_STR
 #undef FILE_OR_STR
 #undef VARIANT_FIELD

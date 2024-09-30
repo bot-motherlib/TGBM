@@ -35,10 +35,13 @@ concept array_like = std::ranges::range<T> && !string_like<T>;
 template <typename T>
 concept aggregate = std::is_aggregate_v<T>;
 
+template <typename T>
+concept nesting = aggregate<T> || array_like<T>;
+
 namespace details {
 template <typename T>
 concept common_api_type = aggregate<T> && requires(std::string_view sv) {
-  { T::is_optional_field(sv) } -> std::same_as<std::optional<bool>>;
+  { T::is_optional_field(sv) } -> std::same_as<bool>;
 };
 
 template <typename T>
@@ -47,15 +50,25 @@ concept discriminated_api_type = aggregate<T> && requires(std::string_view sv) {
     T::discriminate(sv, []<typename>() {})
   };
 };
+
+template <typename T>
+concept oneof_field_api_type = aggregate<T> && requires(std::string_view sv) {
+  {
+    T::discriminate_field(sv, []<typename>() {})
+  };
+};
 }  // namespace details
 
 template <typename T>
-concept common_api_type = details::common_api_type<std::remove_cvref_t<T>>;
+concept common_api_type = aggregate<T> && details::common_api_type<std::remove_cvref_t<T>>;
 
 template <typename T>
-concept discriminated_api_type = details::discriminated_api_type<std::remove_cvref_t<T>>;
+concept discriminated_api_type = aggregate<T> && details::discriminated_api_type<std::remove_cvref_t<T>>;
 
 template <typename T>
-concept api_type = common_api_type<T> || discriminated_api_type<T>;
+concept oneof_field_api_type = aggregate<T> && details::oneof_field_api_type<std::remove_cvref_t<T>>;
+
+template <typename T>
+concept api_type = common_api_type<T> || discriminated_api_type<T> || oneof_field_api_type<T>;
 
 }  // namespace tgbm

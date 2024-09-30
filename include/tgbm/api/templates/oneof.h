@@ -3,12 +3,13 @@
 #error API_TYPE_PATH should be defined
 #endif
 
+#ifndef API_TYPE
+#error API_TYPE should be defined
+#endif
+
 namespace tgbm::api {
 
-// get only API_TYPE
-#define API_TYPE(T) struct T
-#include API_TYPE_PATH
-{
+struct API_TYPE {
 #include API_TYPE_PATH
   oneof<nothing_t
 #define FIELD(Type, Name) , Type
@@ -22,11 +23,11 @@ namespace tgbm::api {
 #include API_TYPE_PATH
 
   enum struct type_e {
-    nothing
-#define DISCRIMINATOR_VALUE(Type, Name) , k_##Name
-
+#define DISCRIMINATOR_VALUE(Type, Name) k_##Name,
 #include API_TYPE_PATH
+    nothing
   };
+  static constexpr size_t variant_size = size_t(type_e::nothing);
 
 // get variant fields
 #define FIELD(Type, Name)                             \
@@ -58,28 +59,22 @@ namespace tgbm::api {
     return static_cast<type_e>(data.index());
   }
 
-#define API_TYPE(T) std::strong_ordering operator<=>(const T& t) const;
-#include API_TYPE_PATH
+  std::strong_ordering operator<=>(const API_TYPE& t) const;
 
-#define API_TYPE(T) bool operator==(const T& t) const;
-#include API_TYPE_PATH
+  bool operator==(const API_TYPE& t) const;
 };
 
-#define API_TYPE(T) inline std::string_view to_string_view(T::type_e e) {
-#include API_TYPE_PATH
-
-#define API_TYPE(T) using From = T::type_e;
-#include API_TYPE_PATH
-switch (e) {
+inline std::string_view to_string_view(API_TYPE::type_e e) {
+  using From = API_TYPE::type_e;
+  switch (e) {
 #define DISCRIMINATOR_VALUE(Type, Name) \
   case From::k_##Name:                  \
     return #Name;
 #include API_TYPE_PATH
-  case From::nothing:
-    return "nothing";
-}
+    case From::nothing:
+      return "nothing";
+  }
 }  // namespace tgbm::api
 
 }  // namespace tgbm::api
-#undef API_TYPE
 #undef API_TYPE_PATH

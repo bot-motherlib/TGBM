@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <memory_resource>
 #include <span>
 #include <string_view>
 #include <vector>

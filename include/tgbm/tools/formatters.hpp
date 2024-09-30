@@ -7,6 +7,8 @@
 #include <tgbm/tools/pfr_extension.hpp>
 #include <tgbm/api/common.hpp>
 #include <tgbm/tools/meta.hpp>
+#include <fmt/chrono.h>
+#include <fmt/ranges.h>
 
 namespace fmt {
 
@@ -62,6 +64,17 @@ struct formatter<tgbm::api::optional<T>> : formatter<std::string_view> {
   }
 };
 
+template <typename T>
+struct formatter<std::optional<T>> : formatter<std::string_view> {
+  format_context::iterator format(const std::optional<T>& t, fmt::format_context& ctx) const {
+    if (!t) {
+      return fmt::format_to(ctx.out(), "{}", "<empty>");
+    } else {
+      return fmt::format_to(ctx.out(), "{}", *t);
+    }
+  }
+};
+
 template <>
 struct formatter<tgbm::api::Integer> : formatter<std::string_view> {
   static auto format(const tgbm::api::Integer& t, auto& ctx) -> decltype(ctx.out()) {
@@ -76,10 +89,17 @@ struct formatter<std::variant<Ts...>> : formatter<std::string_view> {
   }
 };
 
+template <>
+struct formatter<tgbm::api::Double> : formatter<double> {
+  format_context::iterator format(tgbm::api::Double val, fmt::format_context& ctx) const {
+    return formatter<double>::format(val.value, ctx);
+  }
+};
+
 template <typename... Ts>
 struct formatter<tgbm::box_union<Ts...>> : formatter<std::string_view> {
   static auto format(const tgbm::box_union<Ts...>& t, auto& ctx) -> decltype(ctx.out()) {
-    return t.visit_ptr([&](const auto& val) { return fmt::format_to(ctx.out(), "{}", val); });
+    return t.visit([&](const auto& val) { return fmt::format_to(ctx.out(), "{}", val); });
   }
 };
 

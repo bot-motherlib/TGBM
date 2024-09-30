@@ -112,7 +112,7 @@ struct TGBM_TRIVIAL_ABI box {
     return *ptr;
   }
 
-  friend constexpr std::strong_ordering operator<=>(const box<T>& lhs, const box<T>& rhs) noexcept {
+  friend std::strong_ordering operator<=>(const box<T>& lhs, const box<T>& rhs) noexcept {
     if (lhs && rhs) {
       return *lhs.ptr <=> *rhs.ptr;
     }
@@ -125,7 +125,7 @@ struct TGBM_TRIVIAL_ABI box {
     return std::strong_ordering::equal;
   }
 
-  friend constexpr bool operator==(const box<T>& lhs, const box<T>& rhs) noexcept {
+  friend bool operator==(const box<T>& lhs, const box<T>& rhs) noexcept {
     if (!lhs && !rhs) {
       return true;
     }

@@ -30,6 +30,7 @@ foreach(CUR_FILE IN LISTS TGBM_API_TYPES_FILES)
                 -P
                 -I ${TGBM_INC_DIR}
                 -nostdinc
+                -DAPI_TYPE=${FILENAME}
                 -DAPI_TYPE_PATH="${CMAKE_CURRENT_LIST_DIR}/def/${TEMPLATE}/${FILENAME}.def"
                 -o ${CMAKE_CURRENT_LIST_DIR}/types/${FILENAME}.hpp
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}

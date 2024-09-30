@@ -9,7 +9,7 @@ struct Integer {
   int64_t value = 0;
 
   // TG api requirement is < 2 ^ 53
-  enum : int64_t { max = (int64_t(1) << 60) + 1 };
+  static constexpr std::int64_t max = (int64_t(1) << 60) + 1;
 
   constexpr Integer() = default;
   constexpr Integer(int64_t i) noexcept : value(i) {
@@ -23,5 +23,10 @@ struct Integer {
   }
   constexpr std::strong_ordering operator<=>(const Integer&) const = default;
 };
+
+template <std::integral T>
+constexpr std::strong_ordering operator<=>(const Integer& left, T right) {
+  return left.value <=> (int64_t)right;
+}
 
 }  // namespace tgbm::api

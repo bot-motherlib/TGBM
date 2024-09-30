@@ -84,7 +84,7 @@ struct optional {
     return !has_value();
   }
   constexpr bool operator==(const optional&) const = default;
-  constexpr auto operator<=>(const optional&) const = default;
+  constexpr std::strong_ordering operator<=>(const optional&) const = default;
 };
 
 // Note: not empty after move
@@ -102,6 +102,9 @@ struct optional<bool> {
 
  public:
   constexpr optional() noexcept : _val(empty) {
+  }
+  constexpr optional(std::in_place_t, value_type val) noexcept : optional(val) {
+    _val = true;
   }
   constexpr optional(value_type b) noexcept : _val(b) {
   }
@@ -201,6 +204,11 @@ struct optional<T> {
   constexpr optional(value_type) noexcept {
     _val = true;
   }
+  template <typename... Args>
+  constexpr optional(std::in_place_t, Args... args) noexcept {
+    (void)value_type(std::forward<Args>(args)...);
+    _val = true;
+  }
   constexpr optional(std::nullopt_t) noexcept : optional() {
   }
   constexpr optional& operator=(std::nullopt_t) noexcept {
@@ -221,6 +229,7 @@ struct optional<T> {
     _val = false;
   }
   constexpr value_type& emplace(auto&&...) noexcept {
+    _val = true;
     return _dummy;
   }
   constexpr void swap(optional& o) noexcept {

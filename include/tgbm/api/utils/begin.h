@@ -60,10 +60,6 @@
 #define VARIANT_FIELD(...)
 #endif
 
-#ifndef API_TYPE
-#define API_TYPE(...)
-#endif
-
 #ifndef DISCRIMINATOR_FIELD
 #define DISCRIMINATOR_FIELD(...)
 #endif

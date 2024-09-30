@@ -2,12 +2,15 @@
 
 #include <iterator>
 #include <tgbm/tools/formatters.hpp>
+#include <fmt/ranges.h>
 
-namespace tgbm::api{
+template <typename T>
+concept formattable = fmt::is_formattable<T>::value;
 
-template <tgbm::api_type T>
-void PrintTo(const T& t, std::ostream* os){
-    fmt::format_to(std::ostreambuf_iterator(*os), "{}", t);
-}
+namespace std{
 
+    template <formattable T>
+    void PrintTo(const T& t, std::ostream* os){
+        fmt::format_to(std::ostreambuf_iterator(*os), "{}", t);
+    }
 }

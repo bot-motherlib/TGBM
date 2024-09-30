@@ -414,7 +414,7 @@ struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data
     return get_if<element_at_t<I, Types...>>();
   }
   template <size_t I>
-  const auto* get_if() const noexcept {
+  auto* get_if() const noexcept {
     return get_if<element_at_t<I, Types...>>();
   }
 
@@ -484,16 +484,34 @@ const T* get_if(const tgbm::box_union<Ts...>* u) {
 
 template <size_t I, typename... Ts>
 const auto* get_if(tgbm::box_union<Ts...>* u) noexcept {
-  if (!u)
-    return nullptr;
-  return u->template get_if<I>();
+  return u ? u->template get_if<I>() : nullptr;
 }
 template <size_t I, typename... Ts>
 [[nodiscard]] const auto* get_if(const tgbm::box_union<Ts...>* u) noexcept {
-  if (!u)
-    return nullptr;
-  return u->template get_if<I>();
+  return u ? u->template get_if<I>() : nullptr;
 }
+
+template <typename T, std::size_t I>
+struct box_union_element {};
+
+template <typename... Ts, std::size_t I>
+struct box_union_element<box_union<Ts...>, I> {
+  using type = element_at_t<I, Ts...>;
+};
+
+template <typename T, std::size_t I>
+using box_union_element_t = typename box_union_element<T, I>::type;
+
+template <typename T>
+struct box_union_size{};
+
+template <typename... Ts>
+struct box_union_size<box_union<Ts...>>{
+  static constexpr std::size_t value = sizeof...(Ts);
+};
+
+template <typename T>
+constexpr std::size_t box_union_size_v = box_union_size<T>::value;
 
 }  // namespace tgbm
 

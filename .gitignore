@@ -18,16 +18,24 @@ cmake-build-*
 *tgapi.html
 include/tgbm/api/generator/types.txt
 include/tgbm/api/generator/methods.txt
+include/tgbm/api/def
+include/tgbm/api/types
+src/api.cpp
+include/tgbm/api/types_all.hpp
+include/tgbm/api/types_fwd.hpp
 
 .vs/
 .vscode/
+.trash/
 build/
 out/
 
 build*
-
+test.log
 
 .DS_Store
 vcpkg_installed
 compile_commands.json
 CMakePresets.json
+
+gbench/data

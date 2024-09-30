@@ -2,7 +2,7 @@
 
 #if 0
 
-#include <tgbm/tools/json_parser/all.h>
+#include <tgbm/tools/json_tools/parser/all.h>
 #include <sstream>
 #include <rapidjson/reader.h>
 #include <rapidjson/document.h>
@@ -42,7 +42,7 @@ TEST(ParserTests, PlainStruct) {
       "y" : 2
     }
   )";
-  auto pos = tgbm::json::from_json<Position>(json_str);
+  auto pos = tgbm::json::handler_parser::from_json<Position>(json_str);
   EXPECT_EQ(pos.x, 1);
   EXPECT_EQ(pos.y, 2);
 }
@@ -78,7 +78,7 @@ TEST(ParserTests, ExtraFields) {
         }
     }
   )";
-  auto x = tgbm::json::from_json<Geotag>(json_str);
+  auto x = tgbm::json::handler_parser::from_json<Geotag>(json_str);
   EXPECT_EQ(x.enabled, false);
   EXPECT_EQ(x.name, "some_pos");
   EXPECT_EQ(x.position.x, 10);
@@ -97,7 +97,7 @@ TEST(ParserTests, BoxStructure) {
     }
       
   )";
-  auto got = tgbm::json::from_json<Image>(json_str);
+  auto got = tgbm::json::handler_parser::from_json<Image>(json_str);
   auto expected = Image{
       .geotag = Geotag{.enabled = false, .name = "some_pos", .position = {.x = 10, .y = 20}}, .name = "test"};
   EXPECT_EQ(got, expected);

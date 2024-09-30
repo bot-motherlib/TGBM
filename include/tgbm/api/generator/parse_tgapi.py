@@ -4,8 +4,11 @@ from bs4 import BeautifulSoup
 import argparse
 
 K_ONE_OF = 'oneof'
+K_ONE_OF_FIELD = 'oneof_field'
 K_DEFAULT = 'default'
+K_MANUALLY = 'manually'
 
+K_ONE_OF_FIELD_TYPES = ['Update', 'KeyboardButton', 'InlineKeyboardButton']
 
 def path_api_html(apidir):
     return f'{apidir}/generator/tgapi.html'
@@ -15,6 +18,9 @@ def path_types_file(apidir):
 
 def path_methods_file(apidir):
     return f'{apidir}/generator/methods.txt'
+
+def manually_type(apidir, type_name):
+    return os.path.exists(f'{apidir}/def/{type_name}.nodef')
 
 def get_elem_field_type(raw_field_type: str):
     types = {
@@ -84,10 +90,16 @@ def parse_info_one_of(parsed_api, type_name, type_header, type_description, tabl
         index += 1
     return result
 
+def get_default_type(type_name):
+    if type_name in K_ONE_OF_FIELD_TYPES:
+        return K_ONE_OF_FIELD
+    else:
+        return K_DEFAULT
+
 def parse_info_default(parsed_api, type_name, type_header, type_description):
     result = {
         'description': type_description.text,
-        'type': K_DEFAULT,
+        'type': get_default_type(type_name),
         'fields': {}
     }
     table = type_header.find_next('table', {'class': 'table'})
@@ -173,6 +185,19 @@ def generate_default_type(infos, type_name, info, file):
             file.write("OPTIONAL(")
         else:
             file.write("REQUIRED(")
+        file.write(f"{get_real_field_type(infos, field_type)}, {field_name})\n")     
+
+def generate_oneof_field_type(infos, type_name, info, file):
+    for field_name, field_info in info['fields'].items():
+        field_type = field_info['type']
+        field_description = field_info['description']
+        if field_description.startswith('Optional'):
+            size = field_description.find(' ')
+            while field_description[size].isspace():
+                size += 1
+            file.write("OPTIONAL(")
+        else:
+            file.write("REQUIRED(")
         file.write(f"{get_real_field_type(infos, field_type)}, {field_name})\n")      
 
 def generate_one_of_type(type_name, info, file):
@@ -191,10 +216,9 @@ def generate_def_impl(infos, type_name, info, apidir):
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, 'w', encoding='utf-8') as file:
         file.write("#include \"tgbm/api/utils/begin.h\"\n\n")
-        file.write(f"API_TYPE({type_name})\n\n")
         if type == K_ONE_OF:
             generate_one_of_type(type_name, info, file)
-        elif type == K_DEFAULT:
+        elif type == K_DEFAULT or type == K_ONE_OF_FIELD:
             generate_default_type(infos, type_name, info, file)
         else:
             print(f'unexpected type: {type}')
@@ -227,17 +251,14 @@ def process_oneof(infos, type_name, type_info):
         if 'discriminator' not in type_info.keys():
             type_info['discriminator'] = discriminator
         else:
-            assert type_info['discriminator'] == discriminator
+            type_info_discriminator = type_info['discriminator']
+            assert type_info_discriminator == discriminator, f'type_name: {type_name}, type_info_discriminator: {type_info_discriminator}, discriminator: {discriminator}'
         if 'discriminator_values' not in type_info.keys():
             type_info['discriminator_values'] = {}
         type_info['discriminator_values'][field_type] = discriminator_value
         fields_info[discriminator_value] = field_info
 
     type_info['fields'] = fields_info   
-
-
-def manually_type(apidir, type_name):
-    return os.path.exists(f'{apidir}/def/{type_name}.nodef')
 
 def rewrite_sub_oneof(infos):
     for type_name, type_info in infos.items():
@@ -251,6 +272,10 @@ def get_all_infos(parsed_api, apidir):
         type_name = type_name.strip()
         if not manually_type(apidir, type_name):
             infos[type_name] = parse_info(type_name, parsed_api)
+        else:
+            infos[type_name] = {
+                'type': K_MANUALLY
+            }
 
     rewrite_sub_oneof(infos)
     return infos
@@ -272,12 +297,12 @@ def generate_defs_impl(apidir, typelist=None):
         generate_def_impl(infos, type_name, info, apidir)
 
 
-def postprocess_hpp(file_path, infos, fwd_file, all_file):
-    print(f"postprocessing: {file_path}")
+def postprocess_hpp(file_path, infos, fwd_file, all_file, apidir):
+    type_name, _ = os.path.splitext(os.path.basename(file_path))
+    if manually_type(apidir, type_name):
+        return
     with open(file_path, 'r') as file:
         contents = file.read()
-    
-    type_name, _ = os.path.splitext(os.path.basename(file_path))
     fwd_file.write(f'  struct {type_name};\n')
     all_file.write(f'#include "tgbm/api/types/{type_name}.hpp"\n')
     info = infos[type_name]
@@ -286,7 +311,12 @@ def postprocess_hpp(file_path, infos, fwd_file, all_file):
     file.write(f'#pragma once\n#include "tgbm/api/common.hpp"\n#include "tgbm/api/types_fwd.hpp"\n')
     for field_name, field_info in info['fields'].items():
         field_type = field_info['type']
-        if field_type in infos.keys() and infos[field_type]['type'] == K_ONE_OF:
+        if not field_type in infos.keys():
+            continue 
+        if infos[type_name]['type'] == K_ONE_OF_FIELD:
+            file.write(f'#include "tgbm/api/types/{field_type}.hpp"\n')
+            continue
+        if infos[field_type]['type'] == K_ONE_OF or infos[field_type]['type'] == K_ONE_OF_FIELD:
             file.write(f'#include "tgbm/api/types/{field_type}.hpp"\n') 
     file.write('\n\n')
     for line in contents.splitlines():
@@ -318,11 +348,11 @@ def postprocess(apidir):
     all_file = open(f'{apidir}/types_all.hpp', 'w', encoding='utf-8')
     all_file.write('#pragma once\n\n')
     
-    for root, dirs, files in os.walk(f'{apidir}/types'):
+    for root, _, files in os.walk(f'{apidir}/types'):
         for file in files:
             if file.endswith('.hpp'):
                 file_path = os.path.join(root, file)
-                postprocess_hpp(file_path, infos, fwd_file, all_file)
+                postprocess_hpp(file_path, infos, fwd_file, all_file, apidir)
     
     fwd_file.write('}\n')
 

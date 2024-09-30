@@ -4,6 +4,7 @@
 #include <string>
 #include <unordered_map>
 #include <cassert>
+#include <vector>
 
 #include "tgbm/tools/macro.hpp"
 #include "tgbm/tools/StringTools.h"
