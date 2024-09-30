@@ -2,10 +2,25 @@ cmake_minimum_required(VERSION 3.30)
 project(tgbm) # telegram bot mother library
 
 
-option(TGBM_SANITIZE_THREAD "" OFF)
-option(TGBM_SANITIZE "" OFF)
-option(TGBM_ENABLE_TESTS "Set to ON to enable building of tests" OFF)
-option(TGBM_ENABLE_BENCHS "Set to ON to enable building of benchs" OFF)
+option(TGBM_ENABLE_BENCHS   "Set to ON to enable building of benchs" OFF)
+option(TGBM_ENABLE_GEN      "Set to ON to generate api"              OFF)
+option(TGBM_ENABLE_TESTS    "Set to ON to enable building of tests"  OFF)
+option(TGBM_SANITIZE        ""  OFF)
+option(TGBM_SANITIZE_THREAD ""  OFF)
+
+set (TGBM_CLANG        "clang"        CACHE STRING "Used only by api generator")
+set (TGBM_CLANG_FORMAT "clang-format" CACHE STRING "Used only by api generator")
+set (TGBM_PYTHON       "python"       CACHE STRING "Used only by api generator")
+
+message (STATUS "[tgbm] TGBM_ENABLE_BENCHS: ${TGBM_ENABLE_BENCHS}")
+message (STATUS "[tgbm] TGBM_ENABLE_GEN: ${TGBM_ENABLE_GEN}")
+message (STATUS "[tgbm] TGBM_ENABLE_TESTS: ${TGBM_ENABLE_TESTS}")
+message (STATUS "[tgbm] TGBM_SANITIZE: ${TGBM_SANITIZE}")
+message (STATUS "[tgbm] TGBM_SANITIZE_THREAD: ${TGBM_SANITIZE_THREAD}")
+
+message (STATUS "[tgbm] TGBM_CLANG: ${TGBM_CLANG}")
+message (STATUS "[tgbm] TGBM_CLANG_FORMAT: ${TGBM_CLANG_FORMAT}")
+message (STATUS "[tgbm] TGBM_PYTHON: ${TGBM_PYTHON}")
 
 if (TGBM_SANITIZE_THREAD)
   if (TGBM_SANITIZE)
@@ -14,6 +29,11 @@ if (TGBM_SANITIZE_THREAD)
 endif()
 
 include (cmake/deps.cmake)
+
+if (TGBM_ENABLE_GEN)
+  include (cmake/generate.cmake)
+  GenerateApiTypes()
+endif()
 
 set(TGBM_SRC_LIST
     src/net/http2_client.cpp
