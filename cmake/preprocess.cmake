@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 
 function(PreprocessApiTypes)
     set(TGBM_API_DIR "${CMAKE_SOURCE_DIR}/include/tgbm/api")
-    set(CPP_FILE  "${CMAKE_SOURCE_DIR}/src/api.cpp")
+    set(CPP_FILE  "${CMAKE_SOURCE_DIR}/src/api_types_cmp.cpp")
     file(REMOVE ${CPP_FILE})
     file(APPEND ${CPP_FILE} "#include <tgbm/api/types_all.hpp>\n")
     file(APPEND ${CPP_FILE} "namespace tgbm::api {\n")

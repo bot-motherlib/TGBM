@@ -39,7 +39,7 @@ set(TGBM_SRC_LIST
     src/net/http2_client.cpp
     src/net/http2/huffman.cpp
     src/Api.cpp
-    # src/api.cpp
+    # src/api_types_cmp.cpp
     src/Bot.cpp
     src/EventHandler.cpp
     src/TgTypeParser.cpp
