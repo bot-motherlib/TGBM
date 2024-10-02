@@ -48,15 +48,6 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v2
 
-      - name: Reuse ccache directory
-        uses: actions/cache@v2
-        with:
-          path: ~/.cache/ccache
-          key: 'ubuntu-22.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}'
-          restore-keys: |
-            ubuntu-22.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}
-            ubuntu-22.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-
-
       - name: install based dependencies
         run: |
           sudo apt install ccache
@@ -74,7 +65,20 @@ jobs:
       - name: Setup ccache
         run: |
           ccache -M 2.0GB
+
+      - name: Reuse ccache directory
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/ccache
+          key: 'ubuntu-22.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}'
+          restore-keys: |
+            ubuntu-22.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}
+            ubuntu-22.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-
+      
+      - name: ccache stats before build
+        run: |
           ccache -s
+
       - name: Configure cmake project
         run: >
           cmake 
@@ -93,6 +97,10 @@ jobs:
           cmake 
           --build cmake_build
           --target all
+
+      - name: ccache stats after build
+        run: |
+          ccache -s
 
       - name: Run tests
         run: | 
