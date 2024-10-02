@@ -64,7 +64,8 @@ jobs:
       - name: install based dependencies
         run: |
           sudo apt install ccache
-          sudo apt install cmake
+          sudo apt install cmake=3.20
+          cmake --version
           sudo apt install lld
           sudo apt install ninja-build
       - name: install compiler
