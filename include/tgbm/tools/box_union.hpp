@@ -503,10 +503,10 @@ template <typename T, std::size_t I>
 using box_union_element_t = typename box_union_element<T, I>::type;
 
 template <typename T>
-struct box_union_size{};
+struct box_union_size {};
 
 template <typename... Ts>
-struct box_union_size<box_union<Ts...>>{
+struct box_union_size<box_union<Ts...>> {
   static constexpr std::size_t value = sizeof...(Ts);
 };
 

@@ -64,8 +64,6 @@ struct boost_domless_parser {
 };
 
 template <typename T>
-constexpr bool is_simple = requires{
-  requires boost_domless_parser<T>::simple;
-};
+constexpr bool is_simple = requires { requires boost_domless_parser<T>::simple; };
 
 }  // namespace tgbm::generator_parser

@@ -1,0 +1,98 @@
+name: CI_ubuntu
+
+'on':
+  pull_request:
+  push:
+    branches:
+      - master
+
+env:
+  UBSAN_OPTIONS: print_stacktrace=1
+
+jobs:
+  posix:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-24.04
+            type: Debug
+            compiler: clang
+            cxx_compiler: clang++
+            version: 17
+          
+          - os: ubuntu-24.04
+            type: Debug
+            compiler: clang
+            cxx_compiler: clang++
+            version: 19
+
+          - os: ubuntu-24.04
+            type: Debug
+            compiler: gcc
+            cxx_compiler: g++
+            version: 11
+
+          - os: ubuntu-24.04
+            type: Debug
+            compiler: gcc
+            cxx_compiler: g++
+            version: 14     
+
+    name: '${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}'
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.9.1
+
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Reuse ccache directory
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/ccache
+          key: 'ubuntu-24.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}'
+          restore-keys: |
+            ${{matrix.os}} ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}
+            ${{matrix.os}} ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-
+
+      - name: install based dependencies
+        run: |
+          sudo apt install cmake
+          sudo apt install ninja-build
+          sudo apt install lld
+      - name: install compiler
+        run: >
+          sudo make 
+          -f scripts/ci_ubuntu.make 
+          install-compiler 
+          compiler=${{matrix.compiler}} 
+          version=${{matrix.version}}
+      - name: Setup ccache
+        run: |
+          ccache -M 2.0GB
+          ccache -s
+      - name: Configure cmake project
+        run: >
+          cmake 
+          -B cmake_build
+          -G Ninja
+          -DCMAKE_BUILD_TYPE=${{matrix.type}} 
+          -DCMAKE_C_COMPILER==${{matrix.compiler}}-${{matrix.version}}
+          -DCMAKE_CXX_COMPILER==${{matrix.cxx_compiler}}-${{matrix.version}}
+          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+          -DTGBM_ENABLE_TESTS=ON
+          -DCMAKE_LINKER_TYPE=LLD
+
+      - name: Build project
+        run: >
+          cmake 
+          --build cmake_build
+          --target all
+
+      - name: Run tests
+        run: | 
+          cd cmake_build
+          (test -t 1 && GTEST_COLOR=1 PYTEST_ADDOPTS="--color=yes" ctest -V) || ctest -V

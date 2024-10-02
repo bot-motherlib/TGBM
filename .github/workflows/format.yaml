@@ -1,0 +1,40 @@
+name: format
+
+'on':
+  pull_request:
+  push:
+    branches:
+      - master
+
+env:
+  UBSAN_OPTIONS: print_stacktrace=1
+
+jobs:
+  posix:
+    strategy:
+      fail-fast: false
+
+    name: 'format'
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.9.1
+
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: Install clang-format
+        run: |
+          sudo apt install clang-format-17
+      - name: Format
+        run: ^
+          sudo make 
+          -f scripts/ci_ubuntu.make 
+          format
+
+      - name: Check if all files are committed to git
+        run: ^
+          sudo make 
+          -f scripts/ci_ubuntu.make 
+          check-git-status

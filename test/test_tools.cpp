@@ -39,7 +39,7 @@ bool boxtest1() {
 }
 
 int main() {
-  if (!boxtest1()){
+  if (!boxtest1()) {
     return -1;
   }
   return 0;

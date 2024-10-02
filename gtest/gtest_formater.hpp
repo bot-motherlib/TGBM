@@ -7,10 +7,10 @@
 template <typename T>
 concept formattable = fmt::is_formattable<T>::value;
 
-namespace std{
+namespace std {
 
-    template <formattable T>
-    void PrintTo(const T& t, std::ostream* os){
-        fmt::format_to(std::ostreambuf_iterator(*os), "{}", t);
-    }
+template <formattable T>
+void PrintTo(const T& t, std::ostream* os) {
+  fmt::format_to(std::ostreambuf_iterator(*os), "{}", t);
 }
+}  // namespace std

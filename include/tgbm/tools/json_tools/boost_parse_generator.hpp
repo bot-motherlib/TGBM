@@ -22,7 +22,8 @@ struct wait_handler {
 
   template <typename T>
   wait_handler(T& t_)
-      : gen(generator_parser::generator_starter(generator_parser::boost_domless_parser<T>::parse(t_, event), ended)) {
+      : gen(generator_parser::generator_starter(generator_parser::boost_domless_parser<T>::parse(t_, event),
+                                                ended)) {
     gen.begin();
   }
 
