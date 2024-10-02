@@ -48,9 +48,6 @@ jobs:
       - name: Cancel Previous Runs
         uses: styfle/cancel-workflow-action@0.9.1
 
-      - name: Checkout the code
-        uses: actions/checkout@v2
-
       - name: Reuse ccache directory
         uses: actions/cache@v2
         with:
