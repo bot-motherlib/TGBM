@@ -202,8 +202,8 @@ struct [[gnu::packed]] setting_t {
   [[nodiscard]] static setting_t parse(std::span<const byte_t, 6> bytes) noexcept {
     setting_t s;
     memcpy(&s, bytes.data(), sizeof(s));
-    htonli(s.identifier);
-    htonli(s.value);
+    s.identifier = htonl(s.identifier);
+    s.value = htonl(s.value);
     return s;
   }
 };
