@@ -291,7 +291,7 @@ struct optional<Integer> {
   using value_type = Integer;
 
  private:
-  static constexpr Integer empty_ = std::numeric_limits<int64_t>::max(); 
+  static constexpr Integer empty_ = std::numeric_limits<int64_t>::max();
   Integer _val = empty_;
 
  public:
