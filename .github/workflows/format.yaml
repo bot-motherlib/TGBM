@@ -31,13 +31,13 @@ jobs:
         run: |
           sudo apt install clang-format-17
       - name: Format
-        run: ^
+        run: >
           sudo make 
           -f scripts/ci_ubuntu.make 
           format
 
       - name: Check if all files are committed to git
-        run: ^
+        run: >
           sudo make 
           -f scripts/ci_ubuntu.make 
           check-git-status

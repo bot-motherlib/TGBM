@@ -89,6 +89,7 @@ jobs:
           -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           -DTGBM_ENABLE_TESTS=ON
           -DCMAKE_LINKER_TYPE=LLD
+          -DCMAKE_CXX_STANDARD=20
 
       - name: Build project
         run: >
