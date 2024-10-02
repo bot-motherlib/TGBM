@@ -78,7 +78,7 @@ struct CustomStruct {
                   optional_custom>
       data;
 
-  constexpr std::strong_ordering operator<=>(const CustomStruct&) const = default;
+  std::strong_ordering operator<=>(const CustomStruct&) const = default;
 
   enum struct type_e {
     k_optional_bool,
