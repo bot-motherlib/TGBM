@@ -18,32 +18,28 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-22.04 #bug in std library(https://gcc.gnu.org/bugzilla/show_bug.cgi?id=115119)
-            type: Debug
+          - type: Debug
             compiler: clang
             cxx_compiler: clang++
             version: 17
           
-          - os: ubuntu-24.04
-            type: Debug
+          - type: Debug
             compiler: clang
             cxx_compiler: clang++
             version: 19
 
-          - os: ubuntu-24.04
-            type: Debug
+          - type: Debug
             compiler: gcc
             cxx_compiler: g++
             version: 11
 
-          - os: ubuntu-24.04
-            type: Debug
+          - type: Debug
             compiler: gcc
             cxx_compiler: g++
             version: 14     
 
     name: '${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04 #bug in std library(https://gcc.gnu.org/bugzilla/show_bug.cgi?id=115119)
 
     steps:
       - name: Cancel Previous Runs
@@ -56,10 +52,10 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.cache/ccache
-          key: 'ubuntu-24.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}'
+          key: 'ubuntu-22.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}'
           restore-keys: |
-            ${{matrix.os}} ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}
-            ${{matrix.os}} ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-
+            ubuntu-22.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}
+            ubuntu-22.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-
 
       - name: install based dependencies
         run: |
