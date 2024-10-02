@@ -6,13 +6,13 @@ format:
 	find samples -name '*pp' -type f | xargs clang-format-17 -i
 	find src -name '*pp' -type f | xargs clang-format-17 -i
 	find test -name '*pp' -type f | xargs clang-format-17 -i
-	$(MAKE) add-eol P=.github
-	$(MAKE) add-eol P=cmake
-	$(MAKE) add-eol P=gbench
-	$(MAKE) add-eol P=gtest
-	$(MAKE) add-eol P=include
-	$(MAKE) add-eol P=scripts
-	$(MAKE) add-eol-root
+	$(MAKE) -f scripts/ci_ubuntu.make add-eol P=.github
+	$(MAKE) -f scripts/ci_ubuntu.make add-eol P=cmake
+	$(MAKE) -f scripts/ci_ubuntu.make add-eol P=gbench
+	$(MAKE) -f scripts/ci_ubuntu.make add-eol P=gtest
+	$(MAKE) -f scripts/ci_ubuntu.make add-eol P=include
+	$(MAKE) -f scripts/ci_ubuntu.make add-eol P=scripts
+	$(MAKE) -f scripts/ci_ubuntu.make add-eol-root
 
 .PHONY: add-eol
 add-eol:
