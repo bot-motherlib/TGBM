@@ -26,6 +26,7 @@ include/tgbm/api/types
 src/api.cpp
 include/tgbm/api/types_all.hpp
 include/tgbm/api/types_fwd.hpp
+include/tgbm/api/types.txt
 
 .vs/
 .vscode/
