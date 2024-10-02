@@ -1,4 +1,6 @@
 name: CI_ubuntu
+permissions:
+  actions: write
 
 'on':
   pull_request:
