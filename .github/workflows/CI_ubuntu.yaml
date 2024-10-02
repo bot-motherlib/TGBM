@@ -31,12 +31,12 @@ jobs:
           - type: Debug
             compiler: gcc
             cxx_compiler: g++
-            version: 11
-
+            version: 11 
+          
           - type: Debug
             compiler: gcc
             cxx_compiler: g++
-            version: 14     
+            version: 12 
 
     name: '${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}'
     runs-on: ubuntu-22.04 #bug in std library(https://gcc.gnu.org/bugzilla/show_bug.cgi?id=115119)
