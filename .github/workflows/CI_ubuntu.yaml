@@ -68,9 +68,10 @@ jobs:
           ls /usr/lib/gcc/x86_64-linux-gnu
           sudo apt install libx32stdc++-12-dev
           export LIBRARY_PATH="/usr/lib/gcc/x86_64-linux-gnu/12"
-          export LD_LIBRARY_PATH="/usr/lib/gcc/x86_64-linux-gnu/12"
+          export LD_LIBRARY_PATH="/usr/lib/gcc/x86_64-linux-gnu/12"    
       - name: check stdlib version
         run: |
+          env
           ls /usr/lib/gcc/x86_64-linux-gnu
       - name: Setup ccache
         run: |
