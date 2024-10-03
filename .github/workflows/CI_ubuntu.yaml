@@ -56,7 +56,11 @@ jobs:
           sudo apt install lld
           sudo apt install ninja-build
           sudo apt install build-essential
-          sudo apt-get install libc++-dev libc++abi-dev
+      - name: install modern stdlib
+        run: |
+          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+          sudo apt update
+          strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep CXXABI
       - name: install compiler
         run: >
           sudo make 
@@ -93,8 +97,6 @@ jobs:
           -DTGBM_ENABLE_TESTS=ON
           -DCMAKE_LINKER_TYPE=LLD
           -DCMAKE_CXX_STANDARD=20
-          -DCMAKE_CXX_FLAGS="-stdlib=libc++"
-          -DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++abi"
 
       - name: Build project
         run: >

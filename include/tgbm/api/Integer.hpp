@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <compare>
+#include <concepts>
 
 namespace tgbm::api {
 
