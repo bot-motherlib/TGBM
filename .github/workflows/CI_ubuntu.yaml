@@ -18,20 +18,20 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - type: Debug
-            compiler: clang
-            cxx_compiler: clang++
-            version: 17
+          # - type: Debug
+          #   compiler: clang
+          #   cxx_compiler: clang++
+          #   version: 17
           
           - type: Debug
             compiler: clang
             cxx_compiler: clang++
             version: 19
 
-          - type: Debug
-            compiler: gcc
-            cxx_compiler: g++
-            version: 11 
+          # - type: Debug
+          #   compiler: gcc
+          #   cxx_compiler: g++
+          #   version: 11 
           
           - type: Debug
             compiler: gcc
@@ -55,6 +55,7 @@ jobs:
           cmake --version
           sudo apt install lld
           sudo apt install ninja-build
+          sudo apt install build-essential
       - name: install compiler
         run: >
           sudo make 
