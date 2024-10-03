@@ -60,7 +60,7 @@ jobs:
         run: |
           sudo add-apt-repository ppa:ubuntu-toolchain-r/test
           sudo apt update
-      - name: check stdlib version:
+      - name: check stdlib version
         run: |
           sudo strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep CXXABI
           sudo dpkg -s libstdc++6 | grep Version
