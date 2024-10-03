@@ -56,14 +56,6 @@ jobs:
           sudo apt install lld
           sudo apt install ninja-build
           sudo apt install build-essential
-      - name: install modern stdlib
-        run: |
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-          sudo apt update
-      - name: check stdlib version
-        run: |
-          sudo strings /usr/lib/x86_64-linux-gnu/libstdc++.so.6 | grep CXXABI
-          sudo dpkg -s libstdc++6 | grep Version
       - name: install compiler
         run: >
           sudo make 
@@ -71,6 +63,15 @@ jobs:
           install-compiler 
           compiler=${{matrix.compiler}} 
           version=${{matrix.version}}
+      - name: install modern stdlib
+        run: |
+          ls /usr/lib/gcc/x86_64-linux-gnu
+          sudo apt install libx32stdc++-12-dev
+          export LIBRARY_PATH="/usr/lib/gcc/x86_64-linux-gnu/12"
+          export LD_LIBRARY_PATH="/usr/lib/gcc/x86_64-linux-gnu/12"
+      - name: check stdlib version
+        run: |
+          ls /usr/lib/gcc/x86_64-linux-gnu
       - name: Setup ccache
         run: |
           ccache -M 2.0GB
