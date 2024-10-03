@@ -36,7 +36,7 @@ jobs:
           - type: Debug
             compiler: gcc
             cxx_compiler: g++
-            version: 12 
+            version: 14
 
     name: '${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}'
     runs-on: ubuntu-24.04 #bug in std library(https://gcc.gnu.org/bugzilla/show_bug.cgi?id=115119)
@@ -92,6 +92,8 @@ jobs:
           -DTGBM_ENABLE_TESTS=ON
           -DCMAKE_LINKER_TYPE=LLD
           -DCMAKE_CXX_STANDARD=20
+          -DCMAKE_CXX_FLAGS="-stdlib=libc++"
+          -DCMAKE_EXE_LINKER_FLAGS="-stdlib=libc++ -lc++abi"
 
       - name: Build project
         run: >
