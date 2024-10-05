@@ -39,7 +39,7 @@ jobs:
             version: 14
 
     name: '${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}'
-    runs-on: ubuntu-24.04 #bug in std library(https://gcc.gnu.org/bugzilla/show_bug.cgi?id=115119)
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Cancel Previous Runs
