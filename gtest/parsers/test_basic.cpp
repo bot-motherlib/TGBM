@@ -16,7 +16,7 @@ struct SomeStruct {
         .value();
   }
 
-  constexpr std::strong_ordering operator<=>(const SomeStruct&) const = default;
+  std::strong_ordering operator<=>(const SomeStruct&) const = default;
 };
 
 static_assert(tgbm::common_api_type<SomeStruct>);

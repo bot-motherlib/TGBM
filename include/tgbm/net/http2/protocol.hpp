@@ -194,16 +194,16 @@ struct [[gnu::packed]] setting_t {
 
   template <std::output_iterator<byte_t> O>
   static O form(setting_t s, O out) {
-    htonli(s.identifier);
-    htonli(s.value);
+    s.identifier = htonl(s.identifier);
+    s.value = htonl(s.value);
     return std::copy_n(as_bytes(s).data(), sizeof(s), out);
   }
 
   [[nodiscard]] static setting_t parse(std::span<const byte_t, 6> bytes) noexcept {
     setting_t s;
     memcpy(&s, bytes.data(), sizeof(s));
-    htonli(s.identifier);
-    htonli(s.value);
+    s.identifier = htonl(s.identifier);
+    s.value = htonl(s.value);
     return s;
   }
 };

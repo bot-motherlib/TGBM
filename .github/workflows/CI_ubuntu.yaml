@@ -1,0 +1,92 @@
+name: CI
+
+permissions:
+  actions: write
+  contents: read
+
+'on':
+  pull_request:
+  push:
+    branches:
+      - master
+
+env:
+  UBSAN_OPTIONS: print_stacktrace=1
+
+jobs:
+  posix:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:  
+          - type: debug
+            compiler: clang
+            version: 17
+          - type: debug
+            compiler: clang
+            version: 19
+          - type: debug
+            compiler: gcc
+            version: 12
+          - type: debug
+            compiler: gcc
+            version: 14
+
+    name: ubuntu-24.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.9.1
+
+      - name: Checkout the code
+        uses: actions/checkout@v2
+
+      - name: install dependencies
+        run: |
+          sudo apt install ccache
+          sudo apt install cmake
+          sudo apt install lld
+          sudo apt install ninja-build
+          sudo apt install build-essential
+          sudo make -f scripts/ci_ubuntu.make install-compiler compiler=${{matrix.compiler}} version=${{matrix.version}}
+      - name: ccache activate logs
+        if: ${{runner.debug}}
+        run: |    
+          echo "CCACHE_LOGFILE=/home/$(whoami)/ccache.log" >> $GITHUB_ENV
+
+      - name: Setup ccache
+        run: |
+          ccache -M 2.0GB
+
+      - name: Reuse ccache directory
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/ccache
+          key: 'ubuntu-24.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}'
+          restore-keys: |
+            ubuntu-24.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}
+            ubuntu-24.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-
+
+      - name: Configure cmake project
+        run: |
+          cp scripts/presets_ubuntu-24.04.json CMakePresets.json
+          cmake --preset ${{matrix.compiler}}_${{matrix.version}}_${{matrix.type}} 
+
+      - name: Build project
+        run: >
+          cmake 
+          --build cmake_build
+          --target all
+
+      - name: ccache stats after build
+        run: |
+          ccache -s
+      - name: ccache more logs
+        if: ${{runner.debug}}
+        run: |
+          cat ~/ccache.log
+
+      - name: Run tests
+        run: | 
+          cd cmake_build && ctest -V

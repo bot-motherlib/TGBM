@@ -14,6 +14,7 @@ Thumbs.db
 .idea/
 docs/
 cmake-build-*
+cmake_build
 .cache
 
 *methods.txt
@@ -26,6 +27,7 @@ include/tgbm/api/types
 src/api_types_cmp.cpp
 include/tgbm/api/types_all.hpp
 include/tgbm/api/types_fwd.hpp
+include/tgbm/api/types.txt
 
 .vs/
 .vscode/

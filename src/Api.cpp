@@ -127,7 +127,7 @@ dd::task<std::vector<Message::Ptr>> Api::sendMessage(
   // TODO а что если отправить пустое сообщение или одни пробелы? Нужно здесь это обработать
   // TODO обрезать пробелы с двух сторон
   // TODO better
-  enum { max_tg_msg_size = 4096 };
+  constexpr int max_tg_msg_size = 4096;
   std::vector<Message::Ptr> msgs;
   if (text.size() == 0)
     co_return msgs;

@@ -148,7 +148,7 @@ struct MessageOrigin {
       return visiter.template operator()<MessageOriginChannel>();
     return visiter.template operator()<void>();
   }
-  constexpr type_e type() const {
+  type_e type() const {
     return static_cast<type_e>(data.index());
   }
 };

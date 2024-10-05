@@ -2651,7 +2651,7 @@ struct Api {
 namespace fmt {
 
 template <>
-struct fmt::formatter<::tgbm::int_or_str> {
+struct formatter<::tgbm::int_or_str> {
   static constexpr auto parse(fmt::format_parse_context& ctx) -> decltype(ctx.begin()) {
     return ctx.end();
   }

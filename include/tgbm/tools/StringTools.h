@@ -178,7 +178,7 @@ struct string_switch {
 namespace fmt {
 
 template <>
-struct fmt::formatter<::tgbm::utils::url_encoded> {
+struct formatter<::tgbm::utils::url_encoded> {
   static constexpr auto parse(fmt::format_parse_context& ctx) -> decltype(ctx.begin()) {
     return ctx.end();
   }

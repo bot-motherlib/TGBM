@@ -5,7 +5,7 @@ using namespace std::literals;
 struct object1 {
   std::string name;
   int age;
-  constexpr std::strong_ordering operator<=>(const object1&) const = default;
+  std::strong_ordering operator<=>(const object1&) const = default;
 
   static consteval bool is_optional_field(std::string_view key) {
     return tgbm::utils::string_switch<std::optional<bool>>(key)
@@ -19,7 +19,7 @@ struct object1 {
 struct object2 {
   std::string description;
   std::vector<std::string> tags;
-  constexpr std::strong_ordering operator<=>(const object2&) const = default;
+  std::strong_ordering operator<=>(const object2&) const = default;
 
   static consteval bool is_optional_field(std::string_view key) {
     return tgbm::utils::string_switch<std::optional<bool>>(key)
@@ -42,34 +42,34 @@ struct custom {
         .value();
   }
 
-  constexpr std::strong_ordering operator<=>(const custom&) const = default;
+  std::strong_ordering operator<=>(const custom&) const = default;
 };
 
 struct CustomStruct {
   struct optional_bool {
     bool value;
-    constexpr std::strong_ordering operator<=>(const optional_bool&) const = default;
+    std::strong_ordering operator<=>(const optional_bool&) const = default;
   };
   struct optional_double {
     double value;
-    constexpr std::strong_ordering operator<=>(const optional_double&) const = default;
+    std::strong_ordering operator<=>(const optional_double&) const = default;
   };
   struct optional_array {
     std::vector<int> value;
-    constexpr std::strong_ordering operator<=>(const optional_array&) const = default;
+    std::strong_ordering operator<=>(const optional_array&) const = default;
   };
 
   struct optional_object1 {
     object1 value;
-    constexpr std::strong_ordering operator<=>(const optional_object1&) const = default;
+    std::strong_ordering operator<=>(const optional_object1&) const = default;
   };
   struct optional_object2 {
     object2 value;
-    constexpr std::strong_ordering operator<=>(const optional_object2&) const = default;
+    std::strong_ordering operator<=>(const optional_object2&) const = default;
   };
   struct optional_custom {
     custom value;
-    constexpr std::strong_ordering operator<=>(const optional_custom&) const = default;
+    std::strong_ordering operator<=>(const optional_custom&) const = default;
   };
 
   std::string mandatory_string;
@@ -78,7 +78,7 @@ struct CustomStruct {
                   optional_custom>
       data;
 
-  constexpr std::strong_ordering operator<=>(const CustomStruct&) const = default;
+  std::strong_ordering operator<=>(const CustomStruct&) const = default;
 
   enum struct type_e {
     k_optional_bool,

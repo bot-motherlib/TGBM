@@ -291,10 +291,8 @@ struct optional<Integer> {
   using value_type = Integer;
 
  private:
-  static consteval Integer empty() {
-    return Integer(std::numeric_limits<int64_t>::max());
-  }
-  Integer _val = empty();
+  static constexpr Integer empty_ = std::numeric_limits<int64_t>::max();
+  Integer _val = empty_;
 
  public:
   constexpr optional() noexcept = default;
@@ -303,7 +301,7 @@ struct optional<Integer> {
   constexpr optional(std::nullopt_t) noexcept : optional() {
   }
   constexpr optional& operator=(std::nullopt_t) noexcept {
-    _val = empty();
+    _val = empty_;
     return *this;
   }
   constexpr optional& operator=(value_type b) noexcept {
@@ -311,13 +309,13 @@ struct optional<Integer> {
     return *this;
   }
   constexpr bool has_value() const noexcept {
-    return _val != empty();
+    return _val != empty_;
   }
   constexpr explicit operator bool() const noexcept {
     return has_value();
   }
   constexpr void reset() noexcept {
-    _val = empty();
+    _val = empty_;
   }
   constexpr value_type& emplace(value_type v = value_type{}) noexcept {
     return _val = v;
