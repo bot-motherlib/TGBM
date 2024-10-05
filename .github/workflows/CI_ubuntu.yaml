@@ -22,7 +22,7 @@ jobs:
         include:  
           - type: debug
             compiler: clang
-            version: 15    
+            version: 14    
           - type: debug
             compiler: clang
             version: 19
@@ -54,6 +54,7 @@ jobs:
 
       - name: Setup ccache
         run: |
+          touch ~/ccache.log
           ccache -M 2.0GB
 
       - name: Reuse ccache directory
