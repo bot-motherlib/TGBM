@@ -69,9 +69,6 @@ jobs:
         run: |
           ls /usr/lib/gcc/x86_64-linux-gnu
           sudo apt install libx32stdc++-12-dev
-          ls /usr/lib/gcc/x86_64-linux-gnu
-          ls /usr/lib/gcc/x86_64-linux-gnu/13
-          ls /usr/lib/gcc/x86_64-linux-gnu/13/include
       - name: Setup ccache
         run: |
           ccache -M 2.0GB
@@ -80,10 +77,10 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ~/.cache/ccache
-          key: 'ubuntu-22.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}'
+          key: 'ubuntu-24.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}'
           restore-keys: |
-            ubuntu-22.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}
-            ubuntu-22.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-
+            ubuntu-24.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}
+            ubuntu-24.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-
       
       - name: ccache stats before build
         run: |
@@ -101,7 +98,7 @@ jobs:
           -DTGBM_ENABLE_TESTS=ON
           -DCMAKE_LINKER_TYPE=LLD
           -DCMAKE_CXX_STANDARD=20
-          -DCMAKE_CXX_FLAGS="-nostdinc++ -I/usr/lib/gcc/x86_64-linux-gnu/13/include"
+          -DCMAKE_CXX_FLAGS="-nostdinc++ -I/usr/include/13"
           -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib/gcc/x86_64-linux-gnu/13"
 
       - name: Build project
