@@ -19,21 +19,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          # - type: Debug
-          #   compiler: clang
-          #   cxx_compiler: clang++
-          #   version: 17
-          
+        include:       
           - type: debug
             compiler: clang
             version: 19
-
-          # - type: Debug
-          #   compiler: gcc
-          #   cxx_compiler: g++
-          #   version: 11 
-          
+          - type: debug
+            compiler: gcc
+            version: 12
           - type: debug
             compiler: gcc
             version: 14
