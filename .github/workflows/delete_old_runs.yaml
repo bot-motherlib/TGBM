@@ -1,4 +1,7 @@
 name: Delete old workflow runs
+permissions:
+  actions: write
+
 on:
   workflow_dispatch:
     inputs:
