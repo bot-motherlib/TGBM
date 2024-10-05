@@ -428,7 +428,7 @@ struct basic_parser<void> {
 
 template <typename T>
 struct parser {
-  parser<T>(ParserStack& stack, T& t) {
+  parser(ParserStack& stack, T& t) {
     static_assert(!std::same_as<T, T>);
   }
 };
