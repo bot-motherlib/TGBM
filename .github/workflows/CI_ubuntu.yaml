@@ -28,6 +28,9 @@ jobs:
             version: 12
           - type: debug
             compiler: gcc
+            version: 13
+          - type: debug
+            compiler: gcc
             version: 14
 
     name: '${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}'
