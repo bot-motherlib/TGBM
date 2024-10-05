@@ -25,9 +25,8 @@ jobs:
           #   cxx_compiler: clang++
           #   version: 17
           
-          - type: Debug
+          - type: debug
             compiler: clang
-            cxx_compiler: clang++
             version: 19
 
           # - type: Debug
@@ -35,9 +34,8 @@ jobs:
           #   cxx_compiler: g++
           #   version: 11 
           
-          - type: Debug
+          - type: debug
             compiler: gcc
-            cxx_compiler: g++
             version: 14
 
     name: '${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}'
@@ -89,17 +87,8 @@ jobs:
       - name: Configure cmake project
         run: >
           cmake 
-          -B cmake_build
-          -G Ninja
-          -DCMAKE_BUILD_TYPE=${{matrix.type}} 
-          -DCMAKE_C_COMPILER=${{matrix.compiler}}-${{matrix.version}}
-          -DCMAKE_CXX_COMPILER=${{matrix.cxx_compiler}}-${{matrix.version}}
-          -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
-          -DTGBM_ENABLE_TESTS=ON
-          -DCMAKE_LINKER_TYPE=LLD
-          -DCMAKE_CXX_STANDARD=20
-          -DCMAKE_CXX_FLAGS="-nostdinc++ -I/usr/include/c++/13 -I/usr/include/x86_64-linux-gnu/c++/13"
-          -DCMAKE_EXE_LINKER_FLAGS="-L/usr/lib/gcc/x86_64-linux-gnu/13"
+            --preset ${{matrix.compiler}}_${{matrix.version}}_${{matrix.type}} 
+            --preset_file scripts/presets_ubuntu-24.04.json
 
       - name: Build project
         run: >
@@ -113,5 +102,4 @@ jobs:
 
       - name: Run tests
         run: | 
-          cd cmake_build
-          (test -t 1 && GTEST_COLOR=1 PYTEST_ADDOPTS="--color=yes" ctest -V) || ctest -V
+          cd cmake_build && ctest -V
