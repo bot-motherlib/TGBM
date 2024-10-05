@@ -29,7 +29,7 @@ jobs:
             compiler: gcc
             version: 13
 
-    name: '${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}'
+    name: ubuntu-24.04 '${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}'
     runs-on: ubuntu-24.04
 
     steps:
