@@ -34,6 +34,15 @@
             }
         },
         {
+            "name": "gcc_13_debug",
+            "displayName": "gcc 12 debug",
+            "inherits": "base_debug",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc-13",
+                "CMAKE_CXX_COMPILER": "g++-13"
+            }
+        },
+        {
             "name": "gcc_14_debug",
             "displayName": "gcc 14 debug",
             "inherits": "base_debug",
