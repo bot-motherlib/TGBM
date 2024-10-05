@@ -19,6 +19,21 @@
             }
         }, 
         {
+            "name": "gcc_12_debug",
+            "generator": "Ninja",
+            "displayName": "gcc 12 debug",
+            "binaryDir": "cmake_build",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc-12",
+                "CMAKE_CXX_COMPILER": "g++-12",
+                "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+                "CMAKE_CXX_STANDARD": "20",
+                "CMAKE_LINKER_TYPE": "LLD",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "TGBM_ENABLE_TESTS": "ON"
+            }
+        },
+        {
             "name": "gcc_14_debug",
             "generator": "Ninja",
             "displayName": "gcc 14 debug",
