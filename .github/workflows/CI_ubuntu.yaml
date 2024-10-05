@@ -70,6 +70,8 @@ jobs:
           ls /usr/lib/gcc/x86_64-linux-gnu
           sudo apt install libx32stdc++-12-dev
           ls /usr/lib/gcc/x86_64-linux-gnu
+          ls /usr/lib/gcc/x86_64-linux-gnu/13
+          ls /usr/lib/gcc/x86_64-linux-gnu/13/include
       - name: Setup ccache
         run: |
           ccache -M 2.0GB
