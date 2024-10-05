@@ -85,10 +85,9 @@ jobs:
           ccache -s
 
       - name: Configure cmake project
-        run: >
-          cmake 
-            --preset ${{matrix.compiler}}_${{matrix.version}}_${{matrix.type}} 
-            --preset_file scripts/presets_ubuntu-24.04.json
+        run: |
+          cp scripts/presets_ubuntu-24.04.json CMakePresets.json
+          cmake --preset ${{matrix.compiler}}_${{matrix.version}}_${{matrix.type}} 
 
       - name: Build project
         run: >
