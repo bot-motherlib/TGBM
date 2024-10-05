@@ -127,19 +127,19 @@ dd::task<std::vector<Message::Ptr>> Api::sendMessage(
   // TODO а что если отправить пустое сообщение или одни пробелы? Нужно здесь это обработать
   // TODO обрезать пробелы с двух сторон
   // TODO better
-  enum { max_tg_msg_size = 4096 };
+  constexpr int max_tg_msg_size = 4096;
   std::vector<Message::Ptr> msgs;
-  if (text.size() == 0)
-    co_return msgs;
-  while (text.size() > max_tg_msg_size) {
-    // TODO should i repeat linkPreviewOptions etc for all messages? entities?
-    std::vector msg = co_await sendMessage(
-        chatId, text.substr(0, max_tg_msg_size), linkPreviewOptions, replyParameters, replyMarkup, parseMode,
-        disableNotification, std::move(entities), messageThreadId, protectContent, businessConnectionId);
-    assert(msg.size() == 1);
-    msgs.push_back(std::move(msg.front()));
-    text = text.substr(max_tg_msg_size);
-  }
+  // if (text.size() == 0)
+  //   co_return msgs;
+  // while (text.size() > max_tg_msg_size) {
+  //   // TODO should i repeat linkPreviewOptions etc for all messages? entities?
+  //   std::vector msg = co_await sendMessage(
+  //       chatId, text.substr(0, max_tg_msg_size), linkPreviewOptions, replyParameters, replyMarkup, parseMode,
+  //       disableNotification, std::move(entities), messageThreadId, protectContent, businessConnectionId);
+  //   assert(msg.size() == 1);
+  //   msgs.push_back(std::move(msg.front()));
+  //   text = text.substr(max_tg_msg_size);
+  // }
   default_body_t body;
   if (!businessConnectionId.empty())
     body.arg("business_connection_id", businessConnectionId);
