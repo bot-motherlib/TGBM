@@ -1,4 +1,5 @@
-name: CI_ubuntu
+name: CI
+
 permissions:
   actions: write
   contents: read
