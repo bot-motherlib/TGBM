@@ -195,8 +195,7 @@ struct pool_t {
       resource()->deallocate(mem, sizeof(node_t), alignof(node_t));
     };
     ++borrowed_count;
-    auto res = co_await factory();  // not inplace because GCC, internal compiler error
-    node_t* node = new (mem) node_t(std::move(res));
+    node_t* node = new (mem) node_t(co_await factory());
     H::created(node->data);
     free_mem.no_longer_needed();
     co_return handle_t(*node, *this);
