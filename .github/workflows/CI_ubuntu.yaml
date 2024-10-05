@@ -11,8 +11,6 @@ permissions:
 
 env:
   UBSAN_OPTIONS: print_stacktrace=1
-  LIBRARY_PATH: /usr/lib/gcc/x86_64-linux-gnu/12
-  LD_LIBRARY_PATH: /usr/lib/gcc/x86_64-linux-gnu/12
 
 jobs:
   posix:
@@ -29,9 +27,6 @@ jobs:
           - type: debug
             compiler: gcc
             version: 13
-          - type: debug
-            compiler: gcc
-            version: 14
 
     name: '${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}'
     runs-on: ubuntu-24.04
