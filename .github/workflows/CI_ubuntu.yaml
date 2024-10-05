@@ -21,7 +21,7 @@ jobs:
         include:  
           - type: debug
             compiler: clang
-            version: 15 
+            version: 17
           - type: debug
             compiler: clang
             version: 19
@@ -30,7 +30,7 @@ jobs:
             version: 12
           - type: debug
             compiler: gcc
-            version: 13
+            version: 14
 
     name: ubuntu-24.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}
     runs-on: ubuntu-24.04

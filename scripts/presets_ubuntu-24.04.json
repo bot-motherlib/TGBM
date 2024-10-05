@@ -14,12 +14,12 @@
             }
         },
         {
-            "name": "clang_15_debug",
-            "displayName": "clang 15 debug",
+            "name": "clang_17_debug",
+            "displayName": "clang 17 debug",
             "inherits": "base_debug",
             "cacheVariables": {
-                "CMAKE_C_COMPILER": "clang-15",
-                "CMAKE_CXX_COMPILER": "clang++-15"
+                "CMAKE_C_COMPILER": "clang-17",
+                "CMAKE_CXX_COMPILER": "clang++-17"
             }
         }, 
         {
@@ -40,15 +40,6 @@
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "gcc-12",
                 "CMAKE_CXX_COMPILER": "g++-12"
-            }
-        },
-        {
-            "name": "gcc_13_debug",
-            "displayName": "gcc 12 debug",
-            "inherits": "base_debug",
-            "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc-13",
-                "CMAKE_CXX_COMPILER": "g++-13"
             }
         },
         {
