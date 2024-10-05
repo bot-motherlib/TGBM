@@ -12,13 +12,17 @@ permissions:
 
 env:
   UBSAN_OPTIONS: print_stacktrace=1
+  CCACHE_LOGFILE: ~/ccache.log
 
 jobs:
   posix:
     strategy:
       fail-fast: false
       matrix:
-        include:       
+        include:  
+          - type: debug
+            compiler: clang
+            version: 15    
           - type: debug
             compiler: clang
             version: 19
@@ -75,6 +79,7 @@ jobs:
       - name: ccache stats after build
         run: |
           ccache -s
+          cat ~/ccache.log
 
       - name: Run tests
         run: | 

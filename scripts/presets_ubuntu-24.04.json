@@ -14,6 +14,15 @@
             }
         },
         {
+            "name": "clang_14_debug",
+            "displayName": "clang 14 debug",
+            "inherits": "base_debug",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang-14",
+                "CMAKE_CXX_COMPILER": "clang++-14"
+            }
+        }, 
+        {
             "name": "clang_19_debug",
             "displayName": "clang 19 debug",
             "inherits": "base_debug",
