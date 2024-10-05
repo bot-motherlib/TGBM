@@ -29,7 +29,7 @@ jobs:
             compiler: gcc
             version: 13
 
-    name: ubuntu-24.04 '${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}'
+    name: ubuntu-24.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}
     runs-on: ubuntu-24.04
 
     steps:
@@ -39,25 +39,15 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v2
 
-      - name: install based dependencies
+      - name: install dependencies
         run: |
           sudo apt install ccache
           sudo apt install cmake
-          cmake --version
           sudo apt install lld
           sudo apt install ninja-build
           sudo apt install build-essential
-      - name: install compiler
-        run: >
-          sudo make 
-          -f scripts/ci_ubuntu.make 
-          install-compiler 
-          compiler=${{matrix.compiler}} 
-          version=${{matrix.version}}
-      - name: install modern stdlib
-        run: |
-          ls /usr/lib/gcc/x86_64-linux-gnu
-          sudo apt install libx32stdc++-12-dev
+          sudo make -f scripts/ci_ubuntu.make install-compiler compiler=${{matrix.compiler}} version=${{matrix.version}}
+
       - name: Setup ccache
         run: |
           ccache -M 2.0GB
@@ -70,10 +60,6 @@ jobs:
           restore-keys: |
             ubuntu-24.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}
             ubuntu-24.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-
-      
-      - name: ccache stats before build
-        run: |
-          ccache -s
 
       - name: Configure cmake project
         run: |
