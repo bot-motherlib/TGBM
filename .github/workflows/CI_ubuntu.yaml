@@ -12,7 +12,6 @@ permissions:
 
 env:
   UBSAN_OPTIONS: print_stacktrace=1
-  CCACHE_LOGFILE: ~/ccache.log
 
 jobs:
   posix:
@@ -51,6 +50,9 @@ jobs:
           sudo apt install ninja-build
           sudo apt install build-essential
           sudo make -f scripts/ci_ubuntu.make install-compiler compiler=${{matrix.compiler}} version=${{matrix.version}}
+      - name: ccache activate logs
+        if: ${{runner.debug}}
+        run: |    
           echo "CCACHE_LOGFILE=/home/$(whoami)/ccache.log" >> $GITHUB_ENV
 
       - name: Setup ccache
@@ -80,6 +82,9 @@ jobs:
       - name: ccache stats after build
         run: |
           ccache -s
+      - name: ccache more logs
+        if: ${{runner.debug}}
+        run: |
           cat ~/ccache.log
 
       - name: Run tests
