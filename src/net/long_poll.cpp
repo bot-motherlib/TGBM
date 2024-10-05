@@ -11,9 +11,8 @@ static dd::channel<Update::Ptr> long_poll_with_preconfirm(
     std::shared_ptr<std::vector<std::string>> allowUpdates) {
   // confirms handled updates
   std::int32_t lastUpdateId = 0;
-  std::vector<std::shared_ptr<tgbm::Update>> updates;
   for (;;) {
-    updates = co_await api.getUpdates(lastUpdateId, limit, timeout.count(), allowUpdates);
+    std::vector<std::shared_ptr<tgbm::Update>> updates = co_await api.getUpdates(lastUpdateId, limit, timeout.count(), allowUpdates);
     if (!updates.empty()) {
       for (auto& u : updates) {
         if (u->updateId >= lastUpdateId)
