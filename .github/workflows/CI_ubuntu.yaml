@@ -51,10 +51,10 @@ jobs:
           sudo apt install ninja-build
           sudo apt install build-essential
           sudo make -f scripts/ci_ubuntu.make install-compiler compiler=${{matrix.compiler}} version=${{matrix.version}}
+          echo "CCACHE_LOGFILE=$(whoami)/ccache.log" >> $GITHUB_ENV
 
       - name: Setup ccache
         run: |
-          touch ~/ccache.log
           ccache -M 2.0GB
 
       - name: Reuse ccache directory
