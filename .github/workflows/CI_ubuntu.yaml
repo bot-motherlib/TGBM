@@ -22,7 +22,7 @@ jobs:
         include:  
           - type: debug
             compiler: clang
-            version: 14    
+            version: 15 
           - type: debug
             compiler: clang
             version: 19
