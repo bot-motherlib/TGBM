@@ -11,21 +11,21 @@ int main(int argc, char** argv) {
     "SimpleUser", 
     fuzzing::Config{
     .path = "data/user.json",
-    .expand_chance = 1.0
+    .expand_chance = 1.0,
   });
 
   storage.Add<tgbm::api::Message>(
     "SmallMessage",
     fuzzing::Config{
     .path = "data/message_small.json",
-    .max_nesting = 1
+    .max_nesting = 1,
   });
 
   storage.Add<tgbm::api::Message>(
     "MediumMessage",
     fuzzing::Config{
     .path = "data/message_medium.json",
-    .max_nesting = 2
+    .max_nesting = 2,
   });
 
   storage.Add<tgbm::api::Message>(
@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
     fuzzing::Config{
       .path = "data/nesting.json",
       .nesting_chance = 0.9,
-      .max_nesting = 32
+      .max_nesting = 32,
     }
   );
 
@@ -52,15 +52,16 @@ int main(int argc, char** argv) {
       .path = "data/tree.json",
       .nesting_chance = 1.0,
       .expand_chance = 1.0,
-      .max_nesting = 16
+      .max_nesting = 16,
     }
   );
+
   storage.AddArray<types::Update, 1>(
     "Updates_1",
     fuzzing::Config{
       .path = "data/updates_1.json",
       .expand_chance = 0.8,
-      .max_nesting = 5
+      .max_nesting = 5,
     }
   );
   storage.AddArray<types::Update, 5>(
@@ -68,7 +69,7 @@ int main(int argc, char** argv) {
     fuzzing::Config{
       .path = "data/updates_5.json",
       .expand_chance = 0.8,
-      .max_nesting = 5
+      .max_nesting = 5,
     }
   );
   storage.AddArray<types::Update, 10>(
@@ -76,7 +77,7 @@ int main(int argc, char** argv) {
     fuzzing::Config{
       .path = "data/updates_10.json",
       .expand_chance = 0.8,
-      .max_nesting = 5
+      .max_nesting = 5,
     }
   );
   storage.AddArray<types::Update, 50>(
@@ -84,7 +85,7 @@ int main(int argc, char** argv) {
     fuzzing::Config{
       .path = "data/updates_50.json",
       .expand_chance = 0.8,
-      .max_nesting = 5
+      .max_nesting = 5,
     }
   );
 
@@ -93,11 +94,68 @@ int main(int argc, char** argv) {
     fuzzing::Config{
       .path = "data/updates_100.json",
       .expand_chance = 0.8,
-      .max_nesting = 5
+      .max_nesting = 5,
     }
   );
 
-  // clang-format: on
+  storage.Add<types::TreeNode>(
+    "RawTree",
+    fuzzing::Config{
+      .path = "data/raw_tree.json",
+      .nesting_chance = 1.0,
+      .expand_chance = 1.0,
+      .max_nesting = 16,
+      .pretty = false,
+    }
+  );
+
+  storage.AddArray<types::Update, 1>(
+    "RawUpdates_1",
+    fuzzing::Config{
+      .path = "data/raw_updates_1.json",
+      .expand_chance = 0.8,
+      .max_nesting = 5,
+      .pretty = false,
+    }
+  );
+  storage.AddArray<types::Update, 5>(
+    "RawUpdates_5",
+    fuzzing::Config{
+      .path = "data/raw_updates_5.json",
+      .expand_chance = 0.8,
+      .max_nesting = 5,
+      .pretty = false,
+    }
+  );
+  storage.AddArray<types::Update, 10>(
+    "RawUpdates_10",
+    fuzzing::Config{
+      .path = "data/raw_updates_10.json",
+      .expand_chance = 0.8,
+      .max_nesting = 5,
+      .pretty = false,
+    }
+  );
+  storage.AddArray<types::Update, 50>(
+    "RawUpdates_50",
+    fuzzing::Config{
+      .path = "data/raw_updates_50.json",
+      .expand_chance = 0.8,
+      .max_nesting = 5,
+      .pretty = false,
+    }
+  );
+
+  storage.AddArray<types::Update, 100>(
+    "RawUpdates_100",
+    fuzzing::Config{
+      .path = "data/raw_updates_100.json",
+      .expand_chance = 0.8,
+      .max_nesting = 5,
+      .pretty = false,
+    }
+  );
+  // clang-format on
 
   ::benchmark ::Initialize(&argc, argv);
   if (::benchmark ::ReportUnrecognizedArguments(argc, argv))

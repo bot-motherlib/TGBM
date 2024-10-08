@@ -39,6 +39,17 @@ void execute_generator_boost(std::string_view json) {
   benchmark::DoNotOptimize(tgbm::json::boost::parse_generator<T>(json));
 }
 
+template <typename T>
+void execute_stream_parser(std::string_view json) {
+  T result;
+  tgbm::json::boost::stream_parser<T> parser(result);
+  do {
+    parser.parse(json.substr(0, 1024), json.size() <= 1024);
+    json.remove_prefix(std::min<int>(1024, json.size()));
+  } while (!json.empty());
+  benchmark::DoNotOptimize(result);
+}
+
 #define BENCHMARK_FILE_ALG_IMPL(TYPE, NAME, ALG) \
   void NAME##_##ALG(benchmark::State& state) {   \
     auto json = fuzzing::GetStorage()[#NAME];    \
@@ -50,6 +61,7 @@ void execute_generator_boost(std::string_view json) {
 
 #define BENCHMARK_FILE_ALG(TYPE, NAME, ALG) BENCHMARK_FILE_ALG_IMPL(TYPE, NAME, ALG)
 
+// clang-format off
 #define BENCHMARK_FILE(TYPE, NAME)                      \
   BENCHMARK_FILE_ALG(TYPE, NAME, ignore_handler_rapid); \
   BENCHMARK_FILE_ALG(TYPE, NAME, ignore_handler_boost)  \
@@ -57,7 +69,9 @@ void execute_generator_boost(std::string_view json) {
   BENCHMARK_FILE_ALG(TYPE, NAME, dom_boost);            \
   BENCHMARK_FILE_ALG(TYPE, NAME, handler_rapid);        \
   BENCHMARK_FILE_ALG(TYPE, NAME, handler_boost);        \
-  BENCHMARK_FILE_ALG(TYPE, NAME, generator_boost)
+  BENCHMARK_FILE_ALG(TYPE, NAME, generator_boost)       \
+  BENCHMARK_FILE_ALG(TYPE, NAME, stream_parser)
+// clang-format on
 
 BENCHMARK_FILE(tgbm::api::User, SimpleUser);
 BENCHMARK_FILE(tgbm::api::Message, SmallMessage);
@@ -70,3 +84,10 @@ BENCHMARK_FILE(std::vector<tgbm::api::Update>, Updates_5);
 BENCHMARK_FILE(std::vector<tgbm::api::Update>, Updates_10);
 BENCHMARK_FILE(std::vector<tgbm::api::Update>, Updates_50);
 BENCHMARK_FILE(std::vector<tgbm::api::Update>, Updates_100);
+
+BENCHMARK_FILE(types::TreeNode, RawTree)
+BENCHMARK_FILE(std::vector<tgbm::api::Update>, RawUpdates_1);
+BENCHMARK_FILE(std::vector<tgbm::api::Update>, RawUpdates_5);
+BENCHMARK_FILE(std::vector<tgbm::api::Update>, RawUpdates_10);
+BENCHMARK_FILE(std::vector<tgbm::api::Update>, RawUpdates_50);
+BENCHMARK_FILE(std::vector<tgbm::api::Update>, RawUpdates_100);

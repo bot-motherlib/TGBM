@@ -48,7 +48,7 @@ struct boost_domless_parser<T> {
           },
           [&]() { return ignore_parser::parse(holder); });
     } else {
-      TGBM_JSON_PARSE_ERROR;
+      return ignore_parser::parse(holder);
     }
   }
 
