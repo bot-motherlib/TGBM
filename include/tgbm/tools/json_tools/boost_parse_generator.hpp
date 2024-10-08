@@ -205,7 +205,7 @@ struct stream_parser {
   stream_parser(T& t) : p(::boost::json::parse_options{}, t) {
   }
 
-  void parse(std::string_view data, bool end = false) {
+  void parse(std::string_view data, bool end) {
     p.write_some(!end, data.data(), data.size(), ec);
     if (ec || (end && !p.handler().ended)) {
       LOG_ERR("ec: {}, ended: {}", ec.message(), p.handler().ended);

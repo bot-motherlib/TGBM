@@ -41,7 +41,7 @@ TEST(StreamParsing, Int) {
   parser parser(got);
   parser.parse(STR(R"(
 {"int_field": 1
-)"));
+)"), false);
   parser.parse(STR(R"(
 23}
 )"),
@@ -54,7 +54,7 @@ TEST(StreamParsing, DoublePointLeft) {
   parser parser(got);
   parser.parse(STR(R"(
 {"double_field": 21.
-)"));
+)"), false);
   parser.parse(STR(R"(
 12}
 )"),
@@ -69,7 +69,7 @@ TEST(StreamParsing, DoublePointRight) {
   parser parser(got);
   parser.parse(STR(R"(
 {"double_field": 21
-)"));
+)"), false);
   parser.parse(STR(R"(
 .12}
 )"),
@@ -88,7 +88,7 @@ TEST(StreamParsing, Bool) {
     std::string_view second = full_json.substr(full_json.size() - i, i);
     TestObject got;
     parser parser(got);
-    parser.parse(first);
+    parser.parse(first, false);
     parser.parse(second, true);
 
     EXPECT_EQ(expected, got);
@@ -105,7 +105,7 @@ TEST(StreamParsing, Null) {
     std::string_view second = full_json.substr(full_json.size() - i, i);
     TestObject got;
     parser parser(got);
-    parser.parse(first);
+    parser.parse(first, false);
     parser.parse(second, true);
 
     EXPECT_EQ(expected, got);
@@ -125,7 +125,7 @@ field": "test"}
 
   TestObject got;
   parser parser(got);
-  parser.parse(first);
+  parser.parse(first, false);
   parser.parse(second, true);
   EXPECT_EQ(expected, got);
 }
@@ -175,7 +175,7 @@ TEST(StreamParser, NestedObjectsInArray) {
     std::string_view first = json.substr(0, i);
     std::string_view second = json.substr(i);
 
-    parser.parse(first);
+    parser.parse(first, false);
     parser.parse(second, true);
     EXPECT_EQ(expected, got) << "failed on : " << i;
   }

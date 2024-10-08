@@ -46,6 +46,6 @@ struct GeneratorBoost : testing::Test {
   TEST_F(DomBoost, Name) __VA_ARGS__           \
   TEST_F(HandlerRapid, Name) __VA_ARGS__       \
   TEST_F(HandlerBoost, Name)  __VA_ARGS__      \
-  TEST_F(GeneratorBoost, Name) __VA_ARGS__     
+  TEST_F(GeneratorBoost, Name) __VA_ARGS__
 
 // clang-format on
