@@ -14,9 +14,7 @@ struct event_holder {
     double double_m;
     int64_t int_m;
     uint64_t uint_m;
-    std::string_view key_m;
     std::string_view str_m;
-    std::string_view part_m;
     bool bool_m;
   };
 
@@ -37,8 +35,7 @@ struct event_holder {
     double_ = 256,
     bool_ = 512,
     null = 1024,
-    key_part = 2048,
-    string_part = 4096
+    part = 2048
   };
 
   static constexpr std::int16_t all = ~0;

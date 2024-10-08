@@ -114,7 +114,7 @@ TEST(StreamParsing, Null) {
 
 constexpr std::string_view kStringField = "string_field";
 
-TEST(StreamParsing, Key) {
+TEST(StreamParsing, Key2Part) {
   TestObject expected{.string_field = {"test"}};
   std::string_view first = STR(R"(
 {"string_
@@ -127,6 +127,46 @@ field": "test"}
   parser parser(got);
   parser.parse(first, false);
   parser.parse(second, true);
+  EXPECT_EQ(expected, got);
+}
+
+TEST(StreamParsing, Key3Part) {
+  TestObject expected{.string_field = {"test"}};
+  std::string_view first = STR(R"(
+{"str
+)");
+  std::string_view second = STR(R"(
+ing_
+)");
+  std::string_view third = STR(R"(
+field": "test"}    
+  )");
+
+  TestObject got;
+  parser parser(got);
+  parser.parse(first, false);
+  parser.parse(second, false);
+  parser.parse(third, true);
+  EXPECT_EQ(expected, got);
+}
+
+TEST(StreamParsing, String3Part) {
+  TestObject expected{.string_field = {"test"}};
+  std::string_view first = STR(R"(
+{"string_field":"t
+)");
+  std::string_view second = STR(R"(
+es
+)");
+  std::string_view third = STR(R"(
+t"}    
+)");
+
+  TestObject got;
+  parser parser(got);
+  parser.parse(first, false);
+  parser.parse(second, false);
+  parser.parse(third, true);
   EXPECT_EQ(expected, got);
 }
 

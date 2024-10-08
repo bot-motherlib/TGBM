@@ -18,23 +18,22 @@ inline dd::generator<generator_parser::nothing_t> unite_generate(
     std::vector<char>& buf, bool& part, generator_parser::event_holder& holder,
     dd::generator<generator_parser::nothing_t>& field_gen,
     dd::generator<generator_parser::nothing_t> old_gen) {
+  holder.expect(generator_parser::event_holder::part);
+  part = true;
   buf.clear();
 
-  while (holder.got == generator_parser::event_holder::key_part ||
-         holder.got == generator_parser::event_holder::string_part) {
-    buf.insert(buf.end(), holder.part_m.begin(), holder.part_m.end());
+  while (holder.got == generator_parser::event_holder::part) {
+    buf.insert(buf.end(), holder.str_m.begin(), holder.str_m.end());
     co_yield {};
   }
 
-  if (holder.got == generator_parser::event_holder::key) {
-    buf.insert(buf.end(), holder.key_m.begin(), holder.key_m.end());
-    holder.key_m = std::string_view{buf.data(), buf.size()};
-  } else {
-    buf.insert(buf.end(), holder.str_m.begin(), holder.str_m.end());
-    holder.str_m = std::string_view{buf.data(), buf.size()};
-  }
+  buf.insert(buf.end(), holder.str_m.begin(), holder.str_m.end());
+  holder.str_m = std::string_view{buf.data(), buf.size()};
+
   (void)field_gen.release();
   field_gen = std::move(old_gen);
+
+  part = false;
 
   co_await dd::this_coro::destroy_and_transfer_control_to(field_gen.raw_handle().promise().current_worker);
 }
@@ -111,7 +110,7 @@ struct wait_handler {
 
   bool on_key(string_view s, std::size_t n, error_code& ec) {
     event.got = wait_e::key;
-    event.key_m = s;
+    event.str_m = s;
     resume_generator();
     return true;
   }
@@ -150,13 +149,18 @@ struct wait_handler {
     return true;
   }
 
-  bool on_string_part(string_view s, std::size_t n, error_code& ec) {
-    event.got = generator_parser::event_holder::string_part;
-    event.part_m = s;
+  void on_part(string_view s){
+    event.got = generator_parser::event_holder::part;
+    event.str_m = s;
     if (!part) {
       gen = unite_generate(buf, part, event, gen, std::move(gen));
+      gen.prepare_to_start();
     }
     resume_generator();
+  }
+
+  bool on_string_part(string_view s, std::size_t n, error_code& ec) {
+    on_part(s);
     return true;
   }
 
@@ -165,12 +169,7 @@ struct wait_handler {
   }
 
   bool on_key_part(string_view s, std::size_t n, error_code& ec) {
-    event.got = generator_parser::event_holder::key_part;
-    event.part_m = s;
-    if (!part) {
-      gen = unite_generate(buf, part, event, gen, std::move(gen));
-    }
-    resume_generator();
+    on_part(s);
     return true;
   }
 
@@ -202,7 +201,7 @@ struct stream_parser {
   ::boost::json::basic_parser<details::wait_handler> p;
   ::boost::json::error_code ec;
 
-  stream_parser(T& t) : p(::boost::json::parse_options{}, t) {
+  explicit stream_parser(T& t) : p(::boost::json::parse_options{}, t) {
   }
 
   void parse(std::string_view data, bool end) {

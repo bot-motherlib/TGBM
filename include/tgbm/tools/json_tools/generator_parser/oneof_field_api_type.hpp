@@ -76,7 +76,7 @@ struct boost_domless_parser<T> {
       if (holder.got == wait::object_end) {
         break;
       }
-      std::string_view key = holder.key_m;
+      std::string_view key = holder.str_m;
       co_yield {};
       auto generator_suboneof = get_generator_field(t_, key, holder, parsed_);
       co_yield dd::elements_of(generator_suboneof);
