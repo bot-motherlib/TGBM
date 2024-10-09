@@ -48,7 +48,7 @@ struct boost_domless_parser<T> {
           },
           [&]() { return ignore_parser::parse(holder); });
     } else {
-      TGBM_JSON_PARSE_ERROR;
+      return ignore_parser::parse(holder);
     }
   }
 
@@ -63,7 +63,7 @@ struct boost_domless_parser<T> {
       if (holder.got == wait::object_end) {
         break;
       }
-      std::string_view cur_key = holder.key_m;
+      std::string_view cur_key = holder.str_m;
       co_yield {};
       auto gen_field = generator_field(t_, cur_key, holder, parsed_);
       if (!gen_field.empty()) {

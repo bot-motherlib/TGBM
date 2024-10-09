@@ -9,6 +9,7 @@ add_executable(${PROJECT_NAME}_gtests
     parsers/test_array.cpp
     parsers/test_oneof.cpp
     parsers/test_oneof_field.cpp
+    parsers/test_stream.cpp
     api/test_message.cpp
 )
 

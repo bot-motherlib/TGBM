@@ -26,37 +26,37 @@ struct ignore_parser : basic_parser<void> {
     }
   }
   ResultParse start_array() {
-    count_++;
-    return ResultParse::kContinue;
+    return start_object();
   }
   ResultParse end_array() {
-    count_--;
-    if (count_ == 0) {
-      return ResultParse::kEnd;
-    } else {
-      return ResultParse::kContinue;
-    }
+    return end_object();
   }
   ResultParse key(std::string_view val) {
     return ResultParse::kContinue;
   }
-  ResultParse string(std::string_view val) {
+  ResultParse value() {
+    if (count_ == 0) {
+      return ResultParse::kEnd;
+    }
     return ResultParse::kContinue;
+  }
+  ResultParse string(std::string_view val) {
+    return value();
   }
   ResultParse integral(std::int64_t val) {
-    return ResultParse::kContinue;
+    return value();
   }
   ResultParse unsigned_integral(std::uint64_t val) {
-    return ResultParse::kContinue;
+    return value();
   }
   ResultParse floating(double val) {
-    return ResultParse::kContinue;
+    return value();
   }
   ResultParse boolean(bool val) {
-    return ResultParse::kContinue;
+    return value();
   }
   ResultParse null() {
-    return ResultParse::kContinue;
+    return value();
   }
 };
 

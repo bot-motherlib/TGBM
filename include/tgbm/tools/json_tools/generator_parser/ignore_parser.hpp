@@ -30,6 +30,8 @@ struct ignore_parser {
           depth++;
           co_yield {};
           break;
+        case event_holder::part:
+          unreachable();
         case event_holder::array_end:
         case event_holder::object_end:
           depth--;

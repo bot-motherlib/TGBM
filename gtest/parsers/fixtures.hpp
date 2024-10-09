@@ -39,9 +39,13 @@ struct GeneratorBoost : testing::Test {
   }
 };
 
-#define JSON_PARSE_TEST(Name, ...)                                  \
-  TEST_F(DomRapid, Name) __VA_ARGS__ TEST_F(DomBoost, Name)         \
-  __VA_ARGS__                                                       \
-  TEST_F(HandlerRapid, Name) __VA_ARGS__ TEST_F(HandlerBoost, Name) \
-  __VA_ARGS__                                                       \
+// clang-format off
+
+#define JSON_PARSE_TEST(Name, ...)             \
+  TEST_F(DomRapid, Name) __VA_ARGS__           \
+  TEST_F(DomBoost, Name) __VA_ARGS__           \
+  TEST_F(HandlerRapid, Name) __VA_ARGS__       \
+  TEST_F(HandlerBoost, Name)  __VA_ARGS__      \
   TEST_F(GeneratorBoost, Name) __VA_ARGS__
+
+// clang-format on
