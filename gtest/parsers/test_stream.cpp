@@ -41,7 +41,8 @@ TEST(StreamParsing, Int) {
   parser parser(got);
   parser.parse(STR(R"(
 {"int_field": 1
-)"), false);
+)"),
+               false);
   parser.parse(STR(R"(
 23}
 )"),
@@ -54,7 +55,8 @@ TEST(StreamParsing, DoublePointLeft) {
   parser parser(got);
   parser.parse(STR(R"(
 {"double_field": 21.
-)"), false);
+)"),
+               false);
   parser.parse(STR(R"(
 12}
 )"),
@@ -69,7 +71,8 @@ TEST(StreamParsing, DoublePointRight) {
   parser parser(got);
   parser.parse(STR(R"(
 {"double_field": 21
-)"), false);
+)"),
+               false);
   parser.parse(STR(R"(
 .12}
 )"),

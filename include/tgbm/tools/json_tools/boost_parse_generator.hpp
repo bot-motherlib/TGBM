@@ -149,7 +149,7 @@ struct wait_handler {
     return true;
   }
 
-  void on_part(string_view s){
+  void on_part(string_view s) {
     event.got = generator_parser::event_holder::part;
     event.str_m = s;
     if (!part) {
