@@ -489,7 +489,8 @@ struct http2_connection {
                             on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part) {
     node_ptr node = nullptr;
     if (free_nodes.empty())
-      node = new request_node;
+      // workaround gcc12 bug by initializing union member explicitly
+      node = new request_node{.writer_handle = nullptr};
     else {
       node = &free_nodes.front();
       free_nodes.pop_front();
