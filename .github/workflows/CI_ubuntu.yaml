@@ -14,9 +14,10 @@ env:
   UBSAN_OPTIONS: print_stacktrace=1
 
 jobs:
-  posix:
+  build_and_test:
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'NO_PIPELINE') }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:  
           - type: debug
@@ -89,4 +90,4 @@ jobs:
 
       - name: Run tests
         run: | 
-          cd cmake_build && ctest -V
+          cd cmake_build && ctest --output-on-failure

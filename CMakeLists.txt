@@ -21,11 +21,6 @@ message (STATUS "[tgbm] TGBM_CLANG: ${TGBM_CLANG}")
 message (STATUS "[tgbm] TGBM_CLANG_FORMAT: ${TGBM_CLANG_FORMAT}")
 message (STATUS "[tgbm] TGBM_PYTHON: ${TGBM_PYTHON}")
 
-option(TGBM_SANITIZE_THREAD "" OFF)
-option(TGBM_SANITIZE "" OFF)
-option(TGBM_ENABLE_TESTS "Set to ON to enable building of tests" OFF)
-option(TGBM_ENABLE_BENCHS "Set to ON to enable building of benchs" OFF)
-
 # also options:
 # - TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH
 #     define to path for setting additional path to ssl ceritficate,
