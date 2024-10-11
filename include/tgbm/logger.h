@@ -13,3 +13,5 @@
 #else
 #define LOG_DEBUG(FMT_STR, ...) (void)0
 #endif
+
+#define LOG_WARN(FMT_STR, ...) LOG("[WARN]" FMT_STR __VA_OPT__(, ) __VA_ARGS__)

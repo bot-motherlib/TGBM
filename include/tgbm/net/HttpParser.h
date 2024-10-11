@@ -189,25 +189,4 @@ struct application_multipart_form_data {
   }
 };
 
-// client knows authority and scheme and sets it
-struct http_request {
-  // TODO custom headers?
-  // TODO cow 'path' string? And may be in api (optional strings)?
-
-  // usually something like /bot<token>/<method>
-  // must be setted to not empty string
-  std::string path;
-  http_body body;
-};
-
-struct http_header_t {
-  std::string name;
-  std::string value;
-};
-struct http_response {
-  int status = 0;
-  std::vector<http_header_t> headers;
-  bytes_t body;
-};
-
 }  // namespace tgbm

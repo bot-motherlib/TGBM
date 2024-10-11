@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(tgbm) # telegram bot mother library
 
-
 option(TGBM_ENABLE_BENCHS   "Set to ON to enable building of benchs" OFF)
 option(TGBM_ENABLE_GEN      "Set to ON to generate api"              OFF)
 option(TGBM_ENABLE_TESTS    "Set to ON to enable building of tests"  OFF)
@@ -21,6 +20,22 @@ message (STATUS "[tgbm] TGBM_SANITIZE_THREAD: ${TGBM_SANITIZE_THREAD}")
 message (STATUS "[tgbm] TGBM_CLANG: ${TGBM_CLANG}")
 message (STATUS "[tgbm] TGBM_CLANG_FORMAT: ${TGBM_CLANG_FORMAT}")
 message (STATUS "[tgbm] TGBM_PYTHON: ${TGBM_PYTHON}")
+
+option(TGBM_SANITIZE_THREAD "" OFF)
+option(TGBM_SANITIZE "" OFF)
+option(TGBM_ENABLE_TESTS "Set to ON to enable building of tests" OFF)
+option(TGBM_ENABLE_BENCHS "Set to ON to enable building of benchs" OFF)
+
+# also options:
+# - TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH
+#     define to path for setting additional path to ssl ceritficate,
+#     by default uses only default ssl pathes(they may be unreachable on windows)
+# - TGBM_SSL_KEYS_FILE
+#     define to path where ssl keys will be stored for debug using wireshark
+#     disabled by default
+# - TGBM_WINDOWS_VERSION
+#     define to set minimal supported windows version in boost asio
+#     0x0A00 (windows 10) by default if windows
 
 if (TGBM_SANITIZE_THREAD)
   if (TGBM_SANITIZE)
@@ -43,11 +58,12 @@ set(TGBM_SRC_LIST
     src/Bot.cpp
     src/EventHandler.cpp
     src/TgTypeParser.cpp
-    src/net/asio_ssl_connection.cpp
+    src/net/tcp_connection.cpp
     src/net/http11_client.cpp
     src/net/http_client.cpp
     src/net/HttpParser.cpp
     src/net/long_poll.cpp
+    src/net/ssl_context.cpp
     src/tools/FileTools.cpp
     src/tools/StringTools.cpp
     src/types/BotCommandScope.cpp
@@ -81,6 +97,15 @@ target_link_libraries(tgbmlib PUBLIC
     fmt::fmt
     rapidjsonlib
 )
+
+if (WIN32)
+    if (NOT DEFINED TGBM_WINDOWS_VERSION) 
+        set(TGBM_WINDOWS_VERSION 0x0A00 CACHE STRING "windows version for boost asio")
+    endif()
+    target_compile_definitions(tgbmlib PUBLIC _WIN32_WINNT=${TGBM_WINDOWS_VERSION})
+endif()
+
+target_compile_definitions(tgbmlib PUBLIC OPENSSL_NO_HEARTBEATS)
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   if (TGBM_SANITIZE_THREAD)

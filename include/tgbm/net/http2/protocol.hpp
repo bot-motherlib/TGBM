@@ -149,7 +149,21 @@ struct rst_stream {
   frame_header header;
   errc_e error_code;
 
-  // no 'form', I never produce it
+  static constexpr inline size_t len = frame_header_len + 4;
+
+  template <std::output_iterator<byte_t> O>
+  static O form(stream_id_t streamid, errc_e ec, O out) {
+    assert(streamid != 0);
+    frame_header header{
+        .length = 4,
+        .type = frame_e::RST_STREAM,
+        .flags = flags::EMPTY_FLAGS,
+        .stream_id = streamid,
+    };
+    out = header.send_to(out);
+    htonli(ec);
+    return std::copy_n(as_bytes(ec).data(), 4, out);
+  }
 
   [[nodiscard]] static rst_stream parse(frame_header h, std::span<const byte_t> bytes) {
     assert(h.type == frame_e::RST_STREAM);
@@ -179,7 +193,8 @@ struct settings_t {
   uint32_t header_table_size = 4096;
   bool enable_push = false;
   uint32_t max_concurrent_streams = max_max_concurrent_streams;
-  uint32_t initial_window_size = 65'535;
+  // only for stream-level size!
+  uint32_t initial_stream_window_size = 65'535;
   uint32_t max_frame_size = 16'384;
   uint32_t max_header_list_size = uint32_t(-1);
   // https://datatracker.ietf.org/doc/html/rfc9218
@@ -230,7 +245,7 @@ struct server_settings_filler {
         settings.max_concurrent_streams = s.value;
         return;
       case SETTINGS_INITIAL_WINDOW_SIZE:
-        settings.initial_window_size = s.value;
+        settings.initial_stream_window_size = s.value;
         return;
       case SETTINGS_MAX_FRAME_SIZE:
         settings.max_frame_size = s.value;
@@ -276,7 +291,7 @@ struct settings_frame {
     len += settings.header_table_size != default_.header_table_size;
     len += settings.enable_push != default_.enable_push;
     len += settings.max_concurrent_streams != default_.max_concurrent_streams;
-    len += settings.initial_window_size != default_.initial_window_size;
+    len += settings.initial_stream_window_size != default_.initial_stream_window_size;
     len += settings.max_frame_size != default_.max_frame_size;
     len += settings.max_header_list_size != default_.max_header_list_size;
     len *= sizeof(setting_t);
@@ -301,7 +316,7 @@ struct settings_frame {
     $PUSH_SETTING(header_table_size, SETTINGS_HEADER_TABLE_SIZE);
     $PUSH_SETTING(enable_push, SETTINGS_ENABLE_PUSH);
     $PUSH_SETTING(max_concurrent_streams, SETTINGS_MAX_CONCURRENT_STREAMS);
-    $PUSH_SETTING(initial_window_size, SETTINGS_INITIAL_WINDOW_SIZE);
+    $PUSH_SETTING(initial_stream_window_size, SETTINGS_INITIAL_WINDOW_SIZE);
     $PUSH_SETTING(max_frame_size, SETTINGS_MAX_FRAME_SIZE);
     $PUSH_SETTING(max_header_list_size, SETTINGS_MAX_HEADER_LIST_SIZE);
 #undef $PUSH_SETTING
@@ -344,6 +359,8 @@ struct ping_frame {
   [[nodiscard]] constexpr uint64_t get_data() noexcept {
     return std::bit_cast<uint64_t>(data);
   }
+
+  static constexpr inline size_t len = frame_header_len + 8;
 
   template <std::output_iterator<byte_t> O>
   static O form(uint64_t data, bool request_answer, O out) {
@@ -437,7 +454,7 @@ struct window_update_frame {
         frame_header{
             .length = 4,
             .type = frame_e::WINDOW_UPDATE,
-            .flags = 0,
+            .flags = flags::EMPTY_FLAGS,
             .stream_id = id,
         }
             .send_to(out);
@@ -477,6 +494,16 @@ template <std::output_iterator<hpack::byte_t> O>
 static O form_connection_initiation(settings_t settings, O out) {
   out = std::copy_n(connection_preface, sizeof(connection_preface), out);
   return settings_frame::form(settings, out);
+}
+
+// throws on protocol errors
+inline void increment_window_size(uint32_t& size, uint32_t window_size_increment) {
+  if (window_size_increment == 0)
+    throw protocol_error{};
+  // avoid overflow
+  if (uint64_t(size) + uint64_t(window_size_increment) > uint64_t(http2::max_window_size))
+    throw protocol_error{};
+  size += window_size_increment;
 }
 
 }  // namespace tgbm::http2

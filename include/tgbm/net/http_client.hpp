@@ -10,14 +10,13 @@
 #include "tgbm/net/HttpParser.h"
 #include "tgbm/tools/fn_ref.hpp"
 #include "tgbm/tools/memory.hpp"
+#include "tgbm/tools/deadline.hpp"
 
 namespace tgbm {
 
 using on_header_fn_ptr = fn_ptr<void(std::string_view name, std::string_view value)>;
 
 using on_data_part_fn_ptr = fn_ptr<void(std::span<const byte_t> bytes, bool last_part)>;
-
-using duration_t = std::chrono::steady_clock::duration;
 
 struct reqerr_e {
   enum values : int {
@@ -30,6 +29,43 @@ struct reqerr_e {
     server_cancelled_request = -6,  // for example rst_stream received
     unknown_err = -7,               // something like bad alloc maybe
   };
+};
+
+std::string_view e2str(reqerr_e::values e) noexcept;
+
+enum struct http_method_e {
+  GET,
+  POST,
+  PUT,
+  DELETE,
+  PATCH,
+  OPTIONS,
+  HEAD,
+  CONNECT,
+  TRACE,
+};
+
+std::string_view e2str(http_method_e e) noexcept;
+
+struct http_header_t {
+  std::string name;
+  std::string value;
+};
+
+// client knows authority and scheme and sets it
+struct http_request {
+  // usually something like /bot<token>/<method>
+  // must be setted to not empty string
+  std::string path;
+  http_method_e method = http_method_e::GET;
+  http_body body;
+  std::vector<http_header_t> headers;  // additional headers, all must be lowercase for http2
+};
+
+struct http_response {
+  int status = 0;
+  std::vector<http_header_t> headers;
+  bytes_t body;
 };
 
 struct http_client {

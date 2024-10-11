@@ -28,7 +28,11 @@ struct network_exception : std::exception {
   }
 };
 
-struct timeout_exception : std::exception {};
+struct timeout_exception : std::exception {
+  const char* what() const noexcept override {
+    return "timeout";
+  }
+};
 
 struct http_exception : network_exception {
   using network_exception::network_exception;
@@ -54,6 +58,10 @@ struct client_stopped : std::exception {
   }
 };
 
-struct protocol_error : std::exception {};
+struct protocol_error : std::exception {
+  const char* what() const noexcept override {
+    return "protocol error";
+  }
+};
 
 }  // namespace tgbm

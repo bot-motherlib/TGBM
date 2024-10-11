@@ -14,7 +14,7 @@
 
 #ifdef TGBM_ENABLE_DEBUG
 // clang-format off
-#define TGBM_ON_DEBUG(...) do { [&]() __VA_ARGS__(); } while (false)
+#define TGBM_ON_DEBUG(...) __VA_ARGS__
 #define TGBM_DEBUG_FIELD(name, ...) __VA_ARGS__ name
 
 #else
@@ -33,6 +33,7 @@ struct pin {
 };
 
 [[noreturn]] static void unreachable() noexcept {
+  assert(false);
   KELCORO_UNREACHABLE;
 }
 

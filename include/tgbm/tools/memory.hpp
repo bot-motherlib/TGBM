@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <span>
 #include <bit>
+#include <cassert>
 
 namespace tgbm {
 
@@ -68,6 +69,47 @@ constexpr void htonli(T& value) noexcept {
   } else {
     return;
   }
+}
+
+template <typename T>
+constexpr void remove_prefix(std::span<T>& s, size_t n) noexcept {
+  assert(s.size() >= n);
+  T* b = s.data() + n;
+  T* e = s.data() + s.size();
+  s = std::span<T>(b, e);
+}
+
+template <typename T>
+constexpr void remove_suffix(std::span<T>& s, size_t n) noexcept {
+  assert(s.size() >= n);
+  T* b = s.data();
+  T* e = s.data() + (s.size() - n);
+  s = std::span<T>(b, e);
+}
+
+template <typename T>
+constexpr std::span<T> prefix(std::span<T> s, size_t n) noexcept {
+  assert(s.size() >= n);
+  T* b = s.data();
+  T* e = s.data() + n;
+  return std::span<T>(b, e);
+}
+
+template <typename T>
+constexpr std::span<T> suffix(std::span<T> s, size_t n) noexcept {
+  assert(s.size() >= n);
+  T* b = s.data() + (s.size() - n);
+  T* e = s.data() + s.size();
+  return std::span<T>(b, e);
+}
+
+// precondition: in and out do not overlap
+inline byte_t* copy_bytes(const byte_t* in, size_t sz, byte_t* out) noexcept {
+  return (byte_t*)memcpy(out, in, sz) + sz;
+}
+// precondition: in and out do not overlap
+inline byte_t* copy_bytes(std::span<const byte_t> bytes, byte_t* out) noexcept {
+  return copy_bytes(bytes.data(), bytes.size(), out);
 }
 
 }  // namespace tgbm

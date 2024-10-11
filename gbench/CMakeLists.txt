@@ -7,11 +7,10 @@ target_compile_options(${PROJECT_NAME}_gbenchs
     PUBLIC
     "-Wno-undefined-var-template"
     "-Wno-reorder-init-list"
-    "-g"
 )
 
 target_link_libraries(${PROJECT_NAME}_gbenchs
-    PUBLIC tgbmlib
+    PUBLIC tgbmlib benchmark::benchmark
 )
 target_include_directories(
     ${PROJECT_NAME}_gbenchs PRIVATE
@@ -24,5 +23,3 @@ set_target_properties(${PROJECT_NAME}_gbenchs  PROPERTIES
     CMAKE_CXX_STANDARD_REQUIRED ON
     CXX_STANDARD 20
 )
-
-target_link_libraries(${PROJECT_NAME}_gbenchs PRIVATE benchmark)

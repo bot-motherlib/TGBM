@@ -18,25 +18,76 @@ dd::task<http_response> http_client::send_request(http_request request, duration
   };
   rsp.status = co_await send_request(&on_header, &on_data_part, std::move(request), timeout);
   if (rsp.status < 0) {
+    using enum reqerr_e::values;
     switch (reqerr_e::values(rsp.status)) {
-      case reqerr_e::done:
-      case reqerr_e::user_exception:
+      case done:
+      case user_exception:
         unreachable();
-      case reqerr_e::timeout:
+      case timeout:
         throw timeout_exception{};
-      case reqerr_e::network_err:
+      case network_err:
         throw network_exception{""};
-      case reqerr_e::protocol_err:
+      case protocol_err:
         throw protocol_error{};
-      case reqerr_e::cancelled:
+      case cancelled:
         throw std::runtime_error("HTTP client: request was canceled");
-      case reqerr_e::server_cancelled_request:
+      case server_cancelled_request:
         throw std::runtime_error("HTTP client: request was canceled by server");
-      case reqerr_e::unknown_err:
+      case unknown_err:
         throw std::runtime_error("HTTP client unknown error happens");
     }
   }
   co_return std::move(rsp);
+}
+
+std::string_view e2str(reqerr_e::values e) noexcept {
+  using enum reqerr_e::values;
+  switch (e) {
+    case done:
+      return "done";
+    case cancelled:
+      return "cancelled";
+    case user_exception:
+      return "user_exception";
+    case timeout:
+      return "timeout";
+    case network_err:
+      return "network_err";
+    case protocol_err:
+      return "protocol_err";
+    case server_cancelled_request:
+      return "server_cancelled_request";
+    case unknown_err:
+      return "unknown_err";
+    default:
+      return "";
+  }
+}
+
+std::string_view e2str(http_method_e e) noexcept {
+  using enum http_method_e;
+  switch (e) {
+    case GET:
+      return "GET";
+    case POST:
+      return "POST";
+    case PUT:
+      return "PUT";
+    case DELETE:
+      return "DELETE";
+    case PATCH:
+      return "PATCH";
+    case OPTIONS:
+      return "OPTIONS";
+    case HEAD:
+      return "HEAD";
+    case CONNECT:
+      return "CONNECT";
+    case TRACE:
+      return "TRACE";
+    default:
+      return "";
+  }
 }
 
 }  // namespace tgbm
