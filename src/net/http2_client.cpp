@@ -488,10 +488,10 @@ struct http2_connection {
   node_ptr new_request_node(http_request&& request, std::string_view host, deadline_t deadline,
                             on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part) {
     node_ptr node = nullptr;
-    if (free_nodes.empty()) {
+    if (free_nodes.empty())
       // workaround gcc12 bug by initializing union member explicitly
       node = new request_node{.writer_handle = nullptr};
-    } else {
+    else {
       node = &free_nodes.front();
       free_nodes.pop_front();
     }
