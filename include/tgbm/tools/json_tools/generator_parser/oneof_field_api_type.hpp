@@ -22,9 +22,9 @@ struct boost_domless_parser<T> {
     return parsed_.all();
   }
 
-  static dd::generator<nothing_t> get_generator_field(T& t_, std::string_view key, event_holder& holder,
+  static generator get_generator_field(T& t_, std::string_view key, event_holder& holder,
                                                       std::bitset<N>& parsed_) {
-    dd::generator<nothing_t> result;
+    generator result;
     auto opt_gen = pfr_extension::visit_struct_field<T, bool, N>(
         key,
         [&]<std::size_t I>() {
@@ -37,7 +37,7 @@ struct boost_domless_parser<T> {
           parsed_[I] = true;
           if constexpr (is_simple<Field>) {
             parser::simple_parse(field, holder);
-            result = dd::generator<nothing_t>{};
+            result = generator{};
             return true;
           } else {
             result = parser::parse(field, holder);
@@ -48,7 +48,7 @@ struct boost_domless_parser<T> {
     if (opt_gen) {
       return result;
     }
-    result = oneof_field_utils::emplace_field<T, dd::generator<nothing_t>>(
+    result = oneof_field_utils::emplace_field<T, generator>(
         t_.data, key,
         [&]<typename Field>(Field& field) {
           using parser = boost_domless_parser<Field>;
@@ -56,15 +56,15 @@ struct boost_domless_parser<T> {
             return boost_domless_parser<Field>::parse(field, holder);
           } else {
             boost_domless_parser<Field>::simple_parse(field, holder);
-            return dd::generator<nothing_t>{};
+            return generator{};
           }
         },
-        []() -> dd::generator<nothing_t> { TGBM_JSON_PARSE_ERROR; },
-        []() -> dd::generator<nothing_t> { return {}; });
+        []() -> generator { TGBM_JSON_PARSE_ERROR; },
+        []() -> generator { return {}; });
     return result;
   }
 
-  static dd::generator<nothing_t> parse(T& t_, event_holder& holder) {
+  static generator parse(T& t_, event_holder& holder) {
     using wait = event_holder::wait_e;
     std::bitset<N> parsed_;
 

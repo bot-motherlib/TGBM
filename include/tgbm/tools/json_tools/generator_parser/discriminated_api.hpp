@@ -1,6 +1,7 @@
 #pragma once
 #include <tgbm/tools/json_tools/generator_parser/basic_parser.hpp>
 #include "tgbm/tools/json_tools/generator_parser/ignore_parser.hpp"
+#include "tgbm/tools/traits.hpp"
 
 namespace tgbm::generator_parser {
 
@@ -9,8 +10,8 @@ struct boost_domless_parser<T> {
   static constexpr auto N = T::variant_size;
   static constexpr bool simple = false;
 
-  static dd::generator<nothing_t> get_generator_suboneof(std::string_view key, T& t_, event_holder& holder) {
-    auto emplacer = [&]<typename Suboneof>() -> dd::generator<nothing_t> {
+  static generator get_generator_suboneof(std::string_view key, T& t_, event_holder& holder) {
+    auto emplacer = [&]<typename Suboneof>() -> generator {
       if constexpr (!std::same_as<Suboneof, void>) {
         auto& suboneof = t_.data.template emplace<Suboneof>();
         return boost_domless_parser<Suboneof>::parse(suboneof, holder);
@@ -21,7 +22,7 @@ struct boost_domless_parser<T> {
     return t_.discriminate(key, emplacer);
   }
 
-  static dd::generator<nothing_t> parse(T& t_, event_holder& holder) {
+  static generator parse(T& t_, event_holder& holder) {
     using wait = event_holder::wait_e;
 
     holder.expect(wait::object_begin);

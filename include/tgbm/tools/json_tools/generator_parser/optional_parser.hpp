@@ -8,7 +8,7 @@ namespace tgbm::generator_parser {
 template <template <typename> typename Optional, typename T>
 struct basic_optional_parser {
   static constexpr bool simple = is_simple<T>;
-  static dd::generator<nothing_t> parse(Optional<T>& t_, event_holder& holder) {
+  static generator parse(Optional<T>& t_, event_holder& holder) {
     if (holder.got == event_holder::null) {
       co_return;
     }

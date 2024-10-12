@@ -12,7 +12,7 @@ struct boost_domless_parser<bool> {
     holder.expect(event_holder::bool_);
     t_ = holder.bool_m;
   }
-  static dd::generator<nothing_t> parse(bool& t_, event_holder& holder) {
+  static generator parse(bool& t_, event_holder& holder) {
     simple_parse(t_, holder);
     co_return;
   }
@@ -27,7 +27,7 @@ struct boost_domless_parser<api::True> {
       TGBM_JSON_PARSE_ERROR;
     }
   }
-  static dd::generator<nothing_t> parse(api::True& t_, event_holder& holder) {
+  static generator parse(api::True& t_, event_holder& holder) {
     simple_parse(t_, holder);
     co_return;
   }
@@ -40,7 +40,7 @@ struct boost_domless_parser<std::string> {
     holder.expect(event_holder::string);
     t_ = holder.str_m;
   }
-  static dd::generator<nothing_t> parse(std::string& t_, event_holder& holder) {
+  static generator parse(std::string& t_, event_holder& holder) {
     simple_parse(t_, holder);
     co_return;
   }
@@ -57,7 +57,7 @@ struct boost_domless_parser<T> {
       safe_write(t_, holder.int_m);
     }
   }
-  static dd::generator<nothing_t> parse(T& t_, event_holder& holder) {
+  static generator parse(T& t_, event_holder& holder) {
     simple_parse(t_, holder);
     co_return;
   }
@@ -74,7 +74,7 @@ struct boost_domless_parser<api::Integer> {
       safe_write(t_, holder.int_m);
     }
   }
-  static dd::generator<nothing_t> parse(api::Integer& t_, event_holder& holder) {
+  static generator parse(api::Integer& t_, event_holder& holder) {
     simple_parse(t_, holder);
     co_return;
   }
@@ -87,7 +87,7 @@ struct boost_domless_parser<api::Double> {
     holder.expect(event_holder::double_);
     t_ = holder.double_m;
   }
-  static dd::generator<nothing_t> parse(api::Double& t_, event_holder& holder) {
+  static generator parse(api::Double& t_, event_holder& holder) {
     simple_parse(t_, holder);
     co_return;
   }
@@ -100,7 +100,7 @@ struct boost_domless_parser<double> {
     holder.expect(event_holder::double_);
     t_ = holder.double_m;
   }
-  static dd::generator<nothing_t> parse(double& t_, event_holder& holder) {
+  static generator parse(double& t_, event_holder& holder) {
     simple_parse(t_, holder);
     co_return;
   }
@@ -113,7 +113,7 @@ struct boost_domless_parser<float> {
     holder.expect(event_holder::double_);
     t_ = holder.double_m;
   }
-  static dd::generator<nothing_t> parse(float& t_, event_holder& holder) {
+  static generator parse(float& t_, event_holder& holder) {
     simple_parse(t_, holder);
     co_return;
   }

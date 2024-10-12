@@ -6,7 +6,7 @@ namespace tgbm::generator_parser {
 template <typename T>
 struct boost_domless_parser<std::vector<T>> {
   static constexpr bool simple = false;
-  static dd::generator<nothing_t> parse(std::vector<T>& t_, tgbm::generator_parser::event_holder& holder) {
+  static generator parse(std::vector<T>& t_, tgbm::generator_parser::event_holder& holder) {
     holder.expect(event_holder::array_begin);
     while (true) {
       co_yield {};

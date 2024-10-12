@@ -26,10 +26,10 @@ struct boost_domless_parser<T> {
     return (parsed_ & required_mask) == required_mask;
   }
 
-  static dd::generator<nothing_t> generator_field(T& t_, std::string_view key, event_holder& holder,
+  static generator generator_field(T& t_, std::string_view key, event_holder& holder,
                                                   std::bitset<N>& parsed_) {
     if constexpr (N > 0) {
-      return pfr_extension::visit_struct_field<T, dd::generator<nothing_t>>(
+      return pfr_extension::visit_struct_field<T, generator>(
           key,
           [&]<std::size_t I>() {
             using Field = ::boost::pfr::tuple_element_t<I, T>;
@@ -41,7 +41,7 @@ struct boost_domless_parser<T> {
             parsed_[I] = true;
             if constexpr (is_simple<Field>) {
               parser::simple_parse(field, holder);
-              return dd::generator<nothing_t>{};
+              return generator{};
             } else {
               return parser::parse(field, holder);
             }
@@ -52,7 +52,7 @@ struct boost_domless_parser<T> {
     }
   }
 
-  static dd::generator<nothing_t> parse(T& t_, event_holder& holder) {
+  static generator parse(T& t_, event_holder& holder) {
     using wait = event_holder::wait_e;
     std::bitset<N> parsed_;
     holder.expect(wait::object_begin);

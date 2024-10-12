@@ -18,7 +18,7 @@ struct ignore_parser {
     }
   }
 
-  static dd::generator<nothing_t> parse(event_holder& holder) {
+  static generator parse(event_holder& holder) {
     if (is_value(holder)) {
       co_return;
     }
