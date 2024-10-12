@@ -11,12 +11,12 @@ namespace tgbm::generator_parser {
 
 template <oneof_field_api_type T>
 struct boost_domless_parser<T> {
-  static constexpr auto N = ::boost::pfr::tuple_size_v<T> - 1;
+  static constexpr auto N = pfr_extension::tuple_size_v<T> - 1;
   using seq = std::make_index_sequence<N>;
   static constexpr bool simple = false;
 
   // проверяем, что oneof лежит последним полем data
-  static_assert(std::same_as<::boost::pfr::tuple_element_t<N, T>, decltype(T::data)>);
+  static_assert(std::same_as<pfr_extension::tuple_element_t<N, T>, decltype(T::data)>);
 
   static bool all_parsed(std::bitset<N>& parsed_) {
     return parsed_.all();
@@ -28,8 +28,8 @@ struct boost_domless_parser<T> {
     auto opt_gen = pfr_extension::visit_struct_field<T, bool, N>(
         key,
         [&]<std::size_t I>() {
-          using Field = ::boost::pfr::tuple_element_t<I, T>;
-          auto& field = ::boost::pfr::get<I>(t_);
+          using Field = pfr_extension::tuple_element_t<I, T>;
+          auto& field = pfr_extension::get<I>(t_);
           using parser = boost_domless_parser<Field>;
           if (parsed_[I]) {
             TGBM_JSON_PARSE_ERROR;
