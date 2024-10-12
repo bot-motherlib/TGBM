@@ -47,9 +47,9 @@ struct parser<T> : basic_parser<T> {
     return pfr_extension::visit_struct_field<T, ResultParse, N>(
         key,
         [&]<std::size_t I> {
-          using Field = ::boost::pfr::tuple_element_t<I, T>;
+          using Field = pfr_extension::tuple_element_t<I, T>;
           using Parser = parser<Field>;
-          auto& field = ::boost::pfr::get<I>(*this->t_);
+          auto& field = pfr_extension::get<I>(*this->t_);
           if (parsed_fields_[I]) {
             TGBM_JSON_HANDLER_PARSE_ERROR;
           }

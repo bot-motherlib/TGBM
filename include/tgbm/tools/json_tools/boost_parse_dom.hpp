@@ -17,7 +17,6 @@ namespace boost::json {
 
 template <tgbm::aggregate T>
 T tag_invoke(const value_to_tag<T>&, const value& jv) {
-  namespace pfr = boost::pfr;
   if (!jv.is_object()) {
     TGBM_JSON_PARSE_ERROR;
   }
@@ -25,14 +24,14 @@ T tag_invoke(const value_to_tag<T>&, const value& jv) {
 
   auto construct_field = [&]<std::size_t I>() {
     using Field = pfr::tuple_element_t<I, T>;
-    auto it = object.find(boost::pfr::get_name<I, T>());
+    auto it = object.find(pfr_extension::get_name<I, T>());
     boost::json::value null(nullptr);
     return boost::json::value_to<Field>(it != object.end() ? *it : null);
   };
 
   return [&]<std::size_t... I>(std::index_sequence<I...>) {
     return T{construct_field.template operator()<I>()...};
-  }(std::make_index_sequence<boost::pfr::tuple_size_v<T>>{});
+  }(std::make_index_sequence<pfr_extension::tuple_size_v<T>>{});
 }
 
 namespace details {
@@ -40,7 +39,7 @@ namespace details {
 template <std::size_t I, typename T>
 auto construct_field(const boost::json::object& object) {
   using Field = pfr::tuple_element_t<I, T>;
-  constexpr std::string_view name = boost::pfr::get_name<I, T>();
+  constexpr std::string_view name = pfr_extension::get_name<I, T>();
   auto it = object.find(name);
   if (it == object.end()) {
     if constexpr (T::is_optional_field(name)) {
@@ -74,7 +73,7 @@ T tag_invoke(const value_to_tag<T>&, const value& jv) {
 
   return [&]<std::size_t... I>(std::index_sequence<I...>) {
     return T(details::construct_field<I, T>(object)...);
-  }(std::make_index_sequence<boost::pfr::tuple_size_v<T>>{});
+  }(std::make_index_sequence<pfr_extension::tuple_size_v<T>>{});
 }
 
 inline tgbm::api::Integer tag_invoke(const value_to_tag<tgbm::api::Integer>&, const value& jv) {

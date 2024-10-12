@@ -17,7 +17,7 @@ struct parser<T> : basic_parser<T> {
   using basic_parser<T>::basic_parser;
 
   using Data = decltype(T::data);
-  static constexpr auto N = ::boost::pfr::tuple_size_v<T>;
+  static constexpr auto N = pfr_extension::tuple_size_v<T>;
 
   using seq = std::make_index_sequence<N>;
 

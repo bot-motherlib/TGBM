@@ -3,7 +3,6 @@
 #include <cassert>
 #include <optional>
 #include <utility>
-#include <boost/pfr/core.hpp>
 #include <tgbm/tools/json_tools/handler_parser/basic_parser.hpp>
 #include <tgbm/tools/json_tools/handler_parser/ignore.hpp>
 #include "tgbm/tools/traits.hpp"
@@ -14,7 +13,7 @@ namespace tgbm::json::handler_parser {
 template <common_api_type T>
 struct parser<T> : basic_parser<T> {
   using basic_parser<T>::basic_parser;
-  static constexpr auto N = ::boost::pfr::tuple_size_v<T>;
+  static constexpr auto N = pfr_extension::tuple_size_v<T>;
 
   enum indexes : std::size_t { unknown = N, empty = N + 1 };
 
@@ -34,7 +33,7 @@ struct parser<T> : basic_parser<T> {
 
   static constexpr std::array<bool, N> is_optional = []<std::size_t... I>(std::index_sequence<I...>) {
     auto helper = []<std::size_t J>(std::index_sequence<J>) {
-      constexpr std::string_view name = ::boost::pfr::get_name<J, T>();
+      constexpr std::string_view name = pfr_extension::get_name<J, T>();
       constexpr std::optional<bool> val = T::is_optional_field(name);
       static_assert(val.has_value());
       return *val;
@@ -67,10 +66,10 @@ struct parser<T> : basic_parser<T> {
         return true;
       } else {
         if (I == index) {
-          static_assert(I < ::boost::pfr::tuple_size_v<T>);
+          static_assert(I < pfr_extension::tuple_size_v<T>);
           parsed_fields_[I] = true;
-          using Parser = parser<::boost::pfr::tuple_element_t<I, T>>;
-          auto& field = ::boost::pfr::get<I>(*this->t_);
+          using Parser = parser<pfr_extension::tuple_element_t<I, T>>;
+          auto& field = pfr_extension::get<I>(*this->t_);
           Parser parser{this->parser_stack_, field};
           this->parser_stack_.push(std::move(parser));
           return true;
@@ -98,7 +97,7 @@ struct parser<T> : basic_parser<T> {
   static constexpr std::size_t count_index_impl(std::string_view key,
                                                 std::integer_sequence<std::size_t, I...>) {
     using switcher = utils::string_switch<std::size_t>;
-    return (switcher{key} | ... | switcher::case_t(::boost::pfr::get_name<I, T>(), I)).or_default(unknown);
+    return (switcher{key} | ... | switcher::case_t(pfr_extension::get_name<I, T>(), I)).or_default(unknown);
   }
 
   static constexpr std::size_t count_index(std::string_view key) {

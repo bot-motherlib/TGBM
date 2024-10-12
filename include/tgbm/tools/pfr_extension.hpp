@@ -16,6 +16,62 @@ struct field_info {
 
 namespace details {
 
+template <tgbm::ce::string Name, typename T>
+std::size_t element_index() {
+  constexpr auto names = boost::pfr::names_as_array<T>();
+  std::size_t index = 0;
+  for (std::string_view name : names) {
+    if (name == Name.AsStringView()) {
+      return index;
+    }
+    index++;
+  }
+  return -1;
+}
+
+}  // namespace details
+
+/////////////////////////////////////////CORE//////////////////////////////////////////////
+
+template <typename T>
+constexpr auto tuple_size_v = boost::pfr::tuple_size_v<T>;
+
+template <tgbm::ce::string Name, typename T>
+constexpr std::size_t tuple_element_index_v = details::element_index<Name, T>();
+
+template <tgbm::ce::string Name, typename T>
+constexpr std::size_t has_element_v = details::element_index<Name, T>() <= boost::pfr::tuple_size_v<T>;
+
+template <std::size_t I, typename T>
+using tuple_element_t = boost::pfr::tuple_element_t<I, T>;
+
+template <std::size_t I, typename T>
+consteval std::string_view get_name() {
+  return boost::pfr::get_name<I, T>();
+}
+
+template <std::size_t I, typename T>
+constexpr decltype(auto) get(T&& t) noexcept {
+  return boost::pfr::get<I>(std::forward<T>(t));
+}
+
+template <std::size_t I, typename T>
+constexpr std::string_view element_name_v = get_name<I, T>();
+
+template <typename T>
+consteval bool has_element(std::string_view name) {
+  constexpr auto names = boost::pfr::names_as_array<T>();
+  for (std::string_view n : names) {
+    if (name == n) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/////////////////////////////////////////VISITERS//////////////////////////////////////////////
+namespace details {
+
 template <std::size_t... I>
 constexpr void visit_object_helper(auto&& t, auto&& functor, std::integer_sequence<std::size_t, I...>) {
   using T = std::remove_cvref_t<decltype(t)>;
@@ -36,19 +92,6 @@ constexpr void visit_struct_helper(auto&& functor, std::integer_sequence<std::si
   (one_field(std::index_sequence<I>{}), ...);
 }
 
-template <tgbm::ce::string Name, typename T>
-std::size_t element_index() {
-  constexpr auto names = boost::pfr::names_as_array<T>();
-  std::size_t index = 0;
-  for (std::string_view name : names) {
-    if (name == Name.AsStringView()) {
-      return index;
-    }
-    index++;
-  }
-  return -1;
-}
-
 }  // namespace details
 
 // typename Info, typename F
@@ -66,31 +109,6 @@ constexpr void visit_struct(auto&& functor) {
 
   auto seq = std::make_index_sequence<N>{};
   details::visit_struct_helper<U>(FWD(functor), seq);
-}
-
-template <tgbm::ce::string Name, typename T>
-constexpr std::size_t tuple_element_index_v = details::element_index<Name, T>();
-
-template <tgbm::ce::string Name, typename T>
-constexpr std::size_t has_element_v = details::element_index<Name, T>() <= boost::pfr::tuple_size_v<T>;
-
-template <std::size_t I, typename T>
-consteval std::string_view get_name() {
-  return boost::pfr::get_name<I, T>();
-}
-
-template <std::size_t I, typename T>
-constexpr std::string_view element_name_v = get_name<I, T>();
-
-template <typename T>
-consteval bool has_element(std::string_view name) {
-  constexpr auto names = boost::pfr::names_as_array<T>();
-  for (std::string_view n : names) {
-    if (name == n) {
-      return true;
-    }
-  }
-  return false;
 }
 
 template <typename T, typename R, std::size_t Size = boost::pfr::tuple_size_v<T>>

@@ -6,7 +6,7 @@
 namespace tgbm {
 namespace oneof_field_utils {
 template <typename T>
-constexpr std::size_t N = boost::pfr::tuple_size_v<T> - 1;
+constexpr std::size_t N = pfr_extension::tuple_size_v<T> - 1;
 
 template <typename T>
 constexpr bool is_required(std::string_view key) {

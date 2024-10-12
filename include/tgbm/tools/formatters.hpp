@@ -25,7 +25,7 @@ struct formatter<T> : formatter<std::string_view> {
     auto out = ctx.out();
     auto visiter = [&]<typename Info, typename Field>(const Field& field) {
       out = fmt::format_to(out, R"("{}": [{}])", Info::name.AsStringView(), field);
-      if constexpr (Info::index + 1 != boost::pfr::tuple_size_v<T>) {
+      if constexpr (Info::index + 1 != pfr_extension::tuple_size_v<T>) {
         out = fmt::format_to(out, ",");
       }
     };

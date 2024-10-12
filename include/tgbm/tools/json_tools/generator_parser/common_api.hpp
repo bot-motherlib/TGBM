@@ -9,7 +9,7 @@ namespace tgbm::generator_parser {
 
 template <common_api_type T>
 struct boost_domless_parser<T> {
-  static constexpr auto N = ::boost::pfr::tuple_size_v<T>;
+  static constexpr auto N = ::pfr_extension::tuple_size_v<T>;
   static constexpr bool simple = false;
   using seq = std::make_index_sequence<N>;
 
@@ -32,8 +32,8 @@ struct boost_domless_parser<T> {
       return pfr_extension::visit_struct_field<T, dd::generator<nothing_t>>(
           key,
           [&]<std::size_t I>() {
-            using Field = ::boost::pfr::tuple_element_t<I, T>;
-            auto& field = ::boost::pfr::get<I>(t_);
+            using Field = pfr_extension::tuple_element_t<I, T>;
+            auto& field = pfr_extension::get<I>(t_);
             using parser = boost_domless_parser<Field>;
             if (parsed_[I]) {
               TGBM_JSON_PARSE_ERROR;
