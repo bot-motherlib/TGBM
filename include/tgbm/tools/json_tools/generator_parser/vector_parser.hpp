@@ -7,7 +7,7 @@ template <typename T>
 struct boost_domless_parser<std::vector<T>> {
   static constexpr bool simple = false;
 
-  static generator parse(std::vector<T>& t_, tgbm::generator_parser::event_holder& holder, with_pmr r) {
+  static generator parse(std::vector<T>& t_, tgbm::generator_parser::event_holder& holder, resource_tag auto r) {
     holder.expect(event_holder::array_begin);
     while (true) {
       co_yield {};

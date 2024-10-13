@@ -9,7 +9,7 @@ template <template <typename> typename Optional, typename T>
 struct basic_optional_parser {
   static constexpr bool simple = is_simple<T>;
 
-  static generator parse(Optional<T>& t_, event_holder& holder, with_pmr r) requires (not simple) {
+  static generator parse(Optional<T>& t_, event_holder& holder, resource_tag auto r) requires (not simple) {
     if (holder.got == event_holder::null) {
       co_return;
     }

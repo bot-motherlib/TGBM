@@ -23,7 +23,7 @@ struct boost_domless_parser<T> {
   }
 
   static generator get_generator_field(T& t_, std::string_view key, event_holder& holder,
-                                                      std::bitset<N>& parsed_, with_pmr r) {
+                                                      std::bitset<N>& parsed_, resource_tag auto r) {
     generator result;
     auto opt_gen = pfr_extension::visit_struct_field<T, bool, N>(
         key,
@@ -64,7 +64,7 @@ struct boost_domless_parser<T> {
     return result;
   }
 
-  static generator parse(T& t_, event_holder& holder, with_pmr r) {
+  static generator parse(T& t_, event_holder& holder, resource_tag auto r) {
     using wait = event_holder::wait_e;
     std::bitset<N> parsed_;
 

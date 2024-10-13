@@ -25,9 +25,8 @@ struct stack_resource_holder{
   }
 };
 
-using with_pmr = dd::with_resource<stack_resource_holder>;
-
-// template <typename R>
+template <typename R>
+concept resource_tag = dd::last_is_memory_resource_tag<R>;
 
 struct event_holder {
   union {
@@ -83,7 +82,7 @@ constexpr bool is_simple = requires { requires boost_domless_parser<T>::simple; 
 namespace dd{
 template <>
 struct with_resource<tgbm::generator_parser::stack_resource_holder>{
-  KELCORO_NO_UNIQUE_ADDRESS tgbm::generator_parser::stack_resource_holder resource;
+  tgbm::generator_parser::stack_resource_holder resource;
 
   with_resource(tgbm::stack_resource& mr) noexcept : resource(mr) {
   }

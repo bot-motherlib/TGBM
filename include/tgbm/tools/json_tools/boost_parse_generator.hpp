@@ -27,7 +27,7 @@ inline generator_parser::generator generator_starter(generator_parser::generator
 inline generator_parser::generator unite_generate(
     std::vector<char>& buf, bool& part, generator_parser::event_holder& holder,
     generator_parser::generator& field_gen,
-    generator_parser::generator old_gen, generator_parser::with_pmr) {
+    generator_parser::generator old_gen, generator_parser::resource_tag auto r) {
   holder.expect(generator_parser::event_holder::part);
   part = true;
   buf.clear();
@@ -48,6 +48,7 @@ inline generator_parser::generator unite_generate(
   co_await dd::this_coro::destroy_and_transfer_control_to(field_gen.raw_handle().promise().current_worker);
 }
 
+template <typename R>
 struct wait_handler {
   using error_code = ::boost::json::error_code;
   using string_view = ::boost::json::string_view;
@@ -63,12 +64,12 @@ struct wait_handler {
   generator_parser::event_holder event;
   std::vector<char> buf;
   gen_t gen;
-  stack_resource* memory_resource;
+  R* memory_resource;
   bool part = false;
   bool ended = false;
 
-  auto& resource() noexcept{
-    return *memory_resource;
+  auto resource() noexcept{
+    return dd::with_resource<R>(*memory_resource);
   }
 
   template <typename T>
@@ -78,12 +79,12 @@ struct wait_handler {
   }
 
   template <typename T>
-  wait_handler(T& t_, stack_resource& resource)
-      :  memory_resource(&resource) {
+  wait_handler(T& t_, R& res)
+      :  memory_resource(&res) {
     
     gen_t parse_gen;
     if constexpr (!generator_parser::boost_domless_parser<T>::simple){
-      parse_gen =  generator_parser::boost_domless_parser<T>::parse(t_, event, resource);
+      parse_gen =  generator_parser::boost_domless_parser<T>::parse(t_, event, resource());
     }
     else {  
       parse_gen = simple_generator(t_, event);
@@ -216,21 +217,36 @@ struct wait_handler {
 }  // namespace details 
 
 namespace unsafe{
+  inline std::vector<unsigned char> s(1024 * 1024 * 8, 0);
+
   inline std::span<unsigned char> arena_for_generators(){
-    thread_local std::vector<unsigned char> s(1024 * 1024 * 8, 0);
     return {s.data(), s.size()};
   }
 
+  inline stack_resource resource{arena_for_generators()};
+
   inline stack_resource* arena_resource(){
-    thread_local stack_resource resource{arena_for_generators()};
+    
     return &resource;
   }
+
+  struct global_arena_resource{
+    static void* allocate(std::size_t bytes, std::size_t align){
+      return arena_resource()->allocate(bytes, align);
+    }
+    static void deallocate(void* ptr, std::size_t bytes, std::size_t align) noexcept{
+      return arena_resource()->deallocate(ptr, bytes, align);
+    }
+  };
+  static_assert(dd::memory_resource<global_arena_resource>);
+  static_assert(dd::last_is_memory_resource_tag<dd::with_resource<global_arena_resource>>);
+  static_assert(std::is_empty_v<global_arena_resource>);
 }
 
-template <typename T>
-T parse_generator(std::string_view data, stack_resource& r = *unsafe::arena_resource()) {
+template <typename T, typename R = unsafe::global_arena_resource>
+T parse_generator(std::string_view data, R r = {}) {
   T t;
-  ::boost::json::basic_parser<details::wait_handler> p{::boost::json::parse_options{}, t, r};
+  ::boost::json::basic_parser<details::wait_handler<R>> p{::boost::json::parse_options{}, t, r};
   ::boost::json::error_code ec;
   p.write_some(false, data.data(), data.size(), ec);
   if (ec || !p.handler().ended) {
@@ -239,14 +255,14 @@ T parse_generator(std::string_view data, stack_resource& r = *unsafe::arena_reso
   return t;
 }
 
-template <typename T, typename R>
+template <typename T, typename R = unsafe::global_arena_resource>
 struct stream_parser {
   TGBM_PIN;
 
-  ::boost::json::basic_parser<details::wait_handler> p;
+  ::boost::json::basic_parser<details::wait_handler<R>> p;
   ::boost::json::error_code ec;  
 
-  explicit stream_parser(T& t, stack_resource& r = *unsafe::arena_resource() ) : p(::boost::json::parse_options{}, t, r) {
+  explicit stream_parser(T& t, R r = {}) : p(::boost::json::parse_options{}, t, r) {
   }
 
   void parse(std::string_view data, bool end) {

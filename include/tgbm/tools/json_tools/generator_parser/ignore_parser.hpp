@@ -18,7 +18,7 @@ struct ignore_parser {
     }
   }
 
-  static generator parse(event_holder& holder) {
+  static generator parse(event_holder& holder, resource_tag auto r) {
     if (is_value(holder)) {
       co_return;
     }
