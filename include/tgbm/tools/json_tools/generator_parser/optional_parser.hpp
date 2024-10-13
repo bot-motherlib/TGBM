@@ -8,13 +8,15 @@ namespace tgbm::generator_parser {
 template <template <typename> typename Optional, typename T>
 struct basic_optional_parser {
   static constexpr bool simple = is_simple<T>;
-  static generator parse(Optional<T>& t_, event_holder& holder) {
+
+  static generator parse(Optional<T>& t_, event_holder& holder, with_pmr r) requires (not simple) {
     if (holder.got == event_holder::null) {
       co_return;
     }
     using parser = boost_domless_parser<T>;
-    co_yield dd::elements_of(parser::parse(t_.emplace(), holder));
+    co_yield dd::elements_of(parser::parse(t_.emplace(), holder, r));
   }
+
   static void simple_parse(Optional<T>& t_, event_holder& holder)
     requires(simple)
   {

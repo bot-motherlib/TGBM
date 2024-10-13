@@ -1,5 +1,7 @@
 #pragma once
+#include <span>
 #include <tgbm/tools/json_tools/generator_parser/basic_parser.hpp>
+#include <tgbm/tools/stack_resource.hpp>
 #include <boost/json/basic_parser.hpp>
 
 namespace fmt {
@@ -14,10 +16,18 @@ struct formatter<::boost::json::string_view> : formatter<std::string_view> {
 namespace tgbm::json::boost {
 namespace details {
 
-inline dd::generator<generator_parser::nothing_t> unite_generate(
+inline generator_parser::generator generator_starter(generator_parser::generator gen, bool& ended) {
+  co_yield {};
+  co_yield dd::elements_of(gen);
+  ended = true;
+  co_yield {};
+  TGBM_JSON_PARSE_ERROR;
+}
+
+inline generator_parser::generator unite_generate(
     std::vector<char>& buf, bool& part, generator_parser::event_holder& holder,
-    dd::generator<generator_parser::nothing_t>& field_gen,
-    dd::generator<generator_parser::nothing_t> old_gen) {
+    generator_parser::generator& field_gen,
+    generator_parser::generator old_gen, generator_parser::with_pmr) {
   holder.expect(generator_parser::event_holder::part);
   part = true;
   buf.clear();
@@ -48,17 +58,38 @@ struct wait_handler {
   static constexpr std::size_t max_key_size = -1;
 
   using wait_e = generator_parser::event_holder::wait_e;
+  using gen_t = generator_parser::generator;
 
-  generator_parser::event_holder event{};
-  bool ended = false;
-  dd::generator<generator_parser::nothing_t> gen;
+  generator_parser::event_holder event;
   std::vector<char> buf;
+  gen_t gen;
+  stack_resource* memory_resource;
   bool part = false;
+  bool ended = false;
+
+  auto& resource() noexcept{
+    return *memory_resource;
+  }
 
   template <typename T>
-  wait_handler(T& t_)
-      : gen(generator_parser::generator_starter(generator_parser::boost_domless_parser<T>::parse(t_, event),
-                                                ended)) {
+  static gen_t simple_generator(T& t_, generator_parser::event_holder& event){
+    generator_parser::boost_domless_parser<T>::simple_parse(t_, event);
+    co_return;
+  }
+
+  template <typename T>
+  wait_handler(T& t_, stack_resource& resource)
+      :  memory_resource(&resource) {
+    
+    gen_t parse_gen;
+    if constexpr (!generator_parser::boost_domless_parser<T>::simple){
+      parse_gen =  generator_parser::boost_domless_parser<T>::parse(t_, event, resource);
+    }
+    else {  
+      parse_gen = simple_generator(t_, event);
+    }
+
+    gen = generator_starter(std::move(parse_gen), ended);
     gen.begin();
   }
 
@@ -153,7 +184,7 @@ struct wait_handler {
     event.got = generator_parser::event_holder::part;
     event.str_m = s;
     if (!part) {
-      gen = unite_generate(buf, part, event, gen, std::move(gen));
+      gen = unite_generate(buf, part, event, gen, std::move(gen), resource());
       gen.prepare_to_start();
     }
     resume_generator();
@@ -182,12 +213,24 @@ struct wait_handler {
   }
 };
 
-}  // namespace details
+}  // namespace details 
+
+namespace unsafe{
+  inline std::span<unsigned char> arena_for_generators(){
+    thread_local std::vector<unsigned char> s(1024 * 1024 * 8, 0);
+    return {s.data(), s.size()};
+  }
+
+  inline stack_resource* arena_resource(){
+    thread_local stack_resource resource{arena_for_generators()};
+    return &resource;
+  }
+}
 
 template <typename T>
-T parse_generator(std::string_view data) {
+T parse_generator(std::string_view data, stack_resource& r = *unsafe::arena_resource()) {
   T t;
-  ::boost::json::basic_parser<details::wait_handler> p{::boost::json::parse_options{}, t};
+  ::boost::json::basic_parser<details::wait_handler> p{::boost::json::parse_options{}, t, r};
   ::boost::json::error_code ec;
   p.write_some(false, data.data(), data.size(), ec);
   if (ec || !p.handler().ended) {
@@ -196,12 +239,14 @@ T parse_generator(std::string_view data) {
   return t;
 }
 
-template <typename T>
+template <typename T, typename R>
 struct stream_parser {
-  ::boost::json::basic_parser<details::wait_handler> p;
-  ::boost::json::error_code ec;
+  TGBM_PIN;
 
-  explicit stream_parser(T& t) : p(::boost::json::parse_options{}, t) {
+  ::boost::json::basic_parser<details::wait_handler> p;
+  ::boost::json::error_code ec;  
+
+  explicit stream_parser(T& t, stack_resource& r = *unsafe::arena_resource() ) : p(::boost::json::parse_options{}, t, r) {
   }
 
   void parse(std::string_view data, bool end) {

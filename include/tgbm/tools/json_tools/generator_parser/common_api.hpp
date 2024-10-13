@@ -27,7 +27,7 @@ struct boost_domless_parser<T> {
   }
 
   static generator generator_field(T& t_, std::string_view key, event_holder& holder,
-                                                  std::bitset<N>& parsed_) {
+                                                  std::bitset<N>& parsed_, with_pmr r) {
     if constexpr (N > 0) {
       return pfr_extension::visit_struct_field<T, generator>(
           key,
@@ -43,7 +43,7 @@ struct boost_domless_parser<T> {
               parser::simple_parse(field, holder);
               return generator{};
             } else {
-              return parser::parse(field, holder);
+              return parser::parse(field, holder, r);
             }
           },
           [&]() { return ignore_parser::parse(holder); });
@@ -52,7 +52,7 @@ struct boost_domless_parser<T> {
     }
   }
 
-  static generator parse(T& t_, event_holder& holder) {
+  static generator parse(T& t_, event_holder& holder, with_pmr r) {
     using wait = event_holder::wait_e;
     std::bitset<N> parsed_;
     holder.expect(wait::object_begin);
@@ -65,7 +65,7 @@ struct boost_domless_parser<T> {
       }
       std::string_view cur_key = holder.str_m;
       co_yield {};
-      auto gen_field = generator_field(t_, cur_key, holder, parsed_);
+      auto gen_field = generator_field(t_, cur_key, holder, parsed_, r);
       if (!gen_field.empty()) {
         co_yield (dd::elements_of(gen_field));
       }

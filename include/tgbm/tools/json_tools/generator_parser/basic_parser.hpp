@@ -4,6 +4,7 @@
 #include <tgbm/tools/json_tools/exceptions.hpp>
 #include <tgbm/logger.h>
 #include <kelcoro/generator.hpp>
+#include "tgbm/tools/stack_resource.hpp"
 
 namespace tgbm::generator_parser {
 
@@ -11,28 +12,22 @@ using nothing_t = dd::nothing_t;
 
 using generator = dd::generator<nothing_t>;
 
-struct log_memory_resource : std::pmr::memory_resource{
-  std::pmr::memory_resource* resourse = nullptr;
+struct stack_resource_holder{
+  stack_resource* resource;
 
-  explicit log_memory_resource(std::pmr::memory_resource* resourse = std::pmr::new_delete_resource()) 
-  : resourse(resourse){
-    
-  }
+  stack_resource_holder(stack_resource& r) : resource(&r){}
 
-  void* do_allocate(size_t bytes, size_t alignment) override{
-    LOG("{} allocated: {}, {}", (void*)this, bytes, alignment); 
-    return resourse->allocate(bytes, alignment);
+  void* allocate(std::size_t bytes, std::size_t alignment){
+    return resource->allocate(bytes, alignment);
   }
-
-  void do_deallocate(void *p, size_t bytes, size_t alignment) override{
-    LOG("{} deallocated: {}, {}", (void*)this, bytes, alignment); 
-    return resourse->deallocate(p, bytes);
-  }
-  
-  bool do_is_equal(const memory_resource &other) const noexcept override{
-    return resourse->is_equal(other);
+  void deallocate(void* ptr, std::size_t bytes, std::size_t alignment) noexcept{
+    resource->deallocate(ptr, bytes, alignment);
   }
 };
+
+using with_pmr = dd::with_resource<stack_resource_holder>;
+
+// template <typename R>
 
 struct event_holder {
   union {
@@ -43,7 +38,7 @@ struct event_holder {
     bool bool_m;
   };
 
-  event_holder() {
+  event_holder() noexcept {
   }
   ~event_holder() {
   }
@@ -73,18 +68,10 @@ struct event_holder {
   }
 };
 
-inline generator generator_starter(generator gen, bool& ended) {
-  co_yield {};
-  co_yield dd::elements_of(gen);
-  ended = true;
-  co_yield {};
-  TGBM_JSON_PARSE_ERROR;
-}
-
 template <typename T>
 struct boost_domless_parser {
   static constexpr bool simple = false;
-  // generator parse(T& t_, event_holder& holder)
+  // generator parse(T& t_, event_holder& holder, with_pmr r)
   // void simple_parse(T& t_, event_holder& holder)
 };
 
@@ -92,3 +79,16 @@ template <typename T>
 constexpr bool is_simple = requires { requires boost_domless_parser<T>::simple; };
 
 }  // namespace tgbm::generator_parser
+
+namespace dd{
+template <>
+struct with_resource<tgbm::generator_parser::stack_resource_holder>{
+  KELCORO_NO_UNIQUE_ADDRESS tgbm::generator_parser::stack_resource_holder resource;
+
+  with_resource(tgbm::stack_resource& mr) noexcept : resource(mr) {
+  }
+};
+
+with_resource(tgbm::stack_resource&) -> with_resource<tgbm::generator_parser::stack_resource_holder>;
+
+}

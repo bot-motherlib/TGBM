@@ -23,7 +23,7 @@ struct boost_domless_parser<T> {
   }
 
   static generator get_generator_field(T& t_, std::string_view key, event_holder& holder,
-                                                      std::bitset<N>& parsed_) {
+                                                      std::bitset<N>& parsed_, with_pmr r) {
     generator result;
     auto opt_gen = pfr_extension::visit_struct_field<T, bool, N>(
         key,
@@ -40,7 +40,7 @@ struct boost_domless_parser<T> {
             result = generator{};
             return true;
           } else {
-            result = parser::parse(field, holder);
+            result = parser::parse(field, holder, r);
             return true;
           }
         },
@@ -53,7 +53,7 @@ struct boost_domless_parser<T> {
         [&]<typename Field>(Field& field) {
           using parser = boost_domless_parser<Field>;
           if constexpr (!is_simple<Field>) {
-            return boost_domless_parser<Field>::parse(field, holder);
+            return boost_domless_parser<Field>::parse(field, holder, r);
           } else {
             boost_domless_parser<Field>::simple_parse(field, holder);
             return generator{};
@@ -64,7 +64,7 @@ struct boost_domless_parser<T> {
     return result;
   }
 
-  static generator parse(T& t_, event_holder& holder) {
+  static generator parse(T& t_, event_holder& holder, with_pmr r) {
     using wait = event_holder::wait_e;
     std::bitset<N> parsed_;
 
@@ -78,7 +78,7 @@ struct boost_domless_parser<T> {
       }
       std::string_view key = holder.str_m;
       co_yield {};
-      auto generator_suboneof = get_generator_field(t_, key, holder, parsed_);
+      auto generator_suboneof = get_generator_field(t_, key, holder, parsed_, r);
       co_yield dd::elements_of(generator_suboneof);
     }
 
