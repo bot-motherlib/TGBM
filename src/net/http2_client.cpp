@@ -118,7 +118,7 @@ struct request_node;
 
 using node_ptr = boost::intrusive_ptr<request_node>;
 
-static bytes_t generate_http2_headers(const http_request& request, hpack::encoder<>& encoder,
+static bytes_t generate_http2_headers(const http_request& request, hpack::encoder& encoder,
                                       std::string_view host) {
   using hdrs = hpack::static_table_t::values;
 
@@ -155,7 +155,7 @@ static bytes_t generate_http2_headers(const http_request& request, hpack::encode
 }
 
 static prepared_http_request form_http2_request(http_request&& request, http2::stream_id_t streamid,
-                                                hpack::encoder<>& encoder, std::string_view host) {
+                                                hpack::encoder& encoder, std::string_view host) {
   return prepared_http_request{
       .streamid = streamid,
       .headers = generate_http2_headers(request, encoder, host),
@@ -284,8 +284,8 @@ struct http2_connection {
   http2::settings_t server_settings;
   http2::settings_t client_settings;
   tcp_connection asio_con;
-  hpack::encoder<> encoder;
-  hpack::encoder<> decoder;
+  hpack::encoder encoder;
+  hpack::decoder<> decoder;
   // odd for client, even for server
   http2::stream_id_t stream_id;
   uint32_t refcount = 0;
@@ -638,7 +638,7 @@ static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& a
       .max_frame_size = options.max_receive_frame_size,
       .deprecated_priority_disabled = true,
   };
-  con->encoder = hpack::encoder<>(con->client_settings.header_table_size);
+  con->encoder = hpack::encoder(con->client_settings.header_table_size);
   con->stream_id = 1;  // client
 
   io_error_code ec;
@@ -698,7 +698,7 @@ static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& a
         if (header.flags & flags::ACK) {
           if (header.length != 0 || header.stream_id != 0)
             throw protocol_error{};
-          con->decoder = hpack::encoder<>(con->server_settings.header_table_size);
+          con->decoder = hpack::decoder<>(con->server_settings.header_table_size);
           LOG("HTTP/2 connection successfully established, decoder size: {}",
               con->server_settings.header_table_size);
           con->server_settings.max_frame_size =

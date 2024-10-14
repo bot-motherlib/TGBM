@@ -42,8 +42,8 @@ concept Out = std::output_iterator<T, byte_t>;
 
 template <typename T>
 concept protocol_verifier = requires(T& v) {
-  { v.handle_protocol_error() };  // must be [[noreturn]]
-  { v.handle_size_error() };      // must be [[noreturn]]
+  { T::handle_protocol_error() };  // must be [[noreturn]]
+  { T::handle_size_error() };      // must be [[noreturn]]
   { v.entry_added(std::string_view{}, std::string_view{}) };
 };
 
@@ -491,10 +491,211 @@ struct dynamic_table_t {
   }
 };
 
-template <protocol_verifier Verifier = default_protocol_verificator>
+// postcondition: do not overwrites highest 8 - N bits in *out first bytee
+// precondition: low N bits of *out first byte is 0
+template <std::unsigned_integral UInt = size_type, Out O>
+O encode_integer(std::type_identity_t<UInt> I, uint8_t N, O _out) noexcept {
+  auto out = noexport::adapt_output_iterator(_out);
+  assert(N <= 8 && ((*out & ((1 << N) - 1)) == 0));
+  /*
+  pseudocode from RFC
+   if I < 2^N - 1, encode I on N bits
+   else
+       encode (2^N - 1) on N bits
+       I = I - (2^N - 1)
+       while I >= 128
+            encode (I % 128 + 128) on 8 bits
+            I = I / 128
+       encode I on 8 bits
+  */
+  const uint8_t prefix_max = (1 << N) - 1;
+  assert((*out & prefix_max) == 0 && "precondition: low N bits of *out first byte is 0");
+  auto push = [&out](uint8_t c) {
+    *out = c;
+    ++out;
+  };
+  if (I < prefix_max) {
+    // write byte without overwriting existing first 8 - N bits
+    *out |= uint8_t(I);
+    ++out;
+    return noexport::unadapt<O>(out);
+  }
+  // write byte without overwriting existing first 8 - N bits
+  *out |= prefix_max;
+  ++out;
+  I -= prefix_max;
+  while (I >= 128) {
+    auto [quot, rem] = div_int(I, 128);
+    I = quot;
+    push(rem | 0b1000'0000);
+  }
+  push(I);
+  return noexport::unadapt<O>(out);
+}
+
+template <protocol_verifier V, std::unsigned_integral UInt = size_type>
+[[nodiscard]] size_type decode_integer(In& in, In e, uint8_t N) {
+  const UInt prefix_mask = (1 << N) - 1;
+  // get first N bits
+  auto pull = [&] {
+    if (in == e)
+      V::handle_size_error();
+    int8_t i = *in;
+    ++in;
+    return i;
+  };
+  UInt I = pull() & prefix_mask;
+  if (I < prefix_mask)
+    return I;
+  uint8_t M = 0;
+  uint8_t B;
+  do {
+    B = pull();
+    UInt cpy = I;
+    I += UInt(B & 0b0111'1111) << M;
+    if (I < cpy)  // overflow
+      V::handle_protocol_error();
+    M += 7;
+  } while (B & 0b1000'0000);
+  return I;
+}
+
+template <Out O>
+O encode_string_huffman(std::string_view str, O _out) {
+  auto out = noexport::adapt_output_iterator(_out);
+  // precalculate size
+  // (size should be before string and len in bits depends on 'len' value)
+  size_type len_after_encode = 0;
+  for (char c : str)
+    len_after_encode += huffman_table[uint8_t(c)].bit_count;
+  *out = 0b1000'0000;  // set H bit
+  const int padlen = 8 - len_after_encode % 8;
+  out = encode_integer((len_after_encode + padlen) / 8, 7, out);
+  auto push_bit = [&, bitn = 7](bool bit) mutable {
+    if (bitn == 7)
+      *out = 0;
+    *out |= (bit << bitn);
+    if (bitn == 0) {
+      ++out;
+      bitn = 7;
+      // not set out to 0, because may be end
+    } else {
+      --bitn;
+    }
+  };
+  for (char c : str) {
+    sym_info_t bits = huffman_table[uint8_t(c)];
+    for (int i = 0; i < bits.bit_count; ++i)
+      push_bit(bits.bits & (1 << i));
+  }
+  // padding MUST BE formed from EOS la-la-la (just 111..)
+  for (int i = 0; i < padlen; ++i)
+    push_bit(true);
+  return noexport::unadapt<O>(out);
+}
+
+// precondition: in != e
+template <protocol_verifier V, Out O>
+O decode_string_huffman(In& in, In e, O out) {
+  assert(in != e && *in & 0b1000'0000);  // Huffman encoded
+  size_type str_len = decode_integer<V>(in, e, 7);
+  if (str_len > std::distance(in, e))
+    V::handle_size_error();
+  sym_info_t info{0, 0};
+  int bit_nmb = 0;
+  auto next_bit = [&] {
+    bool bit = *in & (0b1000'0000 >> bit_nmb);
+    if (bit_nmb == 7) {
+      bit_nmb = 0;
+      ++in;
+      --str_len;
+    } else {
+      ++bit_nmb;
+    }
+    return bit;
+  };
+  for (;;) {
+    // min symbol len in Huffman table is 5 bits
+    for (int i = 0; str_len && i < 5; ++i, ++info.bit_count) {
+      info.bits <<= 1;
+      info.bits += next_bit();
+    }
+    uint16_t sym;
+    while ((sym = huffman_decode_table_find(info)) == uint16_t(-1) && str_len) {
+      info.bits <<= 1;
+      info.bits += next_bit();
+      ++info.bit_count;
+    }
+    if (sym == 256) [[unlikely]] {
+      // TODO? throw STREAM_CLOSED?
+      // EOS
+      while (bit_nmb != 0)  // skip padding
+        next_bit();
+      return out;
+    }
+    if (sym != uint16_t(-1)) {
+      info = {};
+      *out = byte_t(sym);
+      ++out;
+    }
+    if (!str_len) {
+      if (std::countr_one(info.bits) != info.bit_count)
+        V::handle_protocol_error();  // incorrect padding
+      return out;
+    }
+  }
+  return out;
+}
+
+template <bool Huffman = false, Out O>
+O encode_string(std::string_view str, O _out) {
+  auto out = noexport::adapt_output_iterator(_out);
+  /*
+       0   1   2   3   4   5   6   7
+     +---+---+---+---+---+---+---+---+
+     | H |    String Length (7+)     |
+     +---+---------------------------+
+     |  String Data (Length octets)  |
+     +-------------------------------+
+  */
+  if constexpr (!Huffman) {
+    *out = 0;  // set H bit to 0
+    out = encode_integer(str.size(), 7, out);
+    out = std::copy_n(str.data(), str.size(), out);
+  } else {
+    out = encode_string_huffman(str, out);
+  }
+  return noexport::unadapt<O>(out);
+}
+
+// since string can be Huffman encoded impossible to use string_view
+template <protocol_verifier V, Out O>
+O decode_string(In& in, In e, O out) {
+  if (*in & 0b1000'0000)  // Huffman encoded
+    return decode_string_huffman<V>(in, e, out);
+  size_type len = decode_integer<V>(in, e, 7);
+  if (std::distance(in, e) < len)
+    V::handle_size_error();
+  out = std::copy_n(in, len, out);
+  std::advance(in, len);
+  return out;
+}
+
+template <protocol_verifier V>
+[[nodiscard]] table_entry get_by_index(index_type header_index, dynamic_table_t& dyntab) {
+  /*
+     Indices strictly greater than the sum of the lengths of both tables
+     MUST be treated as a decoding error.
+  */
+  if (header_index > dyntab.current_max_index() || header_index == 0)
+    V::handle_protocol_error();
+  if (header_index < static_table_t::first_unused_index)
+    return static_table_t::get_entry(header_index);
+  return dyntab.get_entry(header_index);
+}
+
 struct encoder {
   dynamic_table_t dyntab;
-  KELCORO_NO_UNIQUE_ADDRESS Verifier verifier;
 
   // 4096 - default size in HTTP/2
   explicit encoder(size_type max_dyntab_size = 4096,
@@ -504,109 +705,6 @@ struct encoder {
 
   encoder(encoder&&) = default;
   encoder& operator=(encoder&&) noexcept = default;
-
-  template <bool Huffman = false, Out O>
-  O encode_string(std::string_view str, O _out) {
-    auto out = noexport::adapt_output_iterator(_out);
-    /*
-         0   1   2   3   4   5   6   7
-       +---+---+---+---+---+---+---+---+
-       | H |    String Length (7+)     |
-       +---+---------------------------+
-       |  String Data (Length octets)  |
-       +-------------------------------+
-    */
-    if constexpr (!Huffman) {
-      *out = 0;  // set H bit to 0
-      out = encode_integer(str.size(), 7, out);
-      out = std::copy_n(str.data(), str.size(), out);
-    } else {
-      out = encode_string_huffman(str, out);
-    }
-    return noexport::unadapt<O>(out);
-  }
-
-  // since string can be Huffman encoded impossible to use string_view
-  template <Out O>
-  O decode_string(In& in, In e, O out) {
-    if (*in & 0b1000'0000)  // Huffman encoded
-      return decode_string_huffman(in, e, out);
-    size_type len = decode_integer(in, e, 7);
-    if (std::distance(in, e) < len)
-      verifier.handle_size_error();
-    out = std::copy_n(in, len, out);
-    std::advance(in, len);
-    return out;
-  }
-
-  // postcondition: do not overwrites highest 8 - N bits in *out first bytee
-  // precondition: low N bits of *out first byte is 0
-  template <std::unsigned_integral UInt = size_type, Out O>
-  O encode_integer(std::type_identity_t<UInt> I, uint8_t N, O _out) noexcept {
-    auto out = noexport::adapt_output_iterator(_out);
-    assert(N <= 8 && ((*out & ((1 << N) - 1)) == 0));
-    /*
-    pseudocode from RFC
-     if I < 2^N - 1, encode I on N bits
-     else
-         encode (2^N - 1) on N bits
-         I = I - (2^N - 1)
-         while I >= 128
-              encode (I % 128 + 128) on 8 bits
-              I = I / 128
-         encode I on 8 bits
-    */
-    const uint8_t prefix_max = (1 << N) - 1;
-    assert((*out & prefix_max) == 0 && "precondition: low N bits of *out first byte is 0");
-    auto push = [&out](uint8_t c) {
-      *out = c;
-      ++out;
-    };
-    if (I < prefix_max) {
-      // write byte without overwriting existing first 8 - N bits
-      *out |= uint8_t(I);
-      ++out;
-      return noexport::unadapt<O>(out);
-    }
-    // write byte without overwriting existing first 8 - N bits
-    *out |= prefix_max;
-    ++out;
-    I -= prefix_max;
-    while (I >= 128) {
-      auto [quot, rem] = div_int(I, 128);
-      I = quot;
-      push(rem | 0b1000'0000);
-    }
-    push(I);
-    return noexport::unadapt<O>(out);
-  }
-
-  template <std::unsigned_integral UInt = size_type>
-  [[nodiscard]] size_type decode_integer(In& in, In e, uint8_t N) {
-    const UInt prefix_mask = (1 << N) - 1;
-    // get first N bits
-    auto pull = [&] {
-      if (in == e)
-        verifier.handle_size_error();
-      int8_t i = *in;
-      ++in;
-      return i;
-    };
-    UInt I = pull() & prefix_mask;
-    if (I < prefix_mask)
-      return I;
-    uint8_t M = 0;
-    uint8_t B;
-    do {
-      B = pull();
-      UInt cpy = I;
-      I += UInt(B & 0b0111'1111) << M;
-      if (I < cpy)  // overflow
-        verifier.handle_protocol_error();
-      M += 7;
-    } while (B & 0b1000'0000);
-    return I;
-  }
 
   // indexed name and value, for example ":path" "/index.html" from static table
   // or some index from dynamic table
@@ -634,8 +732,8 @@ struct encoder {
     // indexed name, new value 0b01...
     *out = 0b0100'0000;
     out = encode_integer(header_index, 6, out);
-    std::string_view str = get_by_index(header_index).name;
-    verifier.entry_added(str, value);
+    // trusted, since im encoder and must not fail
+    std::string_view str = get_by_index<trusted_verificator>(header_index, dyntab).name;
     dyntab.add_entry(str, value);
     return noexport::unadapt<O>(encode_string<Huffman>(value, out));
   }
@@ -663,7 +761,6 @@ struct encoder {
     *out = 0b0100'0000;
     ++out;
     out = encode_string<Huffman>(name, out);
-    verifier.entry_added(name, value);
     dyntab.add_entry(name, value);
     return noexport::unadapt<O>(encode_string<Huffman>(value, out));
   }
@@ -817,6 +914,44 @@ struct encoder {
   }
 
   /*
+  An encoder can choose to use less capacity than this maximum size
+     (see Section 6.3), but the chosen size MUST stay lower than or equal
+     to the maximum set by the protocol.
+
+     A change in the maximum size of the dynamic table is signaled via a
+     dynamic table size update (see Section 6.3).  This dynamic table size
+     update MUST occur at the beginning of the first header block
+     following the change to the dynamic table size.  In HTTP/2, this
+     follows a settings acknowledgment (see Section 6.5.3 of [HTTP2]).
+  */
+  template <Out O>
+  O encode_dynamic_table_size_update(size_type new_size, O _out) noexcept {
+    /*
+         0   1   2   3   4   5   6   7
+       +---+---+---+---+---+---+---+---+
+       | 0 | 0 | 1 |   Max size (5+)   |
+       +---+---------------------------+
+    */
+    auto out = noexport::adapt_output_iterator(_out);
+    *out = 0b0010'0000;
+    return noexport::unadapt<O>(encode_integer(new_size, 5, out));
+  }
+};
+
+template <protocol_verifier Verifier = default_protocol_verificator>
+struct decoder {
+  dynamic_table_t dyntab;
+  KELCORO_NO_UNIQUE_ADDRESS Verifier verifier;
+
+  // 4096 - default size in HTTP/2
+  explicit decoder(size_type max_dyntab_size = 4096,
+                   std::pmr::memory_resource* resource = std::pmr::get_default_resource())
+      : dyntab(max_dyntab_size, resource) {
+  }
+
+  decoder(decoder&&) = default;
+  decoder& operator=(decoder&&) noexcept = default;
+  /*
    Note: this function ignores special 'cookie' header case
    https://www.rfc-editor.org/rfc/rfc7540#section-8.1.2.5
    and protocol error if decoded header name is not lowercase
@@ -843,7 +978,7 @@ struct encoder {
     if (*in & 0b1000'0000) {
       // fast path, fully indexed
       auto in_before = in;
-      index_type index = decode_integer(in, e, 7);
+      index_type index = decode_integer<Verifier>(in, e, 7);
       switch (index) {
         case static_table_t::status_200:
           return 200;
@@ -876,129 +1011,18 @@ struct encoder {
     return status_code;
   }
 
-  /*
-  An encoder can choose to use less capacity than this maximum size
-     (see Section 6.3), but the chosen size MUST stay lower than or equal
-     to the maximum set by the protocol.
-
-     A change in the maximum size of the dynamic table is signaled via a
-     dynamic table size update (see Section 6.3).  This dynamic table size
-     update MUST occur at the beginning of the first header block
-     following the change to the dynamic table size.  In HTTP/2, this
-     follows a settings acknowledgment (see Section 6.5.3 of [HTTP2]).
-  */
-  template <Out O>
-  O encode_dynamic_table_size_update(size_type new_size, O _out) noexcept {
-    /*
-         0   1   2   3   4   5   6   7
-       +---+---+---+---+---+---+---+---+
-       | 0 | 0 | 1 |   Max size (5+)   |
-       +---+---------------------------+
-    */
-    auto out = noexport::adapt_output_iterator(_out);
-    *out = 0b0010'0000;
-    return noexport::unadapt<O>(encode_integer(new_size, 5, out));
-  }
-
   // returns requested new size of dynamic table
   size_type decode_dynamic_table_size_update(In& in, In e) noexcept {
     assert(*in & 0b0010'0000 && !(*in & 0b0100'0000) && !(*in & 0b1000'0000));
-    return decode_integer(in, e, 5);
-  }
-
-  template <Out O>
-  O encode_string_huffman(std::string_view str, O _out) {
-    auto out = noexport::adapt_output_iterator(_out);
-    // precalculate size
-    // (size should be before string and len in bits depends on 'len' value)
-    size_type len_after_encode = 0;
-    for (char c : str)
-      len_after_encode += huffman_table[uint8_t(c)].bit_count;
-    *out = 0b1000'0000;  // set H bit
-    const int padlen = 8 - len_after_encode % 8;
-    out = encode_integer((len_after_encode + padlen) / 8, 7, out);
-    auto push_bit = [&, bitn = 7](bool bit) mutable {
-      if (bitn == 7)
-        *out = 0;
-      *out |= (bit << bitn);
-      if (bitn == 0) {
-        ++out;
-        bitn = 7;
-        // not set out to 0, because may be end
-      } else {
-        --bitn;
-      }
-    };
-    for (char c : str) {
-      sym_info_t bits = huffman_table[uint8_t(c)];
-      for (int i = 0; i < bits.bit_count; ++i)
-        push_bit(bits.bits & (1 << i));
-    }
-    // padding MUST BE formed from EOS la-la-la (just 111..)
-    for (int i = 0; i < padlen; ++i)
-      push_bit(true);
-    return noexport::unadapt<O>(out);
-  }
-
-  // precondition: in != e
-  template <Out O>
-  O decode_string_huffman(In& in, In e, O out) {
-    assert(in != e && *in & 0b1000'0000);  // Huffman encoded
-    size_type str_len = decode_integer(in, e, 7);
-    if (str_len > std::distance(in, e))
-      verifier.handle_size_error();
-    sym_info_t info{0, 0};
-    int bit_nmb = 0;
-    auto next_bit = [&] {
-      bool bit = *in & (0b1000'0000 >> bit_nmb);
-      if (bit_nmb == 7) {
-        bit_nmb = 0;
-        ++in;
-        --str_len;
-      } else {
-        ++bit_nmb;
-      }
-      return bit;
-    };
-    for (;;) {
-      // min symbol len in Huffman table is 5 bits
-      for (int i = 0; str_len && i < 5; ++i, ++info.bit_count) {
-        info.bits <<= 1;
-        info.bits += next_bit();
-      }
-      uint16_t sym;
-      while ((sym = huffman_decode_table_find(info)) == uint16_t(-1) && str_len) {
-        info.bits <<= 1;
-        info.bits += next_bit();
-        ++info.bit_count;
-      }
-      if (sym == 256) [[unlikely]] {
-        // TODO? throw STREAM_CLOSED?
-        // EOS
-        while (bit_nmb != 0)  // skip padding
-          next_bit();
-        return out;
-      }
-      if (sym != uint16_t(-1)) {
-        info = {};
-        *out = byte_t(sym);
-        ++out;
-      }
-      if (!str_len) {
-        if (std::countr_one(info.bits) != info.bit_count)
-          verifier.handle_protocol_error();  // incorrect padding
-        return out;
-      }
-    }
-    return out;
+    return decode_integer<Verifier>(in, e, 5);
   }
 
  private:
   template <Out O1, Out O2>
   std::pair<O1, O2> decode_header_fully_indexed(In& in, In e, O1 name_out, O2 value_out) {
     assert(*in & 0b1000'0000);
-    index_type index = decode_integer(in, e, 7);
-    table_entry entry = get_by_index(index);
+    index_type index = decode_integer<Verifier>(in, e, 7);
+    table_entry entry = get_by_index<Verifier>(index, dyntab);
     // only way to get uncached value is from static table,
     // in dynamic table empty header value ("") is a cached header
     if (index < static_table_t::first_unused_index && entry.value.empty())
@@ -1034,38 +1058,23 @@ struct encoder {
     return decode_header_impl(in, e, name_out, value_out, 4);
   }
 
-  [[nodiscard]] table_entry get_by_index(index_type header_index) {
-    /*
-       Indices strictly greater than the sum of the lengths of both tables
-       MUST be treated as a decoding error.
-    */
-    if (header_index > dyntab.current_max_index() || header_index == 0)
-      verifier.handle_protocol_error();
-    if (header_index < static_table_t::first_unused_index)
-      return static_table_t::get_entry(header_index);
-    return dyntab.get_entry(header_index);
-  }
-
   // decodes partly indexed / new-name pairs
   template <Out O1, Out O2>
   std::pair<O1, O2> decode_header_impl(In& in, In e, O1 name_out, O2 value_out, uint8_t N) {
-    index_type index = decode_integer(in, e, N);
+    index_type index = decode_integer<Verifier>(in, e, N);
     if (index == 0) {
-      name_out = decode_string(in, e, name_out);
+      name_out = decode_string<Verifier>(in, e, name_out);
     } else {
-      table_entry entry = get_by_index(index);
+      table_entry entry = get_by_index<Verifier>(index, dyntab);
       name_out = std::copy_n(entry.name.data(), entry.name.size(), name_out);
     }
-    value_out = decode_string(in, e, value_out);
+    value_out = decode_string<Verifier>(in, e, value_out);
     return {name_out, value_out};
   }
 };
 
-template <protocol_verifier Verifier = default_protocol_verificator>
-using decoder = encoder<Verifier>;
-
 template <bool Cache = false, bool Huffman = false, protocol_verifier V, Out O>
-O encode_headers_block(encoder<V>& enc, auto&& range_of_headers, O out) {
+O encode_headers_block(encoder& enc, auto&& range_of_headers, O out) {
   for (auto&& [name, value] : range_of_headers)
     out = enc.template encode_header_memory_effective<Cache, Huffman>(name, value, out);
   return out;
