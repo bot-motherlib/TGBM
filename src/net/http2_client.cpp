@@ -705,7 +705,7 @@ static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& a
               std::min(con->server_settings.max_frame_size, options.max_send_frame_size);
           co_return con;
         }
-        settings_frame::parse(header, bytes, server_settings_filler(con->server_settings));
+        settings_frame::parse(header, bytes, server_settings_visitor(con->server_settings));
         continue;
       case WINDOW_UPDATE:
         con->window_update(window_update_frame::parse(header, bytes));
@@ -1076,7 +1076,7 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
       */
       {
         auto before = con.server_settings.header_table_size;
-        settings_frame::parse(frame.header, frame.data, server_settings_filler(con.server_settings));
+        settings_frame::parse(frame.header, frame.data, server_settings_visitor(con.server_settings));
         if (before > con.server_settings.header_table_size)
           LOG("[HTTP2]: HPACK table resized, new size {}, before: {}, IF ERROR HAPPENS AFTER THIS MESSAGE, "
               "next time set dynamic table size for client to 0",
@@ -1203,7 +1203,7 @@ dd::job http2_client::start_reader_for(http2_connection_ptr _con) {
 
       // read header
 
-      frame.data = buffer.get_buffer(h2fhl);
+      frame.data = buffer.get_exactly(h2fhl);
 
       co_await net.read(con.socket(), frame.data, ec);
 
@@ -1220,7 +1220,7 @@ dd::job http2_client::start_reader_for(http2_connection_ptr _con) {
 
       // read data
 
-      frame.data = buffer.get_buffer(frame.header.length);
+      frame.data = buffer.get_exactly(frame.header.length);
       co_await net.read(con.socket(), frame.data, ec);
       if (ec)
         goto network_error;

@@ -4,6 +4,8 @@
 #include <boost/asio/ssl/stream.hpp>
 #include <boost/intrusive_ptr.hpp>
 
+#include <filesystem>
+
 namespace tgbm {
 
 namespace asio = boost::asio;
@@ -39,5 +41,8 @@ struct ssl_context {
 ssl_context_ptr make_ssl_context_for_http2();
 
 ssl_context_ptr make_ssl_context_for_http11();
+
+ssl_context_ptr make_ssl_context_for_server(std::filesystem::path certificate,
+                                            std::filesystem::path server_private_key);
 
 }  // namespace tgbm

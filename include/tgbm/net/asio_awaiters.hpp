@@ -173,26 +173,26 @@ struct read_operation {
   }
 };
 
-template <typename Stream, typename Buffer>
+template <typename Stream>
 struct read_some_operation {
   Stream& stream;
-  Buffer& buffer;
+  std::span<byte_t> buffer;
 
   template <typename T>
   void operator()(T&& cb) {
-    stream.async_read_some(buffer, std::forward<T>(cb));
+    stream.async_read_some(asio::buffer(buffer.data(), buffer.size()), std::forward<T>(cb));
   }
 };
 
 template <typename Stream, typename Buffer>
 struct read_until_operation {
   Stream& stream;
-  Buffer& buffer;
+  std::span<byte_t> buffer;
   std::string_view delim;
 
   template <typename T>
   void operator()(T&& cb) {
-    asio::async_read_until(stream, buffer, delim, std::forward<T>(cb));
+    asio::async_read_until(stream, asio::buffer(buffer.data(), buffer.size()), delim, std::forward<T>(cb));
   }
 };
 
@@ -218,9 +218,26 @@ struct shutdown_operation {
   }
 };
 
+template <typename Protocol>
+struct accept_operation {
+  asio::basic_socket_acceptor<Protocol>& acceptor;
+
+  template <typename T>
+  void operator()(T&& cb) const {
+    acceptor.async_accept(std::forward<T>(cb));
+  }
+};
+
 // boost asio grabs all possible good names for functions and creates 3042350 overloads
 // with all possible combinations of template arguments, tags etc, so this ignores adl
 struct net_t {
+  template <typename Protocol>
+  KELCORO_CO_AWAIT_REQUIRED static auto accept(asio::basic_socket_acceptor<Protocol>& acceptor
+                                                   KELCORO_LIFETIMEBOUND,
+                                               io_error_code& ec KELCORO_LIFETIMEBOUND) {
+    return asio_awaiter<asio::basic_stream_socket<Protocol>, accept_operation<Protocol>>(ec, acceptor);
+  }
+
   // returns resolve results
   template <typename Protocol>
   KELCORO_CO_AWAIT_REQUIRED static auto resolve(
@@ -278,11 +295,11 @@ struct net_t {
 
   // returns count of bytes transmitted
   // TODO return span to readen bytes? And what to accept? dynbuf + temp buf?
-  template <typename Stream, typename Buffer>
+  template <typename Stream>
   KELCORO_CO_AWAIT_REQUIRED static auto read_some(Stream& stream KELCORO_LIFETIMEBOUND,
-                                                  Buffer&& buffer KELCORO_LIFETIMEBOUND,
+                                                  std::span<byte_t> buffer KELCORO_LIFETIMEBOUND,
                                                   io_error_code& ec KELCORO_LIFETIMEBOUND) {
-    return asio_awaiter<size_t, read_some_operation<Stream, Buffer>>(ec, stream, buffer);
+    return asio_awaiter<size_t, read_some_operation<Stream>>(ec, stream, buffer);
   }
 
   // appends readen bytes to 'buffer'
@@ -294,16 +311,16 @@ struct net_t {
     assert(!needle.empty());
     assert(!ec);
     // TODO better
-    char buf[128];
+    byte_t buf[128];
     const size_t init_sz = buffer.size();
     size_t transfered = 0;
     size_t checked_bytes = 0;
     for (;;) {
-      size_t read_bytes = co_await net_t{}.read_some(stream, asio::buffer(buf), ec);
+      size_t read_bytes = co_await net_t{}.read_some(stream, buf, ec);
       if (ec)
         co_return needle.npos;
       transfered += read_bytes;
-      buffer += std::string_view(buf, read_bytes);  // TODO better
+      buffer += std::string_view((char*)buf, read_bytes);  // TODO better
       if (transfered < needle.size())
         continue;
       size_t s = needle.size() - 1;
@@ -322,9 +339,9 @@ struct net_t {
                                              auto condition, io_error_code& ec KELCORO_LIFETIMEBOUND) {
     assert(!ec);
     // TODO better
-    unsigned char buf[128];
+    byte_t buf[128];
     for (;;) {
-      size_t read_bytes = co_await net_t{}.read_some(stream, asio::buffer(buf), ec);
+      size_t read_bytes = co_await net_t{}.read_some(stream, buf, ec);
       if (ec)
         co_return;
       buffer.insert(buffer.end(), buf, buf + read_bytes);  // TODO better

@@ -73,7 +73,7 @@ std::string_view e2str(http_method_e e) noexcept {
       return "POST";
     case PUT:
       return "PUT";
-    case DELETE:
+    case DELETE_:
       return "DELETE";
     case PATCH:
       return "PATCH";

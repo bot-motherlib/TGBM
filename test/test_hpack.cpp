@@ -3,11 +3,10 @@
 #include <random>
 #include <deque>
 
-struct err_t {};
 #define TEST(name) static void test_##name()
-#define error_if(...)              \
-  if (!!(__VA_ARGS__)) {           \
-    throw err_t{}, exit(__LINE__); \
+#define error_if(...)    \
+  if (!!(__VA_ARGS__)) { \
+    exit(__LINE__);      \
   }
 
 static void test_number(uint32_t value_to_encode, uint8_t prefix_length, uint32_t expected_bytes_filled = 0) {

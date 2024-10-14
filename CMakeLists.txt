@@ -133,3 +133,14 @@ endif()
 if (TGBM_ENABLE_BENCHS)
     add_subdirectory(gbench)
 endif()
+add_executable(tgbm_main ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+target_link_libraries(tgbm_main PUBLIC tgbmlib)
+
+set_target_properties(tgbm_main PROPERTIES
+  CMAKE_CXX_EXTENSIONS OFF
+  LINKER_LANGUAGE CXX
+  CMAKE_CXX_STANDARD_REQUIRED ON
+  CXX_STANDARD 20)
+
+target_compile_definitions(tgbmlib PUBLIC TGBM_SSL_KEYS_FILE="E:/sslkeys.txt")
+target_compile_definitions(tgbmlib PUBLIC TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH="E:/ssl_cert_from_curl.pem")

@@ -60,8 +60,8 @@ ssl_context_ptr make_ssl_context_for_http11() {
                           ssl::context::no_sslv3 | ssl::context::single_dh_use |
                           ssl::context::no_compression | ssl::context::no_tlsv1 | ssl::context::no_tlsv1_1);
 
-  if (1 != SSL_CTX_set_cipher_list(sslctx->ctx.native_handle(),
-                                   "ECDHE+AESGCM:ECDHE+CHACHA20:ECDHE+AES:ECDHE+3DES:!aNULL:!MD5"))
+  if (!SSL_CTX_set_cipher_list(sslctx->ctx.native_handle(),
+                               "ECDHE+AESGCM:ECDHE+CHACHA20:!aNULL:!MD5:DEFAULT"))
     LOG_WARN("ssl cipher cannot be selected");
 
   return sslctx;
@@ -73,6 +73,27 @@ ssl_context_ptr make_ssl_context_for_http2() {
   if (0 != SSL_CTX_set_alpn_protos(sslctx->ctx.native_handle(), alpn_protos, sizeof(alpn_protos)))
     throw network_exception{"ALPN ctx broken {}", ERR_error_string(ERR_get_error(), nullptr)};
   return sslctx;
+}
+
+ssl_context_ptr make_ssl_context_for_server(std::filesystem::path certificate,
+                                            std::filesystem::path server_private_key) {
+  ssl_context_ptr ctx = ssl_context::create(asio::ssl::context_base::tls_server);
+  ctx->ctx.set_options(boost::asio::ssl::context::default_workarounds | boost::asio::ssl::context::no_sslv2 |
+                       boost::asio::ssl::context::single_dh_use);
+
+  io_error_code ec;
+  ec = ctx->ctx.use_certificate_chain_file(std::filesystem::absolute(certificate).string(), ec);
+  if (ec) {
+    LOG_ERR("cannot load certificate, path {}, err: {}", certificate.string(), ec.what());
+    return nullptr;
+  }
+  ec = ctx->ctx.use_private_key_file(std::filesystem::absolute(server_private_key).string(),
+                                     asio::ssl::context::pem, ec);
+  if (ec) {
+    LOG_ERR("cannot load private file, path {}, err: {}", server_private_key.string(), ec.what());
+    return nullptr;
+  }
+  return ctx;
 }
 
 }  // namespace tgbm

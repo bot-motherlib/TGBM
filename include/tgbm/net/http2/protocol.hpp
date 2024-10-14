@@ -68,7 +68,10 @@ struct frame_header {
     return out;
   }
 
-  [[nodiscard]] static frame_header parse(std::span<const hpack::byte_t, frame_header_len> raw_header) {
+  // precondition: raw_header.size() == http2::frame_header_len
+  // not staticaly typed because of std::span ideal interface
+  [[nodiscard]] static frame_header parse(std::span<const hpack::byte_t> raw_header) {
+    assert(raw_header.size() == frame_header_len);
     frame_header h;
     h.length = (raw_header[0] << 16) | (raw_header[1] << 8) | raw_header[2];
     h.type = frame_e(raw_header[3]);
@@ -228,7 +231,7 @@ static_assert(sizeof(setting_t) == 6);
 
 // fills settings while parsing 'setting_t' one by one
 // client side
-struct server_settings_filler {
+struct server_settings_visitor {
   settings_t& settings;  // must be server settings
 
   constexpr void operator()(setting_t s) const {
@@ -239,6 +242,48 @@ struct server_settings_filler {
       case SETTINGS_ENABLE_PUSH:
         if (s.value > 0)
           throw protocol_error{};  // server MUST NOT send i
+        settings.enable_push = s.value;
+        return;
+      case SETTINGS_MAX_CONCURRENT_STREAMS:
+        settings.max_concurrent_streams = s.value;
+        return;
+      case SETTINGS_INITIAL_WINDOW_SIZE:
+        settings.initial_stream_window_size = s.value;
+        return;
+      case SETTINGS_MAX_FRAME_SIZE:
+        settings.max_frame_size = s.value;
+        return;
+      case SETTINGS_MAX_HEADER_LIST_SIZE:
+        settings.max_header_list_size = s.value;
+        return;
+      case SETTINGS_NO_RFC7540_PRIORITIES:
+        /*
+        Senders MUST NOT change the SETTINGS_NO_RFC7540_PRIORITIES value after the first SETTINGS frame.
+        Receivers that detect a change MAY treat it as a connection error of type PROTOCOL_ERROR.
+        */
+        if (s.value > 1 || settings.deprecated_priority_disabled != s.value)
+          throw protocol_error{};
+        return;
+      default:
+          // ignore if dont know
+          ;
+    }
+  };
+};
+
+// fills settings while parsing 'setting_t' one by one
+// server side
+struct client_settings_visitor {
+  settings_t& settings;  // must be client settings
+
+  constexpr void operator()(setting_t s) const {
+    switch (s.identifier) {
+      case SETTINGS_HEADER_TABLE_SIZE:
+        settings.header_table_size = s.value;
+        return;
+      case SETTINGS_ENABLE_PUSH:
+        if (s.value > 1)
+          throw protocol_error{};
         settings.enable_push = s.value;
         return;
       case SETTINGS_MAX_CONCURRENT_STREAMS:
