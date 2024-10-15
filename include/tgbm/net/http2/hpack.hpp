@@ -16,8 +16,7 @@
 #include "tgbm/tools/macro.hpp"
 #include "tgbm/net/http2/errors.hpp"
 #include "tgbm/tools/algorithm.hpp"
-
-// TODO? lazy headers
+#include "tgbm/tools/scope_exit.h"
 
 namespace tgbm::hpack {
 
@@ -40,45 +39,12 @@ using In = const byte_t*;
 template <typename T>
 concept Out = std::output_iterator<T, byte_t>;
 
-template <typename T>
-concept protocol_verifier = requires(T& v) {
-  { T::handle_protocol_error() };  // must be [[noreturn]]
-  { T::handle_size_error() };      // must be [[noreturn]]
-  { v.entry_added(std::string_view{}, std::string_view{}) };
-};
-
-struct default_protocol_verificator {
-  [[noreturn]] static void handle_protocol_error() {
-    throw protocol_error{};
-  }
-  [[noreturn]] static void handle_size_error() {
-    throw protocol_error{};
-  }
-  static void entry_added(std::string_view, std::string_view) {
-  }
-};
-
-// may be used if you trust to server/endpoint, boosts performance
-struct trusted_verificator {
-  [[noreturn]] static void handle_protocol_error() {
-    unreachable();
-  }
-  [[noreturn]] static void handle_size_error() {
-    unreachable();
-  }
-  static void entry_added(std::string_view, std::string_view) {
-  }
-};
-
-// collects all headers which were during connection,
-// this statictic may be used to cache headers at start of next connection
-struct collect_headers_verificator : default_protocol_verificator {
-  std::unordered_multimap<std::string, std::string> headers;
-
-  void entry_added(std::string_view name, std::string_view value) {
-    headers.insert({std::string(name), std::string(value)});
-  }
-};
+[[noreturn]] inline void handle_protocol_error() {
+  throw protocol_error{};
+}
+[[noreturn]] inline void handle_size_error() {
+  throw protocol_error{};
+}
 
 namespace noexport {
 
@@ -265,9 +231,9 @@ struct static_table_t {
   }
 };
 
-[[nodiscard]] static bool is_lowercase(std::string_view s) {
-  auto is_lower_char = [](char c) { return !(c >= 'A' && c <= 'Z'); };
-  return std::find_if_not(s.begin(), s.end(), is_lower_char) == s.end();
+[[nodiscard]] static bool is_lowercase(std::string_view s) noexcept {
+  auto is_uppercase_char = [](char c) { return c >= 'A' && c <= 'Z'; };
+  return std::none_of(s.begin(), s.end(), is_uppercase_char);
 }
 
 struct dynamic_table_t {
@@ -377,7 +343,6 @@ struct dynamic_table_t {
 
   // returns index of added pair, 0 if cannot add
   index_type add_entry(std::string_view name, std::string_view value) {
-    assert(is_lowercase(name));
     size_type new_entry_size = name.size() + value.size() + 32;
     if (_max_size < new_entry_size) [[unlikely]] {
       reset();
@@ -410,7 +375,6 @@ struct dynamic_table_t {
   }
 
   find_result_t find(std::string_view name, std::string_view value) noexcept {
-    assert(is_lowercase(name));
     find_result_t r;
     auto it = set.find(table_entry(name, value));
     if (it == set.end())
@@ -533,13 +497,13 @@ O encode_integer(std::type_identity_t<UInt> I, uint8_t N, O _out) noexcept {
   return noexport::unadapt<O>(out);
 }
 
-template <protocol_verifier V, std::unsigned_integral UInt = size_type>
+template <std::unsigned_integral UInt = size_type>
 [[nodiscard]] size_type decode_integer(In& in, In e, uint8_t N) {
   const UInt prefix_mask = (1 << N) - 1;
   // get first N bits
   auto pull = [&] {
     if (in == e)
-      V::handle_size_error();
+      handle_size_error();
     int8_t i = *in;
     ++in;
     return i;
@@ -554,7 +518,7 @@ template <protocol_verifier V, std::unsigned_integral UInt = size_type>
     UInt cpy = I;
     I += UInt(B & 0b0111'1111) << M;
     if (I < cpy)  // overflow
-      V::handle_protocol_error();
+      handle_protocol_error();
     M += 7;
   } while (B & 0b1000'0000);
   return I;
@@ -595,12 +559,8 @@ O encode_string_huffman(std::string_view str, O _out) {
 }
 
 // precondition: in != e
-template <protocol_verifier V, Out O>
-O decode_string_huffman(In& in, In e, O out) {
-  assert(in != e && *in & 0b1000'0000);  // Huffman encoded
-  size_type str_len = decode_integer<V>(in, e, 7);
-  if (str_len > std::distance(in, e))
-    V::handle_size_error();
+template <Out O>
+O decode_string_huffman(In in, In e, O out) {
   sym_info_t info{0, 0};
   int bit_nmb = 0;
   auto next_bit = [&] {
@@ -608,7 +568,6 @@ O decode_string_huffman(In& in, In e, O out) {
     if (bit_nmb == 7) {
       bit_nmb = 0;
       ++in;
-      --str_len;
     } else {
       ++bit_nmb;
     }
@@ -616,18 +575,17 @@ O decode_string_huffman(In& in, In e, O out) {
   };
   for (;;) {
     // min symbol len in Huffman table is 5 bits
-    for (int i = 0; str_len && i < 5; ++i, ++info.bit_count) {
+    for (int i = 0; in != e && i < 5; ++i, ++info.bit_count) {
       info.bits <<= 1;
       info.bits += next_bit();
     }
     uint16_t sym;
-    while ((sym = huffman_decode_table_find(info)) == uint16_t(-1) && str_len) {
+    while ((sym = huffman_decode_table_find(info)) == uint16_t(-1) && in != e) {
       info.bits <<= 1;
       info.bits += next_bit();
       ++info.bit_count;
     }
     if (sym == 256) [[unlikely]] {
-      // TODO? throw STREAM_CLOSED?
       // EOS
       while (bit_nmb != 0)  // skip padding
         next_bit();
@@ -638,9 +596,9 @@ O decode_string_huffman(In& in, In e, O out) {
       *out = byte_t(sym);
       ++out;
     }
-    if (!str_len) {
+    if (in == e) {
       if (std::countr_one(info.bits) != info.bit_count)
-        V::handle_protocol_error();  // incorrect padding
+        handle_protocol_error();  // incorrect padding
       return out;
     }
   }
@@ -668,30 +626,169 @@ O encode_string(std::string_view str, O _out) {
   return noexport::unadapt<O>(out);
 }
 
-// since string can be Huffman encoded impossible to use string_view
-template <protocol_verifier V, Out O>
-O decode_string(In& in, In e, O out) {
-  if (*in & 0b1000'0000)  // Huffman encoded
-    return decode_string_huffman<V>(in, e, out);
-  size_type len = decode_integer<V>(in, e, 7);
-  if (std::distance(in, e) < len)
-    V::handle_size_error();
-  out = std::copy_n(in, len, out);
-  std::advance(in, len);
-  return out;
+[[nodiscard]] constexpr size_t max_huffman_string_size_after_decode(size_type huffman_str_len) noexcept {
+  // minimal symbol in table is 5 bit len, so worst case is only 5 bit symbols
+  return size_t(huffman_str_len) * 8 / 5;
 }
 
-template <protocol_verifier V>
-[[nodiscard]] table_entry get_by_index(index_type header_index, dynamic_table_t& dyntab) {
+// dyntab is used only if required (index >= 62)
+[[nodiscard]] inline table_entry get_by_index(index_type header_index, dynamic_table_t* dyntab) {
   /*
      Indices strictly greater than the sum of the lengths of both tables
      MUST be treated as a decoding error.
   */
-  if (header_index > dyntab.current_max_index() || header_index == 0)
-    V::handle_protocol_error();
+  if (header_index == 0) [[unlikely]]
+    handle_protocol_error();
   if (header_index < static_table_t::first_unused_index)
     return static_table_t::get_entry(header_index);
-  return dyntab.get_entry(header_index);
+  if (header_index > dyntab->current_max_index()) [[unlikely]]
+    handle_protocol_error();
+  return dyntab->get_entry(header_index);
+}
+
+struct TGBM_TRIVIAL_ABI decoded_string {
+ private:
+  const char* data = nullptr;
+  size_type sz = 0;
+  uint8_t allocated_sz_log2 = 0;  // != 0 after decoding huffman str
+
+ public:
+  decoded_string() = default;
+
+  decoded_string(const char* ptr, size_type len, bool is_huffman_encoded) : data(ptr), sz(len) {
+    if (!is_huffman_encoded)
+      return;
+    assign(ptr, len, true);
+  }
+
+  // precondition: str.size() less then max of size_type
+  decoded_string(std::string_view str, bool is_huffman_encoded)
+      : decoded_string(str.data(), str.size(), is_huffman_encoded) {
+    assert(std::in_range<size_type>(str.size()));
+  }
+
+  decoded_string(decoded_string&& other) noexcept {
+    swap(other);
+  }
+
+  decoded_string& operator=(decoded_string&& other) noexcept {
+    swap(other);
+    return *this;
+  }
+  // TODO private!
+  void assign(decoded_string&& other) noexcept {
+    swap(other);
+  }
+
+  void assign(const char* ptr, size_type len, bool is_huffman_encoded) {
+    if (!is_huffman_encoded || len == 0) {
+      reset();
+      data = ptr;
+      sz = len;
+      allocated_sz_log2 = 0;
+      return;
+    }
+    if (bytes_allocated() >= max_huffman_string_size_after_decode(len)) {
+      const byte_t* in = (const byte_t*)ptr;
+      // const cast because im owner of pointer (its allocated by malloc)
+      char* end = decode_string_huffman(in, in + len, const_cast<char*>(data));
+      sz = end - data;
+
+      assert(sz <= max_huffman_string_size_after_decode(sz));
+    } else {
+      size_t sz_to_allocate = std::bit_ceil(max_huffman_string_size_after_decode(len));
+      allocated_sz_log2 = std::bit_width(sz_to_allocate) - 1;
+      const char* old_data = data;
+      data = (char*)malloc(sz_to_allocate);
+
+      on_scope_failure(free_mem) {
+        free((void*)data);
+        data = old_data;
+        allocated_sz_log2 = 0;
+      };
+      // recursive call into branch where we have enough memory
+      assign(ptr, len, is_huffman_encoded);
+
+      free_mem.no_longer_needed();
+    }
+  }
+
+  void assign(std::string_view str, bool is_huffman_encoded) {
+    assert(std::in_range<size_type>(str.size()));
+    assign(str.data(), str.size(), is_huffman_encoded);
+  }
+
+  void swap(decoded_string& other) noexcept {
+    std::swap(data, other.data);
+    std::swap(sz, other.sz);
+    std::swap(allocated_sz_log2, other.allocated_sz_log2);
+  }
+
+  friend void swap(decoded_string& l, decoded_string& r) noexcept {
+    l.swap(r);
+  }
+
+  ~decoded_string() {
+    reset();
+  }
+
+  void reset() noexcept {
+    if (allocated_sz_log2)
+      free((void*)data);
+    data = nullptr;
+    sz = 0;
+    allocated_sz_log2 = 0;
+  }
+
+  [[nodiscard]] size_t bytes_allocated() const noexcept {
+    if (!allocated_sz_log2)
+      return 0;
+    return 1 << allocated_sz_log2;
+  }
+
+  [[nodiscard]] std::string_view str() const noexcept {
+    return std::string_view(data, sz);
+  }
+
+  // true if not empty
+  explicit operator bool() const noexcept {
+    return data != nullptr;
+  }
+
+  std::strong_ordering operator<=>(const decoded_string& other) const noexcept {
+    return str() <=> other.str();
+  }
+
+  std::strong_ordering operator<=>(std::string_view other) const noexcept {
+    return str() <=> other;
+  }
+};
+
+// note: decoding next header invalidates previous header
+struct header_view {
+  decoded_string name;
+  decoded_string value;
+
+  // header may be not present if default contructed or table_size_update happen instead of header
+  explicit operator bool() const noexcept {
+    return name || value;
+  }
+
+  header_view& operator=(header_view&&) = default;
+  header_view& operator=(table_entry entry) {
+    name.assign(entry.name, /*is_huffman_encoded=*/false);
+    value.assign(entry.value, /*is_huffman_encoded=*/false);
+    return *this;
+  }
+};
+
+inline void decode_string(In& in, In e, decoded_string& out) {
+  bool is_huffman = *in & 0b1000'0000;
+  size_type str_len = decode_integer(in, e, 7);
+  if (str_len > std::distance(in, e))
+    handle_size_error();
+  out.assign((const char*)in, str_len, is_huffman);
+  in += str_len;
 }
 
 struct encoder {
@@ -732,8 +829,7 @@ struct encoder {
     // indexed name, new value 0b01...
     *out = 0b0100'0000;
     out = encode_integer(header_index, 6, out);
-    // trusted, since im encoder and must not fail
-    std::string_view str = get_by_index<trusted_verificator>(header_index, dyntab).name;
+    std::string_view str = get_by_index(header_index, &dyntab).name;
     dyntab.add_entry(str, value);
     return noexport::unadapt<O>(encode_string<Huffman>(value, out));
   }
@@ -851,18 +947,20 @@ struct encoder {
   }
 
   /*
-   more calculations, less memory
+   default encode, more calculations, less memory
+   minimizes size of encoded
+
    usually its better to encode headers manually, but may be used as "okay somehow encode"
 
    'Cache' - if true, then will cache headers if they are not in cache yet
-   'Huffman' - use Huffman encoding for strings or no (prefer no
+   'Huffman' - use Huffman encoding for strings or no (prefer no)
 
   Note: static table has priority over dynamic table
    (eg indexed name which is indexed in both tables uses index from static,
   same for name + value pairs)
   */
   template <bool Cache = false, bool Huffman = false, Out O>
-  O encode_header_memory_effective(std::string_view name, std::string_view value, O out) {
+  O encode(std::string_view name, std::string_view value, O out) {
     find_result_t r2 = static_table_t::find(name, value);
     if (r2.value_indexed)
       return encode_header_fully_indexed(r2.header_name_index, out);
@@ -888,7 +986,7 @@ struct encoder {
   }
 
   template <bool Cache = false, bool Huffman = false, Out O>
-  O encode_header_memory_effective(index_type name, std::string_view value, O out) {
+  O encode(index_type name, std::string_view value, O out) {
     find_result_t r2 = static_table_t::find(name, value);
     if (r2.value_indexed)
       return encode_header_fully_indexed(r2.header_name_index, out);
@@ -938,10 +1036,8 @@ struct encoder {
   }
 };
 
-template <protocol_verifier Verifier = default_protocol_verificator>
 struct decoder {
   dynamic_table_t dyntab;
-  KELCORO_NO_UNIQUE_ADDRESS Verifier verifier;
 
   // 4096 - default size in HTTP/2
   explicit decoder(size_type max_dyntab_size = 4096,
@@ -956,21 +1052,22 @@ struct decoder {
    https://www.rfc-editor.org/rfc/rfc7540#section-8.1.2.5
    and protocol error if decoded header name is not lowercase
   */
-  template <Out O1, Out O2>
-  std::pair<O1, O2> decode_header(In& in, In e, O1 name_out, O2 value_out) {
+  void decode_header(In& in, In e, header_view& out) {
     if (*in & 0b1000'0000)
-      return decode_header_fully_indexed(in, e, name_out, value_out);
+      return decode_header_fully_indexed(in, e, out);
     if (*in & 0b0100'0000)
-      return decode_header_cache(in, e, name_out, value_out);
+      return decode_header_cache(in, e, out);
     if (*in & 0b0010'0000) {
       dyntab.update_size(decode_dynamic_table_size_update(in, e));
-      return {name_out, value_out};
+      out.name = {};
+      out.value = {};
+      return;
     }
     if (*in & 0b0001'0000)
-      return decode_header_never_indexing(in, e, name_out, value_out);
+      return decode_header_never_indexing(in, e, out);
     if ((*in & 0b1111'0000) == 0)
-      return decode_header_without_indexing(in, e, name_out, value_out);
-    verifier.handle_protocol_error();
+      return decode_header_without_indexing(in, e, out);
+    handle_protocol_error();
   }
 
   // returns status code
@@ -978,7 +1075,7 @@ struct decoder {
     if (*in & 0b1000'0000) {
       // fast path, fully indexed
       auto in_before = in;
-      index_type index = decode_integer<Verifier>(in, e, 7);
+      index_type index = decode_integer(in, e, 7);
       switch (index) {
         case static_table_t::status_200:
           return 200;
@@ -999,105 +1096,82 @@ struct decoder {
     }
     // first header of response must be required pseudoheader,
     // which is (for response) only one - ":status"
-    std::string status;
-    std::string code;
-    decode_header(in, e, std::back_inserter(status), std::back_inserter(code));
-    if (status != ":status" || code.size() != 3)
-      verifier.handle_protocol_error();
+    header_view header;
+    decode_header(in, e, header);
+    std::string_view code = header.value.str();
+    if (header.name.str() != ":status" || code.size() != 3)
+      handle_protocol_error();
     int status_code;
     auto [_, err] = std::from_chars(code.data(), code.data() + 3, status_code);
     if (err != std::errc{})
-      verifier.handle_protocol_error();
+      handle_protocol_error();
     return status_code;
   }
 
   // returns requested new size of dynamic table
   size_type decode_dynamic_table_size_update(In& in, In e) noexcept {
     assert(*in & 0b0010'0000 && !(*in & 0b0100'0000) && !(*in & 0b1000'0000));
-    return decode_integer<Verifier>(in, e, 5);
+    return decode_integer(in, e, 5);
   }
 
  private:
-  template <Out O1, Out O2>
-  std::pair<O1, O2> decode_header_fully_indexed(In& in, In e, O1 name_out, O2 value_out) {
+  void decode_header_fully_indexed(In& in, In e, header_view& out) {
     assert(*in & 0b1000'0000);
-    index_type index = decode_integer<Verifier>(in, e, 7);
-    table_entry entry = get_by_index<Verifier>(index, dyntab);
+    index_type index = decode_integer(in, e, 7);
+    table_entry entry = get_by_index(index, &dyntab);
     // only way to get uncached value is from static table,
     // in dynamic table empty header value ("") is a cached header
     if (index < static_table_t::first_unused_index && entry.value.empty())
-      verifier.handle_protocol_error();
-    name_out = std::copy_n(entry.name.data(), entry.name.size(), name_out);
-    value_out = std::copy_n(entry.value.data(), entry.value.size(), value_out);
-    return {name_out, value_out};
+      handle_protocol_error();
+    out = entry;
   }
 
   // header with incremental indexing
-  template <Out O1, Out O2>
-  std::pair<O1, O2> decode_header_cache(In& in, In e, O1 name_out, O2 value_out) {
+  void decode_header_cache(In& in, In e, header_view& out) {
     assert(in != e && *in & 0b0100'0000);
-    std::string name;
-    std::string value;
-    decode_header_impl(in, e, std::back_inserter(name), std::back_inserter(value), 6);
-    name_out = std::copy_n(name.data(), name.size(), name_out);
-    value_out = std::copy_n(value.data(), value.size(), value_out);
-    verifier.entry_added(name, value);
-    dyntab.add_entry(name, value);
-    return {name_out, value_out};
+    decode_header_impl(in, e, 6, out);
+    dyntab.add_entry(out.name.str(), out.value.str());
   }
 
-  template <Out O1, Out O2>
-  std::pair<O1, O2> decode_header_without_indexing(In& in, In e, O1 name_out, O2 value_out) {
+  void decode_header_without_indexing(In& in, In e, header_view& out) {
     assert(in != e && (*in & 0x1111'0000) == 0);
-    return decode_header_impl(in, e, name_out, value_out, 4);
+    return decode_header_impl(in, e, 4, out);
   }
 
-  template <Out O1, Out O2>
-  std::pair<O1, O2> decode_header_never_indexing(In& in, In e, O1 name_out, O2 value_out) {
+  void decode_header_never_indexing(In& in, In e, header_view& out) {
     assert(in != e && *in & 0b0001'0000);
-    return decode_header_impl(in, e, name_out, value_out, 4);
+    return decode_header_impl(in, e, 4, out);
   }
 
   // decodes partly indexed / new-name pairs
-  template <Out O1, Out O2>
-  std::pair<O1, O2> decode_header_impl(In& in, In e, O1 name_out, O2 value_out, uint8_t N) {
-    index_type index = decode_integer<Verifier>(in, e, N);
-    if (index == 0) {
-      name_out = decode_string<Verifier>(in, e, name_out);
-    } else {
-      table_entry entry = get_by_index<Verifier>(index, dyntab);
-      name_out = std::copy_n(entry.name.data(), entry.name.size(), name_out);
-    }
-    value_out = decode_string<Verifier>(in, e, value_out);
-    return {name_out, value_out};
+  void decode_header_impl(In& in, In e, uint8_t N, header_view& out) {
+    index_type index = decode_integer(in, e, N);
+    if (index == 0)
+      decode_string(in, e, out.name);
+    else
+      out.name.assign(get_by_index(index, &dyntab).name, false);
+    decode_string(in, e, out.value);
   }
 };
 
-template <bool Cache = false, bool Huffman = false, protocol_verifier V, Out O>
+template <bool Cache = false, bool Huffman = false, Out O>
 O encode_headers_block(encoder& enc, auto&& range_of_headers, O out) {
   for (auto&& [name, value] : range_of_headers)
-    out = enc.template encode_header_memory_effective<Cache, Huffman>(name, value, out);
+    out = enc.template encode<Cache, Huffman>(name, value, out);
   return out;
 }
 
 // visitor should accept two string_views, name and value
 // ignores special case Cookie header separated by key-value pairs
-template <typename V, typename Verifier>
-V decode_headers_block(decoder<Verifier>& enc, std::span<const byte_t> bytes, V visitor) {
-  std::vector<byte_t> name;
-  std::vector<byte_t> value;
+template <typename V>
+V decode_headers_block(decoder& enc, std::span<const byte_t> bytes, V visitor) {
   const auto* in = bytes.data();
   const auto* e = in + bytes.size();
+  header_view header;
   while (in != e) {
-    enc.decode_header(in, e, back_inserter(name), back_inserter(value));
-    if (name.empty())
-      continue;  // dynamic size update decoded without error
-    std::string_view header_name((char*)name.data(), name.size());
-    if (!is_lowercase(header_name))
-      enc.verifier.handle_protocol_error();
-    visitor(header_name, std::string_view((char*)value.data(), value.size()));
-    name.clear();
-    value.clear();
+    enc.decode_header(in, e, header);
+    if (header)  // dynamic size update decoded without error
+      visitor(header.name.str(), header.value.str());
   }
   return visitor;
 }

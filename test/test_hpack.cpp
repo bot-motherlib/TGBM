@@ -9,15 +9,18 @@
     exit(__LINE__);      \
   }
 
+using tgbm::hpack::decode_integer;
+using tgbm::hpack::encode_integer;
+
 static void test_number(uint32_t value_to_encode, uint8_t prefix_length, uint32_t expected_bytes_filled = 0) {
   tgbm::hpack::encoder enc;
 
   uint8_t chars[10] = {};
-  uint8_t* encoded_end = enc.encode_integer(value_to_encode, prefix_length, chars);
+  uint8_t* encoded_end = encode_integer(value_to_encode, prefix_length, chars);
   if (expected_bytes_filled != 0)
     error_if(encoded_end - chars != expected_bytes_filled);
   const uint8_t* in = chars;
-  uint32_t x = enc.decode_integer(in, encoded_end, prefix_length);
+  uint32_t x = decode_integer(in, encoded_end, prefix_length);
   error_if(x != value_to_encode);
   error_if(in != encoded_end);  // decoded all what encoded
 }
@@ -41,10 +44,10 @@ TEST(encode_decode_integers) {
 
   uint8_t chars[10] = {};
   uint8_t* encoded_end =
-      enc.encode_integer<uint64_t>(uint64_t(std::numeric_limits<uint32_t>::max()) + 1, 6, chars);
+      encode_integer<uint64_t>(uint64_t(std::numeric_limits<uint32_t>::max()) + 1, 6, chars);
   const uint8_t* in = chars;
   try {
-    (void)enc.decode_integer<uint32_t>(in, encoded_end, 6);
+    (void)decode_integer<uint32_t>(in, encoded_end, 6);
   } catch (tgbm::protocol_error&) {
     // must throw overflow
     return;
@@ -58,13 +61,13 @@ using bytes_t = std::vector<uint8_t>;
 
 // encoder by ref, because HPACK it statefull (between requests/responses)
 template <bool Huffman = false>
-static void test_encode(tgbm::hpack::encoder<>& enc, tgbm::hpack::size_type expected_dyntab_size,
+static void test_encode(tgbm::hpack::encoder& enc, tgbm::hpack::size_type expected_dyntab_size,
                         headers_t headers_to_encode, bytes_t expected_encoded_bytes,
                         headers_t expected_dyntab_content) {
   std::vector<uint8_t> bytes(expected_encoded_bytes.size(), ~0);
   auto* out = bytes.data();
   for (auto&& [name, value] : headers_to_encode)
-    out = enc.template encode_header_memory_effective</*Cache=*/true, Huffman>(name, value, out);
+    out = enc.template encode</*Cache=*/true, Huffman>(name, value, out);
   error_if(bytes != expected_encoded_bytes);
   error_if(enc.dyntab.current_size() != expected_dyntab_size);
   for (auto&& [name, value] : expected_dyntab_content) {
@@ -73,19 +76,17 @@ static void test_encode(tgbm::hpack::encoder<>& enc, tgbm::hpack::size_type expe
   }
 }
 
-static void test_decode(tgbm::hpack::encoder<>& enc, tgbm::hpack::size_type expected_dyntab_size,
+static void test_decode(tgbm::hpack::decoder& enc, tgbm::hpack::size_type expected_dyntab_size,
                         headers_t expected_decoded_headers, bytes_t bytes_to_decode,
                         headers_t expected_dyntab_content) {
   assert(!bytes_to_decode.empty());
-  bytes_t decoded_name(1000, 0);
-  bytes_t decoded_value(1000, 0);
-  decltype(expected_decoded_headers) decoded;
+  tgbm::hpack::header_view hdr;
+  headers_t decoded;
   const uint8_t* in = bytes_to_decode.data();
   auto* e = in + bytes_to_decode.size();
   while (in != e) {
-    auto [name_out, value_out] = enc.decode_header(in, e, decoded_name.data(), decoded_value.data());
-    decoded.emplace_back(std::string_view((char*)decoded_name.data(), (char*)name_out),
-                         std::string_view((char*)decoded_value.data(), (char*)value_out));
+    enc.decode_header(in, e, hdr);
+    decoded.emplace_back(hdr.name.str(), hdr.value.str());
   }
   error_if(decoded != expected_decoded_headers);
   error_if(enc.dyntab.current_size() != expected_dyntab_size);
@@ -101,7 +102,7 @@ static void test_decode(tgbm::hpack::encoder<>& enc, tgbm::hpack::size_type expe
 // https://www.rfc-editor.org/rfc/rfc7541#appendix-C.3.1
 TEST(encode_decode1) {
   tgbm::hpack::encoder sender(164);
-  tgbm::hpack::encoder receiver(164);
+  tgbm::hpack::decoder receiver(164);
   // first request
   {
     headers_t headers{
@@ -165,7 +166,7 @@ TEST(encode_decode1) {
 
 TEST(encode_decode_huffman1) {
   tgbm::hpack::encoder sender(164);
-  tgbm::hpack::encoder receiver(164);
+  tgbm::hpack::decoder receiver(164);
   // first request
   {
     headers_t headers{
@@ -230,7 +231,7 @@ TEST(encode_decode_huffman1) {
 // similar to first example, but forces eviction of dynamic table entries
 TEST(encode_decode_with_eviction) {
   tgbm::hpack::encoder sender(256);
-  tgbm::hpack::encoder receiver(256);
+  tgbm::hpack::decoder receiver(256);
   // first response
   {
     headers_t headers{
@@ -309,15 +310,11 @@ TEST(encode_decode_with_eviction) {
 TEST(huffman) {
   std::string_view str = "hello world";
   uint8_t buf[20];
-  auto* encoded_end = tgbm::hpack::encoder{}.encode_string<true>(str, +buf);
+  auto* encoded_end = tgbm::hpack::encode_string<true>(str, +buf);
   const uint8_t* in = +buf;
-  uint8_t outbuf[20];
-  auto out2 = tgbm::hpack::encoder{}.decode_string(in, encoded_end, +outbuf);
-  error_if(std::distance(outbuf, out2) != str.size());
-  std::string decoded;
-  for (uint8_t i : std::ranges::subrange(+outbuf, out2))
-    decoded.push_back((char)i);
-  error_if(decoded != str);
+  tgbm::hpack::decoded_string out;
+  tgbm::hpack::decode_string(in, encoded_end, out);
+  error_if(out.str() != str);
 }
 
 TEST(huffman_rand) {
@@ -325,15 +322,14 @@ TEST(huffman_rand) {
   bytes_t bytes;
   for (int i = 0; i < 1000; ++i)
     bytes.push_back(std::uniform_int_distribution<int>(0, 255)(gen));
-  tgbm::hpack::encoder e;
   bytes_t encoded;
-  e.encode_string_huffman(std::string_view((char*)bytes.data(), (char*)bytes.data() + bytes.size()),
-                          std::back_inserter(encoded));
+  tgbm::hpack::encode_string_huffman(
+      std::string_view((char*)bytes.data(), (char*)bytes.data() + bytes.size()), std::back_inserter(encoded));
   const uint8_t* in = encoded.data();
-  bytes_t decoded;
-  e.decode_string_huffman(in, in + encoded.size(), std::back_inserter(decoded));
+  tgbm::hpack::decoded_string out;
+  tgbm::hpack::decode_string(in, in + encoded.size(), out);
   error_if(in != encoded.data() + encoded.size());
-  error_if(decoded != bytes);
+  error_if(out.str() != std::string_view((char*)bytes.data(), bytes.size()));
 }
 
 TEST(huffman_table_itself){
@@ -350,12 +346,11 @@ TEST(huffman_encode_eos) {
   bytes_t bytes{
       0x85, 0xfe, 0x3f, 0xff, 0xff, 0xff,
   };
-  tgbm::hpack::encoder enc;
   const uint8_t* in = bytes.data();
-  bytes_t decoded;
-  enc.decode_string_huffman(in, in + bytes.size(), std::back_inserter(decoded));
+  tgbm::hpack::decoded_string decoded;
+  tgbm::hpack::decode_string(in, in + bytes.size(), decoded);
   error_if(in != bytes.data() + bytes.size());
-  error_if(std::string_view((char*)decoded.data(), decoded.size()) != "!");
+  error_if(decoded.str() != "!");
 }
 
 TEST(static_table_find) {
@@ -457,7 +452,7 @@ TEST(tg_answer) {
       0x7a, 0x92, 0x5a, 0x92, 0xb6, 0xff, 0x55, 0x97, 0xea, 0xf8, 0xd2, 0x5f, 0xad, 0xc5, 0xb3, 0xb9, 0x6c,
       0xfa, 0xbc, 0x7a, 0xaa, 0x29, 0x12, 0x63, 0xd5,
   };
-  tgbm::hpack::decoder<> e;
+  tgbm::hpack::decoder e;
   headers_t expected{
       {":status", "200"},
       {"server", "nginx/1.18.0"},
@@ -473,32 +468,33 @@ TEST(tg_answer) {
   const tgbm::hpack::byte_t* in = bytes.data();
   error_if(200 != e.decode_response_status(in, bytes.data() + bytes.size()));
   tgbm::hpack::decode_headers_block(e, bytes, [&](std::string_view name, std::string_view value) {
-    result.push_back(std::pair{std::string(name), std::string(value)});
+    result.emplace_back(std::string(name), std::string(value));
   });
   error_if(result != expected);
 }
 
 TEST(decode_status) {
-  tgbm::hpack::decoder<> e;
+  tgbm::hpack::encoder e;
+  tgbm::hpack::decoder de;
   bytes_t rsp;
 
   e.encode_header_fully_indexed(tgbm::hpack::static_table_t::status_304, std::back_inserter(rsp));
   const auto* in = rsp.data();
-  error_if(304 != e.decode_response_status(in, rsp.data() + rsp.size()));
+  error_if(304 != de.decode_response_status(in, rsp.data() + rsp.size()));
   error_if(in != rsp.data() + rsp.size());
   rsp.clear();
 
   // use status as name and valid status code
   e.encode_header_without_indexing(tgbm::hpack::static_table_t::status_200, "200", std::back_inserter(rsp));
   in = rsp.data();
-  error_if(200 != e.decode_response_status(in, rsp.data() + rsp.size()));
+  error_if(200 != de.decode_response_status(in, rsp.data() + rsp.size()));
   error_if(in != rsp.data() + rsp.size());
   rsp.clear();
 
   e.encode_header_without_indexing(tgbm::hpack::static_table_t::status_200, "fds", std::back_inserter(rsp));
   in = rsp.data();
   try {
-    e.decode_response_status(in, rsp.data() + rsp.size());
+    de.decode_response_status(in, rsp.data() + rsp.size());
     error_if(true);
   } catch (...) {
   }
@@ -507,7 +503,7 @@ TEST(decode_status) {
   e.encode_header_without_indexing(tgbm::hpack::static_table_t::status_200, "2000", std::back_inserter(rsp));
   in = rsp.data();
   try {
-    e.decode_response_status(in, rsp.data() + rsp.size());
+    de.decode_response_status(in, rsp.data() + rsp.size());
     error_if(true);
   } catch (...) {
   }
@@ -516,7 +512,7 @@ TEST(decode_status) {
   e.encode_header_never_indexing(tgbm::hpack::static_table_t::status_200, "2 0 0", std::back_inserter(rsp));
   in = rsp.data();
   try {
-    e.decode_response_status(in, rsp.data() + rsp.size());
+    de.decode_response_status(in, rsp.data() + rsp.size());
     error_if(true);
   } catch (...) {
   }
@@ -524,19 +520,20 @@ TEST(decode_status) {
 
   e.encode_header_and_cache(tgbm::hpack::static_table_t::status_200, "555", std::back_inserter(rsp));
   in = rsp.data();
-  error_if(555 != e.decode_response_status(in, rsp.data() + rsp.size()));
+  error_if(555 != de.decode_response_status(in, rsp.data() + rsp.size()));
   error_if(in != rsp.data() + rsp.size());
   rsp.clear();
 }
 
 TEST(dynamic_table_size_update) {
-  tgbm::hpack::decoder<> e;
+  tgbm::hpack::encoder e;
+  tgbm::hpack::decoder de;
   bytes_t bytes;
 
   e.encode_dynamic_table_size_update(144, std::back_inserter(bytes));
   const auto* in = bytes.data();
   const auto* end = bytes.data() + bytes.size();
-  error_if(144 != e.decode_dynamic_table_size_update(in, end));
+  error_if(144 != de.decode_dynamic_table_size_update(in, end));
   error_if(in != end);  // all parsed
 }
 
@@ -587,7 +584,94 @@ TEST(static_table_find_by_index) {
   }
 }
 
+TEST(decoded_string) {
+  // empry str
+
+  tgbm::hpack::decoded_string str;
+  error_if(str);
+  error_if(str.bytes_allocated());
+  str.assign(std::move(str));
+  error_if(str);
+  error_if(str.bytes_allocated());
+  error_if(str.str() != "");
+
+  // non huffman
+
+  std::string_view test = "hello";
+  str.assign(test, false);
+  error_if(str.bytes_allocated());
+  error_if(str.str() != test);
+  str.reset();
+  error_if(str);
+  error_if(str.str() != "");
+  error_if(str.bytes_allocated());
+
+  // huffman
+
+  bytes_t out;
+  tgbm::hpack::encode_string_huffman(test, std::back_inserter(out));
+  const auto* in = out.data();
+  tgbm::hpack::decode_string(in, in + out.size(), str);
+  error_if(!str);
+  error_if(str.str() != test);
+  error_if(str.bytes_allocated() != std::bit_ceil(test.size()));
+
+  // memory reuse
+
+  std::string_view before = str.str();
+  in = out.data();
+  tgbm::hpack::decode_string(in, in + out.size(), str);
+  error_if(!str);
+  error_if(str.str() != test);
+  error_if(str.bytes_allocated() != std::bit_ceil(test.size()));
+  error_if(before.data() != str.str().data());
+
+  // memory reuse for smaller string
+
+  std::string_view test2 = "ab";
+  bytes_t out2;
+  tgbm::hpack::encode_string_huffman(test2, std::back_inserter(out2));
+  in = out2.data();
+
+  tgbm::hpack::decode_string(in, in + out2.size(), str);
+  error_if(!str);
+  error_if(str.str() != test2);
+  error_if(before.data() != str.str().data());
+  error_if(str.bytes_allocated() != std::bit_ceil(test.size()));
+
+  // reallocate after bigger string
+
+  std::string_view test3 = "hello world big string";
+  bytes_t out3;
+  tgbm::hpack::encode_string_huffman(test3, std::back_inserter(out3));
+  in = out3.data();
+  tgbm::hpack::decode_string(in, in + out3.size(), str);
+
+  error_if(!str);
+  error_if(str.str() != test3);
+  error_if(str.bytes_allocated() != std::bit_ceil(test3.size()));
+
+  // zero-len str huffman
+
+  str.assign(nullptr, 0, true);
+  error_if(str);
+  error_if(str.bytes_allocated());
+  error_if(str.str() != "");
+}
+
+TEST(is_lowercase) {
+  using tgbm::hpack::is_lowercase;
+  error_if(!is_lowercase("hello"));
+  error_if(!is_lowercase(""));
+  error_if(is_lowercase("A"));
+  error_if(is_lowercase("aaAbb"));
+  error_if(!is_lowercase("f__rew../wwr44"));
+  error_if(is_lowercase("rttr___trertg;..;A"));
+}
+
 int main() {
+  test_is_lowercase();
+  test_decoded_string();
   test_tg_answer();
   test_encode_decode_with_eviction();
   test_encode_decode_huffman1();
