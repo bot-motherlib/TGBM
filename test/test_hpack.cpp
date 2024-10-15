@@ -590,7 +590,7 @@ TEST(decoded_string) {
   tgbm::hpack::decoded_string str;
   error_if(str);
   error_if(str.bytes_allocated());
-  str.assign(std::move(str));
+  str = std::move(str);
   error_if(str);
   error_if(str.bytes_allocated());
   error_if(str.str() != "");
@@ -598,7 +598,7 @@ TEST(decoded_string) {
   // non huffman
 
   std::string_view test = "hello";
-  str.assign(test, false);
+  str = test;
   error_if(str.bytes_allocated());
   error_if(str.str() != test);
   str.reset();
@@ -635,7 +635,7 @@ TEST(decoded_string) {
 
   tgbm::hpack::decode_string(in, in + out2.size(), str);
   error_if(!str);
-  error_if(str.str() != test2);
+  error_if(str != test2);
   error_if(before.data() != str.str().data());
   error_if(str.bytes_allocated() != std::bit_ceil(test.size()));
 
@@ -648,15 +648,30 @@ TEST(decoded_string) {
   tgbm::hpack::decode_string(in, in + out3.size(), str);
 
   error_if(!str);
-  error_if(str.str() != test3);
+  error_if(str != test3);
   error_if(str.bytes_allocated() != std::bit_ceil(test3.size()));
 
   // zero-len str huffman
 
-  str.assign(nullptr, 0, true);
+  bytes_t out_empty;
+  tgbm::hpack::encode_string_huffman("", std::back_inserter(out_empty));
+  in = out_empty.data();
+  tgbm::hpack::decode_string(in, in + out_empty.size(), str);
+  error_if(str);
+  error_if(str.bytes_allocated() != std::bit_ceil(test3.size()));
+  error_if(str != "");
+
+  // reseting
+
+  str.reset();
+
   error_if(str);
   error_if(str.bytes_allocated());
-  error_if(str.str() != "");
+  error_if(str != "");
+
+  str.reset();
+
+  error_if(str != str);
 }
 
 TEST(is_lowercase) {

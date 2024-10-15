@@ -652,42 +652,10 @@ struct TGBM_TRIVIAL_ABI decoded_string {
   size_type sz = 0;
   uint8_t allocated_sz_log2 = 0;  // != 0 after decoding huffman str
 
- public:
-  decoded_string() = default;
+  friend void decode_string(In&, In, decoded_string&);
 
-  decoded_string(const char* ptr, size_type len, bool is_huffman_encoded) : data(ptr), sz(len) {
-    if (!is_huffman_encoded)
-      return;
-    assign(ptr, len, true);
-  }
-
-  // precondition: str.size() less then max of size_type
-  decoded_string(std::string_view str, bool is_huffman_encoded)
-      : decoded_string(str.data(), str.size(), is_huffman_encoded) {
-    assert(std::in_range<size_type>(str.size()));
-  }
-
-  decoded_string(decoded_string&& other) noexcept {
-    swap(other);
-  }
-
-  decoded_string& operator=(decoded_string&& other) noexcept {
-    swap(other);
-    return *this;
-  }
-  // TODO private!
-  void assign(decoded_string&& other) noexcept {
-    swap(other);
-  }
-
-  void assign(const char* ptr, size_type len, bool is_huffman_encoded) {
-    if (!is_huffman_encoded || len == 0) {
-      reset();
-      data = ptr;
-      sz = len;
-      allocated_sz_log2 = 0;
-      return;
-    }
+  void set_huffman(const char* ptr, size_type len) {
+    // also handles case when len == 0
     if (bytes_allocated() >= max_huffman_string_size_after_decode(len)) {
       const byte_t* in = (const byte_t*)ptr;
       // const cast because im owner of pointer (its allocated by malloc)
@@ -707,15 +675,43 @@ struct TGBM_TRIVIAL_ABI decoded_string {
         allocated_sz_log2 = 0;
       };
       // recursive call into branch where we have enough memory
-      assign(ptr, len, is_huffman_encoded);
+      set_huffman(ptr, len);
 
       free_mem.no_longer_needed();
     }
   }
 
-  void assign(std::string_view str, bool is_huffman_encoded) {
+ public:
+  decoded_string() = default;
+
+  decoded_string(const char* ptr, size_type len, bool is_huffman_encoded) : data(ptr), sz(len) {
+    if (!is_huffman_encoded)
+      return;
+    set_huffman(ptr, len);
+  }
+
+  // precondition: str.size() less then max of size_type
+  decoded_string(std::string_view str, bool is_huffman_encoded)
+      : decoded_string(str.data(), str.size(), is_huffman_encoded) {
     assert(std::in_range<size_type>(str.size()));
-    assign(str.data(), str.size(), is_huffman_encoded);
+  }
+
+  decoded_string(decoded_string&& other) noexcept {
+    swap(other);
+  }
+
+  decoded_string& operator=(decoded_string&& other) noexcept {
+    swap(other);
+    return *this;
+  }
+
+  // not huffman encoded string
+  decoded_string& operator=(std::string_view str) noexcept {
+    assert(std::in_range<size_type>(str.size()));
+    reset();
+    data = str.data();
+    sz = str.size();
+    return *this;
   }
 
   void swap(decoded_string& other) noexcept {
@@ -752,7 +748,14 @@ struct TGBM_TRIVIAL_ABI decoded_string {
 
   // true if not empty
   explicit operator bool() const noexcept {
-    return data != nullptr;
+    return sz != 0;
+  }
+
+  bool operator==(const decoded_string& other) const noexcept {
+    return str() == other.str();
+  }
+  bool operator==(std::string_view other) const noexcept {
+    return str() == other;
   }
 
   std::strong_ordering operator<=>(const decoded_string& other) const noexcept {
@@ -776,8 +779,8 @@ struct header_view {
 
   header_view& operator=(header_view&&) = default;
   header_view& operator=(table_entry entry) {
-    name.assign(entry.name, /*is_huffman_encoded=*/false);
-    value.assign(entry.value, /*is_huffman_encoded=*/false);
+    name = entry.name;
+    value = entry.value;
     return *this;
   }
 };
@@ -787,7 +790,10 @@ inline void decode_string(In& in, In e, decoded_string& out) {
   size_type str_len = decode_integer(in, e, 7);
   if (str_len > std::distance(in, e))
     handle_size_error();
-  out.assign((const char*)in, str_len, is_huffman);
+  if (is_huffman)
+    out.set_huffman((const char*)in, str_len);
+  else
+    out = std::string_view((const char*)in, str_len);
   in += str_len;
 }
 
@@ -1059,8 +1065,8 @@ struct decoder {
       return decode_header_cache(in, e, out);
     if (*in & 0b0010'0000) {
       dyntab.update_size(decode_dynamic_table_size_update(in, e));
-      out.name = {};
-      out.value = {};
+      out.name.reset();
+      out.value.reset();
       return;
     }
     if (*in & 0b0001'0000)
@@ -1149,7 +1155,7 @@ struct decoder {
     if (index == 0)
       decode_string(in, e, out.name);
     else
-      out.name.assign(get_by_index(index, &dyntab).name, false);
+      out.name = get_by_index(index, &dyntab).name;
     decode_string(in, e, out.value);
   }
 };
