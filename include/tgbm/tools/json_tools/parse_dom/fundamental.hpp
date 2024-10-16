@@ -1,4 +1,5 @@
 #pragma once
+<<<<<<< HEAD
 
 #include <concepts>
 #include <string>
@@ -6,6 +7,13 @@
 #include "tgbm/tools/json_tools/parse_dom/basic.hpp"
 #include "tgbm/tools/json_tools/json_traits.hpp"
 #include "tgbm/api/common.hpp"
+=======
+#include <concepts>
+#include <tgbm/tools/json_tools/parse_dom/basic.hpp>
+#include <tgbm/tools/json_tools/json_traits.hpp>
+#include <tgbm/api/common.hpp>
+#include <string>
+>>>>>>> e14721b (first impl)
 #include "tgbm/tools/math.hpp"
 
 namespace tgbm::json::parse_dom {
@@ -90,7 +98,11 @@ template <>
 struct parser<tgbm::api::True> {
   template <typename Json, json::json_traits Traits>
   static void parse(const Json& json, tgbm::api::True& out) {
+<<<<<<< HEAD
     if (!Traits::is_bool(json) || !Traits::get_bool(json)) {
+=======
+    if (!Traits::is_bool(json) || Traits::get_bool(json)) {
+>>>>>>> e14721b (first impl)
       Traits::on_error();
     }
   }

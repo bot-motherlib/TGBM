@@ -9,3 +9,4 @@
 #include "tgbm/tools/json_tools/rapid_parse_handler.hpp"
 #include "tgbm/tools/json_tools/rapid_parse_dom.hpp"
 #include "tgbm/tools/json_tools/exceptions.hpp"
+#include "tgbm/tools/json_tools/stream_parser.hpp"
