@@ -61,13 +61,6 @@ JSON_PARSE_TEST(SimpleTree, {
   EXPECT_EQ(expected, got);
 })
 
-// void foo(){
-//      tgbm::box<TreeNode> b;
-//      TreeNode t;
-// tgbm::json::parse_dom::parser<TreeNode>::parse<boost::json::value,
-// tgbm::json::boost_json_traits>(boost::json::value{}, t);
-// }
-
 JSON_PARSE_TEST(LeafOnly, {
   TreeNode expected;
   expected.tree_value = "single";
