@@ -76,7 +76,7 @@ template <>
 struct parser<tgbm::api::True> {
   template <typename Json, json::json_traits Traits>
   static void parse(const Json& json, tgbm::api::True& out) {
-    if (!Traits::is_bool(json) || Traits::get_bool(json)) {
+    if (!Traits::is_bool(json) || !Traits::get_bool(json)) {
       Traits::on_error();
     }
   }

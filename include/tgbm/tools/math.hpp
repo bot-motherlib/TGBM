@@ -62,7 +62,7 @@ constexpr bool in_range(T t) noexcept {
 }  // namespace details
 template <typename To, typename From>
 To safe_cast(From from) {
-  if (!in_range<To>(from)) {
+  if (!details::in_range<To>(from)) {
     throw std::overflow_error(fmt::format("Can't cast [{}] to {}", from, aa::noexport::n<To>()));
   }
   return To(from);
