@@ -1,6 +1,9 @@
 #pragma once
 
+#include <algorithm>
+
 #include "tgbm/net/http2/hpack/basic_types.hpp"
+#include "tgbm/net/http2/hpack/integers.hpp"
 
 namespace tgbm::hpack {
 

@@ -1,6 +1,9 @@
 
 #include "tgbm/net/http2/hpack/dynamic_table.hpp"
 
+#include <utility>
+#include <cstring>  // memcpy
+
 namespace tgbm::hpack {
 
 struct dynamic_table_t::entry_t : bi::set_base_hook<bi::link_mode<bi::normal_link>> {
@@ -28,8 +31,8 @@ struct dynamic_table_t::entry_t : bi::set_base_hook<bi::link_mode<bi::normal_lin
     assert(resource);
     void* bytes = resource->allocate(sizeof(entry_t) + name.size() + value.size(), alignof(entry_t));
     entry_t* e = new (bytes) entry_t(name.size(), value.size(), insert_c);
-    std::copy_n(name.data(), name.size(), +e->data);
-    std::copy_n(value.data(), value.size(), e->data + name.size());
+    memcpy(+e->data, name.data(), name.size());
+    memcpy(e->data + name.size(), value.data(), value.size());
     return e;
   }
   static void destroy(const entry_t* e, std::pmr::memory_resource* resource) noexcept {

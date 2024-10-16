@@ -81,7 +81,7 @@ struct asio_awaiter<void, CallbackUser> {
   io_error_code& _ec;
 
   template <typename... Args>
-  explicit asio_awaiter(io_error_code& ec [[clang::lifetimebound]], Args&&... args) noexcept
+  explicit asio_awaiter(io_error_code& ec KELCORO_LIFETIMEBOUND, Args&&... args) noexcept
       : _cb_user(std::forward<Args>(args)...), _ec(ec) {
   }
 

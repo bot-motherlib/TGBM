@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory_resource>
+
 #include <boost/intrusive/set.hpp>
 
 #include "tgbm/tools/boost_intrusive.hpp"
