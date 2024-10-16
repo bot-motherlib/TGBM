@@ -48,6 +48,9 @@ endif()
 set(TGBM_SRC_LIST
     src/net/http2_client.cpp
     src/net/http2/huffman.cpp
+    src/net/http2/hpack/decoder.cpp
+    src/net/http2/hpack/dynamic_table.cpp
+    src/net/http2/hpack/static_table.cpp
     src/Api.cpp
     # src/api_types_cmp.cpp
     src/Bot.cpp

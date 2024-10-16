@@ -533,7 +533,9 @@ TEST(dynamic_table_size_update) {
   e.encode_dynamic_table_size_update(144, std::back_inserter(bytes));
   const auto* in = bytes.data();
   const auto* end = bytes.data() + bytes.size();
-  error_if(144 != de.decode_dynamic_table_size_update(in, end));
+  // decode dynamic table size (repeated because its in .cpp)
+  auto decode_size_update = tgbm::hpack::decode_integer(in, end, 5);
+  error_if(144 != decode_size_update);
   error_if(in != end);  // all parsed
 }
 
@@ -674,18 +676,7 @@ TEST(decoded_string) {
   error_if(str != str);
 }
 
-TEST(is_lowercase) {
-  using tgbm::hpack::is_lowercase;
-  error_if(!is_lowercase("hello"));
-  error_if(!is_lowercase(""));
-  error_if(is_lowercase("A"));
-  error_if(is_lowercase("aaAbb"));
-  error_if(!is_lowercase("f__rew../wwr44"));
-  error_if(is_lowercase("rttr___trertg;..;A"));
-}
-
 int main() {
-  test_is_lowercase();
   test_decoded_string();
   test_tg_answer();
   test_encode_decode_with_eviction();

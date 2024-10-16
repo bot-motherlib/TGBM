@@ -6,8 +6,8 @@
 #include <string_view>
 #include <cassert>
 
-#include "tgbm/logger.h"
-#include "tgbm/net/http2/hpack.hpp"
+#include "tgbm/net/http2/errors.hpp"
+#include "tgbm/net/http2/hpack/basic_types.hpp"
 #include "tgbm/tools/memory.hpp"
 
 namespace tgbm::http2 {

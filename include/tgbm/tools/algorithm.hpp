@@ -39,15 +39,4 @@ KELCORO_PURE size_t fnv_hash(const T& value) noexcept {
   return val;
 }
 
-template <std::integral I>
-struct quot_rem {
-  I quot;
-  I rem;
-};
-// tries to force compiler to optimize it to 'div' instruction
-template <std::integral I>
-constexpr quot_rem<I> div_int(I val, std::type_identity_t<I> divisor) {
-  return {val / divisor, val % divisor};
-}
-
 }  // namespace tgbm
