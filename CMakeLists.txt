@@ -47,10 +47,6 @@ endif()
 
 set(TGBM_SRC_LIST
     src/net/http2_client.cpp
-    src/net/http2/huffman.cpp
-    src/net/http2/hpack/decoder.cpp
-    src/net/http2/hpack/dynamic_table.cpp
-    src/net/http2/hpack/static_table.cpp
     src/Api.cpp
     # src/api_types_cmp.cpp
     src/Bot.cpp
@@ -87,6 +83,7 @@ target_link_libraries(tgbmlib PUBLIC
     ssl crypto
     anyanylib
     kelcorolib
+    hpacklib
     Boost::system
     Boost::asio
     Boost::property_tree
@@ -135,4 +132,22 @@ endif()
 
 if (TGBM_ENABLE_BENCHS)
     add_subdirectory(gbench)
+endif()
+
+if (DEFINED TGBM_SSL_KEYS_FILE)
+  message (STATUS "[tgbm] TGBM_SSL_KEYS_FILE: ${TGBM_SSL_KEYS_FILE}")
+  target_compile_definitions(tgbmlib PUBLIC TGBM_SSL_KEYS_FILE="${TGBM_SSL_KEYS_FILE}")
+endif()
+
+if (DEFINED TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH)
+  message (STATUS "[tgbm] TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH: ${TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH}")
+  target_compile_definitions(tgbmlib PUBLIC TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH="${TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH}")
+endif()
+
+if (WIN32)
+  if (NOT DEFINED TGBM_WINDOWS_VERSION) 
+      set(TGBM_WINDOWS_VERSION 0x0A00 CACHE STRING "windows version for boost asio")
+  endif()
+  message (STATUS "[tgbm] TGBM_WINDOWS_VERSION: ${TGBM_WINDOWS_VERSION}")
+  target_compile_definitions(tgbmlib PUBLIC _WIN32_WINNT=${TGBM_WINDOWS_VERSION})
 endif()

@@ -48,6 +48,13 @@ CPMAddPackage(
   GIT_TAG        origin/master
 )
 
+CPMAddPackage(
+  NAME HPACK
+  GIT_REPOSITORY https://github.com/kelbon/HPACK
+  GIT_TAG        v1.0.0
+  OPTIONS "HPACK_ENABLE_TESTING ON"
+)
+
 if (TGBM_ENABLE_TESTS)
   CPMAddPackage(
     NAME googletest

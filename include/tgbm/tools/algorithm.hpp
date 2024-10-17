@@ -28,12 +28,21 @@ constexpr bool starts_with(R1&& r1, R2&& r2, Pred pred = {}, Proj1 proj1 = {}, P
 }
 
 template <typename T>
-KELCORO_PURE size_t fnv_hash(const T& value) noexcept {
+KELCORO_PURE constexpr size_t fnv_hash(const T& value) noexcept {
   static_assert(std::has_unique_object_representations_v<T> && std::is_trivially_copyable_v<T>);
   size_t val = ::dd::noexport::fnv_offset_basis;
   const unsigned char* bytes = reinterpret_cast<const unsigned char*>(std::addressof(value));
   for (int i = 0; i < sizeof(T); ++i) {
     val ^= static_cast<size_t>(bytes[i]);
+    val *= dd::noexport::fnv_prime;
+  }
+  return val;
+}
+
+KELCORO_PURE constexpr size_t fnv_hash_bytes(std::string_view bytes) noexcept {
+  size_t val = ::dd::noexport::fnv_offset_basis;
+  for (char b : bytes) {
+    val ^= static_cast<size_t>(b);
     val *= dd::noexport::fnv_prime;
   }
   return val;
