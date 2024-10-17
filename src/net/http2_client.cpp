@@ -118,7 +118,7 @@ struct request_node;
 
 using node_ptr = boost::intrusive_ptr<request_node>;
 
-static bytes_t generate_http2_headers(const http_request& request, hpack::encoder<>& encoder,
+static bytes_t generate_http2_headers(const http_request& request, hpack::encoder& encoder,
                                       std::string_view host) {
   using hdrs = hpack::static_table_t::values;
 
@@ -142,20 +142,20 @@ static bytes_t generate_http2_headers(const http_request& request, hpack::encode
     default:
       encoder.encode_header_and_cache(hdrs::method_get, e2str(request.method), out);
   }
-  encoder.encode_header_memory_effective<true>(hdrs::authority, host, out);
-  encoder.encode_header_memory_effective<true, true>(hdrs::path, request.path, out);
+  encoder.encode<true>(hdrs::authority, host, out);
+  encoder.encode<true, true>(hdrs::path, request.path, out);
   encoder.encode_header_never_indexing(hdrs::user_agent, "kelbon", out);
   // content type and custom headers
 
   if (!request.body.data.empty())
-    encoder.encode_header_memory_effective<true>(hdrs::content_type, request.body.content_type, out);
+    encoder.encode<true>(hdrs::content_type, request.body.content_type, out);
   for (auto& [name, value] : request.headers)
-    encoder.encode_header_memory_effective<true>(name, value, out);
+    encoder.encode<true>(name, value, out);
   return headers;
 }
 
 static prepared_http_request form_http2_request(http_request&& request, http2::stream_id_t streamid,
-                                                hpack::encoder<>& encoder, std::string_view host) {
+                                                hpack::encoder& encoder, std::string_view host) {
   return prepared_http_request{
       .streamid = streamid,
       .headers = generate_http2_headers(request, encoder, host),
@@ -211,7 +211,7 @@ struct request_node {
 
   // returns false on protocol errors
   // precondition: padding removed
-  void receive_headers(hpack::decoder<>& decoder, http2_frame_t&& frame) {
+  void receive_headers(hpack::decoder& decoder, http2_frame_t&& frame) {
     assert(frame.header.stream_id == req.streamid);
     assert(frame.header.type == http2::frame_e::HEADERS);
     // weird things like continuations, trailers, many header frames with CONTINUE etc not supported
@@ -220,9 +220,7 @@ struct request_node {
     const byte_t* in = frame.data.data();
     const byte_t* e = in + frame.data.size();
     status = decoder.decode_response_status(in, e);
-    // TODO lazy headers, then try parse first header(status), if cannot, then not set
-    // note: its possible if i ignore headers, that 'status' will be cached and dynamic table broken
-    // but it must be very strange case where implementation caches status
+    // headers must be decoded to maintain HPACK dynamic table in correect state
     hpack::decode_headers_block(decoder, std::span(in, e),
                                 [&](std::string_view name, std::string_view value) {
                                   if (on_header)
@@ -284,8 +282,8 @@ struct http2_connection {
   http2::settings_t server_settings;
   http2::settings_t client_settings;
   tcp_connection asio_con;
-  hpack::encoder<> encoder;
-  hpack::encoder<> decoder;
+  hpack::encoder encoder;
+  hpack::decoder decoder;
   // odd for client, even for server
   http2::stream_id_t stream_id;
   uint32_t refcount = 0;
@@ -638,7 +636,7 @@ static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& a
       .max_frame_size = options.max_receive_frame_size,
       .deprecated_priority_disabled = true,
   };
-  con->encoder = hpack::encoder<>(con->client_settings.header_table_size);
+  con->encoder = hpack::encoder(con->client_settings.header_table_size);
   con->stream_id = 1;  // client
 
   io_error_code ec;
@@ -698,14 +696,14 @@ static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& a
         if (header.flags & flags::ACK) {
           if (header.length != 0 || header.stream_id != 0)
             throw protocol_error{};
-          con->decoder = hpack::encoder<>(con->server_settings.header_table_size);
+          con->decoder = hpack::decoder(con->server_settings.header_table_size);
           LOG("HTTP/2 connection successfully established, decoder size: {}",
               con->server_settings.header_table_size);
           con->server_settings.max_frame_size =
               std::min(con->server_settings.max_frame_size, options.max_send_frame_size);
           co_return con;
         }
-        settings_frame::parse(header, bytes, server_settings_filler(con->server_settings));
+        settings_frame::parse(header, bytes, server_settings_visitor(con->server_settings));
         continue;
       case WINDOW_UPDATE:
         con->window_update(window_update_frame::parse(header, bytes));
@@ -1076,7 +1074,7 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
       */
       {
         auto before = con.server_settings.header_table_size;
-        settings_frame::parse(frame.header, frame.data, server_settings_filler(con.server_settings));
+        settings_frame::parse(frame.header, frame.data, server_settings_visitor(con.server_settings));
         if (before > con.server_settings.header_table_size)
           LOG("[HTTP2]: HPACK table resized, new size {}, before: {}, IF ERROR HAPPENS AFTER THIS MESSAGE, "
               "next time set dynamic table size for client to 0",
@@ -1203,7 +1201,7 @@ dd::job http2_client::start_reader_for(http2_connection_ptr _con) {
 
       // read header
 
-      frame.data = buffer.get_buffer(h2fhl);
+      frame.data = buffer.get_exactly(h2fhl);
 
       co_await net.read(con.socket(), frame.data, ec);
 
@@ -1220,7 +1218,7 @@ dd::job http2_client::start_reader_for(http2_connection_ptr _con) {
 
       // read data
 
-      frame.data = buffer.get_buffer(frame.header.length);
+      frame.data = buffer.get_exactly(frame.header.length);
       co_await net.read(con.socket(), frame.data, ec);
       if (ec)
         goto network_error;

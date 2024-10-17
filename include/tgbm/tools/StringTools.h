@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <string>
 #include <optional>
@@ -7,9 +8,6 @@
 
 #include <fmt/format.h>
 
-/**
- * @ingroup tools
- */
 namespace tgbm::utils {
 
 template <std::output_iterator<const char&> O>
@@ -37,10 +35,6 @@ O url_encode(char c, O out) {
   return out;
 }
 
-/**
- * Generates pseudo random string. It's recommended to call srand before this method.
- * @param length Length of resulting string.
- */
 std::string generate_multipart_boundary(std::size_t length);
 
 // used for fmt formatting
@@ -174,6 +168,15 @@ struct string_switch {
 };
 
 }  // namespace tgbm::utils
+
+namespace tgbm {
+
+[[nodiscard]] static constexpr bool is_lowercase(std::string_view s) noexcept {
+  auto is_uppercase_char = [](char c) { return c >= 'A' && c <= 'Z'; };
+  return std::none_of(s.begin(), s.end(), is_uppercase_char);
+}
+
+}  // namespace tgbm
 
 namespace fmt {
 

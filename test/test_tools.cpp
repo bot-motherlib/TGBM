@@ -38,6 +38,14 @@ bool boxtest1() {
   return true;
 }
 
+using tgbm::is_lowercase;
+static_assert(is_lowercase("hello"));
+static_assert(is_lowercase(""));
+static_assert(!is_lowercase("A"));
+static_assert(!is_lowercase("aaAbb"));
+static_assert(is_lowercase("f__rew../wwr44"));
+static_assert(!is_lowercase("rttr___trertg;..;A"));
+
 int main() {
   if (!boxtest1()) {
     return -1;

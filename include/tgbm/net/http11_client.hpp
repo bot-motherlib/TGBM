@@ -18,7 +18,6 @@ struct http11_client : http_client {
   asio::io_context io_ctx;
   tcp_connection_options tcp_options;
   pool_t<tcp_connection_ptr> connections;
-  KELCORO_NO_UNIQUE_ADDRESS dd::this_thread_executor_t exe;
   size_t requests_in_progress = 0;
   bool stop_requested = false;
 
@@ -26,6 +25,7 @@ struct http11_client : http_client {
   explicit http11_client(size_t connections_max_count = 64, std::string_view host = "api.telegram.org",
                          tcp_connection_options = {});
 
+  // note: this client ignores timeouts, its propose to just work in any case
   dd::task<int> send_request(on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part, http_request,
                              duration_t timeout) override;
 

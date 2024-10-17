@@ -206,8 +206,7 @@ http11_client::http11_client(size_t connections_max_count, std::string_view host
 }
 
 dd::task<int> http11_client::send_request(on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part,
-                                          http_request request, duration_t timeout) {
-  // TODO borrow connection with timeout
+                                          http_request request, duration_t) {
   if (stop_requested)
     co_return reqerr_e::cancelled;
   ++requests_in_progress;
@@ -217,22 +216,6 @@ dd::task<int> http11_client::send_request(on_header_fn_ptr on_header, on_data_pa
   auto handle = co_await connections.borrow();
   if (handle.empty())
     co_return reqerr_e::cancelled;
-  asio::steady_timer timer(io_ctx);
-  timer.async_wait([con = *handle.get()](const io_error_code& ec) {
-    if (ec)
-      return;
-    // if im working and ctx on one thread, then now coroutine suspended
-    // TODO bcs of how boost asio timers work (may be invoked with success even after .cancel)
-    // rm timers etc make http1/1 just most simple client ever
-    // there are small chance to cancel not my request, but next, now ignored (not default client...)
-    con->socket.lowest_layer().cancel();
-    // coro should be resumed and operation_aborted (coro ended with exception)
-  });
-  timer.expires_after(timeout);
-
-  on_scope_exit {
-    timer.cancel();
-  };
   std::string headers =
       generate_http_headers(request, get_host(), request.body.data, request.body.content_type);
   int status = reqerr_e::unknown_err;
@@ -240,7 +223,7 @@ dd::task<int> http11_client::send_request(on_header_fn_ptr on_header, on_data_pa
   // send request throws on user exception
   assert(status != reqerr_e::user_exception);
   if (status < 0 && status != reqerr_e::timeout) {
-    handle.get()->get()->shutdown();  // rm myself from asio queues
+    handle.get()->get()->shutdown();
     handle.drop();
   }
   co_return status;

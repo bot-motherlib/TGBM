@@ -69,7 +69,15 @@ dd::task<tcp_connection_ptr> tcp_connection::create(asio::io_context& io_ctx, st
     SSL_set_mode(socket.native_handle(), SSL_MODE_RELEASE_BUFFERS);
   co_await net.handshake(socket, ssl::stream_base::handshake_type::client, ec);
   if (ec)
-    throw network_exception("[http] cannot ssl handshake: {}", ec.message());
+    throw network_exception(
+        "[http] cannot ssl handshake: {}"
+#ifndef TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH
+        ". If your certificate is not default or you are on windows (where default pathes may be unreachable)"
+        " define TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH to provide additional certificate or use option "
+        "'disable_ssl_certificate_verify' (only for testing)"
+#endif
+        ,
+        ec.message());
   co_return connection;
 }
 

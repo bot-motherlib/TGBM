@@ -22,7 +22,7 @@ struct reusable_buffer {
   }
 
   void reserve(size_t count) {
-    (void)get_buffer(count);
+    (void)get_exactly(count);
   }
 
   void clear() noexcept {
@@ -40,7 +40,7 @@ struct reusable_buffer {
   }
   // value will be invalidated on next call
   // may return uninitialized memory
-  std::span<byte_t> get_buffer(size_t count) {
+  std::span<byte_t> get_exactly(size_t count) {
     if (sz >= count)
       return std::span<byte_t>(bytes, count);
     if (bytes)
@@ -53,7 +53,7 @@ struct reusable_buffer {
   std::span<byte_t> get_atleast(size_t count) {
     if (sz >= count)
       return std::span<byte_t>(bytes, sz);
-    return get_buffer(count);
+    return get_exactly(count);
   }
 };
 

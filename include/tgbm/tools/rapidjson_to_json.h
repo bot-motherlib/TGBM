@@ -29,7 +29,7 @@ concept rjson_writer = requires(T& w) {
 static_assert(!rjson_writer<int>);
 static_assert(rjson_writer<rapidjson::Writer<int>>);
 
-[[gnu::always_inline]] static void rj_assume(bool b) {
+static void rj_assume(bool b) {
   assert(b);
   (void)b;
 }
