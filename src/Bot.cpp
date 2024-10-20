@@ -41,6 +41,7 @@ dd::task<void> Bot::get_and_handle_updates(std::chrono::seconds update_wait_time
       _eventHandler.handleUpdate(update);
     }
   } catch (std::exception& e) {
+    LOG_ERR("Bot getUpdates ended with exception, its ignored, err: {}", e.what());
     LOG_ERR("getUpdates ended with exception, http client will be stopped, what: {}", e.what());
   } catch (...) {
     LOG_ERR("getUpdates ended with unknown exception, http client will be stopped");

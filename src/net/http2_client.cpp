@@ -118,8 +118,7 @@ struct request_node;
 
 using node_ptr = boost::intrusive_ptr<request_node>;
 
-static bytes_t generate_http2_headers(const http_request& request, hpack::encoder& encoder,
-                                      std::string_view host) {
+static bytes_t generate_http2_headers(const http_request& request, hpack::encoder& encoder) {
   using hdrs = hpack::static_table_t::values;
 
   assert(!request.path.empty());
@@ -130,7 +129,6 @@ static bytes_t generate_http2_headers(const http_request& request, hpack::encode
   auto out = std::back_inserter(headers);
 
   // required scheme, method, authority, path
-
   encoder.encode_header_fully_indexed(hdrs::scheme_https, out);
   switch (request.method) {
     case http_method_e::GET:
@@ -142,7 +140,7 @@ static bytes_t generate_http2_headers(const http_request& request, hpack::encode
     default:
       encoder.encode_header_and_cache(hdrs::method_get, e2str(request.method), out);
   }
-  encoder.encode<true>(hdrs::authority, host, out);
+  encoder.encode<true>(hdrs::authority, request.authority, out);
   encoder.encode<true, true>(hdrs::path, request.path, out);
   encoder.encode_header_never_indexing(hdrs::user_agent, "kelbon", out);
   // content type and custom headers
@@ -155,10 +153,10 @@ static bytes_t generate_http2_headers(const http_request& request, hpack::encode
 }
 
 static prepared_http_request form_http2_request(http_request&& request, http2::stream_id_t streamid,
-                                                hpack::encoder& encoder, std::string_view host) {
+                                                hpack::encoder& encoder) {
   return prepared_http_request{
       .streamid = streamid,
-      .headers = generate_http2_headers(request, encoder, host),
+      .headers = generate_http2_headers(request, encoder),
       .data = std::move(request.body.data),
   };
 }
@@ -429,9 +427,10 @@ struct http2_connection {
   void drop_timeouted() {
     // prevent destruction of *this while resuming
     http2_connection_ptr lock = this;
-    while (!timers.empty() && timers.top()->deadline.is_reached())
+    while (!timers.empty() && timers.top()->deadline.is_reached()) {
       // node deleted from timers by forgetting
       finish_request_by_timeout(*timers.top());
+    }
   }
 
   void window_update(http2::window_update_frame frame) {
@@ -483,8 +482,8 @@ struct http2_connection {
     return id;
   }
 
-  node_ptr new_request_node(http_request&& request, std::string_view host, deadline_t deadline,
-                            on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part) {
+  node_ptr new_request_node(http_request&& request, deadline_t deadline, on_header_fn_ptr on_header,
+                            on_data_part_fn_ptr on_data_part) {
     node_ptr node = nullptr;
     if (free_nodes.empty())
       // workaround gcc12 bug by initializing union member explicitly
@@ -494,7 +493,7 @@ struct http2_connection {
       free_nodes.pop_front();
     }
     node->streamlevel_window_size = server_settings.initial_stream_window_size;
-    node->req = form_http2_request(std::move(request), next_streamid(), encoder, host);
+    node->req = form_http2_request(std::move(request), next_streamid(), encoder);
     node->deadline = deadline;
     node->writer_handle = std::coroutine_handle<>(writer.handle);
     node->connection = this;
@@ -713,10 +712,6 @@ static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& a
         continue;
       case GOAWAY:
         goaway_frame::parse_and_throw_goaway(header, bytes);
-      case PRIORITY:
-      case PRIORITY_UPDATE:
-        // ignore
-        continue;
       case PUSH_PROMISE:
       case RST_STREAM:
       case DATA:
@@ -725,7 +720,9 @@ static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& a
         // server MUST NOT initiate streams
         throw protocol_error{};
       default:
-        // ignore extensions
+      case PRIORITY:
+      case PRIORITY_UPDATE:
+        // ignore
         continue;
     }
   }
@@ -795,7 +792,8 @@ dd::job http2_client::start_connecting() {
         notify_connection_waiters(new_connection);
       };
       tcp_connection_ptr asio_con = co_await tcp_connection::create(
-          io_ctx, std::string(get_host()), make_ssl_context_for_http2(), tcp_options);
+          io_ctx, std::string(get_host()),
+          make_ssl_context_for_http2(tcp_options.additional_ssl_certificates), tcp_options);
       new_connection = co_await establish_http2_session(std::move(*asio_con), options);
     }
     assert(!connection);
@@ -813,18 +811,7 @@ dd::job http2_client::start_connecting() {
 }
 
 static bool validate_frame_header(const http2::frame_header& h) noexcept {
-  return h.length <= http2::max_header_length && h.stream_id <= http2::max_header_length;
-}
-
-static bool strip_padding(std::span<byte_t>& bytes) {
-  if (bytes.empty())
-    return false;
-  int padlen = bytes[0];
-  if (padlen + 1 > bytes.size())
-    return false;
-  remove_prefix(bytes, 1);
-  remove_suffix(bytes, padlen);
-  return true;
+  return h.length <= http2::frame_len_max && h.stream_id <= http2::max_stream_id;
 }
 
 // 'out' must contain atleast 9 bytes
@@ -1051,7 +1038,7 @@ dd::job http2_client::start_writer_for(http2_connection_ptr con) {
       write_pending_data_frames(std::move(unfinished), unfinished_handled, con).start_and_detach();
   }  // end loop handling requests
 end:
-  if (ec != asio::error::operation_aborted)
+  if (ec && ec != asio::error::operation_aborted)
     LOG_DEBUG("[HTTP2] connection dropped with network err {}", ec.what());
   drop_connection(reqerr_e::network_err);
 }
@@ -1062,7 +1049,6 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
   using namespace http2;
 
   switch (frame.header.type) {
-    default:
     case HEADERS:
     case DATA:
       unreachable();
@@ -1073,12 +1059,13 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
         and really not easy to implement this requirement
       */
       {
-        auto before = con.server_settings.header_table_size;
-        settings_frame::parse(frame.header, frame.data, server_settings_visitor(con.server_settings));
-        if (before > con.server_settings.header_table_size)
-          LOG("[HTTP2]: HPACK table resized, new size {}, before: {}, IF ERROR HAPPENS AFTER THIS MESSAGE, "
+        server_settings_visitor vtor(con.server_settings);
+        settings_frame::parse(frame.header, frame.data, vtor);
+        if (vtor.header_table_size_decrease)
+          LOG("[HTTP2]: HPACK table resized, new size {}, old size: {}, IF ERROR HAPPENS AFTER THIS MESSAGE, "
               "next time set dynamic table size for client to 0",
-              con.server_settings.header_table_size, before);
+              con.server_settings.header_table_size,
+              con.server_settings.header_table_size + vtor.header_table_size_decrease);
       }
       return true;
     case PING:
@@ -1101,8 +1088,9 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
     case CONTINUATION:
       LOG_DEBUG("[HTTP2]: received CONTINUATION, not supported");
       return false;
-    case PRIORITY_UPDATE:
+    default:
     case PRIORITY:
+    case PRIORITY_UPDATE:
       // ignore
       return true;
   }
@@ -1115,7 +1103,7 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
   assert(con.client_settings.deprecated_priority_disabled);
   if (frame.header.stream_id == 0)
     return false;
-  if ((frame.header.flags & http2::flags::PADDED) && !strip_padding(frame.data))
+  if ((frame.header.flags & http2::flags::PADDED) && !http2::strip_padding(frame.data))
     return false;
   if (frame.header.flags & http2::flags::PRIORITY) {
     LOG_DEBUG("[HTTP2]: received deprecated priority HEADERS, not supported");
@@ -1134,6 +1122,7 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
         break;
       case DATA:
         // applicable only to data
+        // Note: includes padding!
         con.my_window_size -= frame.header.length;
         node->receive_data(std::move(frame), frame.header.flags & http2::flags::END_STREAM);
         break;
@@ -1199,7 +1188,7 @@ dd::job http2_client::start_reader_for(http2_connection_ptr _con) {
       if (con.is_dropped())
         goto connection_dropped;
 
-      // read header
+      // read frame header
 
       frame.data = buffer.get_exactly(h2fhl);
 
@@ -1210,13 +1199,13 @@ dd::job http2_client::start_reader_for(http2_connection_ptr _con) {
       if (con.is_dropped())
         goto connection_dropped;
 
-      // parse header
+      // parse frame header
 
-      frame.header = frame_header::parse(std::span<const byte_t, h2fhl>(frame.data.data(), h2fhl));
+      frame.header = frame_header::parse(frame.data);
       if (!validate_frame_header(frame.header))
         goto protocol_error;
 
-      // read data
+      // read frame data
 
       frame.data = buffer.get_exactly(frame.header.length);
       co_await net.read(con.socket(), frame.data, ec);
@@ -1225,7 +1214,7 @@ dd::job http2_client::start_reader_for(http2_connection_ptr _con) {
       if (con.is_dropped())
         goto connection_dropped;
 
-      // handle data
+      // handle frame
 
       if (!handle_frame(std::move(frame), con))
         goto protocol_error;
@@ -1240,8 +1229,8 @@ dd::job http2_client::start_reader_for(http2_connection_ptr _con) {
     LOG("[HTTP2]: protocol error happens");
     reason = reqerr_e::protocol_err;
     goto drop_connection;
-  } catch (http2::goaway_frame_received& gae) {
-    LOG("[HTTP2]: goaway received, info: {}, errc: {}", gae.debug_info, http2::errc2str(gae.error_code));
+  } catch (http2::goaway_exception& gae) {
+    LOG_ERR("[HTTP2]: goaway received, info: {}, errc: {}", gae.debug_info, http2::e2str(gae.error_code));
     reason = reqerr_e::server_cancelled_request;
     goto drop_connection;
   } catch (std::exception& se) {
@@ -1342,8 +1331,9 @@ dd::task<int> http2_client::send_request(on_header_fn_ptr on_header, on_data_par
   http2_connection_ptr con = co_await borrow_connection();
   if (!con)
     co_return reqerr_e::network_err;
-
-  node_ptr node = con->new_request_node(std::move(request), get_host(), deadline, on_header, on_data_part);
+  if (request.authority.empty())  // default host
+    request.authority = get_host();
+  node_ptr node = con->new_request_node(std::move(request), deadline, on_header, on_data_part);
 
   LOG_DEBUG("send_request, path: {}, streamid: {}", request.path, node->req.streamid);
   co_return co_await con->request_finished(*node);

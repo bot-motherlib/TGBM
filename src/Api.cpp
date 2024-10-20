@@ -27,9 +27,25 @@ static bool is_empty_thumbnail(const thumbnail_t& x) {
 
 // name of function should be same as in API https://core.telegram.org/bots/api
 #define $METHOD ::std::string_view(__func__)
-#define $POST_REQUEST \
-  co_await sendRequest(http_request{get_path($METHOD), http_method_e::POST, body.take()}, _timeout)
-#define $GET_REQUEST co_await sendRequest(http_request(get_path($METHOD), http_method_e::GET), _timeout)
+#define $POST_REQUEST                    \
+  co_await sendRequest(                  \
+      http_request{                      \
+          .authority = {},               \
+          .path = get_path($METHOD),     \
+          .method = http_method_e::POST, \
+          .scheme = scheme_e::HTTPS,     \
+          .body = body.take(),           \
+      },                                 \
+      _timeout)
+#define $GET_REQUEST                    \
+  co_await sendRequest(                 \
+      http_request{                     \
+          .authority = {},              \
+          .path = get_path($METHOD),    \
+          .method = http_method_e::GET, \
+          .scheme = scheme_e::HTTPS,    \
+      },                                \
+      _timeout)
 
 Api::Api(std::string token, http_client& httpClient, duration_t timeout)
     : _timeout(timeout), _token(std::move(token)), _httpClient(httpClient) {
@@ -50,8 +66,14 @@ dd::task<std::vector<Update::Ptr>> Api::getUpdates(std::int32_t offset, std::int
   if (allowedUpdates)
     body.arg("allowed_updates", *allowedUpdates);
   // sets timeout to be greater then long pool timeout
-  boost::property_tree::ptree json = co_await sendRequest({.path = get_path($METHOD), .body = body.take()},
-                                                          _timeout + std::chrono::seconds(timeout));
+  boost::property_tree::ptree json = co_await sendRequest(
+      {
+          .path = get_path($METHOD),
+          .method = http_method_e::POST,
+          .scheme = scheme_e::HTTPS,
+          .body = body.take(),
+      },
+      _timeout + std::chrono::seconds(timeout));
   co_return _tgTypeParser.parseJsonAndGetArray<Update>(&TgTypeParser::parseJsonAndGetUpdate, json);
 }
 
@@ -2251,7 +2273,11 @@ dd::task<std::vector<GameHighScore::Ptr>> Api::getGameHighScores(std::int64_t us
 dd::task<int> Api::downloadFile(
     std::string filePath, fn_ref<void(std::span<const byte_t>, bool is_last_chunk)> on_data_part) const {
   int status = co_await _httpClient.send_request(
-      nullptr, &on_data_part, http_request{.path = fmt::format("/file/bot{}/{}", get_token(), filePath)},
+      nullptr, &on_data_part,
+      http_request{.authority = {},
+                   .path = fmt::format("/file/bot{}/{}", get_token(), filePath),
+                   .method = http_method_e::GET,
+                   .scheme = scheme_e::HTTPS},
       duration_t::max());
   co_return status;
 }

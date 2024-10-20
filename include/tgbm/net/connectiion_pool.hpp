@@ -190,7 +190,6 @@ struct pool_t {
     }
     void* mem = resource()->allocate(sizeof(node_t), alignof(node_t));
     on_scope_failure(free_mem) {
-      LOG_DEBUG("{} CALLED!!!", mem);
       --borrowed_count;
       resource()->deallocate(mem, sizeof(node_t), alignof(node_t));
     };

@@ -64,4 +64,13 @@ struct protocol_error : std::exception {
   }
 };
 
+struct unimplemented : std::exception {
+  const char* msg = nullptr;
+  unimplemented(const char* msg) noexcept : msg(msg) {
+  }
+  const char* what() const noexcept override {
+    return msg;
+  }
+};
+
 }  // namespace tgbm

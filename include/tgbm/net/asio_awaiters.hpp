@@ -44,8 +44,7 @@ struct asio_awaiter {
   io_error_code& _ec;
 
   template <typename... Args>
-  explicit asio_awaiter(io_error_code& ec KELCORO_LIFETIMEBOUND, Args&&... args)
-      : _cb_user(std::forward<Args>(args)...), _ec(ec) {
+  explicit asio_awaiter(io_error_code& ec, Args&&... args) : _cb_user(std::forward<Args>(args)...), _ec(ec) {
   }
   ~asio_awaiter() {
     // noop, if value exist, it was destroyed in await_resume
@@ -81,7 +80,7 @@ struct asio_awaiter<void, CallbackUser> {
   io_error_code& _ec;
 
   template <typename... Args>
-  explicit asio_awaiter(io_error_code& ec KELCORO_LIFETIMEBOUND, Args&&... args) noexcept
+  explicit asio_awaiter(io_error_code& ec, Args&&... args) noexcept
       : _cb_user(std::forward<Args>(args)...), _ec(ec) {
   }
 
@@ -228,22 +227,35 @@ struct accept_operation {
   }
 };
 
+template <typename Protocol, typename Socket>
+struct accept_operation_with_socket {
+  asio::basic_socket_acceptor<Protocol>& acceptor;
+  Socket& s;
+
+  template <typename T>
+  void operator()(T&& cb) const {
+    acceptor.async_accept(s, std::forward<T>(cb));
+  }
+};
+
 // boost asio grabs all possible good names for functions and creates 3042350 overloads
 // with all possible combinations of template arguments, tags etc, so this ignores adl
 struct net_t {
   template <typename Protocol>
-  KELCORO_CO_AWAIT_REQUIRED static auto accept(asio::basic_socket_acceptor<Protocol>& acceptor
-                                                   KELCORO_LIFETIMEBOUND,
-                                               io_error_code& ec KELCORO_LIFETIMEBOUND) {
+  KELCORO_CO_AWAIT_REQUIRED static auto accept(asio::basic_socket_acceptor<Protocol>& acceptor,
+                                               io_error_code& ec) {
     return asio_awaiter<asio::basic_stream_socket<Protocol>, accept_operation<Protocol>>(ec, acceptor);
   }
-
+  template <typename Protocol, typename Socket>
+  KELCORO_CO_AWAIT_REQUIRED static auto accept(asio::basic_socket_acceptor<Protocol>& acceptor,
+                                               Socket& socket, io_error_code& ec) {
+    return asio_awaiter<void, accept_operation_with_socket<Protocol, Socket>>(ec, acceptor, socket);
+  }
   // returns resolve results
   template <typename Protocol>
   KELCORO_CO_AWAIT_REQUIRED static auto resolve(
-      asio::ip::basic_resolver<Protocol>& resolver KELCORO_LIFETIMEBOUND,
-      std::type_identity_t<asio::ip::basic_resolver_query<Protocol>> query,
-      io_error_code& ec KELCORO_LIFETIMEBOUND) {
+      asio::ip::basic_resolver<Protocol>& resolver,
+      std::type_identity_t<asio::ip::basic_resolver_query<Protocol>> query, io_error_code& ec) {
     using resolve_results_t = typename asio::ip::basic_resolver<Protocol>::results_type;
     return asio_awaiter<resolve_results_t, resolve_operation<Protocol>>(ec, resolver, std::move(query));
   }
@@ -251,25 +263,24 @@ struct net_t {
   // returns endpoint (to who connected)
   template <typename Protocol>
   KELCORO_CO_AWAIT_REQUIRED static auto connect(
-      asio::basic_socket<Protocol>& socket KELCORO_LIFETIMEBOUND,
+      asio::basic_socket<Protocol>& socket,
       std::type_identity_t<typename asio::ip::basic_resolver<Protocol>::results_type> endpoints,
-      io_error_code& ec KELCORO_LIFETIMEBOUND) {
+      io_error_code& ec) {
     return asio_awaiter<asio::ip::basic_endpoint<Protocol>, connect_operation<Protocol>>(
         ec, socket, std::move(endpoints));
   }
 
   template <typename Stream>
-  KELCORO_CO_AWAIT_REQUIRED static auto handshake(asio::ssl::stream<Stream>& stream KELCORO_LIFETIMEBOUND,
+  KELCORO_CO_AWAIT_REQUIRED static auto handshake(asio::ssl::stream<Stream>& stream,
                                                   asio::ssl::stream_base::handshake_type type,
-                                                  io_error_code& ec KELCORO_LIFETIMEBOUND) {
+                                                  io_error_code& ec) {
     return asio_awaiter<void, ssl_handshake_operation<Stream>>(ec, stream, type);
   }
 
   // returns count of bytes transmitted
   template <typename Stream>
-  KELCORO_CO_AWAIT_REQUIRED static auto write(Stream& stream KELCORO_LIFETIMEBOUND,
-                                              std::span<const byte_t> buffer,
-                                              io_error_code& ec KELCORO_LIFETIMEBOUND) {
+  KELCORO_CO_AWAIT_REQUIRED static auto write(Stream& stream, std::span<const byte_t> buffer,
+                                              io_error_code& ec) {
     return asio_awaiter<size_t, write_operation<Stream>>(ec, stream, buffer);
   }
   // writes all buffers (order: from first to last)
@@ -277,8 +288,7 @@ struct net_t {
   // Note: there are no guarantee, that buffers will be sended contiguously!
   // this means, many calls to 'write_many' may produce invalid sequence, if buffers was parts of one thing
   template <typename Stream, typename... Byte, size_t... Szs>
-  KELCORO_CO_AWAIT_REQUIRED static auto write_many(Stream& stream KELCORO_LIFETIMEBOUND,
-                                                   io_error_code& ec KELCORO_LIFETIMEBOUND,
+  KELCORO_CO_AWAIT_REQUIRED static auto write_many(Stream& stream, io_error_code& ec,
                                                    std::span<Byte, Szs>... buffers) {
     static_assert(sizeof...(buffers) > 0);
     return asio_awaiter<size_t, write_many_operation<Stream, sizeof...(buffers)>>(
@@ -288,26 +298,23 @@ struct net_t {
   // reads until buffer is full!
   // returns count of bytes transmitted
   template <typename Stream>
-  KELCORO_CO_AWAIT_REQUIRED static auto read(Stream& stream KELCORO_LIFETIMEBOUND, std::span<byte_t> buffer,
-                                             io_error_code& ec KELCORO_LIFETIMEBOUND) {
+  KELCORO_CO_AWAIT_REQUIRED static auto read(Stream& stream, std::span<byte_t> buffer, io_error_code& ec) {
     return asio_awaiter<size_t, read_operation<Stream>>(ec, stream, buffer);
   }
 
   // returns count of bytes transmitted
   // TODO return span to readen bytes? And what to accept? dynbuf + temp buf?
   template <typename Stream>
-  KELCORO_CO_AWAIT_REQUIRED static auto read_some(Stream& stream KELCORO_LIFETIMEBOUND,
-                                                  std::span<byte_t> buffer KELCORO_LIFETIMEBOUND,
-                                                  io_error_code& ec KELCORO_LIFETIMEBOUND) {
+  KELCORO_CO_AWAIT_REQUIRED static auto read_some(Stream& stream, std::span<byte_t> buffer,
+                                                  io_error_code& ec) {
     return asio_awaiter<size_t, read_some_operation<Stream>>(ec, stream, buffer);
   }
 
   // appends readen bytes to 'buffer'
   // returns position where 'delim' starts or -1 on error
   // precondition: needle is not empty
-  static dd::task<size_t> read_until(auto& stream KELCORO_LIFETIMEBOUND,
-                                     std::string& buffer KELCORO_LIFETIMEBOUND, std::string_view needle,
-                                     io_error_code& ec KELCORO_LIFETIMEBOUND) {
+  static dd::task<size_t> read_until(auto& stream, std::string& buffer, std::string_view needle,
+                                     io_error_code& ec) {
     assert(!needle.empty());
     assert(!ec);
     // TODO better
@@ -334,9 +341,8 @@ struct net_t {
 
   // appends readen bytes to 'buffer'
   // returns count of bytes transmitted
-  static dd::task<void> read_until_condition(auto& stream KELCORO_LIFETIMEBOUND,
-                                             std::vector<uint8_t>& buffer KELCORO_LIFETIMEBOUND,
-                                             auto condition, io_error_code& ec KELCORO_LIFETIMEBOUND) {
+  static dd::task<void> read_until_condition(auto& stream, std::vector<uint8_t>& buffer, auto condition,
+                                             io_error_code& ec) {
     assert(!ec);
     // TODO better
     byte_t buf[128];
@@ -352,15 +358,13 @@ struct net_t {
   }
 
   template <typename Timer>
-  KELCORO_CO_AWAIT_REQUIRED static auto sleep(Timer& timer KELCORO_LIFETIMEBOUND,
-                                              std::chrono::nanoseconds duration,
-                                              io_error_code& ec KELCORO_LIFETIMEBOUND) {
+  KELCORO_CO_AWAIT_REQUIRED static auto sleep(Timer& timer, std::chrono::nanoseconds duration,
+                                              io_error_code& ec) {
     return asio_awaiter<void, sleep_operation<Timer>>(ec, timer, duration);
   }
 
   template <typename Stream>
-  KELCORO_CO_AWAIT_REQUIRED static auto shutdown(Stream& stream KELCORO_LIFETIMEBOUND,
-                                                 io_error_code& ec KELCORO_LIFETIMEBOUND) {
+  KELCORO_CO_AWAIT_REQUIRED static auto shutdown(Stream& stream, io_error_code& ec) {
     return asio_awaiter<void, shutdown_operation<Stream>>(ec, stream);
   }
 };

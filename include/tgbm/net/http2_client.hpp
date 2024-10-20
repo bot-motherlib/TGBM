@@ -69,7 +69,6 @@ struct http2_client_options {
   uint32_t max_send_frame_size = 8 * 1024;  // 8 KB
   uint32_t max_receive_frame_size = uint32_t(-1);
   uint32_t hpack_dyntab_size = 4096;
-  // TODO https/http (? erase start_read / start_write)
   // sends ping when there are no requests(for keeping alive). disabled by default
   duration_t ping_interval = duration_t::max();
   // duration_t::max() disables timeouts

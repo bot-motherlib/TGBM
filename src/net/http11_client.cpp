@@ -55,8 +55,8 @@ static std::pair<std::string_view, std::string_view> parse_header(std::string_vi
   return result;
 }
 
-static std::string generate_http_headers(const http_request& request, std::string_view host,
-                                         std::span<const uint8_t> body, std::string_view content_type) {
+static std::string generate_http_headers(const http_request& request, std::span<const uint8_t> body,
+                                         std::string_view content_type) {
   assert(!request.path.empty());
   std::string body_sz_str = fmt::format("{}", body.size());
   size_t size_bytes = [&] {
@@ -64,8 +64,8 @@ static std::string generate_http_headers(const http_request& request, std::strin
     size_t headers_size = 0;
     headers_size += e2str(request.method).size() + 1;
     headers_size += request.path.size();
-    headers_size +=
-        " HTTP/1.1\r\nHost: "sv.size() + host.size() + "\r\nConnection: "sv.size() + "keep-alive"sv.size();
+    headers_size += " HTTP/1.1\r\nHost: "sv.size() + request.authority.size() + "\r\nConnection: "sv.size() +
+                    "keep-alive"sv.size();
     headers_size += "\r\n"sv.size();
     if (body.empty()) {
       headers_size += "\r\n"sv.size();
@@ -88,7 +88,7 @@ static std::string generate_http_headers(const http_request& request, std::strin
   result +=
       " HTTP/1.1\r\n"
       "Host: ";
-  result += host;
+  result += request.authority;
   result += "\r\nConnection: ";
   result += "keep-alive";
   result += "\r\n";
@@ -198,9 +198,13 @@ protocol_err:
 
 http11_client::http11_client(size_t connections_max_count, std::string_view host,
                              tcp_connection_options tcp_opts)
-    : http_client(host), io_ctx(1), tcp_options(tcp_opts), connections(connections_max_count, [this]() {
+    : http_client(host),
+      io_ctx(1),
+      tcp_options(std::move(tcp_opts)),
+      connections(connections_max_count, [this]() {
         // Do not reuses ssl ctx because... just because + multithread no one knows how to work
-        return tcp_connection::create(io_ctx, std::string(get_host()), make_ssl_context_for_http11(),
+        return tcp_connection::create(io_ctx, std::string(get_host()),
+                                      make_ssl_context_for_http11(tcp_options.additional_ssl_certificates),
                                       tcp_options);
       }) {
 }
@@ -216,8 +220,9 @@ dd::task<int> http11_client::send_request(on_header_fn_ptr on_header, on_data_pa
   auto handle = co_await connections.borrow();
   if (handle.empty())
     co_return reqerr_e::cancelled;
-  std::string headers =
-      generate_http_headers(request, get_host(), request.body.data, request.body.content_type);
+  if (request.authority.empty())
+    request.authority = get_host();
+  std::string headers = generate_http_headers(request, request.body.data, request.body.content_type);
   int status = reqerr_e::unknown_err;
   co_await ::tgbm::send_request(*handle.get(), on_header, on_data_part, std::move(headers), request, status);
   // send request throws on user exception

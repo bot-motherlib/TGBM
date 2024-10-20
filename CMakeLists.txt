@@ -22,9 +22,6 @@ message (STATUS "[tgbm] TGBM_CLANG_FORMAT: ${TGBM_CLANG_FORMAT}")
 message (STATUS "[tgbm] TGBM_PYTHON: ${TGBM_PYTHON}")
 
 # also options:
-# - TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH
-#     define to path for setting additional path to ssl ceritficate,
-#     by default uses only default ssl pathes(they may be unreachable on windows)
 # - TGBM_SSL_KEYS_FILE
 #     define to path where ssl keys will be stored for debug using wireshark
 #     disabled by default
@@ -57,6 +54,8 @@ set(TGBM_SRC_LIST
     src/Bot.cpp
     src/EventHandler.cpp
     src/TgTypeParser.cpp
+    src/net/http2/protocol.cpp
+    src/net/http2_server.cpp
     src/net/tcp_connection.cpp
     src/net/http11_client.cpp
     src/net/http_client.cpp
@@ -143,11 +142,6 @@ if (DEFINED TGBM_SSL_KEYS_FILE)
   target_compile_definitions(tgbmlib PUBLIC TGBM_SSL_KEYS_FILE="${TGBM_SSL_KEYS_FILE}")
 endif()
 
-if (DEFINED TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH)
-  message (STATUS "[tgbm] TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH: ${TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH}")
-  target_compile_definitions(tgbmlib PUBLIC TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH="${TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH}")
-endif()
-
 # disable warnings for third party libs
 
 if (MSVC)
@@ -169,3 +163,13 @@ if (WIN32)
   message (STATUS "[tgbm] TGBM_WINDOWS_VERSION: ${TGBM_WINDOWS_VERSION}")
   target_compile_definitions(tgbmlib PUBLIC _WIN32_WINNT=${TGBM_WINDOWS_VERSION})
 endif()
+
+add_executable(tgbm_main ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+target_link_libraries(tgbm_main PUBLIC tgbmlib)
+
+set_target_properties(tgbm_main PROPERTIES
+  CMAKE_CXX_EXTENSIONS OFF
+  LINKER_LANGUAGE CXX
+  CMAKE_CXX_STANDARD_REQUIRED ON
+  CXX_STANDARD 20)
+

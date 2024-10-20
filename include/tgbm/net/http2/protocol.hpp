@@ -10,6 +10,14 @@
 #include "tgbm/net/http2/errors.hpp"
 #include "tgbm/tools/memory.hpp"
 
+#include <fmt/core.h>
+
+namespace tgbm {
+
+struct http_request;
+
+}
+
 namespace tgbm::http2 {
 
 enum struct frame_e : uint8_t {
@@ -26,12 +34,10 @@ enum struct frame_e : uint8_t {
   PRIORITY_UPDATE = 0x10,
 };
 
-enum : uint32_t {
-  initial_window_size_for_connection_overall = uint32_t(65'535),
-  max_window_size = (uint32_t(1) << 31) - 1,
-  frame_header_len = uint32_t(9),
-  frame_len_max = (uint32_t(1) << 24) - 1,
-};
+constexpr inline uint32_t initial_window_size_for_connection_overall = uint32_t(65'535);
+constexpr inline uint32_t max_window_size = (uint32_t(1) << 31) - 1;
+constexpr inline uint32_t frame_header_len = uint32_t(9);
+constexpr inline uint32_t frame_len_max = (uint32_t(1) << 24) - 1;
 
 using flags_t = uint8_t;
 
@@ -191,7 +197,7 @@ enum : uint16_t {
 };
 
 struct settings_t {
-  enum : uint32_t { max_max_concurrent_streams = ((uint32_t(1) << 31) - 1) };
+  static constexpr inline uint32_t max_max_concurrent_streams = ((uint32_t(1) << 31) - 1);
 
   uint32_t header_table_size = 4096;
   bool enable_push = false;
@@ -233,10 +239,13 @@ static_assert(sizeof(setting_t) == 6);
 // client side
 struct server_settings_visitor {
   settings_t& settings;  // must be server settings
+  uint32_t header_table_size_decrease = 0;
 
-  constexpr void operator()(setting_t s) const {
+  constexpr void operator()(setting_t s) {
     switch (s.identifier) {
       case SETTINGS_HEADER_TABLE_SIZE:
+        if (settings.header_table_size > s.value)
+          header_table_size_decrease = settings.header_table_size - s.value;
         settings.header_table_size = s.value;
         return;
       case SETTINGS_ENABLE_PUSH:
@@ -275,10 +284,13 @@ struct server_settings_visitor {
 // server side
 struct client_settings_visitor {
   settings_t& settings;  // must be client settings
+  uint32_t header_table_size_decrease = 0;
 
-  constexpr void operator()(setting_t s) const {
+  constexpr void operator()(setting_t s) {
     switch (s.identifier) {
       case SETTINGS_HEADER_TABLE_SIZE:
+        if (settings.header_table_size > s.value)
+          header_table_size_decrease = settings.header_table_size - s.value;
         settings.header_table_size = s.value;
         return;
       case SETTINGS_ENABLE_PUSH:
@@ -399,7 +411,7 @@ struct push_promise_frame {
 // if ACK not setted, requires ping back
 struct ping_frame {
   frame_header header;
-  std::byte data[8] = {};
+  byte_t data[8] = {};
 
   [[nodiscard]] constexpr uint64_t get_data() noexcept {
     return std::bit_cast<uint64_t>(data);
@@ -422,7 +434,7 @@ struct ping_frame {
   [[nodiscard]] static ping_frame parse(frame_header h, std::span<const byte_t> bytes) {
     assert(h.type == frame_e::PING && h.length == bytes.size());
     ping_frame f(h);
-    if (h.length != 8)
+    if (h.stream_id != 0 || h.length != 8)
       throw protocol_error{};
     memcpy(f.data, bytes.data(), 8);
     return f;
@@ -459,7 +471,7 @@ struct goaway_frame {
 
   [[noreturn]] static void parse_and_throw_goaway(frame_header header, std::span<const byte_t> bytes) {
     goaway_frame f = parse(header, bytes);
-    throw goaway_frame_received(f.last_stream_id, f.error_code, std::move(f.debug_info));
+    throw goaway_exception(f.last_stream_id, f.error_code, std::move(f.debug_info));
   }
 
   template <std::output_iterator<byte_t> O>
@@ -551,4 +563,33 @@ inline void increment_window_size(uint32_t& size, uint32_t window_size_increment
   size += window_size_increment;
 }
 
+// removes padding for DATA/HEADERS with PADDED flag
+inline bool strip_padding(std::span<byte_t>& bytes) {
+  if (bytes.empty())
+    return false;
+  int padlen = bytes[0];
+  if (padlen + 1 > bytes.size())
+    return false;
+  remove_prefix(bytes, 1);
+  remove_suffix(bytes, padlen);
+  return true;
+}
+
+// fills 'req' excluding 'body', handles duplicate pseudoheaders / incorrect ordering
+// returns span of unparsed headers
+// its caller responsibility to check correctness of parsed values
+void parse_http2_request_headers(hpack::decoder& d, std::span<const hpack::byte_t> bytes, http_request& req);
+
 }  // namespace tgbm::http2
+
+namespace fmt {
+
+template <>
+struct formatter<::tgbm::http2::frame_header> : fmt::formatter<std::string_view> {
+  auto format(const ::tgbm::http2::frame_header& header, auto& ctx) -> decltype(ctx.out()) {
+    return fmt::format_to(ctx.out(), "length: {}\n, type: {}\n, flags: {}\n, stream_id: {}", header.length,
+                          (int)header.type, (int)header.flags, header.stream_id);
+  }
+};
+
+}  // namespace fmt

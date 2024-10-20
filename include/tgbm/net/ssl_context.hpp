@@ -5,6 +5,7 @@
 #include <boost/intrusive_ptr.hpp>
 
 #include <filesystem>
+#include <span>
 
 namespace tgbm {
 
@@ -18,12 +19,13 @@ struct ssl_context {
  private:
   size_t refcount = 0;
 
-  explicit ssl_context(asio::ssl::context_base::method);
+  // private, must not be created on stack
+  ~ssl_context() = default;
 
  public:
   asio::ssl::context ctx;
 
-  static ssl_context_ptr create(asio::ssl::context_base::method);
+  explicit ssl_context(asio::ssl::context_base::method);
 
   ssl_context(ssl_context&&) = delete;
   void operator=(ssl_context&&) = delete;
@@ -38,10 +40,11 @@ struct ssl_context {
   }
 };
 
-ssl_context_ptr make_ssl_context_for_http2();
+ssl_context_ptr make_ssl_context_for_http2(std::span<const std::filesystem::path> additional_certs);
 
-ssl_context_ptr make_ssl_context_for_http11();
+ssl_context_ptr make_ssl_context_for_http11(std::span<const std::filesystem::path> additional_certs);
 
+// returns null on error
 ssl_context_ptr make_ssl_context_for_server(std::filesystem::path certificate,
                                             std::filesystem::path server_private_key);
 

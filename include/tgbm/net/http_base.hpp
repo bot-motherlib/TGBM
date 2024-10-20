@@ -22,7 +22,7 @@ struct reqerr_e {
 
 std::string_view e2str(reqerr_e::values e) noexcept;
 
-enum struct http_method_e {
+enum struct http_method_e : uint8_t {
   GET,
   POST,
   PUT,
@@ -32,23 +32,40 @@ enum struct http_method_e {
   HEAD,
   CONNECT,
   TRACE,
+  UNKNOWN,  // may be extension or smth
 };
 
 std::string_view e2str(http_method_e e) noexcept;
+void enum_from_string(std::string_view, http_method_e&) noexcept;
+
+enum struct scheme_e : uint8_t {
+  HTTP,
+  HTTPS,
+  UNKNOWN,
+};
+
+std::string_view e2str(scheme_e e) noexcept;
+void enum_from_string(std::string_view, scheme_e&) noexcept;
 
 struct http_header_t {
   std::string name;
   std::string value;
 };
 
+// TODO use const_string here
 // client knows authority and scheme and sets it
 struct http_request {
+  // Host for HTTP1/1, :authority for HTTP2
+  std::string authority = {};
   // usually something like /bot<token>/<method>
   // must be setted to not empty string
   std::string path;
-  http_method_e method = http_method_e::GET;
-  http_body body;
-  std::vector<http_header_t> headers;  // additional headers, all must be lowercase for http2
+  http_method_e method = http_method_e::UNKNOWN;
+  // 'scheme' is for server, clients will ignore it and use their scheme instead
+  scheme_e scheme = scheme_e::UNKNOWN;
+  http_body body = {};
+  // additional headers, all must be lowercase for HTTP2
+  std::vector<http_header_t> headers;
 };
 
 struct http_response {

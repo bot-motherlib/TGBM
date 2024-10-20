@@ -27,7 +27,12 @@ struct http_client {
   std::string_view get_host() const noexcept {
     return host;
   }
-
+  // 'host' used for
+  //   * connecting when required
+  //   * SSL host name verification
+  //   * as default host if request host not setted
+  //  but 'host' header in requests may differ
+  // note: same as :authority for HTTP2
   http_client(std::string_view host);
 
   virtual ~http_client() = default;

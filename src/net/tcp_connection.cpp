@@ -37,47 +37,28 @@ dd::task<tcp_connection_ptr> tcp_connection::create(asio::io_context& io_ctx, st
   tcp::resolver::query query(host, "https");
   io_error_code ec;
   auto results = co_await net.resolve(resolver, query, ec);
-  if (ec)
-    throw network_exception("[http] cannot resolve host: {}: service: {}, err: {}", query.host_name(),
-                            query.service_name(), ec.message());
+  if (ec) {
+    LOG_ERR("[TCP] cannot resolve host: {}: service: {}, err: {}", query.host_name(), query.service_name(),
+            ec.message());
+    throw network_exception(ec);
+  }
   auto& tcp_sock = socket.lowest_layer();
   co_await net.connect(tcp_sock, results, ec);
-  if (ec)
-    throw network_exception("[http] cannot connect to {}, err: {}", host, ec.message());
-  tcp_sock.set_option(tcp::no_delay(!options.merge_small_requests));
-  {
-    asio::socket_base::send_buffer_size send_sz_option(options.send_buffer_size);
-    tcp_sock.set_option(send_sz_option);
-    tcp_sock.get_option(send_sz_option);
-    if (send_sz_option.value() != options.send_buffer_size) {
-      LOG_WARN("tcp sendbuf size option not fully applied, requested: {}, actual: {}",
-               options.send_buffer_size, send_sz_option.value());
-    }
+
+  if (ec) {
+    LOG_ERR("[TCP] cannot connect to {}, err: {}", host, ec.message());
+    throw network_exception(ec);
   }
-  {
-    asio::socket_base::receive_buffer_size rsv_sz_option(options.receive_buffer_size);
-    tcp_sock.set_option(rsv_sz_option);
-    tcp_sock.get_option(rsv_sz_option);
-    if (rsv_sz_option.value() != options.send_buffer_size) {
-      LOG_WARN("tcp receive buf size option not fully applied, requested: {}, actual: {}",
-               options.send_buffer_size, rsv_sz_option.value());
-    }
-  }
+  options.apply(tcp_sock);
   socket.set_verify_mode(options.disable_ssl_certificate_verify ? ssl::verify_none : ssl::verify_peer);
   socket.set_verify_callback(ssl::host_name_verification(host));
   if (!options.is_primal_connection)
     SSL_set_mode(socket.native_handle(), SSL_MODE_RELEASE_BUFFERS);
   co_await net.handshake(socket, ssl::stream_base::handshake_type::client, ec);
-  if (ec)
-    throw network_exception(
-        "[http] cannot ssl handshake: {}"
-#ifndef TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH
-        ". If your certificate is not default or you are on windows (where default pathes may be unreachable)"
-        " define TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH to provide additional certificate or use option "
-        "'disable_ssl_certificate_verify' (only for testing)"
-#endif
-        ,
-        ec.message());
+  if (ec) {
+    LOG_ERR("[TCP/SSL] cannot ssl handshake: {}", ec.message());
+    throw network_exception(ec);
+  }
   co_return connection;
 }
 
