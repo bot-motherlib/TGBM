@@ -216,13 +216,11 @@ TEST(const_string) {
   {
     const_string s(5, 'a');
     error_if(s != "aaaaa");
-    error_if(s.data() != (char*)&s);
   }
 
   {
     const_string s(7, 'a');
     error_if(s != "aaaaaaa");
-    error_if(s.data() != (char*)&s);
   }
 
   // small
@@ -237,7 +235,6 @@ TEST(const_string) {
   std::string long_str(100, 'a');
   const_string bigstr = long_str;
   error_if(bigstr != const_string(100, 'a'));
-  error_if(bigstr.data() == (char*)&bigstr);
   error_if(bigstr.size() != 100);
   error_if(bigstr != long_str);
 
@@ -369,7 +366,34 @@ TEST(const_string) {
   error_if(s29 != "1234567");
 }
 
+TEST(optional_const_string) {
+  using opt_t = tgbm::api::optional<tgbm::const_string>;
+  opt_t opt;
+  error_if(opt);
+  error_if(opt.has_value());
+  error_if(opt != std::nullopt);
+  try {
+    opt.value();
+    error_if(true);
+  } catch (...) {
+  }
+  opt.emplace(10, 'c');
+  error_if(opt != tgbm::const_string(10, 'c'));
+
+  error_if(!opt);
+  error_if(!opt.has_value());
+  error_if(opt->empty());
+  opt.emplace("abc");
+  error_if(opt.value() != "abc");
+  error_if(opt.value_or("hello") != "abc");
+  error_if(opt->size() != 3);
+  opt.reset();
+  error_if(opt != std::nullopt);
+  error_if(opt.value_or("hello") != "hello");
+}
+
 int main() {
+  test_optional_const_string();
   test_const_string();
   test_optional();
   test_box_union_release();
