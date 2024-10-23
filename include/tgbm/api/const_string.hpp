@@ -193,15 +193,15 @@ struct optional_traits<const_string> {
   static state_type make_nullopt_state() noexcept {
     return state_type{const_string(std::nullopt)};
   }
-  static constexpr const_string* get_value_ptr(state_type& s) noexcept {
+  static const_string* get_value_ptr(state_type& s) noexcept {
     return &s.str;
   }
 
-  static constexpr void do_swap(state_type& l, state_type& r) noexcept {
+  static void do_swap(state_type& l, state_type& r) noexcept {
     l.str.swap(r.str);
   }
 
-  static constexpr bool is_nullopt_state(const state_type& s) noexcept {
+  static bool is_nullopt_state(const state_type& s) noexcept {
     return s.str.is_nullopt_state();
   }
 

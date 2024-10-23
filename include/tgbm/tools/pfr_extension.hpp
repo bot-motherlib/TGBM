@@ -3,17 +3,12 @@
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundefined-var-template"
-#elif defined(__GNUC__) || defined(__GNUG__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wundefined-var-template"
 #endif
 
 #include <boost/pfr.hpp>
 
 #if defined(__clang__)
 #pragma clang diagnostic pop
-#elif defined(__GNUC__) || defined(__GNUG__)
-#pragma GCC diagnostic pop
 #endif
 
 #include "tgbm/tools/constexpr_string.h"
