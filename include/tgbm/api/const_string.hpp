@@ -25,13 +25,14 @@ struct TGBM_TRIVIAL_ABI const_string {
   static_assert(ptrmask != 0);
   // 'ptrmask' reserved for optional
   static constexpr size_t max_small_sz = ptrmask - 1;
+
+  friend struct optional_traits<const_string>;
+
   static constexpr uintptr_t nullopt_state = []() -> uintptr_t {
     char data[sizeof(uintptr_t)] = {};
     data[sizeof(uintptr_t) - 1] = max_small_sz + 1;
     return std::bit_cast<uintptr_t>(data);
   }();
-
-  friend struct api::optional<const_string>;
 
   [[nodiscard]] bool is_nullopt_state() const noexcept {
     return ptrlen == nullopt_state;
@@ -183,88 +184,31 @@ struct TGBM_TRIVIAL_ABI const_string {
   }
 };
 
-namespace api {
-
 template <>
-struct optional<const_string> {
-  using value_type = const_string;
+struct optional_traits<const_string> {
+  struct state_type {
+    const_string str;
+  };
 
- private:
-  const_string _val;
-
- public:
-  optional() noexcept : _val(std::nullopt) {
+  static state_type make_nullopt_state() noexcept {
+    return state_type{const_string(std::nullopt)};
   }
-  optional(value_type b) noexcept : _val(std::move(b)) {
-  }
-  optional(std::nullopt_t) noexcept : optional() {
-  }
-  optional& operator=(std::nullopt_t) noexcept {
-    _val = const_string(std::nullopt);
-    return *this;
-  }
-  optional& operator=(value_type b) noexcept {
-    _val = std::move(b);
-    return *this;
-  }
-  bool has_value() const noexcept {
-    return !_val.is_nullopt_state();
-  }
-  explicit operator bool() const noexcept {
-    return has_value();
-  }
-  void reset() noexcept {
-    _val = const_string(std::nullopt);
-  }
-  template <typename... Args>
-  value_type& emplace(Args&&... args) noexcept {
-    return _val = const_string(std::forward<Args>(args)...);
-  }
-  void swap(optional& o) noexcept {
-    using std::swap;
-    swap(_val, o._val);
-  }
-  friend void swap(optional& l, optional& r) noexcept {
-    l.swap(r);
-  }
-  const_string value_or(value_type defaultval) const noexcept {
-    return has_value() ? _val : defaultval;
+  static constexpr const_string* get_value_ptr(state_type& s) noexcept {
+    return &s.str;
   }
 
-  value_type& value() {
-    if (!has_value())
-      throw std::bad_optional_access{};
-    return _val;
-  }
-  const value_type& value() const {
-    return const_cast<optional&>(*this).value();
+  static constexpr void do_swap(state_type& l, state_type& r) noexcept {
+    l.str.swap(r.str);
   }
 
-  value_type* operator->() noexcept {
-    assert(has_value());
-    return &_val;
-  }
-  const value_type* operator->() const noexcept {
-    assert(has_value());
-    return &_val;
-  }
-  value_type& operator*() noexcept {
-    assert(has_value());
-    return _val;
-  }
-  const value_type& operator*() const noexcept {
-    assert(has_value());
-    return _val;
+  static constexpr bool is_nullopt_state(const state_type& s) noexcept {
+    return s.str.is_nullopt_state();
   }
 
-  bool operator==(std::nullopt_t) const noexcept {
-    return !has_value();
+  static constexpr void mark_as_filled(state_type& s) noexcept {
+    // noop
   }
-  bool operator==(const optional&) const = default;
-  std::strong_ordering operator<=>(const optional&) const = default;
 };
-
-}  // namespace api
 
 }  // namespace tgbm
 

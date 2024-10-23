@@ -1,15 +1,16 @@
 #pragma once
+
 #include <bitset>
 #include <cassert>
-#include <optional>
 #include <utility>
-#include <boost/pfr/core.hpp>
-#include <tgbm/tools/json_tools/handler_parser/basic_parser.hpp>
-#include <tgbm/tools/json_tools/handler_parser/ignore.hpp>
-#include <tgbm/tools/api_utils.hpp>
-#include <tgbm/tools/pfr_extension.hpp>
-#include <tgbm/tools/traits.hpp>
-#include <tgbm/tools/StringTools.h>
+#include <string_view>
+
+#include "tgbm/tools/pfr_extension.hpp"
+#include "tgbm/tools/json_tools/handler_parser/basic_parser.hpp"
+#include "tgbm/tools/json_tools/handler_parser/ignore.hpp"
+#include "tgbm/tools/api_utils.hpp"
+#include "tgbm/tools/pfr_extension.hpp"
+#include "tgbm/tools/traits.hpp"
 
 namespace tgbm::json::handler_parser {
 

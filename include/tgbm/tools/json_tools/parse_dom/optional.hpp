@@ -5,10 +5,11 @@
 
 namespace tgbm::json::parse_dom {
 
-template <template <typename> typename Optional, typename T>
+template <typename Optional>
 struct basic_optional_parser {
+  using T = typename Optional::value_type;
   template <typename Json, json::json_traits Traits>
-  static void parse(const Json& j, Optional<T>& out) {
+  static void parse(const Json& j, Optional& out) {
     if (Traits::is_null(j)) {
       return;
     } else {
@@ -18,13 +19,13 @@ struct basic_optional_parser {
 };
 
 template <typename T>
-struct parser<box<T>> : basic_optional_parser<box, T> {};
+struct parser<box<T>> : basic_optional_parser<box<T>> {};
 
 template <typename T>
-struct parser<tgbm::api::optional<T>> : basic_optional_parser<tgbm::api::optional, T> {};
+struct parser<tgbm::api::optional<T>> : basic_optional_parser<tgbm::api::optional<T>> {};
 
 template <typename T>
-struct parser<std::optional<T>> : basic_optional_parser<std::optional, T> {};
+struct parser<std::optional<T>> : basic_optional_parser<std::optional<T>> {};
 
 template <>
 struct parser<nothing_t> {

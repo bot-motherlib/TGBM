@@ -5,17 +5,18 @@
 
 namespace tgbm::generator_parser {
 
-template <template <typename> typename Optional, typename T>
+template <typename Optional>
 struct basic_optional_parser {
+  using T = typename Optional::value_type;
   static constexpr bool simple = is_simple<T>;
-  static dd::generator<nothing_t> parse(Optional<T>& t_, event_holder& holder) {
+  static dd::generator<nothing_t> parse(Optional& t_, event_holder& holder) {
     if (holder.got == event_holder::null) {
       co_return;
     }
     using parser = boost_domless_parser<T>;
     co_yield dd::elements_of(parser::parse(t_.emplace(), holder));
   }
-  static void simple_parse(Optional<T>& t_, event_holder& holder)
+  static void simple_parse(Optional& t_, event_holder& holder)
     requires(simple)
   {
     if (holder.got == event_holder::null) {
@@ -27,12 +28,12 @@ struct basic_optional_parser {
 };
 
 template <typename T>
-struct boost_domless_parser<std::optional<T>> : basic_optional_parser<std::optional, T> {};
+struct boost_domless_parser<std::optional<T>> : basic_optional_parser<std::optional<T>> {};
 
 template <typename T>
-struct boost_domless_parser<api::optional<T>> : basic_optional_parser<api::optional, T> {};
+struct boost_domless_parser<api::optional<T>> : basic_optional_parser<api::optional<T>> {};
 
 template <typename T>
-struct boost_domless_parser<box<T>> : basic_optional_parser<box, T> {};
+struct boost_domless_parser<box<T>> : basic_optional_parser<box<T>> {};
 
 }  // namespace tgbm::generator_parser

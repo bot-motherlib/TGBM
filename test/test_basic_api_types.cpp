@@ -12,6 +12,18 @@
   if (!!(__VA_ARGS__)) \
   exit(__LINE__)
 
+struct empty_test_type {
+  bool operator==(const empty_test_type&) const = default;
+};
+
+#ifndef _WIN32
+static_assert(sizeof(tgbm::api::optional<empty_test_type>) == 1);
+#endif
+
+static_assert(sizeof(tgbm::api::optional<tgbm::const_string>) == sizeof(void*));
+static_assert(sizeof(tgbm::api::optional<bool>) == sizeof(bool));
+static_assert(sizeof(tgbm::api::optional<tgbm::api::Integer>) == sizeof(tgbm::api::Integer));
+
 template <typename T>
 constexpr bool opttest() {
   tgbm::api::optional<T> opt = std::nullopt;
@@ -35,7 +47,9 @@ constexpr bool opttest() {
 }
 
 TEST(optional) {
+  static_assert(opttest<empty_test_type>());
   static_assert(opttest<tgbm::api::Integer>());
+  static_assert(std::is_trivially_copyable_v<tgbm::api::optional<tgbm::api::Integer>>);
   static_assert(opttest<tgbm::api::String>());
   static_assert(opttest<int>());
   error_if(!opttest<tgbm::api::Boolean>());
