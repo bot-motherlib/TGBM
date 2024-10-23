@@ -2,6 +2,7 @@
 #include "tgbm/api/common.hpp"
 #include "tgbm/api/optional.hpp"
 #include "tgbm/tools/box_union.hpp"
+#include "tgbm/api/const_string.hpp"
 
 #include <vector>
 #include <memory>
@@ -11,8 +12,20 @@
   if (!!(__VA_ARGS__)) \
   exit(__LINE__)
 
+struct empty_test_type {
+  bool operator==(const empty_test_type&) const = default;
+};
+
+#ifndef _WIN32
+static_assert(sizeof(tgbm::api::optional<empty_test_type>) == 1);
+#endif
+
+static_assert(sizeof(tgbm::api::optional<tgbm::const_string>) == sizeof(void*));
+static_assert(sizeof(tgbm::api::optional<bool>) == sizeof(bool));
+static_assert(sizeof(tgbm::api::optional<tgbm::api::Integer>) == sizeof(tgbm::api::Integer));
+
 template <typename T>
-constexpr bool opttest() {
+constexpr bool opttest(T v1, T v2) {
   tgbm::api::optional<T> opt = std::nullopt;
   if (opt)
     throw;
@@ -30,14 +43,39 @@ constexpr bool opttest() {
   if (opt != opt)
     throw;
   T& x = opt.value();
+  tgbm::api::optional<T> o1 = v1;
+  tgbm::api::optional<T> o2 = v2;
+  if (!o1 || !o2)
+    throw;
+  if (o1.value() != v1 || o2.value() != v2)
+    throw;
+  if (*o1 != v1 || *o2 != v2)
+    throw;
+  swap(o1, o2);
+  if (o1 != v2 || o2 != v1)
+    throw;
+  o1.swap(o2);
+  if (o1 != v1 || o2 != v2)
+    throw;
+  o1 = std::move(o2);
+  if (o1 != v2)
+    throw;
+  o1.reset();
+  o2.reset();
+  if (o1 != o2)
+    throw;
+  if (o1 || o2)
+    throw;
   return true;
 }
 
 TEST(optional) {
-  static_assert(opttest<tgbm::api::Integer>());
-  static_assert(opttest<tgbm::api::String>());
-  static_assert(opttest<int>());
-  error_if(!opttest<tgbm::api::Boolean>());
+  static_assert(opttest<empty_test_type>({}, {}));
+  static_assert(opttest<tgbm::api::Integer>(10, -10));
+  static_assert(std::is_trivially_copyable_v<tgbm::api::optional<tgbm::api::Integer>>);
+  opttest<tgbm::api::String>("hello", "world");
+  static_assert(opttest<int>(-1, 42));
+  error_if(!opttest<tgbm::api::Boolean>(true, false));
 }
 
 template <int>
@@ -200,7 +238,200 @@ TEST(boolean) {
   error_if(!b || !*b);
 }
 
+TEST(const_string) {
+  using tgbm::const_string;
+
+  // empty
+
+  {
+    const_string s1;
+    error_if(s1.data() != (char*)&s1);
+    error_if(s1.size() != 0);
+    error_if(!s1.empty());
+  }
+
+  {
+    const_string s(5, 'a');
+    error_if(s != "aaaaa");
+  }
+
+  {
+    const_string s(7, 'a');
+    error_if(s != "aaaaaaa");
+  }
+
+  // small
+
+  const_string small = "Test";
+  error_if(small.data() != (char*)&small);
+  error_if(small.size() != 4);
+  error_if(small != "Test");
+
+  // big
+
+  std::string long_str(100, 'a');
+  const_string bigstr = long_str;
+  error_if(bigstr != const_string(100, 'a'));
+  error_if(bigstr.size() != 100);
+  error_if(bigstr != long_str);
+
+  // self assign big
+
+  bigstr = bigstr;
+  error_if(bigstr != const_string(100, 'a'));
+  bigstr = std::move(bigstr);
+  error_if(bigstr != const_string(100, 'a'));
+
+  // copy small
+
+  const_string s4 = small;
+  error_if(s4.size() != small.size());
+  error_if(s4.str() != small.str());
+
+  // copy big
+
+  const_string s5 = bigstr;
+  error_if(s5.size() != bigstr.size());
+  error_if(s5.str() != bigstr.str());
+
+  // assign small
+
+  const_string s6;
+  s6 = small;
+  error_if(s6.size() != small.size());
+  error_if(s6.str() != small.str());
+
+  // assign big
+
+  const_string s7;
+  s7 = bigstr;
+  error_if(s7.size() != bigstr.size());
+  error_if(s7.str() != bigstr.str());
+
+  // move small
+
+  const_string s8 = std::move(small);
+  error_if(s8.size() != 4);
+  error_if(s8.str() != "Test");
+  error_if(small.size() != 0);
+
+  // move big
+
+  const_string s9 = std::move(bigstr);
+  error_if(s9.size() != 100);
+  error_if(s9.str() != long_str);
+  error_if(bigstr.size() != 0);
+  error_if(!bigstr.empty());
+  error_if(bigstr != const_string{});
+
+  // cmp equal
+
+  const_string s10 = "Hello";
+  const_string s11 = "Hello";
+  const_string s12 = "World";
+  error_if(!(s10 == s11));
+  error_if(s10 == s12);
+
+  // swap small
+
+  const_string s13 = "First";
+  const_string s14 = "Second";
+  s13.swap(s14);
+  error_if(s13.str() != "Second");
+  error_if(s14.str() != "First");
+
+  // reset
+
+  const_string s15 = "To be cleared";
+  s15.reset();
+  error_if(s15.size() != 0);
+  error_if(!s15.str().empty());
+
+  const_string s16 = "Move this";
+  const_string s17;
+  s17 = std::move(s16);
+  error_if(s17.str() != "Move this");
+  error_if(s16.size() != 0);
+
+  const_string s18 = "";
+  error_if(s18.size() != 0);
+  error_if(!s18.str().empty());
+
+  // assign string view
+
+  std::string_view sv = "String view";
+  const_string s19 = sv;
+  error_if(s19.size() != sv.size());
+  error_if(s19.str() != sv);
+
+  const_string s20 = "Initial";
+  s20 = "First";
+  s20 = "Second";
+  s20 = "Third";
+  error_if(s20 != "Third");
+
+  // self assign small
+
+  s20 = s20;
+  error_if(s20 != "Third");
+
+  // double reset
+
+  const_string s21;
+  s21.reset();
+  s21.reset();
+  error_if(s21.size() != 0);
+
+  const_string s22 = "Permanent";
+  const_string s23 = std::move(s22);
+  error_if(s23 != "Permanent");
+  error_if(s22.size() != 0);
+  error_if(!s22.empty());
+
+  const_string s24;
+  const_string s25;
+  error_if(s24 != s25);
+
+  // cmp big and small
+
+  const_string s26 = "Short";
+  const_string s27(100, 'S');
+  error_if(s26 == s27);
+
+  const_string s29 = "1234567";
+  error_if(s29.size() != 7);
+  error_if(s29 != "1234567");
+}
+
+TEST(optional_const_string) {
+  using opt_t = tgbm::api::optional<tgbm::const_string>;
+  opt_t opt;
+  error_if(opt);
+  error_if(opt.has_value());
+  error_if(opt != std::nullopt);
+  try {
+    opt.value();
+    error_if(true);
+  } catch (...) {
+  }
+  opt.emplace(10, 'c');
+  error_if(opt != tgbm::const_string(10, 'c'));
+
+  error_if(!opt);
+  error_if(!opt.has_value());
+  error_if(opt->empty());
+  opt.emplace("abc");
+  error_if(opt.value() != "abc");
+  error_if(opt.value_or("hello") != "abc");
+  error_if(opt->size() != 3);
+  opt.reset();
+  error_if(opt != std::nullopt);
+  error_if(opt.value_or("hello") != "hello");
+}
+
 int main() {
+  test_optional_const_string();
+  test_const_string();
   test_optional();
   test_box_union_release();
   test_box_union_compare();

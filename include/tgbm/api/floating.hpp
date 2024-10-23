@@ -12,7 +12,6 @@ struct Double {
 
   constexpr Double() = default;
   constexpr Double(double d) noexcept : value(d) {
-    assert(std::isfinite(d));
   }
   constexpr Double& operator=(double d) noexcept {
     value = d;

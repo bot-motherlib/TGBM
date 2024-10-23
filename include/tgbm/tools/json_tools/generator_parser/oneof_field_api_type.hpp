@@ -2,9 +2,7 @@
 #include <bitset>
 #include <tgbm/tools/json_tools/generator_parser/basic_parser.hpp>
 #include <utility>
-#include "boost/pfr/core.hpp"
 #include "tgbm/tools/api_utils.hpp"
-#include "tgbm/tools/json_tools/generator_parser/ignore_parser.hpp"
 #include "tgbm/tools/traits.hpp"
 
 namespace tgbm::generator_parser {

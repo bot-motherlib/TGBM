@@ -1,372 +1,332 @@
 #pragma once
 
-#include <limits>
 #include <optional>
 #include <bit>
 #include <cassert>
 #include <compare>
 
-#include "tgbm/api/Integer.hpp"
 #include "tgbm/tools/meta.hpp"
+
+namespace tgbm {
+
+template <typename Traits, typename T>
+concept optional_traits_for = requires { requires std::is_destructible_v<typename Traits::state_type>; } &&
+                              requires(T& value, typename Traits::state_type& state) {
+                                // may be used to get pointer to uninitialized memory
+                                { Traits::get_value_ptr(state) } noexcept -> std::same_as<T*>;
+                                { Traits::do_swap(state, state) } -> std::same_as<void>;
+                                {
+                                  Traits::is_nullopt_state(std::as_const(state))
+                                } noexcept -> std::same_as<bool>;
+                                // invoked when value is emplaced
+                                { Traits::mark_as_filled(state) } -> std::same_as<void>;
+                                // destroys value and marks value as nullopt state
+                                { Traits::reset(state) } -> std::same_as<void>;
+                              };
+
+namespace noexport {
+
+template <typename T>
+struct TGBM_TRIVIAL_ABI default_optional_basis {
+  union {
+    char dummy = {};
+    std::remove_const_t<T> value;
+  };
+  bool has_val = false;
+
+  default_optional_basis()
+    requires(std::is_trivially_default_constructible_v<T>)
+  = default;
+  default_optional_basis(const default_optional_basis&)
+    requires(std::is_trivially_copy_constructible_v<T>)
+  = default;
+
+  default_optional_basis(default_optional_basis&&)
+    requires(std::is_trivially_move_constructible_v<T>)
+  = default;
+  ~default_optional_basis()
+    requires(std::is_trivially_destructible_v<T>)
+  = default;
+
+  default_optional_basis& operator=(default_optional_basis&&)
+    requires(std::is_trivially_move_assignable_v<T>)
+  = default;
+  default_optional_basis& operator=(const default_optional_basis&)
+    requires(std::is_trivially_copy_assignable_v<T>)
+  = default;
+
+  constexpr default_optional_basis() noexcept
+    requires(!std::is_trivially_default_constructible_v<T>)
+      : dummy(), has_val(false) {
+  }
+  constexpr default_optional_basis(const default_optional_basis& o) noexcept(
+      std::is_nothrow_copy_constructible_v<T>)
+    requires(!std::is_trivially_copy_constructible_v<T> && std::is_copy_constructible_v<T>)
+      : default_optional_basis() {
+    if (o.has_val) {
+      std::construct_at(std::addressof(value), o.value);
+      has_val = true;
+    }
+  }
+  // ignore exceptions
+  constexpr default_optional_basis(default_optional_basis&& o) noexcept
+    requires(!std::is_trivially_move_constructible_v<T> && std::is_copy_constructible_v<T>)
+      : default_optional_basis() {
+    if (o.has_val) {
+      std::construct_at(std::addressof(value), std::move(o.value));
+      has_val = true;
+    }
+  }
+  constexpr default_optional_basis& operator=(const default_optional_basis& o) noexcept(
+      std::is_nothrow_copy_constructible_v<T>)
+    requires(!std::is_trivially_copy_assignable_v<T> && std::is_copy_assignable_v<T>)
+  {
+    *this = default_optional_basis(o);
+    return *this;
+  }
+  // ignore exceptions
+  constexpr default_optional_basis& operator=(default_optional_basis&& o) noexcept
+    requires(!std::is_trivially_move_assignable_v<T> && std::is_move_assignable_v<T>)
+  {
+    reset();
+    if (o.has_val) {
+      std::construct_at(std::addressof(value), std::move(o.value));
+      has_val = true;
+      o.reset();
+    }
+    return *this;
+  }
+
+  constexpr void reset() noexcept {
+    if (has_val) {
+      std::destroy_at(std::addressof(value));
+      has_val = false;
+    }
+  }
+  constexpr ~default_optional_basis()
+    requires(!std::is_trivially_destructible_v<T>)
+  {
+    reset();
+  }
+};
+
+}  // namespace noexport
+
+// default implementaton
+template <typename T>
+struct optional_traits {
+  using state_type = noexport::default_optional_basis<T>;
+
+  static constexpr T* get_value_ptr(state_type& s) noexcept {
+    return std::addressof(s.value);
+  }
+
+  static constexpr void do_swap(state_type& l,
+                                state_type& r) noexcept(std::is_nothrow_move_constructible_v<T>) {
+    static_assert(std::is_move_constructible_v<T>);
+
+    if constexpr (std::is_trivially_move_constructible_v<T> && std::is_trivially_move_assignable_v<T> &&
+                  std::is_trivially_destructible_v<T>) {
+      std::swap(l, r);  // memswap
+    } else {
+      const bool hasval = !is_nullopt_state(l);
+      if (hasval == !is_nullopt_state(r)) {
+        using std::swap;
+        if (hasval)
+          swap(*get_value_ptr(l), *get_value_ptr(r));
+      } else {
+        state_type& src = hasval ? l : r;
+        state_type& dst = hasval ? r : l;
+        std::construct_at(get_value_ptr(dst), std::move(*get_value_ptr(src)));
+        dst.has_val = true;
+        src.reset();
+      }
+    }
+  }
+
+  static constexpr void mark_as_filled(state_type& s) noexcept {
+    s.has_val = true;
+  }
+  static constexpr void reset(state_type& s) noexcept {
+    s.reset();
+  }
+
+  static constexpr bool is_nullopt_state(const state_type& s) noexcept {
+    return !s.has_val;
+  }
+};
+
+template <>
+struct optional_traits<bool> {
+  struct state_type {
+    union {
+      char val;
+      bool bval;
+    };
+  };
+  static constexpr inline char empty = 2;
+
+  static constexpr void reset(state_type& s) noexcept {
+    s.val = empty;
+  }
+  static constexpr bool* get_value_ptr(state_type& s) noexcept {
+    return std::addressof(s.bval);
+  }
+
+  static constexpr void do_swap(state_type& l, state_type& r) noexcept {
+    std::swap(l, r);
+  }
+
+  static constexpr bool is_nullopt_state(const state_type& s) noexcept {
+    assert(std::bit_cast<char>(state_type{.val = empty}) != std::bit_cast<char>(state_type{.bval = true}));
+    assert(std::bit_cast<char>(state_type{.val = empty}) != std::bit_cast<char>(state_type{.bval = false}));
+    return std::bit_cast<char>(s) == empty;
+  }
+
+  static constexpr void mark_as_filled(state_type&) noexcept {
+  }
+};
+
+template <typename T>
+  requires(std::is_empty_v<T> && std::is_trivial_v<T> && std::is_trivially_destructible_v<T>)
+struct optional_traits<T> {
+  struct state_type {
+    KELCORO_NO_UNIQUE_ADDRESS std::remove_const_t<T> val;
+    bool has_val = false;
+  };
+
+  static constexpr void reset(state_type& s) noexcept {
+    s.has_val = false;
+  }
+  static constexpr T* get_value_ptr(state_type& s) noexcept {
+    return std::addressof(s.val);
+  }
+
+  static constexpr void do_swap(state_type& l, state_type& r) noexcept {
+    using std::swap;
+    swap(l.val, r.val);
+    std::swap(l.has_val, r.has_val);
+  }
+
+  static constexpr bool is_nullopt_state(const state_type& s) noexcept {
+    return !s.has_val;
+  }
+
+  static constexpr void mark_as_filled(state_type& s) noexcept {
+    s.has_val = true;
+  }
+};
+
+}  // namespace tgbm
 
 namespace tgbm::api {
 
-template <typename T>
-struct optional {
+template <typename T, optional_traits_for<T> Traits = optional_traits<T>>
+struct TGBM_TRIVIAL_ABI optional {
   static_assert(is_decayed_v<T>);
 
   using value_type = T;
 
  private:
-  std::optional<T> _val;
+  using state_t = typename Traits::state_type;
+  state_t state;
+
+  [[nodiscard]] constexpr T* value_ptr() noexcept {
+    return Traits::get_value_ptr(state);
+  }
+  [[nodiscard]] constexpr const T* value_ptr() const noexcept {
+    return Traits::get_value_ptr(state);
+  }
 
  public:
-  constexpr optional() noexcept : _val(std::nullopt) {
+  constexpr optional() noexcept {
+    reset();
   }
-  constexpr optional(value_type b) noexcept(std::is_nothrow_move_constructible_v<value_type>)
-      : _val(std::move(b)) {
+  constexpr optional(T v) noexcept(std::is_nothrow_move_constructible_v<T>) {
+    emplace(std::move(v));
   }
   constexpr optional(std::nullopt_t) noexcept : optional() {
   }
+
+  template <typename... Args>
+  constexpr value_type& emplace(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args&&...>) {
+    reset();
+    T* p = std::construct_at(value_ptr(), std::forward<Args>(args)...);
+    Traits::mark_as_filled(state);
+    return *p;
+  }
+
   constexpr optional& operator=(std::nullopt_t) noexcept {
-    _val = std::nullopt;
+    reset();
     return *this;
   }
-  constexpr optional& operator=(value_type b) noexcept(std::is_nothrow_move_assignable_v<value_type>) {
-    _val = std::move(b);
+  constexpr optional& operator=(T v) noexcept(std::is_nothrow_move_constructible_v<T>) {
+    emplace(std::move(v));
     return *this;
   }
+
   constexpr bool has_value() const noexcept {
-    return _val.has_value();
+    return !Traits::is_nullopt_state(state);
   }
   constexpr explicit operator bool() const noexcept {
     return has_value();
   }
-  constexpr void reset() noexcept {
-    _val.reset();
+  constexpr bool operator==(std::nullopt_t) const noexcept {
+    return !has_value();
   }
-  template <typename... Args>
-  constexpr value_type& emplace(Args&&... args) noexcept {
-    return _val.emplace(std::forward<Args>(args)...);
-  }
+
   constexpr void swap(optional& o) noexcept {
     using std::swap;
-    swap(_val, o._val);
+    Traits::do_swap(state, o.state);
   }
   friend constexpr void swap(optional& l, optional& r) noexcept {
     l.swap(r);
   }
-  constexpr decltype(auto) value_or(value_type val) const noexcept {
-    return _val.value_or(std::move(val));
-  }
 
-  constexpr value_type& value() {
-    return _val.value();
-  }
-  constexpr const value_type& value() const {
-    return _val.value();
-  }
-
-  constexpr value_type* operator->() noexcept {
-    return _val.operator->();
-  }
-  constexpr const value_type* operator->() const noexcept {
-    return _val.operator->();
-  }
-  constexpr value_type& operator*() noexcept {
-    return _val.operator*();
-  }
-  constexpr const value_type& operator*() const noexcept {
-    return _val.operator*();
-  }
-
-  constexpr bool operator==(std::nullopt_t) const noexcept {
-    return !has_value();
-  }
-  constexpr bool operator==(const optional&) const = default;
-  constexpr std::strong_ordering operator<=>(const optional&) const = default;
-};
-
-// Note: not empty after move
-template <>
-struct optional<bool> {
-  using value_type = bool;
-
- private:
-  enum : int8_t { trueval = std::bit_cast<int8_t>(true), falseval = std::bit_cast<int8_t>(false), empty = 2 };
-  static_assert(empty != trueval && empty != falseval);
-  union {
-    int8_t _val;
-    bool _bval;
-  };
-
- public:
-  constexpr optional() noexcept : _val(empty) {
-  }
-  constexpr optional(std::in_place_t, value_type val) noexcept : optional(val) {
-    _val = true;
-  }
-  constexpr optional(value_type b) noexcept : _val(b) {
-  }
-  constexpr optional(std::nullopt_t) noexcept : optional() {
-  }
-  constexpr optional& operator=(std::nullopt_t) noexcept {
-    _val = empty;
-    return *this;
-  }
-  constexpr optional& operator=(value_type b) noexcept {
-    _val = b;
-    return *this;
-  }
-  constexpr bool has_value() const noexcept {
-    return _val != empty;
-  }
-  constexpr explicit operator bool() const noexcept {
-    return has_value();
-  }
   constexpr void reset() noexcept {
-    _val = empty;
+    Traits::reset(state);
   }
-  constexpr value_type& emplace(value_type v = value_type{}) noexcept {
-    return _bval = v;
-  }
-  constexpr void swap(optional& o) noexcept {
-    std::swap(_val, o._val);
-  }
-  friend constexpr void swap(optional& l, optional& r) noexcept {
-    l.swap(r);
-  }
-  constexpr value_type value_or(value_type val) const noexcept {
-    return has_value() ? _val : val;
+
+  constexpr T value_or(value_type v) const {
+    return has_value() ? **this : std::move(v);
   }
 
   constexpr value_type& value() {
     if (!has_value())
-      throw std::bad_optional_access();
+      throw std::bad_optional_access{};
     return **this;
   }
   constexpr const value_type& value() const {
-    if (!has_value())
-      throw std::bad_optional_access();
-    return **this;
+    return const_cast<optional&>(*this).value();
   }
 
   constexpr value_type* operator->() noexcept {
-    assert(has_value());
-    return &_bval;
+    return Traits::get_value_ptr(state);
   }
   constexpr const value_type* operator->() const noexcept {
-    return &_bval;
+    return const_cast<optional&>(*this).operator->();
   }
   constexpr value_type& operator*() noexcept {
     assert(has_value());
-    return _bval;
+    return *operator->();
   }
   constexpr const value_type& operator*() const noexcept {
-    assert(has_value());
-    return _bval;
+    return const_cast<optional&>(*this).operator*();
   }
 
-  constexpr bool operator==(const optional& other) const noexcept {
-    return _val == other._val;
+  constexpr bool operator==(const optional& r) const noexcept {
+    const optional& l = *this;
+    if (l && r)
+      return *l == *r;
+    return !l && !r;
   }
-  constexpr bool operator==(std::nullopt_t) const noexcept {
-    return !has_value();
-  }
-
-  friend constexpr std::strong_ordering operator<=>(const optional& lhs, const optional& rhs) noexcept {
-    if (lhs && rhs) {
-      return *lhs <=> *rhs;
-    }
-    if (lhs) {
-      return std::strong_ordering::greater;
-    }
-    if (rhs) {
-      return std::strong_ordering::less;
-    }
-    return std::strong_ordering::equal;
-  }
-};
-
-template <typename T>
-  requires(std::is_empty_v<T>)
-struct optional<T> {
-  using value_type = T;
-
-  static_assert(is_decayed_v<T>);
-  static inline constinit T _dummy;
-
- private:
-  bool _val = false;
-
- public:
-  constexpr optional() noexcept = default;
-  constexpr optional(value_type) noexcept {
-    _val = true;
-  }
-  template <typename... Args>
-  constexpr optional(std::in_place_t, Args... args) noexcept {
-    (void)value_type(std::forward<Args>(args)...);
-    _val = true;
-  }
-  constexpr optional(std::nullopt_t) noexcept : optional() {
-  }
-  constexpr optional& operator=(std::nullopt_t) noexcept {
-    _val = false;
-    return *this;
-  }
-  constexpr optional& operator=(value_type b) noexcept {
-    _val = b;
-    return *this;
-  }
-  constexpr bool has_value() const noexcept {
-    return _val;
-  }
-  constexpr explicit operator bool() const noexcept {
-    return has_value();
-  }
-  constexpr void reset() noexcept {
-    _val = false;
-  }
-  constexpr value_type& emplace(auto&&...) noexcept {
-    _val = true;
-    return _dummy;
-  }
-  constexpr void swap(optional& o) noexcept {
-    std::swap(_val, o._val);
-  }
-  friend constexpr void swap(optional& l, optional& r) noexcept {
-    l.swap(r);
-  }
-  constexpr value_type value_or(value_type val) const noexcept {
-    return has_value() ? _val : val;
-  }
-  constexpr value_type* operator->() noexcept {
-    assert(has_value());
-    return std::addressof(_dummy);
-  }
-  constexpr const value_type* operator->() const noexcept {
-    return std::addressof(_dummy);
-  }
-  constexpr value_type& operator*() noexcept {
-    assert(has_value());
-    return _dummy;
-  }
-  constexpr const value_type& operator*() const noexcept {
-    assert(has_value());
-    return _dummy;
-  }
-  constexpr value_type& value() {
-    if (!has_value())
-      throw std::bad_optional_access();
-    return _dummy;
-  }
-  constexpr const value_type& value() const {
-    if (!has_value())
-      throw std::bad_optional_access();
-    return _dummy;
-  }
-  constexpr bool operator==(const optional& other) const noexcept {
-    return _val == other._val;
-  }
-  constexpr bool operator==(std::nullopt_t) const noexcept {
-    return !has_value();
-  }
-  friend constexpr std::strong_ordering operator<=>(const optional& lhs, const optional& rhs) noexcept {
-    if (lhs && rhs) {
-      return *lhs <=> *rhs;
-    }
-    if (lhs) {
-      return std::strong_ordering::greater;
-    }
-    if (rhs) {
-      return std::strong_ordering::less;
-    }
-    return std::strong_ordering::equal;
-  }
-};
-
-template <>
-struct optional<Integer> {
-  using value_type = Integer;
-
- private:
-  static constexpr Integer empty_ = std::numeric_limits<int64_t>::max();
-  Integer _val = empty_;
-
- public:
-  constexpr optional() noexcept = default;
-  constexpr optional(value_type val) noexcept : _val(val) {
-  }
-  constexpr optional(std::nullopt_t) noexcept : optional() {
-  }
-  constexpr optional& operator=(std::nullopt_t) noexcept {
-    _val = empty_;
-    return *this;
-  }
-  constexpr optional& operator=(value_type b) noexcept {
-    _val = b;
-    return *this;
-  }
-  constexpr bool has_value() const noexcept {
-    return _val != empty_;
-  }
-  constexpr explicit operator bool() const noexcept {
-    return has_value();
-  }
-  constexpr void reset() noexcept {
-    _val = empty_;
-  }
-  constexpr value_type& emplace(value_type v = value_type{}) noexcept {
-    return _val = v;
-  }
-  constexpr void swap(optional& o) noexcept {
-    std::swap(_val, o._val);
-  }
-  friend constexpr void swap(optional& l, optional& r) noexcept {
-    l.swap(r);
-  }
-  constexpr value_type value_or(value_type val) const noexcept {
-    return has_value() ? _val : val;
-  }
-  constexpr value_type* operator->() noexcept {
-    return &_val;
-  }
-  constexpr const value_type* operator->() const noexcept {
-    return &_val;
-  }
-  constexpr value_type& operator*() noexcept {
-    assert(has_value());
-    return _val;
-  }
-  constexpr const value_type& operator*() const noexcept {
-    assert(has_value());
-    return _val;
-  }
-  constexpr value_type& value() {
-    if (!has_value())
-      throw std::bad_optional_access();
-    return _val;
-  }
-  constexpr const value_type& value() const {
-    if (!has_value())
-      throw std::bad_optional_access();
-    return _val;
-  }
-  constexpr bool operator==(const optional& other) const noexcept {
-    return _val == other._val;
-  }
-  constexpr bool operator==(std::nullopt_t) const noexcept {
-    return !has_value();
-  }
-  friend constexpr std::strong_ordering operator<=>(const optional& l, const optional& r) noexcept {
+  constexpr std::strong_ordering operator<=>(const optional& r) const noexcept {
+    const optional& l = *this;
+    if (l && r)
+      return *l <=> *r;
     if (!l && !r)
       return std::strong_ordering::equal;
-    if (!l)
-      return std::strong_ordering::less;
-    if (!r)
-      return std::strong_ordering::greater;
-    return *l <=> *r;
+    return !!l <=> !!r;
   }
 };
 

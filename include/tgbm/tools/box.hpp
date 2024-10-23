@@ -18,6 +18,8 @@ struct TGBM_TRIVIAL_ABI box {
   T* ptr = nullptr;
 
  public:
+  using value_type = T;
+
   box() = default;
 
   constexpr box(std::nullptr_t) {

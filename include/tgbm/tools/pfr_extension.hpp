@@ -1,8 +1,19 @@
 #pragma once
+
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wundefined-var-template"
+#endif
+
 #include <boost/pfr.hpp>
-#include <tgbm/tools/constexpr_string.h>
-#include <tgbm/tools/StringTools.h>
-#include <tgbm/tools/meta.hpp>
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+
+#include "tgbm/tools/constexpr_string.h"
+#include "tgbm/tools/StringTools.h"
+#include "tgbm/tools/meta.hpp"
 
 #define FWD(X) std::forward<decltype(X)>(X)
 
