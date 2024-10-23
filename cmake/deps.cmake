@@ -19,15 +19,6 @@ CPMAddPackage(
 unset(BOOST_INCLUDE_LIBRARIES)
 find_package(Boost 1.84 COMPONENTS system asio property_tree pfr json REQUIRED)
 
-CPMAddPackage(
-  NAME ZLIB
-  Version 1.3.1
-  GIT_REPOSITORY https://github.com/madler/zlib
-  GIT_TAG v1.3.1
-  OPTIONS "ZLIB_BUILD_EXAMPLES OFF"
-)
-find_package(ZLIB REQUIRED)
-
 CPMAddPackage("gh:fmtlib/fmt#10.2.0")
 
 CPMAddPackage(

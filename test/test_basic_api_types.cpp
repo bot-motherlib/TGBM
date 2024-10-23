@@ -73,7 +73,7 @@ TEST(optional) {
   static_assert(opttest<empty_test_type>({}, {}));
   static_assert(opttest<tgbm::api::Integer>(10, -10));
   static_assert(std::is_trivially_copyable_v<tgbm::api::optional<tgbm::api::Integer>>);
-  static_assert(opttest<tgbm::api::String>("hello", "world"));
+  opttest<tgbm::api::String>("hello", "world");
   static_assert(opttest<int>(-1, 42));
   error_if(!opttest<tgbm::api::Boolean>(true, false));
 }

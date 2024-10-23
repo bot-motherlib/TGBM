@@ -38,6 +38,11 @@ if (TGBM_SANITIZE_THREAD)
   endif()
 endif()
 
+# disable warnings for third party libs
+if (WIN32)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS=1)
+endif()
+
 include (cmake/deps.cmake)
 
 if (TGBM_ENABLE_GEN)
@@ -79,7 +84,6 @@ target_include_directories(tgbmlib PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 target_link_libraries(tgbmlib PUBLIC
     ${CMAKE_THREAD_LIBS_INIT}
-    ${ZLIB_LIBRARIES}
     ssl crypto
     anyanylib
     kelcorolib
@@ -143,6 +147,20 @@ if (DEFINED TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH)
   message (STATUS "[tgbm] TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH: ${TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH}")
   target_compile_definitions(tgbmlib PUBLIC TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH="${TGBM_SSL_ADDITIONAL_CERTIFICATE_PATH}")
 endif()
+
+# disable warnings for third party libs
+
+if (MSVC)
+  set(TGBM_NOWARN_FLAG /w)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR 
+        CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR 
+        CMAKE_CXX_COMPILER_ID STREQUAL "Intel" OR 
+        CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+  set(TGBM_NOWARN_FLAG -w)
+endif()
+target_compile_options(boost_container PRIVATE ${TGBM_NOWARN_FLAG})
+target_compile_options(ssl PRIVATE ${TGBM_NOWARN_FLAG})
+target_compile_options(crypto PRIVATE ${TGBM_NOWARN_FLAG})
 
 if (WIN32)
   if (NOT DEFINED TGBM_WINDOWS_VERSION) 
