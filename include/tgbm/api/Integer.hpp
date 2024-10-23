@@ -45,10 +45,8 @@ struct optional_traits<api::Integer> {
   // TG requirements for Integer type is to be less then 53 bits long
   static constexpr int64_t empty = std::numeric_limits<int64_t>::max();
 
-  static constexpr state_type make_nullopt_state() noexcept {
-    api::Integer i;
-    i.value = empty;
-    return state_type{i};
+  static constexpr void reset(state_type& s) noexcept {
+    s.i.value = empty;
   }
   static constexpr api::Integer* get_value_ptr(state_type& s) noexcept {
     return std::addressof(s.i);

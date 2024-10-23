@@ -190,8 +190,8 @@ struct optional_traits<const_string> {
     const_string str;
   };
 
-  static state_type make_nullopt_state() noexcept {
-    return state_type{const_string(std::nullopt)};
+  static void reset(state_type& s) noexcept {
+    s.str = const_string(std::nullopt);
   }
   static const_string* get_value_ptr(state_type& s) noexcept {
     return &s.str;

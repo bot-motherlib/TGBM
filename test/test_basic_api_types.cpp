@@ -25,7 +25,7 @@ static_assert(sizeof(tgbm::api::optional<bool>) == sizeof(bool));
 static_assert(sizeof(tgbm::api::optional<tgbm::api::Integer>) == sizeof(tgbm::api::Integer));
 
 template <typename T>
-constexpr bool opttest() {
+constexpr bool opttest(T v1, T v2) {
   tgbm::api::optional<T> opt = std::nullopt;
   if (opt)
     throw;
@@ -43,16 +43,39 @@ constexpr bool opttest() {
   if (opt != opt)
     throw;
   T& x = opt.value();
+  tgbm::api::optional<T> o1 = v1;
+  tgbm::api::optional<T> o2 = v2;
+  if (!o1 || !o2)
+    throw;
+  if (o1.value() != v1 || o2.value() != v2)
+    throw;
+  if (*o1 != v1 || *o2 != v2)
+    throw;
+  swap(o1, o2);
+  if (o1 != v2 || o2 != v1)
+    throw;
+  o1.swap(o2);
+  if (o1 != v1 || o2 != v2)
+    throw;
+  o1 = std::move(o2);
+  if (o1 != v2)
+    throw;
+  o1.reset();
+  o2.reset();
+  if (o1 != o2)
+    throw;
+  if (o1 || o2)
+    throw;
   return true;
 }
 
 TEST(optional) {
-  static_assert(opttest<empty_test_type>());
-  static_assert(opttest<tgbm::api::Integer>());
+  static_assert(opttest<empty_test_type>({}, {}));
+  static_assert(opttest<tgbm::api::Integer>(10, -10));
   static_assert(std::is_trivially_copyable_v<tgbm::api::optional<tgbm::api::Integer>>);
-  static_assert(opttest<tgbm::api::String>());
-  static_assert(opttest<int>());
-  error_if(!opttest<tgbm::api::Boolean>());
+  static_assert(opttest<tgbm::api::String>("hello", "world"));
+  static_assert(opttest<int>(-1, 42));
+  error_if(!opttest<tgbm::api::Boolean>(true, false));
 }
 
 template <int>

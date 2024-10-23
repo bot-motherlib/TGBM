@@ -10,22 +10,24 @@
 namespace tgbm {
 
 template <typename Traits, typename T>
-concept optional_traits_for = requires {
-  requires std::is_destructible_v<typename Traits::state_type>;
-  { Traits::make_nullopt_state() } noexcept -> std::same_as<typename Traits::state_type>;
-} && requires(T& value, typename Traits::state_type& state) {
-  // may be used to get pointer to uninitialized memory
-  { Traits::get_value_ptr(state) } noexcept -> std::same_as<T*>;
-  { Traits::do_swap(state, state) } -> std::same_as<void>;
-  { Traits::is_nullopt_state(std::as_const(state)) } noexcept -> std::same_as<bool>;
-  // invoked when value is emplaced
-  { Traits::mark_as_filled(state) } -> std::same_as<void>;
-};
+concept optional_traits_for = requires { requires std::is_destructible_v<typename Traits::state_type>; } &&
+                              requires(T& value, typename Traits::state_type& state) {
+                                // may be used to get pointer to uninitialized memory
+                                { Traits::get_value_ptr(state) } noexcept -> std::same_as<T*>;
+                                { Traits::do_swap(state, state) } -> std::same_as<void>;
+                                {
+                                  Traits::is_nullopt_state(std::as_const(state))
+                                } noexcept -> std::same_as<bool>;
+                                // invoked when value is emplaced
+                                { Traits::mark_as_filled(state) } -> std::same_as<void>;
+                                // destroys value and marks value as nullopt state
+                                { Traits::reset(state) } -> std::same_as<void>;
+                              };
 
 namespace noexport {
 
 template <typename T>
-struct default_optional_basis {
+struct TGBM_TRIVIAL_ABI default_optional_basis {
   union {
     char dummy = {};
     std::remove_const_t<T> value;
@@ -86,16 +88,25 @@ struct default_optional_basis {
   constexpr default_optional_basis& operator=(default_optional_basis&& o) noexcept
     requires(!std::is_trivially_move_assignable_v<T> && std::is_move_assignable_v<T>)
   {
-    std::destroy_at(this);
-    std::construct_at(this, std::move(o));
+    reset();
+    if (o.has_val) {
+      std::construct_at(std::addressof(value), std::move(o.value));
+      has_val = true;
+      o.reset();
+    }
     return *this;
   }
 
+  constexpr void reset() noexcept {
+    if (has_val) {
+      std::destroy_at(std::addressof(value));
+      has_val = false;
+    }
+  }
   constexpr ~default_optional_basis()
     requires(!std::is_trivially_destructible_v<T>)
   {
-    if (has_val)
-      std::destroy_at(std::addressof(value));
+    reset();
   }
 };
 
@@ -105,10 +116,6 @@ struct default_optional_basis {
 template <typename T>
 struct optional_traits {
   using state_type = noexport::default_optional_basis<T>;
-
-  static constexpr state_type make_nullopt_state() noexcept {
-    return state_type{};
-  }
 
   static constexpr T* get_value_ptr(state_type& s) noexcept {
     return std::addressof(s.value);
@@ -122,24 +129,26 @@ struct optional_traits {
                   std::is_trivially_destructible_v<T>) {
       std::swap(l, r);  // memswap
     } else {
-      const bool hasval = is_nullopt_state(l);
-      if (hasval == is_nullopt_state(r)) {
+      const bool hasval = !is_nullopt_state(l);
+      if (hasval == !is_nullopt_state(r)) {
         using std::swap;
         if (hasval)
           swap(*get_value_ptr(l), *get_value_ptr(r));
       } else {
         state_type& src = hasval ? l : r;
-        state_type& dst = hasval ? r : r;
+        state_type& dst = hasval ? r : l;
         std::construct_at(get_value_ptr(dst), std::move(*get_value_ptr(src)));
         dst.has_val = true;
-        std::destroy_at(get_value_ptr(src));
-        src.has_val = false;
+        src.reset();
       }
     }
   }
 
   static constexpr void mark_as_filled(state_type& s) noexcept {
     s.has_val = true;
+  }
+  static constexpr void reset(state_type& s) noexcept {
+    s.reset();
   }
 
   static constexpr bool is_nullopt_state(const state_type& s) noexcept {
@@ -157,8 +166,8 @@ struct optional_traits<bool> {
   };
   static constexpr inline char empty = 2;
 
-  static constexpr state_type make_nullopt_state() noexcept {
-    return state_type{.val = empty};
+  static constexpr void reset(state_type& s) noexcept {
+    s.val = empty;
   }
   static constexpr bool* get_value_ptr(state_type& s) noexcept {
     return std::addressof(s.bval);
@@ -169,8 +178,8 @@ struct optional_traits<bool> {
   }
 
   static constexpr bool is_nullopt_state(const state_type& s) noexcept {
-    assert(std::bit_cast<char>(make_nullopt_state()) != std::bit_cast<char>(state_type{.bval = true}));
-    assert(std::bit_cast<char>(make_nullopt_state()) != std::bit_cast<char>(state_type{.bval = false}));
+    assert(std::bit_cast<char>(state_type{.val = empty}) != std::bit_cast<char>(state_type{.bval = true}));
+    assert(std::bit_cast<char>(state_type{.val = empty}) != std::bit_cast<char>(state_type{.bval = false}));
     return std::bit_cast<char>(s) == empty;
   }
 
@@ -179,15 +188,15 @@ struct optional_traits<bool> {
 };
 
 template <typename T>
-  requires(std::is_empty_v<T> && std::is_trivial_v<T>)
+  requires(std::is_empty_v<T> && std::is_trivial_v<T> && std::is_trivially_destructible_v<T>)
 struct optional_traits<T> {
   struct state_type {
     KELCORO_NO_UNIQUE_ADDRESS std::remove_const_t<T> val;
     bool has_val = false;
   };
 
-  static constexpr state_type make_nullopt_state() noexcept {
-    return state_type{.has_val = false};
+  static constexpr void reset(state_type& s) noexcept {
+    s.has_val = false;
   }
   static constexpr T* get_value_ptr(state_type& s) noexcept {
     return std::addressof(s.val);
@@ -213,7 +222,7 @@ struct optional_traits<T> {
 namespace tgbm::api {
 
 template <typename T, optional_traits_for<T> Traits = optional_traits<T>>
-struct optional {
+struct TGBM_TRIVIAL_ABI optional {
   static_assert(is_decayed_v<T>);
 
   using value_type = T;
@@ -222,8 +231,16 @@ struct optional {
   using state_t = typename Traits::state_type;
   state_t state;
 
+  [[nodiscard]] constexpr T* value_ptr() noexcept {
+    return Traits::get_value_ptr(state);
+  }
+  [[nodiscard]] constexpr const T* value_ptr() const noexcept {
+    return Traits::get_value_ptr(state);
+  }
+
  public:
-  constexpr optional() noexcept : state(Traits::make_nullopt_state()) {
+  constexpr optional() noexcept {
+    reset();
   }
   constexpr optional(T v) noexcept(std::is_nothrow_move_constructible_v<T>) {
     emplace(std::move(v));
@@ -234,7 +251,7 @@ struct optional {
   template <typename... Args>
   constexpr value_type& emplace(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args&&...>) {
     reset();
-    T* p = std::construct_at(Traits::get_value_ptr(state), std::forward<Args>(args)...);
+    T* p = std::construct_at(value_ptr(), std::forward<Args>(args)...);
     Traits::mark_as_filled(state);
     return *p;
   }
@@ -267,8 +284,7 @@ struct optional {
   }
 
   constexpr void reset() noexcept {
-    std::destroy_at(this);
-    std::construct_at(this, std::nullopt);
+    Traits::reset(state);
   }
 
   constexpr T value_or(value_type v) const {
