@@ -62,5 +62,3 @@ function(GenerateApiTypes)
     FormatApiTypes()
     set (TGBM_GENERATED_API true CACHE STRING "" FORCE)
 endfunction(GenerateApiTypes)
-
-
