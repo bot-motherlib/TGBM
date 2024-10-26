@@ -1,8 +1,9 @@
 #pragma once
 #include <gtest/gtest.h>
 #include <gtest_formater.hpp>
-#include <tgbm/api/common.hpp>
-#include <tgbm/tools/json_tools/all.hpp>
+
+#include "tgbm/api/common.hpp"
+#include "tgbm/tools/json_tools/all.hpp"
 
 struct DomRapid : testing::Test {
   template <typename T>

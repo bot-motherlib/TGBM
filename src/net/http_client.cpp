@@ -20,6 +20,7 @@ dd::task<http_response> http_client::send_request(http_request request, duration
   if (rsp.status < 0) {
     using enum reqerr_e::values;
     switch (reqerr_e::values(rsp.status)) {
+      default:
       case done:
       case user_exception:
         unreachable();
@@ -60,7 +61,7 @@ std::string_view e2str(reqerr_e::values e) noexcept {
     case unknown_err:
       return "unknown_err";
     default:
-      return "";
+      unreachable();  // error
   }
 }
 
@@ -85,9 +86,42 @@ std::string_view e2str(http_method_e e) noexcept {
       return "CONNECT";
     case TRACE:
       return "TRACE";
+    case UNKNOWN:
+      return "UNKNOWN";
     default:
-      return "";
+      unreachable();  // error
   }
+}
+
+void enum_from_string(std::string_view str, http_method_e& e) noexcept {
+  using enum http_method_e;
+  e = utils::string_switch<http_method_e>(str)
+          .case_("GET", GET)
+          .case_("POST", POST)
+          .case_("PUT", PUT)
+          .case_("DELETE", DELETE_)
+          .case_("PATCH", PATCH)
+          .case_("OPTIONS", OPTIONS)
+          .case_("TRACE", TRACE)
+          .or_default(UNKNOWN);
+}
+
+std::string_view e2str(scheme_e e) noexcept {
+  switch (e) {
+    case scheme_e::HTTP:
+      return "HTTP";
+    case scheme_e::HTTPS:
+      return "HTTPS";
+    case scheme_e::UNKNOWN:
+      return "UNKNOWN";
+    default:
+      unreachable();  // error
+  }
+}
+
+void enum_from_string(std::string_view str, scheme_e& s) noexcept {
+  using enum scheme_e;
+  s = utils::string_switch<scheme_e>(str).case_("HTTP", HTTP).case_("HTTPS", HTTPS).or_default(UNKNOWN);
 }
 
 }  // namespace tgbm

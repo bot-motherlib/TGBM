@@ -43,14 +43,12 @@ resources:
 #include "tgbm/net/http2/protocol.hpp"
 #include "tgbm/net/http2_client.hpp"
 #include "tgbm/net/asio_awaiters.hpp"
-#include "tgbm/logger.h"
+#include "tgbm/logger.hpp"
 #include "tgbm/tools/scope_exit.h"
 #include "tgbm/tools/macro.hpp"
 #include "tgbm/net/errors.hpp"
 #include "tgbm/tools/reusable_buffer.hpp"
 #include "tgbm/tools/deadline.hpp"
-
-#include <fmt/ranges.h>
 
 #include <kelcoro/channel.hpp>
 
@@ -118,8 +116,7 @@ struct request_node;
 
 using node_ptr = boost::intrusive_ptr<request_node>;
 
-static bytes_t generate_http2_headers(const http_request& request, hpack::encoder& encoder,
-                                      std::string_view host) {
+static bytes_t generate_http2_headers(const http_request& request, hpack::encoder& encoder) {
   using hdrs = hpack::static_table_t::values;
 
   assert(!request.path.empty());
@@ -130,7 +127,6 @@ static bytes_t generate_http2_headers(const http_request& request, hpack::encode
   auto out = std::back_inserter(headers);
 
   // required scheme, method, authority, path
-
   encoder.encode_header_fully_indexed(hdrs::scheme_https, out);
   switch (request.method) {
     case http_method_e::GET:
@@ -142,7 +138,7 @@ static bytes_t generate_http2_headers(const http_request& request, hpack::encode
     default:
       encoder.encode_header_and_cache(hdrs::method_get, e2str(request.method), out);
   }
-  encoder.encode<true>(hdrs::authority, host, out);
+  encoder.encode<true>(hdrs::authority, request.authority, out);
   encoder.encode<true, true>(hdrs::path, request.path, out);
   encoder.encode_header_never_indexing(hdrs::user_agent, "kelbon", out);
   // content type and custom headers
@@ -155,10 +151,10 @@ static bytes_t generate_http2_headers(const http_request& request, hpack::encode
 }
 
 static prepared_http_request form_http2_request(http_request&& request, http2::stream_id_t streamid,
-                                                hpack::encoder& encoder, std::string_view host) {
+                                                hpack::encoder& encoder) {
   return prepared_http_request{
       .streamid = streamid,
-      .headers = generate_http2_headers(request, encoder, host),
+      .headers = generate_http2_headers(request, encoder),
       .data = std::move(request.body.data),
   };
 }
@@ -380,7 +376,7 @@ struct http2_connection {
     forget(node);
     if (!node.task)
       return;
-    LOG_DEBUG("[HTTP2]: stream {} finished, status: {}", node.req.streamid, status);
+    TGBM_LOG_DEBUG("[HTTP2]: stream {} finished, status: {}", node.req.streamid, status);
     node.status = status;
     auto t = std::exchange(node.task, nullptr);
     if (status == reqerr_e::cancelled)
@@ -411,7 +407,8 @@ struct http2_connection {
     assert(reqs.size() + rsps.size() == timers.size());
     // nodes in reqs or in rsps, timers do not own them
     timers.clear();
-    LOG_DEBUG("finish {} requests and {} responses, reason code: {}", reqs.size(), rsps.size(), (int)reason);
+    TGBM_LOG_DEBUG("finish {} requests and {} responses, reason code: {}", reqs.size(), rsps.size(),
+                   (int)reason);
     auto forget_and_resume = [&](request_node* node) { finish_request(*node, reason); };
     reqs.clear_and_dispose(forget_and_resume);
     rsps.clear_and_dispose(forget_and_resume);
@@ -429,9 +426,10 @@ struct http2_connection {
   void drop_timeouted() {
     // prevent destruction of *this while resuming
     http2_connection_ptr lock = this;
-    while (!timers.empty() && timers.top()->deadline.is_reached())
+    while (!timers.empty() && timers.top()->deadline.is_reached()) {
       // node deleted from timers by forgetting
       finish_request_by_timeout(*timers.top());
+    }
   }
 
   void window_update(http2::window_update_frame frame) {
@@ -454,7 +452,7 @@ struct http2_connection {
     // prevents me to be destroyed while resuming writer/reader etc
     http2_connection_ptr lock = this;
 
-    LOG_DEBUG("[HTTP2] [shutdown] connection, address: {}", (void*)this);
+    TGBM_LOG_DEBUG("[HTTP2] [shutdown] connection, address: {}", (void*)this);
     if (is_dropped())
       return;
     // set flag for anyone who will be resumed while shutting down this connection
@@ -483,8 +481,8 @@ struct http2_connection {
     return id;
   }
 
-  node_ptr new_request_node(http_request&& request, std::string_view host, deadline_t deadline,
-                            on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part) {
+  node_ptr new_request_node(http_request&& request, deadline_t deadline, on_header_fn_ptr on_header,
+                            on_data_part_fn_ptr on_data_part) {
     node_ptr node = nullptr;
     if (free_nodes.empty())
       // workaround gcc12 bug by initializing union member explicitly
@@ -494,7 +492,7 @@ struct http2_connection {
       free_nodes.pop_front();
     }
     node->streamlevel_window_size = server_settings.initial_stream_window_size;
-    node->req = form_http2_request(std::move(request), next_streamid(), encoder, host);
+    node->req = form_http2_request(std::move(request), next_streamid(), encoder);
     node->deadline = deadline;
     node->writer_handle = std::coroutine_handle<>(writer.handle);
     node->connection = this;
@@ -563,7 +561,7 @@ dd::task<void> send_rst_stream(http2_connection_ptr con, http2::stream_id_t stre
   io_error_code ec;
   co_await net.write(con->socket(), bytes, ec);
   if (ec)
-    LOG_DEBUG("HTTP/2: cannot rst stream, ec: {}", ec.what());
+    TGBM_LOG_DEBUG("[HTTP2]: cannot rst stream, ec: {}", ec.what());
 }
 
 dd::task<bool> send_ping(http2_connection_ptr con, uint64_t data, bool request_pong) {
@@ -614,11 +612,11 @@ struct first_settings_frame_visitor {
 };
 
 static dd::task<void> handle_ping(http2::ping_frame ping, http2_connection_ptr con) {
-  LOG_DEBUG("[HTTP2]: received ping, data: {}", ping.get_data());
+  TGBM_LOG_DEBUG("[HTTP2]: received ping, data: {}", ping.get_data());
   if (ping.header.flags & http2::flags::ACK)
     co_return;
   if (!co_await send_ping(std::move(con), ping.get_data(), false))
-    LOG_ERR("[HTTP2]: cannot handle ping");
+    TGBM_LOG_ERROR("[HTTP2]: cannot handle ping");
 }
 
 static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& asio_con,
@@ -674,7 +672,7 @@ static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& a
     throw network_exception("cannot send accepted settings frame to server, {}", ec.what());
 
   if (std::ranges::equal(buf, bytes)) {  // server ACK already received
-    LOG("HTTP/2 connection successfully established without server settings frame");
+    TGBM_LOG_INFO("[HTTP2] connection successfully established without server settings frame");
     // con.decoder is default with 4096 bytes
     con->server_settings.max_frame_size =
         std::min(con->server_settings.max_frame_size, options.max_send_frame_size);
@@ -697,8 +695,8 @@ static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& a
           if (header.length != 0 || header.stream_id != 0)
             throw protocol_error{};
           con->decoder = hpack::decoder(con->server_settings.header_table_size);
-          LOG("HTTP/2 connection successfully established, decoder size: {}",
-              con->server_settings.header_table_size);
+          TGBM_LOG_INFO("[HTTP2] connection successfully established, decoder size: {}",
+                        con->server_settings.header_table_size);
           con->server_settings.max_frame_size =
               std::min(con->server_settings.max_frame_size, options.max_send_frame_size);
           co_return con;
@@ -713,10 +711,6 @@ static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& a
         continue;
       case GOAWAY:
         goaway_frame::parse_and_throw_goaway(header, bytes);
-      case PRIORITY:
-      case PRIORITY_UPDATE:
-        // ignore
-        continue;
       case PUSH_PROMISE:
       case RST_STREAM:
       case DATA:
@@ -725,7 +719,9 @@ static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& a
         // server MUST NOT initiate streams
         throw protocol_error{};
       default:
-        // ignore extensions
+      case PRIORITY:
+      case PRIORITY_UPDATE:
+        // ignore
         continue;
     }
   }
@@ -735,8 +731,8 @@ static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& a
 void http2_client::notify_connection_waiters(http2_connection_ptr result) noexcept {
   // assume only i have access to waiters
   auto waiters = std::move(connection_waiters);
-  LOG_DEBUG("[HTTP2]: resuming connection waiters, count: {}, connection: {}", waiters.size(),
-            (void*)result.get());
+  TGBM_LOG_DEBUG("[HTTP2]: resuming connection waiters, count: {}, connection: {}", waiters.size(),
+                 (void*)result.get());
   assert(connection_waiters.empty());  // check boost really works as expected
   waiters.clear_and_dispose([&](noexport::waiter_of_connection* w) {
     assert(!w->result);
@@ -750,9 +746,9 @@ void http2_client::notify_connection_waiters(http2_connection_ptr result) noexce
 dd::job start_pinger_for(http2_connection_ptr con, duration_t interval) {
   if (!con || con->is_dropped())
     co_return;
-  LOG_DEBUG("[HTTP2]: pinger started for {}", (void*)con.get());
+  TGBM_LOG_DEBUG("[HTTP2]: pinger started for {}", (void*)con.get());
   on_scope_exit {
-    LOG_DEBUG("[HTTP2]: pinger for {} completed", (void*)con.get());
+    TGBM_LOG_DEBUG("[HTTP2]: pinger for {} completed", (void*)con.get());
   };
   asio::steady_timer timer(con->socket().get_executor());
   io_error_code ec;
@@ -774,7 +770,7 @@ dd::job http2_client::start_connecting() {
   assert(!connection);
   co_await std::suspend_always{};  // resumed when needed by creator
   if (stop_requested) {
-    LOG_DEBUG("[HTTP2] connection tries to create when stop requested, ignored");
+    TGBM_LOG_DEBUG("[HTTP2] connection tries to create when stop requested, ignored");
     co_return;
   }
   if (already_connecting())
@@ -795,7 +791,8 @@ dd::job http2_client::start_connecting() {
         notify_connection_waiters(new_connection);
       };
       tcp_connection_ptr asio_con = co_await tcp_connection::create(
-          io_ctx, std::string(get_host()), make_ssl_context_for_http2(), tcp_options);
+          io_ctx, std::string(get_host()),
+          make_ssl_context_for_http2(tcp_options.additional_ssl_certificates), tcp_options);
       new_connection = co_await establish_http2_session(std::move(*asio_con), options);
     }
     assert(!connection);
@@ -808,23 +805,12 @@ dd::job http2_client::start_connecting() {
     if (options.ping_interval != duration_t::max())
       start_pinger_for(new_connection, options.ping_interval);
   } catch (std::exception& e) {
-    LOG_ERR("exception while trying to connect: {}", e.what());
+    TGBM_LOG_ERROR("exception while trying to connect: {}", e.what());
   }
 }
 
 static bool validate_frame_header(const http2::frame_header& h) noexcept {
-  return h.length <= http2::max_header_length && h.stream_id <= http2::max_header_length;
-}
-
-static bool strip_padding(std::span<byte_t>& bytes) {
-  if (bytes.empty())
-    return false;
-  int padlen = bytes[0];
-  if (padlen + 1 > bytes.size())
-    return false;
-  remove_prefix(bytes, 1);
-  remove_suffix(bytes, padlen);
-  return true;
+  return h.length <= http2::frame_len_max && h.stream_id <= http2::max_stream_id;
 }
 
 // 'out' must contain atleast 9 bytes
@@ -892,7 +878,7 @@ dd::task<void> write_pending_data_frames(node_ptr work, size_t handled_bytes, ht
       con->finish_request(*work, status);
   };
   if (handled_bytes < h2fhl) {
-    LOG_DEBUG("[HTTP2] required to relocate {} bytes. Handled {}", req.data.size(), handled_bytes);
+    TGBM_LOG_DEBUG("[HTTP2] required to relocate {} bytes. Handled {}", req.data.size(), handled_bytes);
     // code above reuses already sended bytes as buffer for frame_header
     req.data.insert(req.data.begin(), h2fhl - handled_bytes, 0);
     handled_bytes = h2fhl;
@@ -904,9 +890,10 @@ dd::task<void> write_pending_data_frames(node_ptr work, size_t handled_bytes, ht
       co_return;
     frame_len = fill_data_header(*work, *con, std::distance(in, data_end), in - h2fhl);
     if (frame_len == 0) {
-      LOG_DEBUG("[HTTP2] cannot send bytes now! unhandled: {}, max_frame_len: {}, stream wsz {}, con wsz: {}",
-                std::distance(in, data_end), con->server_settings.max_frame_size,
-                work->streamlevel_window_size, con->receiver_window_size);
+      TGBM_LOG_DEBUG(
+          "[HTTP2] cannot send bytes now! unhandled: {}, max_frame_len: {}, stream wsz {}, con wsz: {}",
+          std::distance(in, data_end), con->server_settings.max_frame_size, work->streamlevel_window_size,
+          con->receiver_window_size);
       co_await con->idle_yield();
       continue;
     }
@@ -918,7 +905,7 @@ dd::task<void> write_pending_data_frames(node_ptr work, size_t handled_bytes, ht
     if (ec) {
       if (ec != asio::error::operation_aborted) {
         status = reqerr_e::network_err;
-        LOG_DEBUG("[HTTP2]: sending pending data frames ended with network err: {}", ec.what());
+        TGBM_LOG_DEBUG("[HTTP2]: sending pending data frames ended with network err: {}", ec.what());
       }
       co_return;
     }
@@ -926,7 +913,7 @@ dd::task<void> write_pending_data_frames(node_ptr work, size_t handled_bytes, ht
     con->receiver_window_size -= frame_len;
     work->streamlevel_window_size -= frame_len;
   }  // end loop
-  LOG_DEBUG("[HTTP2]: pending data frames for stream {} successfully sended", streamid);
+  TGBM_LOG_DEBUG("[HTTP2]: pending data frames for stream {} successfully sended", streamid);
   status = reqerr_e::done;
   co_return;
 }
@@ -1001,9 +988,9 @@ dd::task<void> write_pending_data_frames(node_ptr work, size_t handled_bytes, ht
 // коннекш
 dd::job http2_client::start_writer_for(http2_connection_ptr con) {
   assert(con);
-  LOG_DEBUG("[HTTP2]: writer started for {}", (void*)con.get());
+  TGBM_LOG_DEBUG("[HTTP2]: writer started for {}", (void*)con.get());
   on_scope_exit {
-    LOG_DEBUG("[HTTP2]: writer for {} completed", (void*)con.get());
+    TGBM_LOG_DEBUG("[HTTP2]: writer for {} completed", (void*)con.get());
   };
 
   io_error_code ec;
@@ -1051,8 +1038,8 @@ dd::job http2_client::start_writer_for(http2_connection_ptr con) {
       write_pending_data_frames(std::move(unfinished), unfinished_handled, con).start_and_detach();
   }  // end loop handling requests
 end:
-  if (ec != asio::error::operation_aborted)
-    LOG_DEBUG("[HTTP2] connection dropped with network err {}", ec.what());
+  if (ec && ec != asio::error::operation_aborted)
+    TGBM_LOG_DEBUG("[HTTP2] connection dropped with network err {}", ec.what());
   drop_connection(reqerr_e::network_err);
 }
 
@@ -1062,7 +1049,6 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
   using namespace http2;
 
   switch (frame.header.type) {
-    default:
     case HEADERS:
     case DATA:
       unreachable();
@@ -1073,12 +1059,14 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
         and really not easy to implement this requirement
       */
       {
-        auto before = con.server_settings.header_table_size;
-        settings_frame::parse(frame.header, frame.data, server_settings_visitor(con.server_settings));
-        if (before > con.server_settings.header_table_size)
-          LOG("[HTTP2]: HPACK table resized, new size {}, before: {}, IF ERROR HAPPENS AFTER THIS MESSAGE, "
+        server_settings_visitor vtor(con.server_settings);
+        settings_frame::parse(frame.header, frame.data, vtor);
+        if (vtor.header_table_size_decrease)
+          TGBM_LOG_INFO(
+              "[HTTP2]: HPACK table resized, new size {}, old size: {}, IF ERROR HAPPENS AFTER THIS MESSAGE, "
               "next time set dynamic table size for client to 0",
-              con.server_settings.header_table_size, before);
+              con.server_settings.header_table_size,
+              con.server_settings.header_table_size + vtor.header_table_size_decrease);
       }
       return true;
     case PING:
@@ -1086,8 +1074,9 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
       return true;
     case RST_STREAM:
       if (!con.finish_stream_with_error(rst_stream::parse(frame.header, frame.data)))
-        LOG_DEBUG("[HTTP2]: server finished stream (id: {}) which is not exists (maybe timeout or canceled)",
-                  frame.header.stream_id);
+        TGBM_LOG_DEBUG(
+            "[HTTP2]: server finished stream (id: {}) which is not exists (maybe timeout or canceled)",
+            frame.header.stream_id);
       return true;
     case GOAWAY:
       goaway_frame::parse_and_throw_goaway(frame.header, frame.data);
@@ -1096,13 +1085,14 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
       return true;
     case PUSH_PROMISE:
       if (con.client_settings.enable_push)
-        LOG_DEBUG("[HTTP2]: received PUSH_PROMISE, not supported");
+        TGBM_LOG_DEBUG("[HTTP2]: received PUSH_PROMISE, not supported");
       return false;
     case CONTINUATION:
-      LOG_DEBUG("[HTTP2]: received CONTINUATION, not supported");
+      TGBM_LOG_DEBUG("[HTTP2]: received CONTINUATION, not supported");
       return false;
-    case PRIORITY_UPDATE:
+    default:
     case PRIORITY:
+    case PRIORITY_UPDATE:
       // ignore
       return true;
   }
@@ -1115,10 +1105,10 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
   assert(con.client_settings.deprecated_priority_disabled);
   if (frame.header.stream_id == 0)
     return false;
-  if ((frame.header.flags & http2::flags::PADDED) && !strip_padding(frame.data))
+  if ((frame.header.flags & http2::flags::PADDED) && !http2::strip_padding(frame.data))
     return false;
   if (frame.header.flags & http2::flags::PRIORITY) {
-    LOG_DEBUG("[HTTP2]: received deprecated priority HEADERS, not supported");
+    TGBM_LOG_DEBUG("[HTTP2]: received deprecated priority HEADERS, not supported");
     return false;
   }
 
@@ -1134,6 +1124,7 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
         break;
       case DATA:
         // applicable only to data
+        // Note: includes padding!
         con.my_window_size -= frame.header.length;
         node->receive_data(std::move(frame), frame.header.flags & http2::flags::END_STREAM);
         break;
@@ -1171,7 +1162,8 @@ dd::task<bool> send_window_update(http2_connection_ptr con, http2::stream_id_t i
     co_return false;
   byte_t buf[http2::window_update_frame::len];
   http2::window_update_frame::form(id, inc, buf);
-  LOG_DEBUG("[HTTP2]: update window, stream: {}, inc: {}, mywindowsiz: {}", id, inc, con->my_window_size);
+  TGBM_LOG_DEBUG("[HTTP2]: update window, stream: {}, inc: {}, mywindowsiz: {}", id, inc,
+                 con->my_window_size);
   io_error_code ec;
   co_await net.write(con->socket(), std::span(buf), ec);
   co_return !ec;
@@ -1183,10 +1175,10 @@ dd::task<bool> send_window_update(http2_connection_ptr con, http2::stream_id_t i
 dd::job http2_client::start_reader_for(http2_connection_ptr _con) {
   using enum http2::frame_e;
   using namespace http2;
-  LOG_DEBUG("[HTTP2]: reader started for {}", (void*)_con.get());
+  TGBM_LOG_DEBUG("[HTTP2]: reader started for {}", (void*)_con.get());
   assert(_con);
   on_scope_exit {
-    LOG_DEBUG("[HTTP2]: reader for {} ended", (void*)_con.get());
+    TGBM_LOG_DEBUG("[HTTP2]: reader for {} ended", (void*)_con.get());
   };
   http2_connection& con = *_con;
   io_error_code ec;
@@ -1199,7 +1191,7 @@ dd::job http2_client::start_reader_for(http2_connection_ptr _con) {
       if (con.is_dropped())
         goto connection_dropped;
 
-      // read header
+      // read frame header
 
       frame.data = buffer.get_exactly(h2fhl);
 
@@ -1210,13 +1202,13 @@ dd::job http2_client::start_reader_for(http2_connection_ptr _con) {
       if (con.is_dropped())
         goto connection_dropped;
 
-      // parse header
+      // parse frame header
 
-      frame.header = frame_header::parse(std::span<const byte_t, h2fhl>(frame.data.data(), h2fhl));
+      frame.header = frame_header::parse(frame.data);
       if (!validate_frame_header(frame.header))
         goto protocol_error;
 
-      // read data
+      // read frame data
 
       frame.data = buffer.get_exactly(frame.header.length);
       co_await net.read(con.socket(), frame.data, ec);
@@ -1225,7 +1217,7 @@ dd::job http2_client::start_reader_for(http2_connection_ptr _con) {
       if (con.is_dropped())
         goto connection_dropped;
 
-      // handle data
+      // handle frame
 
       if (!handle_frame(std::move(frame), con))
         goto protocol_error;
@@ -1237,19 +1229,20 @@ dd::job http2_client::start_reader_for(http2_connection_ptr _con) {
       }
     }
   } catch (protocol_error&) {
-    LOG("[HTTP2]: protocol error happens");
+    TGBM_LOG_INFO("[HTTP2]: protocol error happens");
     reason = reqerr_e::protocol_err;
     goto drop_connection;
-  } catch (http2::goaway_frame_received& gae) {
-    LOG("[HTTP2]: goaway received, info: {}, errc: {}", gae.debug_info, http2::errc2str(gae.error_code));
+  } catch (http2::goaway_exception& gae) {
+    TGBM_LOG_ERROR("[HTTP2]: goaway received, info: {}, errc: {}", gae.debug_info,
+                   http2::e2str(gae.error_code));
     reason = reqerr_e::server_cancelled_request;
     goto drop_connection;
   } catch (std::exception& se) {
-    LOG("[HTTP2]: unexpected exception {}", se.what());
+    TGBM_LOG_INFO("[HTTP2]: unexpected exception {}", se.what());
     reason = reqerr_e::unknown_err;
     goto drop_connection;
   } catch (...) {
-    LOG("[HTTP2]: unknown exception happens");
+    TGBM_LOG_INFO("[HTTP2]: unknown exception happens");
     reason = reqerr_e::unknown_err;
     goto drop_connection;
   }
@@ -1264,7 +1257,7 @@ protocol_error:
 network_error:
   reason = ec == asio::error::operation_aborted ? reqerr_e::cancelled : reqerr_e::network_err;
   if (reason == reqerr_e::network_err)
-    LOG_DEBUG("[HTTP2]: reader drops connection after network err: {}", ec.what());
+    TGBM_LOG_DEBUG("[HTTP2]: reader drops connection after network err: {}", ec.what());
 drop_connection:
   drop_connection(static_cast<reqerr_e::values>(reason));
 connection_dropped:
@@ -1342,10 +1335,11 @@ dd::task<int> http2_client::send_request(on_header_fn_ptr on_header, on_data_par
   http2_connection_ptr con = co_await borrow_connection();
   if (!con)
     co_return reqerr_e::network_err;
+  if (request.authority.empty())  // default host
+    request.authority = get_host();
+  node_ptr node = con->new_request_node(std::move(request), deadline, on_header, on_data_part);
 
-  node_ptr node = con->new_request_node(std::move(request), get_host(), deadline, on_header, on_data_part);
-
-  LOG_DEBUG("send_request, path: {}, streamid: {}", request.path, node->req.streamid);
+  TGBM_LOG_DEBUG("send_request, path: {}, streamid: {}", request.path, node->req.streamid);
   co_return co_await con->request_finished(*node);
 }
 
@@ -1361,7 +1355,7 @@ dd::job periodic_task(std::weak_ptr<asio::steady_timer> timer, auto todo) {
     co_await net.sleep(*tmr, interval, ec);
     if (ec) {
       if (ec != asio::error::operation_aborted)
-        LOG_ERR("timer ended with error: {}", ec.what());
+        TGBM_LOG_ERROR("timer ended with error: {}", ec.what());
       co_return;
     }
   }

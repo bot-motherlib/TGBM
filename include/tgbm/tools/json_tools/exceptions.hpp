@@ -1,6 +1,7 @@
 #pragma once
 #include <stdexcept>
-#include "tgbm/logger.h"
+
+#include "tgbm/logger.hpp"
 
 namespace tgbm::json {
 struct parse_error : std::runtime_error {
@@ -18,7 +19,7 @@ struct serialize_error : std::runtime_error {
 }
 
 [[noreturn]] inline void throw_json_serialize_error() {
-  LOG("reading to throw TGBM_JSON_SERIALIZE_ERROR");
+  TGBM_LOG_INFO("reading to throw TGBM_JSON_SERIALIZE_ERROR");
   throw serialize_error();
 }
 

@@ -1,7 +1,10 @@
 #pragma once
+
 #include <bitset>
-#include <tgbm/tools/json_tools/generator_parser/basic_parser.hpp>
+
 #include <utility>
+
+#include "tgbm/tools/json_tools/generator_parser/basic_parser.hpp"
 #include "tgbm/tools/api_utils.hpp"
 #include "tgbm/tools/traits.hpp"
 

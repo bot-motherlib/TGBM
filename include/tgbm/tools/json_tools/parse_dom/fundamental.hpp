@@ -1,9 +1,11 @@
 #pragma once
+
 #include <concepts>
-#include <tgbm/tools/json_tools/parse_dom/basic.hpp>
-#include <tgbm/tools/json_tools/json_traits.hpp>
-#include <tgbm/api/common.hpp>
 #include <string>
+
+#include "tgbm/tools/json_tools/parse_dom/basic.hpp"
+#include "tgbm/tools/json_tools/json_traits.hpp"
+#include "tgbm/api/common.hpp"
 #include "tgbm/tools/math.hpp"
 
 namespace tgbm::json::parse_dom {

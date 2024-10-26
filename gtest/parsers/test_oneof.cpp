@@ -166,6 +166,7 @@ std::string_view to_string_view(MessageOrigin::type_e e) {
     case MessageOrigin::type_e::nothing:
       return "nothing";
   }
+  tgbm::unreachable();
 }
 
 // Test for "user" type

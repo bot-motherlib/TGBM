@@ -2,7 +2,7 @@
 
 #include "tgbm/Api.h"
 
-#include "tgbm/logger.h"
+#include "tgbm/logger.hpp"
 
 namespace tgbm {
 
@@ -23,7 +23,7 @@ static dd::channel<Update::Ptr> long_poll_with_preconfirm(
       // ignores update, so its unhanled == will be returned next time
       (void)co_await api.getUpdates(lastUpdateId, 1, 0, allowUpdates);
     }
-    LOG("[updates] getted {} updates", updates.size());
+    TGBM_LOG_INFO("[updates] getted {} updates", updates.size());
     for (Update::Ptr& item : updates)
       co_yield std::move(item);
   }
@@ -37,7 +37,7 @@ static dd::channel<Update::Ptr> long_poll_without_preconfirm(
   std::vector<std::shared_ptr<tgbm::Update>> updates;
   for (;;) {
     updates = co_await api.getUpdates(lastUpdateId, limit, timeout.count(), allowUpdates);
-    LOG("[updates] getted {} updates", updates.size());
+    TGBM_LOG_INFO("[updates] getted {} updates", updates.size());
     for (Update::Ptr& item : updates) {
       if (item->updateId >= lastUpdateId)
         lastUpdateId = item->updateId + 1;

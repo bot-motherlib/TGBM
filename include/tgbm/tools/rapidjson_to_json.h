@@ -2,7 +2,8 @@
 
 #include <cstdint>
 #include <rapidjson/writer.h>
-#include <tgbm/tools/traits.hpp>
+
+#include "tgbm/tools/traits.hpp"
 
 namespace tgbm {
 

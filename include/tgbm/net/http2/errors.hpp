@@ -14,10 +14,7 @@ namespace tgbm::http2 {
 // when limit reached, connection dropped
 using stream_id_t = uint32_t;
 // TODO? signed int?
-enum : stream_id_t {
-  max_stream_id = (stream_id_t(1) << 31) - 1,
-  max_header_length = max_stream_id,
-};
+constexpr inline stream_id_t max_stream_id = (stream_id_t(1) << 31) - 1;
 
 enum struct errc_e : uint32_t {
   NO_ERROR = 0x0,
@@ -36,7 +33,7 @@ enum struct errc_e : uint32_t {
   HTTP_1_1_REQUIRED = 0xd,
 };
 
-constexpr std::string_view errc2str(errc_e e) noexcept {
+constexpr std::string_view e2str(errc_e e) noexcept {
   switch (e) {
     case errc_e::NO_ERROR:
       return "NO_ERROR";
@@ -71,7 +68,11 @@ constexpr std::string_view errc2str(errc_e e) noexcept {
   }
 }
 
-struct hpack_error : protocol_error {};
+struct hpack_error : protocol_error {
+  const char* what() const noexcept override {
+    return "HPACK error";
+  }
+};
 
 struct connection_error : protocol_error {
   errc_e e = errc_e::NO_ERROR;
@@ -95,21 +96,21 @@ struct rst_stream_received : std::exception {
 
   const char* what() const noexcept override {
     // assumes its null terminated
-    return errc2str(err).data();
+    return e2str(err).data();
   }
 };
 
-struct goaway_frame_received : std::exception {
+struct goaway_exception : std::exception {
   stream_id_t last_stream_id;
   errc_e error_code;
   std::string debug_info;
 
-  goaway_frame_received(stream_id_t last_stream_id, errc_e error_code, std::string debug_info) noexcept
+  goaway_exception(stream_id_t last_stream_id, errc_e error_code, std::string debug_info) noexcept
       : last_stream_id(last_stream_id), error_code(error_code), debug_info(std::move(debug_info)) {
   }
 
   const char* what() const noexcept override {
-    return errc2str(error_code).data();  // assume null terminated
+    return e2str(error_code).data();  // assume null terminated
   }
 };
 

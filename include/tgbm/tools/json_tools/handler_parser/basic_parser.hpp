@@ -3,13 +3,13 @@
 #include <cassert>
 #include <concepts>
 #include <string_view>
-#include <tgbm/tools/pfr_extension.hpp>
-#include <tgbm/logger.h>
-#include <tgbm/tools/macro.hpp>
+
 #include <anyany/anyany.hpp>
+
 #include <boost/container/static_vector.hpp>
-#include <fmt/ranges.h>
-#include <tgbm/tools/json_tools/exceptions.hpp>
+
+#include "tgbm/tools/json_tools/exceptions.hpp"
+#include "tgbm/tools/macro.hpp"
 
 namespace tgbm::json::handler_parser {
 
@@ -17,11 +17,11 @@ template <typename T>
 struct Parser {};
 
 #ifndef TGBM_STATIC_PARSER_SIZE
-#define TGBM_STATIC_PARSER_SIZE 64
+  #define TGBM_STATIC_PARSER_SIZE 64
 #endif
 
 #ifndef TGBM_PARSER_STACK_SIZE
-#define TGBM_PARSER_STACK_SIZE 16
+  #define TGBM_PARSER_STACK_SIZE 16
 #endif
 
 enum struct ResultParse { kContinue, kError, kEnd };
