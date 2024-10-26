@@ -5,7 +5,7 @@
 #include <fmt/ranges.h>
 
 #include "tgbm/tools/algorithm.hpp"
-#include "tgbm/logger.h"
+#include "tgbm/logger.hpp"
 
 namespace tgbm {
 
@@ -2317,7 +2317,8 @@ dd::task<boost::property_tree::ptree> Api::sendRequest(http_request request, dur
   if (!result.get<bool>("ok", false)) {
     auto x = result.get_optional<bool>("ok");
     if (x && !*x) {
-      LOG_ERR("json with error: {}", std::string_view((char*)response.body.data(), response.body.size()));
+      TGBM_LOG_ERROR("json with error: {}",
+                     std::string_view((char*)response.body.data(), response.body.size()));
     } else {
       throw TGBM_TG_EXCEPTION(tg_errc(result.get<size_t>("error_code", 0u)), "{}",
                               result.get("description", ""));

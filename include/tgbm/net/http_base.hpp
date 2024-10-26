@@ -52,7 +52,6 @@ struct http_header_t {
   std::string value;
 };
 
-// TODO use const_string here
 // client knows authority and scheme and sets it
 struct http_request {
   // Host for HTTP1/1, :authority for HTTP2

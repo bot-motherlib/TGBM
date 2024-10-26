@@ -5,7 +5,7 @@
 #include <string>
 // TODO разобраться откуда лезет #define YIeld и прикрыть эти хедеры (азио)
 #ifdef _WIN32
-#undef Yield
+  #undef Yield
 #endif
 #include <kelcoro/channel.hpp>
 

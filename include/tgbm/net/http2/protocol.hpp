@@ -581,15 +581,3 @@ inline bool strip_padding(std::span<byte_t>& bytes) {
 void parse_http2_request_headers(hpack::decoder& d, std::span<const hpack::byte_t> bytes, http_request& req);
 
 }  // namespace tgbm::http2
-
-namespace fmt {
-
-template <>
-struct formatter<::tgbm::http2::frame_header> : fmt::formatter<std::string_view> {
-  auto format(const ::tgbm::http2::frame_header& header, auto& ctx) -> decltype(ctx.out()) {
-    return fmt::format_to(ctx.out(), "length: {}\n, type: {}\n, flags: {}\n, stream_id: {}", header.length,
-                          (int)header.type, (int)header.flags, header.stream_id);
-  }
-};
-
-}  // namespace fmt

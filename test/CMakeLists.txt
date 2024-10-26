@@ -12,7 +12,6 @@ foreach(PART ${TGBM_TEST_PARTS})
   add_test(NAME test_${PART} COMMAND ${PART})
 endforeach()
 
-
 add_executable(tgbm_fake_server ${CMAKE_CURRENT_SOURCE_DIR}/fake_server.cpp)
 target_link_libraries(tgbm_fake_server PUBLIC tgbmlib)
 

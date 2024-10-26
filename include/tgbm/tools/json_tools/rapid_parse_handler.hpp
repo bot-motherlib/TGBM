@@ -1,12 +1,14 @@
 #pragma once
 
+#include <stdexcept>
+
 #include <rapidjson/reader.h>
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>
-#include <stdexcept>
-#include <tgbm/tools/json_tools/handler_parser/basic_parser.hpp>
-#include <tgbm/api/common.hpp>
 #include <rapidjson/error/en.h>
+
+#include "tgbm/tools/json_tools/handler_parser/basic_parser.hpp"
+#include "tgbm/api/common.hpp"
 
 namespace tgbm::json::rapid {
 

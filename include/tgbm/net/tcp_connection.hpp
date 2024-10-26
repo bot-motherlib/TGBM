@@ -13,7 +13,7 @@
 #include "tgbm/net/errors.hpp"
 #include "tgbm/tools/macro.hpp"
 #include "tgbm/net/ssl_context.hpp"
-#include "tgbm/logger.h"
+#include "tgbm/logger.hpp"
 
 #include <kelcoro/task.hpp>
 
@@ -48,8 +48,8 @@ struct tcp_connection_options {
       tcp_sock.set_option(send_sz_option);
       tcp_sock.get_option(send_sz_option);
       if (send_sz_option.value() != send_buffer_size) {
-        LOG_WARN("tcp sendbuf size option not fully applied, requested: {}, actual: {}", send_buffer_size,
-                 send_sz_option.value());
+        TGBM_LOG_WARN("tcp sendbuf size option not fully applied, requested: {}, actual: {}",
+                      send_buffer_size, send_sz_option.value());
       }
     }
     {
@@ -57,8 +57,8 @@ struct tcp_connection_options {
       tcp_sock.set_option(rsv_sz_option);
       tcp_sock.get_option(rsv_sz_option);
       if (rsv_sz_option.value() != send_buffer_size) {
-        LOG_WARN("tcp receive buf size option not fully applied, requested: {}, actual: {}", send_buffer_size,
-                 rsv_sz_option.value());
+        TGBM_LOG_WARN("tcp receive buf size option not fully applied, requested: {}, actual: {}",
+                      send_buffer_size, rsv_sz_option.value());
       }
     }
   }

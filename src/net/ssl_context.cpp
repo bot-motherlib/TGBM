@@ -1,12 +1,12 @@
 #include "tgbm/net/ssl_context.hpp"
-#include "tgbm/logger.h"
+#include "tgbm/logger.hpp"
 #include "tgbm/net/errors.hpp"
 
 #include <filesystem>
 
 #ifdef TGBM_SSL_KEYS_FILE
-#define TGBM_ENABLE_WIRESHARK_SUPPORT
-#include <fstream>
+  #define TGBM_ENABLE_WIRESHARK_SUPPORT
+  #include <fstream>
 #endif
 
 namespace tgbm {
@@ -22,7 +22,7 @@ static void keylog_callback(const SSL*, const char* line) {
   if (keylog_file)
     keylog_file << std::string_view(line);
   else
-    LOG_ERR("cannot open keylog file for wireshark support, path: {}", keylog_file_path.string());
+    TGBM_LOG_ERROR("cannot open keylog file for wireshark support, path: {}", keylog_file_path.string());
 }
 
 #endif
@@ -38,7 +38,7 @@ ssl_context_ptr make_ssl_context_for_http11(std::span<const std::filesystem::pat
 
   ssl_context_ptr sslctx = new ssl_context(method);
 #ifdef TGBM_ENABLE_WIRESHARK_SUPPORT
-  LOG("SSL keys store enabled, file path: {}", TGBM_SSL_KEYS_FILE);
+  TGBM_LOG_INFO("SSL keys store enabled, file path: {}", TGBM_SSL_KEYS_FILE);
   SSL_CTX_set_keylog_callback(sslctx->ctx.native_handle(), &keylog_callback);
 #endif
   sslctx->ctx.set_default_verify_paths();
@@ -47,9 +47,9 @@ ssl_context_ptr make_ssl_context_for_http11(std::span<const std::filesystem::pat
     std::filesystem::path ap = std::filesystem::absolute(p);
     ec = sslctx->ctx.load_verify_file(ap.string(), ec);
     if (ec)
-      LOG_ERR("error while loading ssl verify file, err: {}, path: {}", ec.what(), p.string());
+      TGBM_LOG_ERROR("error while loading ssl verify file, err: {}, path: {}", ec.what(), p.string());
     else
-      LOG("additional SSL certificate loaded, path: {}", p.string());
+      TGBM_LOG_INFO("additional SSL certificate loaded, path: {}", p.string());
   }
 
   sslctx->ctx.set_options(ssl::context::default_workarounds | ssl::context::no_sslv2 |
@@ -58,7 +58,7 @@ ssl_context_ptr make_ssl_context_for_http11(std::span<const std::filesystem::pat
 
   if (!SSL_CTX_set_cipher_list(sslctx->ctx.native_handle(),
                                "ECDHE+AESGCM:ECDHE+CHACHA20:!aNULL:!MD5:DEFAULT"))
-    LOG_WARN("ssl cipher cannot be selected");
+    TGBM_LOG_WARN("ssl cipher cannot be selected");
 
   return sslctx;
 }
@@ -80,13 +80,13 @@ ssl_context_ptr make_ssl_context_for_server(std::filesystem::path certificate,
   io_error_code ec;
   ec = ctx->ctx.use_certificate_chain_file(std::filesystem::absolute(certificate).string(), ec);
   if (ec) {
-    LOG_ERR("cannot load certificate, path {}, err: {}", certificate.string(), ec.what());
+    TGBM_LOG_ERROR("cannot load certificate, path {}, err: {}", certificate.string(), ec.what());
     return nullptr;
   }
   ec = ctx->ctx.use_private_key_file(std::filesystem::absolute(server_private_key).string(),
                                      asio::ssl::context::pem, ec);
   if (ec) {
-    LOG_ERR("cannot load private file, path {}, err: {}", server_private_key.string(), ec.what());
+    TGBM_LOG_ERROR("cannot load private file, path {}, err: {}", server_private_key.string(), ec.what());
     return nullptr;
   }
   return ctx;

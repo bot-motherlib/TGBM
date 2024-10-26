@@ -1,8 +1,10 @@
 #include <benchmark/benchmark.h>
-#include <tgbm/api/types_all.hpp>
-#include <tgbm/tools/formatters.hpp>
+
 #include <fuzzing.hpp>
 #include <types.hpp>
+
+#include "tgbm/api/types_all.hpp"
+#include "tgbm/tools/formatters.hpp"
 
 int main(int argc, char** argv) {
   auto& storage = fuzzing::GetMutableStorage();

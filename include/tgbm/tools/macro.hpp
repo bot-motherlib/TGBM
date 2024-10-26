@@ -3,13 +3,13 @@
 #include "kelcoro/noexport/macro.hpp"
 
 #ifdef __clang__
-#define TGBM_TRIVIAL_ABI [[clang::trivial_abi]]
+  #define TGBM_TRIVIAL_ABI [[clang::trivial_abi]]
 #else
-#define TGBM_TRIVIAL_ABI
+  #define TGBM_TRIVIAL_ABI
 #endif
 
 #ifndef TGBM_ENABLE_DEBUG
-#define TGBM_ENABLE_DEBUG NDEBUG
+  #define TGBM_ENABLE_DEBUG NDEBUG
 #endif
 
 #ifdef TGBM_ENABLE_DEBUG

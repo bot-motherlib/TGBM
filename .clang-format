@@ -9,3 +9,4 @@ DerivePointerAlignment: false # disables 'Google' option which forces ignoring m
 PointerAlignment: Left
 ReferenceAlignment: Left
 InsertNewlineAtEOF: true
+IndentPPDirectives: BeforeHash

@@ -1,22 +1,20 @@
 #pragma once
+
 #include <cassert>
 #include <coroutine>
-#include <anyany/anyany.hpp>
-#include <kelcoro/task.hpp>
 #include <cassert>
-#include <mutex>
 
-#include "tgbm/tools/scope_exit.h"
+#include <anyany/anyany.hpp>
+
+#include <kelcoro/task.hpp>
 
 #include <boost/intrusive/list_hook.hpp>
 #include <boost/intrusive/list.hpp>
 #include <boost/intrusive/slist.hpp>
 #include <boost/intrusive/slist_hook.hpp>
 
+#include "tgbm/tools/scope_exit.h"
 #include "tgbm/tools/boost_intrusive.hpp"
-
-#include "tgbm/logger.h"
-
 #include "tgbm/tools/macro.hpp"
 
 namespace tgbm {
@@ -38,17 +36,6 @@ struct noop_events_handler_t {
   static void created(const T&) {
   }
   static void deleted(const T&) {
-  }
-};
-
-// TODO into another file or smth like, utils
-struct null_mutex {
-  static constexpr void lock() noexcept {
-  }
-  static constexpr void unlock() noexcept {
-  }
-  static constexpr bool try_lock() noexcept {
-    return true;
   }
 };
 

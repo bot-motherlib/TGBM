@@ -1,5 +1,5 @@
 #pragma once
-#include <tgbm/tools/json_tools/generator_parser/basic_parser.hpp>
+#include "tgbm/tools/json_tools/generator_parser/basic_parser.hpp"
 
 namespace tgbm::generator_parser {
 

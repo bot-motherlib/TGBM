@@ -28,6 +28,7 @@ src/api_types_cmp.cpp
 include/tgbm/api/types_all.hpp
 include/tgbm/api/types_fwd.hpp
 include/tgbm/api/types.txt
+**/tgbm_replace/*
 
 .vs/
 .vscode/

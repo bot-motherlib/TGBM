@@ -1,17 +1,17 @@
 #pragma once
 
 #if __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunknown-attributes"
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wunknown-attributes"
 #endif
 
 #include <type_traits>
 #include <utility>
 
 #if __cplusplus >= 202002L
-#define LOGIC_GUARDS_CONSTEXPR_DCTOR constexpr
+  #define LOGIC_GUARDS_CONSTEXPR_DCTOR constexpr
 #else
-#define LOGIC_GUARDS_CONSTEXPR_DCTOR
+  #define LOGIC_GUARDS_CONSTEXPR_DCTOR
 #endif
 
 // both scope_exit and scope_failure use precondition,
@@ -92,5 +92,5 @@ struct maker {
 #define LOGIC_GUARDS_CONCAT(a, b, c) LOGIC_GUARDS_CONCAT_IMPL(a, b, c)
 
 #if __clang__
-#pragma clang diagnostic pop
+  #pragma clang diagnostic pop
 #endif

@@ -6,7 +6,7 @@
 #include <memory>
 #include <string>
 
-#include "tgbm/logger.h"
+#include "tgbm/logger.hpp"
 #include "tgbm/tools/scope_exit.h"
 
 namespace tgbm {
@@ -41,24 +41,24 @@ dd::task<void> Bot::get_and_handle_updates(std::chrono::seconds update_wait_time
       _eventHandler.handleUpdate(update);
     }
   } catch (std::exception& e) {
-    LOG_ERR("Bot getUpdates ended with exception, its ignored, err: {}", e.what());
-    LOG_ERR("getUpdates ended with exception, http client will be stopped, what: {}", e.what());
+    TGBM_LOG_ERROR("Bot getUpdates ended with exception, its ignored, err: {}", e.what());
+    TGBM_LOG_ERROR("getUpdates ended with exception, http client will be stopped, what: {}", e.what());
   } catch (...) {
-    LOG_ERR("getUpdates ended with unknown exception, http client will be stopped");
+    TGBM_LOG_ERROR("getUpdates ended with unknown exception, http client will be stopped");
   }
 }
 
 void Bot::run(std::chrono::seconds update_wait_timeout) {
   auto handle = get_and_handle_updates(update_wait_timeout).start_and_detach(/*stop_at_end=*/true);
-  LOG_DEBUG("start bot");
+  TGBM_LOG_DEBUG("start bot");
   _client->run();
   std::exception_ptr e = handle.promise().exception;
   handle.destroy();
   if (e) {
-    LOG("Bot stopped with exception in getUpdates");
+    TGBM_LOG_INFO("Bot stopped with exception in getUpdates");
     std::rethrow_exception(e);
   } else {
-    LOG("Bot stopped without exception");
+    TGBM_LOG_INFO("Bot stopped without exception");
   }
 }
 

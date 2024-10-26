@@ -10,7 +10,7 @@
 
 namespace tgbm::utils {
 
-template <std::output_iterator<const char&> O>
+template <typename O>
 O url_encode(char c, O out) {
   static constexpr auto is_legit = [](char c) {
     switch (c) {

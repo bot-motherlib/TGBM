@@ -1,6 +1,6 @@
 #include "tgbm/net/tcp_connection.hpp"
 
-#include "tgbm/logger.h"
+#include "tgbm/logger.hpp"
 #include "tgbm/net/asio_awaiters.hpp"
 #include "tgbm/net/errors.hpp"
 
@@ -16,14 +16,14 @@ void tcp_connection::shutdown() noexcept {
   ec = tcp_sock.cancel(ec);
   // dont stop on errors, i need to stop connection somehow
   if (ec)
-    LOG_ERR("[HTTP2] [shutdown] TCP socket cancel, err {}", ec.what());
+    TGBM_LOG_ERROR("[HTTP2] [shutdown] TCP socket cancel, err {}", ec.what());
   // Do not do SSL shutdown, because TG does not too, useless errors and wasting time
   ec = tcp_sock.shutdown(asio::socket_base::shutdown_both, ec);
   if (ec)
-    LOG_ERR("[HTTP2] [shutdown] TCP socket shutdown, err: {}", ec.what());
+    TGBM_LOG_ERROR("[HTTP2] [shutdown] TCP socket shutdown, err: {}", ec.what());
   ec = tcp_sock.close(ec);
   if (ec)
-    LOG_ERR("[HTTP2] [shutdown], TCP socket close err: {}", ec.what());
+    TGBM_LOG_ERROR("[HTTP2] [shutdown], TCP socket close err: {}", ec.what());
 }
 
 dd::task<tcp_connection_ptr> tcp_connection::create(asio::io_context& io_ctx, std::string host,
@@ -38,15 +38,15 @@ dd::task<tcp_connection_ptr> tcp_connection::create(asio::io_context& io_ctx, st
   io_error_code ec;
   auto results = co_await net.resolve(resolver, query, ec);
   if (ec) {
-    LOG_ERR("[TCP] cannot resolve host: {}: service: {}, err: {}", query.host_name(), query.service_name(),
-            ec.message());
+    TGBM_LOG_ERROR("[TCP] cannot resolve host: {}: service: {}, err: {}", query.host_name(),
+                   query.service_name(), ec.message());
     throw network_exception(ec);
   }
   auto& tcp_sock = socket.lowest_layer();
   co_await net.connect(tcp_sock, results, ec);
 
   if (ec) {
-    LOG_ERR("[TCP] cannot connect to {}, err: {}", host, ec.message());
+    TGBM_LOG_ERROR("[TCP] cannot connect to {}, err: {}", host, ec.message());
     throw network_exception(ec);
   }
   options.apply(tcp_sock);
@@ -56,7 +56,7 @@ dd::task<tcp_connection_ptr> tcp_connection::create(asio::io_context& io_ctx, st
     SSL_set_mode(socket.native_handle(), SSL_MODE_RELEASE_BUFFERS);
   co_await net.handshake(socket, ssl::stream_base::handshake_type::client, ec);
   if (ec) {
-    LOG_ERR("[TCP/SSL] cannot ssl handshake: {}", ec.message());
+    TGBM_LOG_ERROR("[TCP/SSL] cannot ssl handshake: {}", ec.message());
     throw network_exception(ec);
   }
   co_return connection;

@@ -4,7 +4,6 @@
 
 #include "tgbm/net/http_client.hpp"
 #include "tgbm/net/connectiion_pool.hpp"
-#include "tgbm/logger.h"
 
 #include "tgbm/net/tcp_connection.hpp"
 

@@ -67,6 +67,8 @@ struct TGBM_TRIVIAL_ABI const_string {
       return reinterpret_cast<char*>(&ptrlen);
     }
     char* buffer = (char*)malloc(sizeof(string_impl) + len);
+    if (!buffer) [[unlikely]]
+      throw std::bad_alloc{};
     string_impl* impl = new (buffer) string_impl(1, len);
     ptrlen = reinterpret_cast<uintptr_t>(impl);
     return impl->data;

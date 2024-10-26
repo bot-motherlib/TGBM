@@ -8,7 +8,7 @@
 namespace tgbm::ce {
 
 #ifndef TGBM_FIXED_STRING_SIZE
-#define TGBM_FIXED_STRING_SIZE 64
+  #define TGBM_FIXED_STRING_SIZE 64
 #endif
 
 constexpr std::size_t k_len_fixed_string = TGBM_FIXED_STRING_SIZE;

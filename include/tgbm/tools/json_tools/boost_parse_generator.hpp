@@ -1,6 +1,8 @@
 #pragma once
-#include <tgbm/tools/json_tools/generator_parser/basic_parser.hpp>
+
 #include <boost/json/basic_parser.hpp>
+
+#include "tgbm/tools/json_tools/generator_parser/basic_parser.hpp"
 
 namespace fmt {
 template <>
@@ -207,7 +209,7 @@ struct stream_parser {
   void parse(std::string_view data, bool end) {
     p.write_some(!end, data.data(), data.size(), ec);
     if (ec || (end && !p.handler().ended)) {
-      LOG_ERR("ec: {}, ended: {}", ec.message(), p.handler().ended);
+      TGBM_LOG_ERROR("ec: {}, ended: {}", ec.message(), p.handler().ended);
       TGBM_JSON_PARSE_ERROR;
     }
   }

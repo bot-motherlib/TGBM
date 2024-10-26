@@ -2,11 +2,11 @@
 
 #if 0
 
-#include <tgbm/tools/json_tools/parser/all.h>
-#include <sstream>
-#include <rapidjson/reader.h>
-#include <rapidjson/document.h>
-#include <rapidjson/istreamwrapper.h>
+  #include "tgbm/tools/json_tools/parser/all.h"
+  #include <sstream>
+  #include <rapidjson/reader.h>
+  #include <rapidjson/document.h>
+  #include <rapidjson/istreamwrapper.h>
 
 namespace tests_json_parser {
 struct Position {

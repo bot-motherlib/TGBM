@@ -1,10 +1,10 @@
 
 #ifndef API_TYPE_PATH
-#error API_TYPE_PATH should be defined
+  #error API_TYPE_PATH should be defined
 #endif
 
 #ifndef API_TYPE
-#error API_TYPE should be defined
+  #error API_TYPE should be defined
 #endif
 
 namespace tgbm::api {

@@ -1,5 +1,6 @@
 #pragma once
-#include <tgbm/tools/pfr_extension.hpp>
+
+#include "tgbm/tools/pfr_extension.hpp"
 #include "tgbm/tools/box_union.hpp"
 #include "tgbm/tools/traits.hpp"
 

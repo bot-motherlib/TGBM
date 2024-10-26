@@ -1,7 +1,8 @@
 #pragma once
-#include <tgbm/tools/json_tools/generator_parser/basic_parser.hpp>
-#include <tgbm/api/optional.hpp>
-#include <tgbm/tools/box.hpp>
+
+#include "tgbm/tools/json_tools/generator_parser/basic_parser.hpp"
+#include "tgbm/api/optional.hpp"
+#include "tgbm/tools/box.hpp"
 
 namespace tgbm::generator_parser {
 

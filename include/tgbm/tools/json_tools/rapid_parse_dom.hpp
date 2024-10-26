@@ -1,16 +1,18 @@
 #pragma once
 
-#include <rapidjson/reader.h>
-#include <rapidjson/document.h>
 #include <cassert>
 #include <ranges>
-#include <tgbm/api/common.hpp>
-#include <tgbm/tools/api_utils.hpp>
-#include <tgbm/tools/traits.hpp>
-#include <tgbm/tools/json_tools/exceptions.hpp>
-#include "tgbm/tools/json_tools/json_traits.hpp"
+
+#include <rapidjson/reader.h>
+#include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
-#include <tgbm/tools/json_tools/parse_dom/basic.hpp>
+
+#include "tgbm/api/common.hpp"
+#include "tgbm/tools/api_utils.hpp"
+#include "tgbm/tools/traits.hpp"
+#include "tgbm/tools/json_tools/exceptions.hpp"
+#include "tgbm/tools/json_tools/json_traits.hpp"
+#include "tgbm/tools/json_tools/parse_dom/basic.hpp"
 
 namespace tgbm::json {
 

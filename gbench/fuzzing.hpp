@@ -1,17 +1,18 @@
 #pragma once
-#include <fmt/format.h>
+
 #include <filesystem>
 #include <optional>
 #include <string>
 #include <random>
 #include <type_traits>
 #include <unordered_map>
-#include <tgbm/tools/box.hpp>
-#include <tgbm/tools/pfr_extension.hpp>
-#include <tgbm/tools/traits.hpp>
 #include <fstream>
-#include <tgbm/logger.h>
-#include <tgbm/tools/json_tools/boost_serialize_dom.hpp>
+
+#include "tgbm/tools/box.hpp"
+#include "tgbm/tools/pfr_extension.hpp"
+#include "tgbm/tools/traits.hpp"
+#include "tgbm/logger.hpp"
+#include "tgbm/tools/json_tools/boost_serialize_dom.hpp"
 
 namespace fuzzing {
 
@@ -186,7 +187,7 @@ struct Storage {
   template <typename T>
   void Add(std::string name, Config config) {
     std::filesystem::path path(config.path);
-    LOG("Add: {}", path.generic_string());
+    TGBM_LOG_INFO("Add: {}", path.generic_string());
     std::optional<std::string> json;
     if (std::filesystem::exists(path)) {
       std::fstream file(path);
@@ -217,7 +218,7 @@ struct Storage {
   template <typename T, std::size_t N>
   void AddArray(std::string name, Config config) {
     std::filesystem::path path(config.path);
-    LOG("AddArray: {}", path.generic_string());
+    TGBM_LOG_INFO("AddArray: {}", path.generic_string());
     std::optional<std::string> json;
     if (std::filesystem::exists(path)) {
       std::fstream file(path);
@@ -354,9 +355,8 @@ template <>
 struct randomizer<std::string> {
   static constexpr bool is_nesting = false;
   static std::string generate(Context context, auto&& generator) {
-    // TODO: char fix
-    std::uniform_int_distribution<char> distribution('A', 'Z');
-    std::uniform_int_distribution<std::uint8_t> size_distr(0, 15);
+    std::uniform_int_distribution<size_t> distribution(size_t('A'), size_t('Z'));
+    std::uniform_int_distribution<size_t> size_distr(0, 15);
     std::uint8_t size = size_distr(generator);
     std::string result;
     result.resize(size, '\0');

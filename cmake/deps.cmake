@@ -19,7 +19,7 @@ CPMAddPackage(
 unset(BOOST_INCLUDE_LIBRARIES)
 find_package(Boost 1.84 COMPONENTS system asio property_tree pfr json REQUIRED)
 
-CPMAddPackage("gh:fmtlib/fmt#10.2.0")
+CPMAddPackage("gh:fmtlib/fmt#11.0.2")
 
 CPMAddPackage(
   NAME kelcoro

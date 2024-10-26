@@ -3,11 +3,11 @@ TODO docs about this file
 
 */
 
+#include <charconv>
+
 #include "tgbm/net/http2_server.hpp"
-
-#include "tgbm/logger.h"
+#include "tgbm/logger.hpp"
 #include "tgbm/net/asio_awaiters.hpp"
-
 #include "tgbm/net/ssl_context.hpp"
 #include "tgbm/net/http2/protocol.hpp"
 #include "tgbm/tools/memory.hpp"
@@ -164,7 +164,7 @@ struct client_session {
     io_error_code ec;
     co_await net.write(socket(), bytes, ec);
     if (ec)
-      LOG_ERR("cannot send goaway for {}", (void*)this);
+      TGBM_LOG_ERROR("cannot send goaway for {}", (void*)this);
   } catch (std::bad_alloc&) {
     // ignore and just shutdown
   }
@@ -195,13 +195,13 @@ dd::job client_session::start_writer() {
     assert(self->session_ctx.exe.running_in_this_thread());
     co_await framebuf.next_work();
     if (self->stop_requested()) {
-      LOG_DEBUG("[HTTP2]: writer for session {} ended after stop request", (void*)this);
+      TGBM_LOG_DEBUG("[HTTP2]: writer for session {} ended after stop request", (void*)this);
       co_return;
     }
     bytes_t bytes = std::move(framebuf.bytes_to_send);
     co_await net.write(self->socket(), bytes, ec);
     if (ec && ec != asio::error::operation_aborted) {
-      LOG_ERR("[HTTP2]: writer for session {} ended after network err: {}", (void*)this, ec.what());
+      TGBM_LOG_ERROR("[HTTP2]: writer for session {} ended after network err: {}", (void*)this, ec.what());
       co_return;
     }
   }
@@ -278,8 +278,8 @@ static bytes_t encode_response_headers(client_session& ses, const http_response&
   if (ses.table_size_decrease) {
     uint32_t dec = ses.table_size_decrease;
     ses.table_size_decrease = 0;
-    LOG("[HTTP2]: reducing table size after receiving SETTINGS, old size: {}, decrease: {}",
-        encoder.dyntab.max_size(), dec);
+    TGBM_LOG_INFO("[HTTP2]: reducing table size after receiving SETTINGS, old size: {}, decrease: {}",
+                  encoder.dyntab.max_size(), dec);
 
     if (encoder.dyntab.max_size() - dec)
       throw protocol_error{};
@@ -325,10 +325,10 @@ void client_session::shutdown() noexcept {
   io_error_code ec;
   ec = socket().lowest_layer().shutdown(asio::ip::tcp::socket::shutdown_both, ec);
   if (ec)
-    LOG_ERR("error while shutting down session (tcp part) {}", (void*)this);
+    TGBM_LOG_ERROR("error while shutting down session (tcp part) {}", (void*)this);
   ec = socket().shutdown(ec);
   if (ec)
-    LOG_ERR("error while shutting down session {}", (void*)this);
+    TGBM_LOG_ERROR("error while shutting down session {}", (void*)this);
 }
 
 void client_session::receive_window_update(http2::window_update_frame frame) {
@@ -337,7 +337,7 @@ void client_session::receive_window_update(http2::window_update_frame frame) {
     return;
   }
   if (frame.header.stream_id > last_opened_stream) {
-    LOG_WARN("unplemented stream window size increment before stream is open");
+    TGBM_LOG_WARN("unplemented stream window size increment before stream is open");
     return;
   }
   auto it = incomplete_responses.find(frame.header.stream_id);
@@ -354,7 +354,7 @@ void client_session::receive_ping(http2::ping_frame frame) {
 
 void client_session::receive_rst_stream(http2::rst_stream rst) {
   bool erased = incomplete_requests.erase(rst.header.stream_id);
-  LOG_DEBUG("rst stream {}, {}", rst.header.stream_id, erased ? "erased" : "not erased");
+  TGBM_LOG_DEBUG("rst stream {}, {}", rst.header.stream_id, erased ? "erased" : "not erased");
 }
 
 // TODO debug info only under special flag (ifdef)
@@ -389,9 +389,8 @@ void client_session::receive_data(http2::frame_header h, std::span<byte_t> data)
   assert(h.type == http2::frame_e::DATA);
   if (my_window_size < h.length) {
     // TODO какую-то настройку или хз, ну по сути тестовый сервер, так что он проверяет всё strict...
-    send_goaway_and_drop(
-        http2::errc_e::FLOW_CONTROL_ERROR,
-        fmt::format("too many DATA sended, can accept {}, received frame {}", my_window_size, h));
+    send_goaway_and_drop(http2::errc_e::FLOW_CONTROL_ERROR,
+                         fmt::format("too many DATA sended, can accept {}", my_window_size));
     // TODO что делать, чтобы не плодить тыщу таких фреймов пока не отправится?
     // TODO control flow для стрима
     return;
@@ -489,7 +488,7 @@ dd::job reader_for(client_session_ptr session) try {
     http2::frame_header framehdr = http2::frame_header::parse(buf);
     if (!validate_frame_header(framehdr)) {
       throw goaway_exception(session->last_opened_stream, errc_e::PROTOCOL_ERROR,
-                             fmt::format("invalid frame header: {}", framehdr));
+                             fmt::format("invalid frame header"));
     }
 
     // read frame data
@@ -530,8 +529,8 @@ dd::job reader_for(client_session_ptr session) try {
         break;
       case GOAWAY: {
         goaway_frame f = goaway_frame::parse(framehdr, buf);
-        LOG_ERR("[HTTP2]: server receives goaway frame, errc: {}, debuginfo: {}", e2str(f.error_code),
-                f.debug_info);
+        TGBM_LOG_ERROR("[HTTP2]: server receives goaway frame, errc: {}, debuginfo: {}", e2str(f.error_code),
+                       f.debug_info);
         session->shutdown();
         co_return;
       }
@@ -562,7 +561,7 @@ dd::job reader_for(client_session_ptr session) try {
   }
 network_error:
   if (ec != asio::error::operation_aborted)
-    LOG_ERR("[HTTP2]: client session ended after network error: {}", ec.what());
+    TGBM_LOG_ERROR("[HTTP2]: client session ended after network error: {}", ec.what());
   session->shutdown();
   co_return;
 } catch (http2::hpack_error& e) {
@@ -590,11 +589,11 @@ dd::job establish_client_session(http2_server_ptr server, client_session_ctx ses
     std::span preface = buf.get_exactly(preface_sz);
     co_await net.read(session_ctx.socket, preface, ec);
     if (ec) {
-      LOG_ERR("[HTTP2]: client session establishment failed, err: {}", ec.what());
+      TGBM_LOG_ERROR("[HTTP2]: client session establishment failed, err: {}", ec.what());
       co_return;
     }
     if (!std::ranges::equal(preface, std::span(http2::connection_preface))) {
-      LOG_ERR("[HTTP2]: incorrect client connection for http2, cannot establish session");
+      TGBM_LOG_ERROR("[HTTP2]: incorrect client connection for http2, cannot establish session");
       co_return;
     }
   }
@@ -607,13 +606,14 @@ dd::job establish_client_session(http2_server_ptr server, client_session_ctx ses
     std::span settings_frame = buf.get_exactly(http2::frame_header_len);
     co_await net.read(session_ctx.socket, settings_frame, ec);
     if (ec) {
-      LOG_ERR("[HTTP2]: client session establishment failed, err: {}", ec.what());
+      TGBM_LOG_ERROR("[HTTP2]: client session establishment failed, err: {}", ec.what());
       co_return;
     }
     settings_header = frame_header::parse(settings_frame);
   }
   if (settings_header.type != http2::frame_e::SETTINGS) {
-    LOG_ERR("[HTTP2]: client session establishment failed: incorrect client preface, frame is not SETTINGS");
+    TGBM_LOG_ERROR(
+        "[HTTP2]: client session establishment failed: incorrect client preface, frame is not SETTINGS");
     co_return;
   }
 
@@ -625,7 +625,7 @@ dd::job establish_client_session(http2_server_ptr server, client_session_ctx ses
     std::span settings_data = buf.get_exactly(settings_header.length);
     co_await net.read(session_ctx.socket, settings_data, ec);
     if (ec) {
-      LOG_ERR("[HTTP2]: client session establishment failed, err: {}", ec.what());
+      TGBM_LOG_ERROR("[HTTP2]: client session establishment failed, err: {}", ec.what());
       co_return;
     }
     settings_frame::parse(settings_header, settings_data, client_settings_visitor(client_settings));
@@ -649,8 +649,8 @@ dd::job establish_client_session(http2_server_ptr server, client_session_ctx ses
     accepted_settings_frame().send_to(std::back_inserter(bytes));
     co_await net.write(session_ctx.socket, bytes, ec);
     if (ec) {
-      LOG_ERR("[HTTP2]: client session establishment failed: cannot send ACK frame to client, err: {}",
-              ec.what());
+      TGBM_LOG_ERROR("[HTTP2]: client session establishment failed: cannot send ACK frame to client, err: {}",
+                     ec.what());
       co_return;
     }
   }
@@ -664,9 +664,9 @@ dd::job establish_client_session(http2_server_ptr server, client_session_ctx ses
       reader_for(new client_session(std::move(server), std::move(session_ctx), client_settings, mysettings));
   co_await dd::this_coro::destroy_and_transfer_control_to(reader.handle);
 } catch (protocol_error& pe) {
-  LOG_ERR("[HTTP2]: client session failed: {}", pe.what());
+  TGBM_LOG_ERROR("[HTTP2]: client session failed: {}", pe.what());
 } catch (...) {
-  LOG_ERR("[HTTP2]: client session failed with unknown exception");
+  TGBM_LOG_ERROR("[HTTP2]: client session failed with unknown exception");
 }
 
 dd::job http2_server::start_accept(asio::ip::tcp::endpoint ep) {
@@ -681,27 +681,27 @@ dd::job http2_server::start_accept(asio::ip::tcp::endpoint ep) {
         .exe = asio::make_strand(io_ctx),
         .socket = asio::ssl::stream<tcp::socket>(tcp::socket(session_ctx.exe), sslctx->ctx),
     };
-    LOG_DEBUG("[HTTP2] starting accept!");
+    TGBM_LOG_DEBUG("[HTTP2] starting accept!");
     co_await net.accept(acceptor, session_ctx.socket.lowest_layer(), ec);
 
     if (ec) {
       if (ec != asio::error::operation_aborted)
-        LOG_ERR("[HTTP2]: server stops accepting after error: {}", ec.what());
+        TGBM_LOG_ERROR("[HTTP2]: server stops accepting after error: {}", ec.what());
       co_return;
     }
-    LOG_DEBUG("[HTTP2] accepted TCP socket");
+    TGBM_LOG_DEBUG("[HTTP2] accepted TCP socket");
 
     co_await net.handshake(session_ctx.socket, asio::ssl::stream_base::server, ec);
     if (ec) {
       if (ec == asio::error::operation_aborted)
         co_return;
-      LOG_ERR("[HTTP2]: server cannot accept (ssl handshake failure), error: {}", ec.what());
+      TGBM_LOG_ERROR("[HTTP2]: server cannot accept (ssl handshake failure), error: {}", ec.what());
       // do not stop accepting
     }
     if (stop_requested())
       co_return;
 
-    LOG_DEBUG("[HTTP2]: establishing client session");
+    TGBM_LOG_DEBUG("[HTTP2]: establishing client session");
 
     establish_client_session(this, std::move(session_ctx));
   }
@@ -717,7 +717,7 @@ bool http2_server::start() {
   if (io_ctx.stopped()) {
     // drop old sessions before starting new ones
     io_ctx.restart();
-    while (opened_sessions.load(std::memory_order_acq_rel) != 0)
+    while (opened_sessions.load(std::memory_order_acquire) != 0)
       io_ctx.run_one();
   }
   work_guard = std::shared_ptr<work_guard_t>(new auto(asio::make_work_guard(io_ctx)));

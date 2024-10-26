@@ -1,14 +1,14 @@
 #pragma once
 
 #if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wundefined-var-template"
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wundefined-var-template"
 #endif
 
 #include <boost/pfr.hpp>
 
 #if defined(__clang__)
-#pragma clang diagnostic pop
+  #pragma clang diagnostic pop
 #endif
 
 #include "tgbm/tools/constexpr_string.h"
