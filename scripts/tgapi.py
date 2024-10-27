@@ -24,7 +24,7 @@ def manually_type(apidir, type_name):
 
 def get_elem_field_type(raw_field_type: str):
     types = {
-        "IntegerorString": "IntOrStr",
+        "IntegerorString": "int_or_str",
         "InputFileorString": "FileOrStr"
     }
     if raw_field_type in types.keys():
@@ -72,7 +72,7 @@ def convert_type_to_name_field(type_name):
         i+=1
     return result
 
-def parse_info_one_of(parsed_api, type_name, type_header, type_description, table_one_of):
+def parse_info_one_of(type_name, type_header, type_description, table_one_of):
     result = {
         'description': type_description.text,
         'type': K_ONE_OF,
@@ -96,7 +96,7 @@ def get_default_type(type_name):
     else:
         return K_DEFAULT
 
-def parse_info_default(parsed_api, type_name, type_header, type_description):
+def parse_info_default(type_name, type_header, type_description):
     result = {
         'description': type_description.text,
         'type': get_default_type(type_name),
@@ -134,9 +134,9 @@ def parse_info(type_name, parsed_api):
     table_one_of = type_description.find_next_sibling()
 
     if 'one of' in str(type_description).strip() and table_one_of and table_one_of.name == 'ul':
-        return parse_info_one_of(parsed_api, type_name, type_header, type_description, table_one_of)
+        return parse_info_one_of(type_name, type_header, type_description, table_one_of)
     else:
-        return parse_info_default(parsed_api, type_name, type_header, type_description)
+        return parse_info_default(type_name, type_header, type_description)
 
 
 def get_all_api(apidir, is_classes, is_methods):
@@ -198,7 +198,7 @@ def generate_oneof_field_type(infos, type_name, info, file):
             file.write("OPTIONAL(")
         else:
             file.write("REQUIRED(")
-        file.write(f"{get_real_field_type(infos, field_type)}, {field_name})\n")      
+        file.write(f"{get_real_field_type(infos, field_type)}, {field_name})\n")
 
 def generate_one_of_type(type_name, info, file):
     file.write(f"DISCRIMINATOR_FIELD({info['discriminator']})\n")

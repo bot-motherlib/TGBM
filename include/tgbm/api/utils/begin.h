@@ -31,11 +31,11 @@
 #endif
 
 #ifndef INT_OR_STR
-#define INT_OR_STR(Name) FIELD(InrOrStr, Name)
+#define INT_OR_STR(Name) FIELD(int_or_str, Name)
 #endif
 
 #ifndef FILE_OR_STR
-#define FILE_OR_STR(Name) FIELD(FileOrStr, Name)
+#define FILE_OR_STR(Name) FIELD(file_or_str, Name)
 #endif
 
 #ifndef ARRAYOF
