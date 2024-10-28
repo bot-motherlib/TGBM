@@ -44,7 +44,7 @@ include (cmake/deps.cmake)
 
 if (TGBM_ENABLE_GEN)
   include (cmake/generate.cmake)
-  GenerateApiTypes()
+  TGBM_GENERATE_API()
 endif()
 
 set(TGBM_SRC_LIST

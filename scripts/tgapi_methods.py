@@ -14,8 +14,6 @@ def load_api_html():
         return []
     return response.text
 
-G_REPLY_MARKUP_T = 'oneof<std::monostate, InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply>'
-
 G_FILEORSTR = "file_or_str"
 G_TYPE_MAPPING = {
     # TODO rename integer.hpp (first letter)
@@ -258,6 +256,7 @@ def generate_into_file(method_desc: method_info_t, filepath: str):
         print('\n} // namespace tgbm::api', file=out)
 
 def generate_all_methods(methods: list[method_info_t], outdir: str):
+    print(f'creating directory: {outdir}')
     os.makedirs(outdir, exist_ok=True)
     # TODO: also api/types.hpp (all file)
     for m in methods:

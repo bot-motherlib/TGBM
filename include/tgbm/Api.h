@@ -79,7 +79,6 @@ constexpr std::string_view e2str(tg_errc e) noexcept {
   }
 }
 
-// TODO optional for this type
 using thumbnail_t = api::file_or_str;
 using int_or_str = api::int_or_str;
 

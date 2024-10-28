@@ -7,7 +7,6 @@
 
 namespace tgbm::api {
 
-// TODO optional for this type
 using file_or_str = std::variant<InputFile::Ptr, std::string>;
 
 }  // namespace tgbm::api
