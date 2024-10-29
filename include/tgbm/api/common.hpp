@@ -34,7 +34,7 @@ struct True {
 
 template <typename T>
 using arrayof = std::vector<T>;
-
+// TODO rm first arg after adding generation
 template <typename, typename... U>
 using oneof = box_union<U...>;
 

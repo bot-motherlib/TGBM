@@ -6,7 +6,7 @@
 #include <compare>
 
 namespace tgbm::api {
-
+// TODO rename (Float or smth)
 struct Double {
   double value = 0;
 

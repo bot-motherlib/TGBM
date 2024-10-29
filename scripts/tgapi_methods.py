@@ -21,7 +21,7 @@ G_TYPE_MAPPING = {
     "string": "String", # TODO rename into api::string
     "integerorstring": "int_or_str",
     "boolean": "bool",
-    "float": "double",
+    "float": "Double",
     "inputfileorstring": G_FILEORSTR,
     "inputfile": "InputFile",
     "inlinekeyboardmarkuporreplykeyboardmarkuporreplykeyboardremoveorforcereply": "reply_markup_t"
@@ -39,8 +39,7 @@ def map_tgtype_to_cpptype(tgtype):
     if typeunified in G_TYPE_MAPPING:
         return G_TYPE_MAPPING[typeunified]
     if typeunified.startswith('arrayof'):
-        tgtype = tgtype.replace(' ', '')
-        return 'arrayof<'+ map_tgtype_to_cpptype(tgtype[len('arrayof'):]) + '>'
+        return 'arrayof<'+ map_tgtype_to_cpptype(typeunified[len("arrayof"):]) + '>'
     return tgtype # unmodified, just complex type
 
 # takes compound part from cpptype (array or not)
@@ -74,7 +73,7 @@ def is_file_arg(m: param_t):
     return m.param_type == G_FILEORSTR or m.param_type == "InputFile"
 
 # accepts HTML with telegram api
-# returns array of 'method_info'
+# returns array of 'method_info_t'
 def parse_methods(tgapi_html):
     soup = BeautifulSoup(tgapi_html, 'html.parser')
 
@@ -247,7 +246,7 @@ def generate_api_struct(method_desc: method_info_t):
 # overwrites existing file
 def generate_into_file(method_desc: method_info_t, filepath: str):
     with open(filepath, 'w', encoding='utf-8') as out:
-        print(f'#pragma once\n\n', file=out)
+        print(f'#pragma once\n', file=out)
         print('#include "tgbm/api/common.hpp"\n', file=out)
         print('namespace tgbm::api {\n', file=out)
         for fwd in collect_required_forwards(method_desc):
@@ -258,14 +257,12 @@ def generate_into_file(method_desc: method_info_t, filepath: str):
 def generate_all_methods(methods: list[method_info_t], outdir: str):
     print(f'creating directory: {outdir}')
     os.makedirs(outdir, exist_ok=True)
-    # TODO: also api/types.hpp (all file)
     for m in methods:
         generate_into_file(m, f'{outdir}/{m.name}.hpp')
-        # TODO clang-format
     with open(f'{outdir}/methods.hpp', 'w', encoding='utf-8') as out:
-        print('#pragma once \n\n', file=out)
+        print('#pragma once \n', file=out)
         for m in methods:
-            print(f'#include "{outdir}/{m.name}.hpp"\n', file=out)
+            print(f'#include "{outdir}/{m.name}.hpp"', file=out)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -277,6 +274,8 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# TODO: not generate forward declarations, just include all forward declarations instead
 # TODO handle reply makrup and variants (startswith oneof) in generating request serializing
 # TODO specialization (by hands) parsing return type
 # TODO write into file (in selected dir + clang-format it)

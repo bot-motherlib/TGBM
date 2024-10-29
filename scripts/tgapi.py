@@ -9,15 +9,12 @@ K_DEFAULT = 'default'
 K_MANUALLY = 'manually'
 
 K_ONE_OF_FIELD_TYPES = ['Update', 'KeyboardButton', 'InlineKeyboardButton']
-
+# stored to 'somepath' (runtime arg), but loaded always as tgapi.html...
 def path_api_html(apidir):
     return f'{apidir}/tgapi.html'
 
 def path_types_file(apidir):
     return f'{apidir}/types.txt'
-
-def path_methods_file(apidir):
-    return f'{apidir}/methods.txt'
 
 def manually_type(apidir, type_name):
     return os.path.exists(f'{apidir}/def/{type_name}.nodef')
@@ -31,7 +28,6 @@ def get_elem_field_type(raw_field_type: str):
         return types[raw_field_type]
     else:
         return raw_field_type
-
 
 def get_real_field_type(infos, raw_field_type: str):
     raw_field_type = raw_field_type.strip()
@@ -138,32 +134,20 @@ def parse_info(type_name, parsed_api):
     else:
         return parse_info_default(type_name, type_header, type_description)
 
-
-def get_all_api(apidir, is_classes, is_methods):
+def get_all_types(apidir):
     with open(path_api_html(apidir), 'r', encoding='utf-8') as file:
         html_content = file.read()
     soup = BeautifulSoup(html_content, 'html.parser')
-    # Поиск всех заголовков <h4> и разделение их на классы и методы
     classes = []
-    methods = []
 
     for tag in soup.find_all('h4'):
         text = tag.get_text(strip=True)
         if text and len(text.split()) == 1:
             if text[0].isupper():
                 classes.append(text)
-            elif text[0].islower():
-                methods.append(text)
-    
-    if is_classes:
-        with open(path_types_file(apidir), 'w', encoding='utf-8') as file:
-            for _class in classes:
-                file.write(f'{_class}\n')
-
-    if is_methods:
-        with open(path_types_file(apidir), 'w', encoding='utf-8') as file:
-            for method in methods:
-                file.write(f'{method}\n')
+    with open(path_types_file(apidir), 'w', encoding='utf-8') as file:
+        for _class in classes:
+            file.write(f'{_class}\n')
 
 def load_api(outfile):
     url = "https://core.telegram.org/bots/api"
@@ -175,19 +159,6 @@ def load_api(outfile):
     print(f"API stored into {outfile}")
 
 def generate_default_type(infos, type_name, info, file):
-    for field_name, field_info in info['fields'].items():
-        field_type = field_info['type']
-        field_description = field_info['description']
-        if field_description.startswith('Optional'):
-            size = field_description.find(' ')
-            while field_description[size].isspace():
-                size += 1
-            file.write("OPTIONAL(")
-        else:
-            file.write("REQUIRED(")
-        file.write(f"{get_real_field_type(infos, field_type)}, {field_name})\n")     
-
-def generate_oneof_field_type(infos, type_name, info, file):
     for field_name, field_info in info['fields'].items():
         field_type = field_info['type']
         field_description = field_info['description']
@@ -268,6 +239,7 @@ def rewrite_sub_oneof(infos):
 def get_all_infos(parsed_api, apidir):
     typelist = open(f'{apidir}/types.txt', 'r', encoding='utf-8')
     infos = {}
+    # TODO вместо этого с парсингом для каждого типа всего вообще сделать одну функцию парсящую подряд
     for type_name in typelist:
         type_name = type_name.strip()
         if not manually_type(apidir, type_name):
@@ -360,17 +332,16 @@ def main():
     parser = argparse.ArgumentParser(description='Extract fields and descriptions for a given type from the Telegram Bot API.')
     parser.add_argument('--generate_defs', action='store_true', help='Generate .def files')
     parser.add_argument('--apidir', type=str, help="path to /api folder in project", default='/include/tgbm/api')
-    parser.add_argument('--get_methods', action='store_true', help="gets all api methods and exits")
     parser.add_argument('--get_classes', action='store_true', help="gets all api classes and exits")
     parser.add_argument('--load_api', type=str, help="loads from internet TG API to file, usage: --load_api=<path>")
-    parser.add_argument('--postprocess', action='store_true', help="post preprocess logic: add descriptions of fields and methods, add necessary includes")
+    parser.add_argument('--postprocess', action='store_true', help="post preprocess logic: add descriptions of fields, add necessary includes")
     parser.add_argument('--typelist', nargs='+', type=str, help='list of types to generate def. If not present, use types from api/types.txt')
     args = parser.parse_args()
     if args.postprocess:
         postprocess(args.apidir)
         return
-    if args.get_methods or args.get_classes:
-        get_all_api(args.apidir, args.get_classes, args.get_methods)
+    if args.get_classes:
+        get_all_types(args.apidir)
         return
     if args.load_api:
         load_api(args.load_api)
