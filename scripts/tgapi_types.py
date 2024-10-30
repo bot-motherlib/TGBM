@@ -1,20 +1,15 @@
 from bs4 import BeautifulSoup
-import requests
-import sys
+
 import typing
 import argparse
 import os
 import re
 import json
 
-# loads TG api (html)
-def load_api_html():
-    url = "https://core.telegram.org/bots/api"
-    response = requests.get(url)
-    if response.status_code != 200:
-        print("[ERROR]: generating methods, cannot load TG API", response.status_code)
-        return []
-    return response.text
+def load_file(path: str) -> str:
+    with open(path, 'r', encoding='utf-8') as file:
+        content = file.read()
+    return content
 
 ######################### PARSING ########################
 
@@ -31,13 +26,22 @@ G_TYPE_MAPPING = {
 
 PARSED_TYPES = {}
 
+# original - not modified type
+def unify(somestr: str) -> str:
+    return somestr.strip().lower().replace(' ', '').replace('\n', '')
 def map_tgtype_to_cpptype(tgtype: str):
-    typeunified = tgtype.strip().lower()
-    typeunified = typeunified.replace(' ', '').replace('\n', '')
+    typeunified = unify(tgtype)
     if typeunified in G_TYPE_MAPPING:
         return G_TYPE_MAPPING[typeunified]
     if typeunified.startswith('arrayof'):
-        return f'arrayof<{map_tgtype_to_cpptype(typeunified[len("arrayof"):])}>'
+        # Array of X / Array of Array of X
+        s = tgtype.strip().replace('\n', ' ').split()[-1]
+        su = s.replace(' ', '').lower()
+        if su in G_TYPE_MAPPING:
+            return f'arrayof<{G_TYPE_MAPPING[su]}>'
+        else:
+            # not remove UpperLatters
+            return f'arrayof<{s}>'
     return tgtype # unmodified, just complex type
 
 class field_info_t:
@@ -167,6 +171,10 @@ def parse_oneof_type(name: str, description: str, fieldtable) -> oneof_info_t:
 
     return oneof_info_t(name, discriminator_name, description, alternatives)
 
+IGNORED_TYPES = {
+    'InputFile',
+    'MaybeInaccessibleMessage'
+}
 # accepts HTML with telegram api
 # returns pair: array of 'type_info_t' and array of 'oneof_info_t'
 def parse_types(tgapi_html: str):
@@ -187,10 +195,6 @@ def parse_types(tgapi_html: str):
         description_tag = tag.find_next_sibling('p')
         if not description_tag:
             continue
-        IGNORED_TYPES = {
-            'InputFile', # TODO generate by hands HERE (include written file)
-            'MaybeInaccessibleMessage' # TODO generate by hands HERE (alias to message)
-        }
         PARSED_TYPES[type_name] = True
         if type_name in IGNORED_TYPES:
             continue
@@ -215,17 +219,20 @@ def parse_types(tgapi_html: str):
 
 ######################### GENERATION ########################
 
-def is_boxed_type(tgtype: str) -> bool:
-    if tgtype.startswith('arrayof'):
-        return False
-    return tgtype not in G_TYPE_MAPPING.values()
 
-# TODO check array of arrays
 def get_compound_type(tgtype: str):
     x = map_tgtype_to_cpptype(tgtype)
-    if x in G_TYPE_MAPPING:
+    if x in G_TYPE_MAPPING.values():
         return None
+    while x.startswith('arrayof<'):
+        x = x[len('arrayof<'):-1]
     return x
+# TODO: oneofs must not be boxed
+def is_boxed_type(tgtype: str) -> bool:
+    HUETA = unify(tgtype)
+    if HUETA.startswith('arrayof'):
+        return False
+    return get_compound_type(tgtype) is not None
 
 def generate_halfoneof_api_struct(t: type_info_t) -> str:
     assert t.is_merged_optional_fields
@@ -247,40 +254,58 @@ def generate_halfoneof_api_struct(t: type_info_t) -> str:
 
     for f in t.fields:
         if f.is_optional:
-            s += f'  struct {f.name} {{ {f.cppname} value; }};\n'
-    
+            s += f'  struct {f.name} {{ {f.cpptype} value; }};\n'
+
     # data
 
-    s += f'  oneof<{", ".join(e.name for e in t.fields)}> data;\n'
+    s += f'  oneof<{", ".join(f.name for f in t.fields if f.is_optional)}> data;\n'
 
     # enum struct type_e
 
-    s += 'enum struct type_E {\n'
+    s += '  enum struct type_e {\n'
     for f in t.fields:
         if f.is_optional:
-            s += f'k_{f.name},\n'
-    s += 'nothing,\n};\n'
+            s += f'    k_{f.name},\n'
+    s += '    nothing,\n  };\n'
+
+    # static constexpr size_t variant_size
+
+    s += '  static constexpr size_t variant_size = size_t(type_e::nothing);\n'
 
     # type_e type() const
 
-    s += 'type_e type() const { return static_cast<type_e>(data.index()); }'
+    s += '  type_e type() const { return static_cast<type_e>(data.index()); }\n'
 
     # get ifs
 
     for f in t.fields:
         if f.is_optional:
-            s += f'{f.cpptype}* get_{f.name}() noexcept {{ auto* p = data.get_if<{f.name}>(); return p ? std::addressof(p->value) : nullptr; }}\n'
-            s += f'const {f.cpptype}* get_{f.name}() const noexcept {{ auto* p = data.get_if<{f.name}>(); return p ? std::addressof(p->value) : nullptr; }}\n'
+            s += f'  {f.cpptype}* get_{f.name}() noexcept {{ auto* p = data.get_if<{f.name}>(); return p ? &p->value : nullptr; }}\n'
+            s += f'  const {f.cpptype}* get_{f.name}() const noexcept {{ auto* p = data.get_if<{f.name}>(); return p ? &p->value : nullptr; }}\n'
     
     # static constexpr decltype(auto) discriminate_field(std::string_view val, auto&& visitor)
 
-    s += 'static constexpr decltype(auto) discriminate_field(std::string_view val, auto&& visitor) {\n'
+    s += '  static constexpr decltype(auto) discriminate_field(std::string_view val, auto&& visitor) {\n'
     for f in t.fields:
         if f.is_optional:
-            s += f'  if (val == "{f.cpptype}") return visitor.template operator()<{f.cpptype}>();'
-    s += '  return visitor.template operator()<void>();'
-    s += '}\n\n'
+            s += f'    if (val == "{f.name}") return visitor.template operator()<{f.name}>();'
+    s += '    return visitor.template operator()<void>();'
+    s += '  }\n\n'
     s += '};\n' # end struct
+
+    # TODO .discriminator_str in type
+    # std::string_view to_string_view({t.name}::type_e)
+
+    s += f'inline std::string_view to_string_view({t.name}::type_e v) {{\n'
+    s += f'  using enum {t.name}::type_e;'
+    s += '  switch(v) {\n'
+    for f in t.fields:
+        if f.is_optional:
+            s += f' case k_{f.name}: return "{f.name}";\n'
+    s += 'case nothing: return "nothing";\n'
+    s += 'default: unreachable();\n'
+    s += '  }\n}\n'
+
     return s
 
 def generate_api_struct(t: type_info_t) -> str:
@@ -306,12 +331,12 @@ def generate_api_struct(t: type_info_t) -> str:
 
     # consteval static bool is_optional_field(std::string_view name)
 
-    s += 'consteval static bool is_optional_field(std::string_view name) {\n'
-    s += '  return utils::string_switch<std::optional<bool>>(name)\n'
+    s += '\n  consteval static bool is_optional_field(std::string_view name) {\n'
+    s += '    return utils::string_switch<std::optional<bool>>(name)\n'
     for field in t.fields:
         s += f'    .case_("{field.name}", {"true" if field.is_optional else "false"})\n'
     s += '    .or_default(std::nullopt).value();\n'
-    s += '}\n\n'
+    s += '  }\n\n'
     s += '};\n' # struct end
     
     return s
@@ -323,7 +348,7 @@ def cut_oneofname(name: str, ownername: str) -> str:
 def generate_api_struct_oneof(t: oneof_info_t) -> str:
     if t.name in TYPES_WITHOUT_DISCRIMINATOR:
         # just generate oneof
-        return f'/*{t.description}*/\nusing {t.name} = oneof<{", ".join(e.name for e in t.alternatives)}> data;\n'
+        return f'/*{t.description}*/\nusing {t.name} = oneof<{", ".join(e.name for e in t.alternatives)}>;\n'
     s = f'/*{t.description}*/\nstruct {t.name} {{\n'
 
     # data
@@ -332,45 +357,57 @@ def generate_api_struct_oneof(t: oneof_info_t) -> str:
 
     # static constexpr std::string_view discriminator
 
-    s += f'  static constexpr std::string_view discriminator = {t.discriminator_name};\n'
+    s += f'  static constexpr std::string_view discriminator = "{t.discriminator_name}";\n'
 
     # enum struct type_e
 
     s += '  enum struct type_e {'
     for alt in t.alternatives:
-        s += f'k_{cut_oneofname(alt.name, t.name)}, '
-    s += 'nothing, }\n'
+        s += f'    k_{cut_oneofname(alt.name, t.name)}, '
+    s += '    nothing, };\n\n'
 
     # static constexpr size_t variant_size = size_t(type_e::nothing);
 
-    s += 'static constexpr size_t variant_size = size_t(type_e::nothing);'
+    s += '  static constexpr size_t variant_size = size_t(type_e::nothing);\n'
     
     # type_e type() const;
 
-    s += 'type_e type() const { return static_cast<type_e>(data.index()); }\n'
+    s += '  type_e type() const { return static_cast<type_e>(data.index()); }\n'
 
     # get_ifs
 
     for alt in t.alternatives:
-        s += f'{alt.tgtype}* get_{cut_oneofname(alt.name, t.name)}() noexcept {{ return data.get_if<{alt.tgtype}>(); }}\n'
-        s += f'const {alt.tgtype}* get_{cut_oneofname(alt.name, t.name)}() const noexcept {{ return data.get_if<{alt.tgtype}>(); }}\n'
+        s += f'  {alt.tgtype.name}* get_{cut_oneofname(alt.name, t.name)}() noexcept {{ return data.get_if<{alt.tgtype.name}>(); }}\n'
+        s += f'  const {alt.tgtype.name}* get_{cut_oneofname(alt.name, t.name)}() const noexcept {{ return data.get_if<{alt.tgtype.name}>(); }}\n'
 
     # static constexpr type_e discriminate(std::string_view val)
     
-    s += 'static constexpr type_e discriminate(std::string_view val) {\n'
-    s += '  return utils::string_switch<type_e>(val)\n'
+    s += '  static constexpr type_e discriminate(std::string_view val) {\n'
+    s += '    return utils::string_switch<type_e>(val)\n'
     for alt in t.alternatives:
-        s += f'    .case_("{alt.name}", type_e::k_{cut_oneofname(alt.name, t.name)})\n)'
+        s += f'    .case_("{alt.discriminator_value}", type_e::k_{cut_oneofname(alt.name, t.name)})\n'
     s += '    .or_default(type_e::nothing);\n}\n\n'
 
     # static constexpr decltype(auto) discriminate(std::string_view val, auto&& visitor)
 
-    s += 'static constexpr decltype(auto) discriminate(std::string_view val, auto&& visitor) {\n'
+    s += '  static constexpr decltype(auto) discriminate(std::string_view val, auto&& visitor) {\n'
     for alt in t.alternatives:
-        s += f'    if (val == "{alt.name}") return visitor.template operator()<{alt.tgtype}>()'
-    s += '     return visitor.template operator()<void>();\n'
-    s += '}\n\n'
+        s += f'    if (val == "{alt.discriminator_value}") return visitor.template operator()<{alt.name}>();'
+    s += '    return visitor.template operator()<void>();\n'
+    s += '  }\n\n'
     s += '};\n' # end struct
+
+    # TODO .discriminator_str in type
+    # std::string_view to_string_view({t.name}::type_e)
+
+    s += f'inline std::string_view to_string_view({t.name}::type_e v) {{\n'
+    s += f'  using enum {t.name}::type_e;'
+    s += '  switch(v) {\n'
+    for alt in t.alternatives:
+        s += f' case k_{cut_oneofname(alt.name, t.name)}: return "{alt.discriminator_value}";\n'
+    s += 'case nothing: return "nothing";\n'
+    s += 'default: unreachable();\n'
+    s += '  }\n}\n'
 
     return s
 
@@ -378,38 +415,83 @@ def generate_api_struct_oneof(t: oneof_info_t) -> str:
 def generate_into_file(generated_struct: str, filepath: str, required_includes: list[str]):
     with open(filepath, 'w', encoding='utf-8') as out:
         print(f'#pragma once\n', file=out)
-        for inc : required_includes:
+        for inc in required_includes:
             print(f'#include {inc}', file=out)
         print('namespace tgbm::api {\n', file=out)
         print(generated_struct, file=out)
         print('\n} // namespace tgbm::api\n', file=out)
 
 def collect_required_includes(t) -> list[str]:
-    incs = ['"tgbm/api/common.hpp"', '"tgbm/api/types/fwd.hpp"']
+    # relative dir /all_fwd.hpp
+    incs = ['"all_fwd.hpp"']
+    if isinstance(t, oneof_info_t):
+        for alt in t.alternatives:
+            incs.append(f'"{alt.tgtype.name}.hpp"')
+        return incs
     if not isinstance(t, type_info_t) or not t.is_merged_optional_fields:
         return incs
     for f in t.fields:
         # relative to current dir
-        incs.append(f'"{f.cpptype}.hpp"')
+        t = get_compound_type(f.cpptype)
+        if t:
+            incs.append(f'"{t}.hpp"')
     return list(set(incs))
 
 # accepts array of oneofs or simple types
-def generate_all_types(types, outdir: str):
+def generate_all_types(types: list[type_info_t], outdir: str):
     # fill directory with generated files
     for t in types:
-        if isinstance(t, type_info_t):
-            generate_into_file(generate_api_struct(t), f'{outdir}/{t.name}.hpp', collect_required_includes(t))
-        elif isinstance(t, oneof_info_t):
-            generate_into_file(generate_api_struct_oneof(t), f'{outdir}/{t.name}.hpp', collect_required_includes(t))
-        else:
-            assert false
-    # all types fwd file
-    with open(f'{outdir}/fwd.hpp', 'w', encoding='utf-8') as out:
-        print('#pragma once \n\nnamespace tgbm::api {', file=out)
-        for t in types:
-            if isinstance(t, type_info_t):
-                print(f'struct {t.name}', file=out)
-        print('} // namespace tgbm::api')
+        print(f'[TGBM] generating "{outdir}/{t.name}.hpp"')
+        generate_into_file(generate_api_struct(t), f'{outdir}/{t.name}.hpp', collect_required_includes(t))
+
+    # IGNORED_TYPES
+
+    for t in IGNORED_TYPES:
+        assert t in PARSED_TYPES
+    # InputFile
+    with open(f'{outdir}/InputFile.hpp', 'w', encoding='utf-8') as out:
+        print('#include "tgbm/api/input_file.hpp"', file=out)
+
+    # MaybeInaccessibleMessage
+
+    with open(f'{outdir}/MaybeInaccessibleMessage.hpp', 'w', encoding='utf-8') as out:
+        print('#pragma once\n', file=out)
+        print('#include "Message.hpp"\n\nnamespace tgbm::api {\n\nusing MaybeInaccessibleMessage = Message;\n\n}', file=out)
+
+def generate_all_fwd_and_all_types_hdrs(outdir: str):#TODO rm, oneofs: list[oneof_info_t]):
+    #TODO rmoneofnames = [o.name for o in oneofs]
+
+    # all_fwd.hpp
+
+    print(f'[TGBM] generating "{outdir}/all_fwd.hpp"')
+    with open(f'{outdir}/all_fwd.hpp', 'w', encoding='utf-8') as out:
+        print('#pragma once \n\n#include "tgbm/api/common.hpp"\n\nnamespace tgbm::api {\n', file=out)
+        for t in PARSED_TYPES.keys():
+            if t != 'MaybeInaccessibleMessage' and t not in TYPES_WITHOUT_DISCRIMINATOR:#TODO rm oneofnames:
+                print(f'struct {t};', file=out)
+        print('using MaybeInaccessibleMessage = Message;', file=out)
+        # InputMessageContent
+        print('using InputMessageContent = oneof<InputTextMessageContent, InputLocationMessageContent, InputVenueMessageContent, InputContactMessageContent, InputInvoiceMessageContent>;', file=out)
+        print('\n} // namespace tgbm::api', file=out)
+
+    # all.hpp
+
+    with open(f'{outdir}/all.hpp', 'w', encoding='utf-8') as out:
+        print('#pragma once \n\n', file=out)
+        for t in PARSED_TYPES.keys():
+            print(f'#include "{t}.hpp"', file=out)
+
+def generate_all_oneofs(types: list[oneof_info_t], outdir: str):
+    # fill directory with generated files
+    for t in types:
+        print(f'[TGBM] generating "{outdir}/{t.name}.hpp"')
+        generate_into_file(generate_api_struct_oneof(t), f'{outdir}/{t.name}.hpp', collect_required_includes(t))
+    subtypes : list[type_info_t]= []
+    for t in types:
+        for alt in t.alternatives:
+            subtypes.append(alt.tgtype)
+    subtypes = list(set(subtypes))
+    generate_all_types(subtypes, outdir)
 
 class CustomEncoder(json.JSONEncoder):
     def default(self, obj):
@@ -422,14 +504,21 @@ def main():
     #    json.dump(ts, f, ensure_ascii=False, indent=2, cls=CustomEncoder)
     #with open('oneofs_tg.json', 'w', encoding='utf-8') as f:
     #    json.dump(ofs, f, ensure_ascii=False, indent=2, cls=CustomEncoder)
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("--outdir", type=str, required=True, help="output dir for types")
+    parser.add_argument("--outdir", type=str, required=True, help="output dir for types(without quotes)")
+    parser.add_argument("--apifile", type=str, required=True, help="file with loaded TG api (HTML) (without quotes)")
 
     args = parser.parse_args()
-    
-    ts, ofs = parse_types(load_api_html())
+
+    ts, ofs = parse_types(load_file(args.apifile))
+
+    print(f'[TGBM] creating directory: {args.outdir}\n')
+    os.makedirs(args.outdir, exist_ok=True)
+
     generate_all_types(ts, args.outdir)
-    generate_all_types(ofc, args.outdir)
+    generate_all_oneofs(ofs, args.outdir)
+    generate_all_fwd_and_all_types_hdrs(args.outdir)#TODO rm, ofs)
 
 if __name__ == '__main__':
     main()

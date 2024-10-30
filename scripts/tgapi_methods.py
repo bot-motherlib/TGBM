@@ -1,9 +1,13 @@
 from bs4 import BeautifulSoup
-import requests
-import sys
+
 import typing
 import argparse
 import os
+
+def load_file(path: str) -> str:
+    with open(path, 'r', encoding='utf-8') as file:
+        content = file.read()
+    return content
 
 # loads TG api (html)
 def load_api_html():
@@ -119,15 +123,6 @@ def to_flat_naming(name: str):
         else:
             r += c
     return r
-
-# returns collected 'struct *something*;' strings
-def collect_required_forwards(method_desc: method_info_t) -> list[str]:
-    fwds = []
-    for param in method_desc.parameters:
-        compound = get_compound_type(param.param_type)
-        if compound:
-            fwds.append(f'struct {compound};') # compound type
-    return list(set(fwds))
 
 # returns string with generated C++ code of api struct
 def generate_api_struct(method_desc: method_info_t):
@@ -247,17 +242,15 @@ def generate_api_struct(method_desc: method_info_t):
 def generate_into_file(method_desc: method_info_t, filepath: str):
     with open(filepath, 'w', encoding='utf-8') as out:
         print(f'#pragma once\n', file=out)
-        print('#include "tgbm/api/common.hpp"\n', file=out)
+        print('#include "tgbm/api/common.hpp"', file=out)
+        print('#include "tgbm/api/types/all_fwd.hpp"', file=out)
         print('namespace tgbm::api {\n', file=out)
-        for fwd in collect_required_forwards(method_desc):
-            print(f'{fwd}', file=out)
         print(f'{generate_api_struct(method_desc)}', file=out)
         print('\n} // namespace tgbm::api', file=out)
 
 def generate_all_methods(methods: list[method_info_t], outdir: str):
-    print(f'creating directory: {outdir}')
-    os.makedirs(outdir, exist_ok=True)
     for m in methods:
+        print(f'[TGBM] generating "{outdir}/{m.name}.hpp"')
         generate_into_file(m, f'{outdir}/{m.name}.hpp')
     with open(f'{outdir}/methods.hpp', 'w', encoding='utf-8') as out:
         print('#pragma once \n', file=out)
@@ -267,16 +260,20 @@ def generate_all_methods(methods: list[method_info_t], outdir: str):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--outdir", type=str, required=True, help="output dir for methods")
+    parser.add_argument("--apifile", type=str, required=True, help="file with loaded TG api (HTML) (without quotes)")
 
     args = parser.parse_args()
-    
-    generate_all_methods(parse_methods(load_api_html()), args.outdir)
+
+    print(f'[TGBM] creating directory: {args.outdir}\n')
+    os.makedirs(args.outdir, exist_ok=True)
+
+    generate_all_methods(parse_methods(load_file(args.apifile)), args.outdir)
 
 if __name__ == '__main__':
     main()
 
-# TODO: not generate forward declarations, just include all forward declarations instead
 # TODO handle reply makrup and variants (startswith oneof) in generating request serializing
+# (overload for oneof in bodies)
 # TODO specialization (by hands) parsing return type
 # TODO write into file (in selected dir + clang-format it)
 # TODO write concept bot_api_request

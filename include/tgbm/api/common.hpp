@@ -34,8 +34,8 @@ struct True {
 
 template <typename T>
 using arrayof = std::vector<T>;
-// TODO rm first arg after adding generation
-template <typename, typename... U>
+
+template <typename... U>
 using oneof = box_union<U...>;
 
 struct placeholder {
@@ -43,7 +43,5 @@ struct placeholder {
     return false;
   }
 };
-
-using MaybeInaccessibleMessage = placeholder;
 
 }  // namespace tgbm::api

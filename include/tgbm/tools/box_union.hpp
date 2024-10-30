@@ -221,6 +221,7 @@ using box_union_data_t =
 struct nothing_t {
   std::strong_ordering operator<=>(const nothing_t&) const = default;
 };
+// TODO specialization of box.hpp
 
 // behaves similar to std::variant<box<Types>...>,
 // but has trivial abi and sizeof(box_union) == sizeof(void*)

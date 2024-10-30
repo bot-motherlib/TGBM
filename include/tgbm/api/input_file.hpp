@@ -9,7 +9,7 @@ namespace tgbm::api {
 
 // TODO better
 // TODO use this file instead of deprecated InputFile
-struct input_file {
+struct InputFile {
   std::string filename;
   std::string mimetype;
   std::string data;
