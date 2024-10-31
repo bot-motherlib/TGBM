@@ -75,7 +75,7 @@ TEST(optional) {
   static_assert(std::is_trivially_copyable_v<tgbm::api::optional<tgbm::api::Integer>>);
   opttest<tgbm::api::String>("hello", "world");
   static_assert(opttest<int>(-1, 42));
-  error_if(!opttest<tgbm::api::Boolean>(true, false));
+  error_if(!opttest<bool>(true, false));
 }
 
 template <int>
@@ -226,7 +226,7 @@ TEST(box_union_compare) {
 }
 
 TEST(boolean) {
-  tgbm::api::optional<tgbm::api::Boolean> b;
+  tgbm::api::optional<bool> b;
   bool& y = b.emplace();
   error_if(y);
   error_if(!b);

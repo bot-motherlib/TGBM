@@ -50,6 +50,18 @@ struct parser<api::Double> : basic_parser<api::Double> {
 };
 
 template <>
+struct parser<tgbm::const_string> : basic_parser<tgbm::const_string> {
+  using basic_parser<tgbm::const_string>::basic_parser;
+
+  ResultParse string(std::string_view val) {
+    assert(!this->parsed_);
+    this->parsed_ = true;
+    *this->t_ = val;
+    return ResultParse::kEnd;
+  }
+};
+
+template <>
 struct parser<api::Integer> : basic_parser<api::Integer> {
   using basic_parser<api::Integer>::basic_parser;
 

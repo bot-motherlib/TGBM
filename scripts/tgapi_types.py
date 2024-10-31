@@ -219,18 +219,17 @@ def parse_types(tgapi_html: str):
 
 ######################### GENERATION ########################
 
-
 def get_compound_type(tgtype: str):
     x = map_tgtype_to_cpptype(tgtype)
-    if x in G_TYPE_MAPPING.values():
-        return None
     while x.startswith('arrayof<'):
         x = x[len('arrayof<'):-1]
+    if x in G_TYPE_MAPPING.values():
+        return None
     return x
-# TODO: oneofs must not be boxed
+
 def is_boxed_type(tgtype: str) -> bool:
-    HUETA = unify(tgtype)
-    if HUETA.startswith('arrayof'):
+    tmp = unify(tgtype)
+    if tmp.startswith('arrayof'):
         return False
     return get_compound_type(tgtype) is not None
 
@@ -325,9 +324,11 @@ def generate_api_struct(t: type_info_t) -> str:
     # optional fields
 
     for field in t.fields:
-        tp = f'  box<{field.cpptype}>' if is_boxed_type(field.cpptype) else field.cpptype
         if field.is_optional:
-            s += f'  {tp} {field.name};\n'
+            if is_boxed_type(field.cpptype):
+                s += f'  box<{field.cpptype}> {field.name};\n'
+            else:
+                s += f'  optional<{field.cpptype}> {field.name};\n'
 
     # consteval static bool is_optional_field(std::string_view name)
 
@@ -338,7 +339,7 @@ def generate_api_struct(t: type_info_t) -> str:
     s += '    .or_default(std::nullopt).value();\n'
     s += '  }\n\n'
     s += '};\n' # struct end
-    
+
     return s
 
 def cut_oneofname(name: str, ownername: str) -> str:
@@ -417,7 +418,7 @@ def generate_into_file(generated_struct: str, filepath: str, required_includes: 
         print(f'#pragma once\n', file=out)
         for inc in required_includes:
             print(f'#include {inc}', file=out)
-        print('namespace tgbm::api {\n', file=out)
+        print('\nnamespace tgbm::api {\n', file=out)
         print(generated_struct, file=out)
         print('\n} // namespace tgbm::api\n', file=out)
 
@@ -458,16 +459,14 @@ def generate_all_types(types: list[type_info_t], outdir: str):
         print('#pragma once\n', file=out)
         print('#include "Message.hpp"\n\nnamespace tgbm::api {\n\nusing MaybeInaccessibleMessage = Message;\n\n}', file=out)
 
-def generate_all_fwd_and_all_types_hdrs(outdir: str):#TODO rm, oneofs: list[oneof_info_t]):
-    #TODO rmoneofnames = [o.name for o in oneofs]
-
+def generate_all_fwd_and_all_types_hdrs(outdir: str):
     # all_fwd.hpp
 
     print(f'[TGBM] generating "{outdir}/all_fwd.hpp"')
     with open(f'{outdir}/all_fwd.hpp', 'w', encoding='utf-8') as out:
         print('#pragma once \n\n#include "tgbm/api/common.hpp"\n\nnamespace tgbm::api {\n', file=out)
         for t in PARSED_TYPES.keys():
-            if t != 'MaybeInaccessibleMessage' and t not in TYPES_WITHOUT_DISCRIMINATOR:#TODO rm oneofnames:
+            if t != 'MaybeInaccessibleMessage' and t not in TYPES_WITHOUT_DISCRIMINATOR:
                 print(f'struct {t};', file=out)
         print('using MaybeInaccessibleMessage = Message;', file=out)
         # InputMessageContent
@@ -518,7 +517,7 @@ def main():
 
     generate_all_types(ts, args.outdir)
     generate_all_oneofs(ofs, args.outdir)
-    generate_all_fwd_and_all_types_hdrs(args.outdir)#TODO rm, ofs)
+    generate_all_fwd_and_all_types_hdrs(args.outdir)
 
 if __name__ == '__main__':
     main()

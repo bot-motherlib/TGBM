@@ -5,6 +5,7 @@
 #include <vector>
 #include <string_view>
 
+#include "tgbm/api/const_string.hpp"
 #include "tgbm/tools/StringTools.h"
 #include "tgbm/tools/box.hpp"
 #include "tgbm/tools/box_union.hpp"
@@ -26,7 +27,6 @@ enum struct file_info_e {
 };
 
 using String = std::string;
-using Boolean = bool;
 
 struct True {
   constexpr std::strong_ordering operator<=>(const True&) const = default;

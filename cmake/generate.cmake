@@ -20,7 +20,7 @@ function(TGBM_GENERATE_API)
 
     # load TG api
 
-    set(TGBM_APIFILE "${CMAKE_SOURCE_DIR}/include/tgbm/api/last_supported_api")
+    set(TGBM_APIFILE "${CMAKE_SOURCE_DIR}/include/tgbm/api/last_supported_api.html")
 
     if (NOT EXISTS "${TGBM_APIFILE}")
         execute_process(

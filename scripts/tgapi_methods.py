@@ -20,9 +20,8 @@ def load_api_html():
 
 G_FILEORSTR = "file_or_str"
 G_TYPE_MAPPING = {
-    # TODO rename integer.hpp (first letter)
-    "integer": "Integer", # TODO renmae into api::integer
-    "string": "String", # TODO rename into api::string
+    "integer": "Integer",
+    "string": "String",
     "integerorstring": "int_or_str",
     "boolean": "bool",
     "float": "Double",
@@ -31,34 +30,41 @@ G_TYPE_MAPPING = {
     "inlinekeyboardmarkuporreplykeyboardmarkuporreplykeyboardremoveorforcereply": "reply_markup_t"
 }
 
+# takes compound part from cpptype (array or not)
+# returns none if not compound
+def get_compound_type(tgtype: str):
+    x = map_tgtype_to_cpptype(tgtype)
+    while x.startswith('arrayof<'):
+        x = x[len('arrayof<'):-1]
+    if x in G_TYPE_MAPPING.values():
+        return None
+    return x
+
+def unify(somestr: str) -> str:
+    return somestr.strip().lower().replace(' ', '').replace('\n', '')
+
 def is_boxed_type(tgtype: str) -> bool:
-    if tgtype.startswith('arrayof'):
+    tmp = unify(tgtype)
+    if tmp.startswith('arrayof'):
         return False
-    return tgtype not in G_TYPE_MAPPING.values()
+    return get_compound_type(tgtype) is not None
 
 # maps raw parsed tg type to cpp type   
-def map_tgtype_to_cpptype(tgtype):
+def map_tgtype_to_cpptype(tgtype: str) -> str:
     typeunified = tgtype.strip().lower()
     typeunified = typeunified.replace(' ', '')
     if typeunified in G_TYPE_MAPPING:
         return G_TYPE_MAPPING[typeunified]
     if typeunified.startswith('arrayof'):
-        return 'arrayof<'+ map_tgtype_to_cpptype(typeunified[len("arrayof"):]) + '>'
-    return tgtype # unmodified, just complex type
-
-# takes compound part from cpptype (array or not)
-# returns none if not compound
-def get_compound_type(cpptype: str):
-    if cpptype.startswith('arrayof<'):
-        cpptype = cpptype[len('arrayof<'):-len('>')]
-        assert not cpptype.startswith('arrayof') # TG never returns array of array
-        if cpptype in G_TYPE_MAPPING.values():
-            return None
+        # Array of X / Array of Array of X
+        s = tgtype.strip().replace('\n', ' ').split()[-1]
+        su = s.replace(' ', '').lower()
+        if su in G_TYPE_MAPPING:
+            return f'arrayof<{G_TYPE_MAPPING[su]}>'
         else:
-            return cpptype # array of compound type
-    if cpptype in G_TYPE_MAPPING.values():
-        return None
-    return cpptype # compound type
+            # not remove UpperLatters
+            return f'arrayof<{s}>'
+    return tgtype # unmodified, just complex type
 
 class param_t:
     def __init__(self, name: str, param_type: str, is_optional: bool, description: str):
@@ -137,7 +143,7 @@ def generate_api_struct(method_desc: method_info_t):
                 s += f'  box<{param.param_type}> {param.name};\n'
             else:
                 s += f"  {param.param_type} {param.name};\n"
-    # TODO sort by sizeof in groups...
+
     for param in method_desc.parameters:
         if param.is_optional:
             # /* {param['description']} */\n
@@ -206,11 +212,12 @@ def generate_api_struct(method_desc: method_info_t):
                 required_return_false = False
                 s += '    return true;\n'
             else:
-                s += f'    if ({param.name})\n'
-                s += '       return true;\n' 
+                s += f'    if ({param.name}) return true;\n'
         elif param.param_type == G_FILEORSTR:
-            s += f'    if ({param.name}.is_file())\n'
-            s += '       return true;\n'
+            if param.is_optional:
+                s += f'if ({param.name} && {param.name}->is_file()) return true;\n'
+            else:
+                s += f'if ({param.name}.is_file()) return true;\n'
     if required_return_false:
         s += '    return false;\n'
     s += '  }\n'
@@ -228,23 +235,33 @@ def generate_api_struct(method_desc: method_info_t):
                 s += f'    body.arg("{param.name}", {param.name});\n'
         elif param.param_type == G_FILEORSTR:
             if param.is_optional:
-                s += f'    if (${param.name}) if (InputFile* f = std::get_if<InputFile>(&{param.name}))\n'
+                s += f'    if ({param.name}) if (InputFile* f = {param.name}->get_file())\n'
                 s += f'      body.arg("{param.name}", *f);\n'
             else:
-                s += f'    if (InputFile* f = std::get_if<InputFile>(&{param.name}))\n'
+                s += f'    if (InputFile* f = {param.name}.get_file())\n'
                 s += f'      body.arg("{param.name}", *f);\n'
     s += '  }\n'
 
     s += '};\n'
     return s
 
+# returns array of type names
+def collect_required_includes(method_desc: method_info_t) -> list[str]:
+    ts = []
+    for p in method_desc.parameters:
+        ct = get_compound_type(p.param_type)
+        if ct:
+            ts.append(f'{ct}')
+    return list(set(ts))
+
 # overwrites existing file
 def generate_into_file(method_desc: method_info_t, filepath: str):
     with open(filepath, 'w', encoding='utf-8') as out:
         print(f'#pragma once\n', file=out)
         print('#include "tgbm/api/common.hpp"', file=out)
-        print('#include "tgbm/api/types/all_fwd.hpp"', file=out)
-        print('namespace tgbm::api {\n', file=out)
+        for inc in collect_required_includes(method_desc):
+            print(f'#include "tgbm/api/types/{inc}.hpp"', file=out)
+        print('\nnamespace tgbm::api {\n', file=out)
         print(f'{generate_api_struct(method_desc)}', file=out)
         print('\n} // namespace tgbm::api', file=out)
 
@@ -271,14 +288,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# TODO handle reply makrup and variants (startswith oneof) in generating request serializing
-# (overload for oneof in bodies)
-# TODO specialization (by hands) parsing return type
-# TODO write into file (in selected dir + clang-format it)
-# TODO write concept bot_api_request
-# TODO write task<result_of<Request>> send_request(http_client&, const bot_api_request auto&, duration_t timeout)
-# (and not coroutine internaly, return coroutine after creating body)
-# TODO: same with ignoring return value
-# TODO: <api_request>_builder (function which accepts required arguments or just... Everytime multipart body if file possible!!!
-# for removing problem

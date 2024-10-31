@@ -163,8 +163,8 @@ struct application_multipart_form_data {
   }
 
   // only this body type supports files (TG only supports this content type for sending files)
-  void arg(std::string_view key, const InputFile& f) {
-    file_arg(key, f.fileName, f.mimeType, f.data);
+  void arg(std::string_view key, const api::InputFile& f) {
+    file_arg(key, f.filename, f.mimetype, f.data);
   }
   void file_arg(std::string_view k, std::string_view filename, std::string_view mime_type,
                 std::string_view data) {

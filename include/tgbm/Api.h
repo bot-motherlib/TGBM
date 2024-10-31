@@ -78,8 +78,8 @@ constexpr std::string_view e2str(tg_errc e) noexcept {
       return "Unexpected error";
   }
 }
-
-using thumbnail_t = api::file_or_str;
+// TODO use new version
+using thumbnail_t = std::variant<::tgbm::InputFile::Ptr, std::string>;
 using int_or_str = api::int_or_str;
 
 void rj_tojson(rjson_writer auto& writer, const int_or_str& v) {

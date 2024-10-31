@@ -11,15 +11,15 @@ set (TGBM_CLANG        "clang"        CACHE STRING "Used only by api generator")
 set (TGBM_CLANG_FORMAT "clang-format" CACHE STRING "Used only by api generator")
 set (TGBM_PYTHON       "python"       CACHE STRING "Used only by api generator")
 
-message (STATUS "[tgbm] TGBM_ENABLE_BENCHS: ${TGBM_ENABLE_BENCHS}")
-message (STATUS "[tgbm] TGBM_ENABLE_GEN: ${TGBM_ENABLE_GEN}")
-message (STATUS "[tgbm] TGBM_ENABLE_TESTS: ${TGBM_ENABLE_TESTS}")
-message (STATUS "[tgbm] TGBM_SANITIZE: ${TGBM_SANITIZE}")
-message (STATUS "[tgbm] TGBM_SANITIZE_THREAD: ${TGBM_SANITIZE_THREAD}")
+message (STATUS "[TGBM] TGBM_ENABLE_BENCHS: ${TGBM_ENABLE_BENCHS}")
+message (STATUS "[TGBM] TGBM_ENABLE_GEN: ${TGBM_ENABLE_GEN}")
+message (STATUS "[TGBM] TGBM_ENABLE_TESTS: ${TGBM_ENABLE_TESTS}")
+message (STATUS "[TGBM] TGBM_SANITIZE: ${TGBM_SANITIZE}")
+message (STATUS "[TGBM] TGBM_SANITIZE_THREAD: ${TGBM_SANITIZE_THREAD}")
 
-message (STATUS "[tgbm] TGBM_CLANG: ${TGBM_CLANG}")
-message (STATUS "[tgbm] TGBM_CLANG_FORMAT: ${TGBM_CLANG_FORMAT}")
-message (STATUS "[tgbm] TGBM_PYTHON: ${TGBM_PYTHON}")
+message (STATUS "[TGBM] TGBM_CLANG: ${TGBM_CLANG}")
+message (STATUS "[TGBM] TGBM_CLANG_FORMAT: ${TGBM_CLANG_FORMAT}")
+message (STATUS "[TGBM] TGBM_PYTHON: ${TGBM_PYTHON}")
 
 # also options:
 # - TGBM_SSL_KEYS_FILE
