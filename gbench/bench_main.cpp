@@ -3,7 +3,7 @@
 #include <fuzzing.hpp>
 #include <types.hpp>
 
-#include "tgbm/api/types_all.hpp"
+#include "tgbm/api/types/all.hpp"
 #include "tgbm/tools/formatters.hpp"
 
 int main(int argc, char** argv) {

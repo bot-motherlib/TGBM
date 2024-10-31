@@ -369,6 +369,14 @@ struct randomizer<std::string> {
   }
 };
 
+template <>
+struct randomizer<tgbm::const_string> {
+  static constexpr bool is_nesting = false;
+  static tgbm::const_string generate(Context context, auto&& generator) {
+    return randomizer<std::string>::generate(context, generator);
+  }
+};
+
 template <typename T>
 struct randomizer<std::optional<T>> {
   static constexpr bool is_nesting = randomizer<T>::is_nesting;

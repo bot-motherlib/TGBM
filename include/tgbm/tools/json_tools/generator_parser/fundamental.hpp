@@ -48,6 +48,19 @@ struct boost_domless_parser<std::string> {
   }
 };
 
+template <>
+struct boost_domless_parser<tgbm::const_string> {
+  static constexpr bool simple = true;
+  static void simple_parse(tgbm::const_string& t_, event_holder& holder) {
+    holder.expect(event_holder::string);
+    t_ = holder.str_m;
+  }
+  static dd::generator<nothing_t> parse(tgbm::const_string& t_, event_holder& holder) {
+    simple_parse(t_, holder);
+    co_return;
+  }
+};
+
 template <std::integral T>
 struct boost_domless_parser<T> {
   static constexpr bool simple = true;

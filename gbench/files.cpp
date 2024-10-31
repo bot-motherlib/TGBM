@@ -1,7 +1,7 @@
 #include "benchmark/benchmark.h"
 #include "fuzzing.hpp"
 #include "types.hpp"
-#include "tgbm/api/types_all.hpp"
+#include "tgbm/api/types/all.hpp"
 #include "tgbm/tools/json_tools/all.hpp"
 #include "tgbm/tools/json_tools/parse_dom/all.hpp"
 

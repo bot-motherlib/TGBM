@@ -22,6 +22,18 @@ struct parser<std::string> {
   }
 };
 
+template <>
+struct parser<tgbm::const_string> {
+  template <typename Json, json::json_traits Traits = json::default_json_traits<Json>>
+  static void parse(const Json& json, tgbm::const_string& out) {
+    if (Traits::is_string(json)) {
+      out = Traits::get_string(json);
+    } else {
+      Traits::on_error();
+    }
+  }
+};
+
 template <std::integral T>
 struct parser<T> {
   template <typename Json, json::json_traits Traits = json::default_json_traits<Json>>

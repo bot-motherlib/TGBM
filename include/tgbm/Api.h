@@ -1,7 +1,8 @@
 #pragma once
 
+#include "tgbm/api/int_or_str.hpp"
+#include "tgbm/api/file_or_str.hpp"
 #include "tgbm/net/errors.hpp"
-
 #include "tgbm/TgTypeParser.h"
 #include "tgbm/net/http_client.hpp"
 #include "tgbm/types/User.h"
@@ -77,9 +78,9 @@ constexpr std::string_view e2str(tg_errc e) noexcept {
       return "Unexpected error";
   }
 }
-
-using int_or_str = std::variant<std::int64_t, std::string>;
-using thumbnail_t = std::variant<InputFile::Ptr, std::string>;
+// TODO use new version
+using thumbnail_t = std::variant<::tgbm::InputFile::Ptr, std::string>;
+using int_or_str = api::int_or_str;
 
 void rj_tojson(rjson_writer auto& writer, const int_or_str& v) {
   if (auto* x = std::get_if<0>(&v))

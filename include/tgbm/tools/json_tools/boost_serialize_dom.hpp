@@ -48,6 +48,10 @@ inline void tag_invoke(value_from_tag, value& jv, tgbm::nothing_t) {
   jv = boost::json::object{};
 }
 
+inline void tag_invoke(value_from_tag, value& jv, const tgbm::const_string& str) {
+  jv = str.str();
+}
+
 template <tgbm::common_api_type T>
 inline void tag_invoke(value_from_tag, value& jv, const T& t) {
   if (!jv.is_object()) {

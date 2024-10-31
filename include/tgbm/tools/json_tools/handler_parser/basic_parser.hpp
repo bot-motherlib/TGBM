@@ -8,6 +8,7 @@
 
 #include <boost/container/static_vector.hpp>
 
+#include "tgbm/api/const_string.hpp"
 #include "tgbm/tools/json_tools/exceptions.hpp"
 #include "tgbm/tools/macro.hpp"
 
@@ -303,6 +304,9 @@ struct ParserStack {
     auto res = last().string(val);
     res = handle_result(res);
     return res != ResultParse::kError;
+  }
+  bool string(const tgbm::const_string& s) {
+    return string(s.str());
   }
   bool integral(std::int64_t val) {
     auto res = last().integral(val);
