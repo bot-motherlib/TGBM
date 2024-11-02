@@ -157,4 +157,15 @@ inline T parse_dom(std::string_view sv) {
 
 }  // namespace rapid
 
+template <typename T>
+void from_json(const rapid_json_traits::type& j, T& out) {
+  parse_dom::parser<T>::template parse<rapid_json_traits::type, rapid_json_traits>(j, out);
+}
+
+template <typename T>
+T from_json(const rapid_json_traits::type& j) {
+  T out;
+  parse_dom::parser<T>::template parse<rapid_json_traits::type, rapid_json_traits>(j, out);
+  return out;
+}
 }  // namespace tgbm::json

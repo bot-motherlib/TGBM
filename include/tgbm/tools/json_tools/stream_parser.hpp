@@ -20,7 +20,7 @@ struct stream_parser {
     }
   }
 
-  void feed(std::string_view data, bool end, ::boost::system::error_code& ec) {
+  void feed(std::string_view data, bool end, ::boost::json::error_code& ec) {
     p.write_some(!end, data.data(), data.size(), ec);
     if (ec) [[unlikely]] {
       return;
