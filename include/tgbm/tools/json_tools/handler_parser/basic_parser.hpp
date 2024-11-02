@@ -3,6 +3,7 @@
 #include <cassert>
 #include <concepts>
 #include <string_view>
+#include <vector>
 
 #include <anyany/anyany.hpp>
 

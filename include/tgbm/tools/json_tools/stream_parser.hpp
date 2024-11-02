@@ -1,7 +1,8 @@
 #pragma once
 
-#include "tgbm/logger.hpp"
+#include "boost/json/error.hpp"
 #include "tgbm/tools/json_tools/boost_parse_generator.hpp"
+#include "tgbm/tools/json_tools/exceptions.hpp"
 
 namespace tgbm::json {
 struct stream_parser {
@@ -13,18 +14,19 @@ struct stream_parser {
 
   void feed(std::string_view data, bool end) {
     ::boost::system::error_code ec;
-    p.write_some(!end, data.data(), data.size(), ec);
-    if (ec || (end && !p.handler().ended)) {
-      TGBM_LOG_ERROR("ec: {}, ended: {}", ec.message(), p.handler().ended);
-      TGBM_JSON_PARSE_ERROR;
+    feed(data, end, ec);
+    if (ec) [[unlikely]] {
+      throw parse_error(ec.what());
     }
   }
 
   void feed(std::string_view data, bool end, ::boost::system::error_code& ec) {
     p.write_some(!end, data.data(), data.size(), ec);
-    if (end && !p.handler().ended) {
-      TGBM_LOG_ERROR("ec: {}, ended: {}", ec.message(), p.handler().ended);
-      TGBM_JSON_PARSE_ERROR;
+    if (ec) [[unlikely]] {
+      return;
+    }
+    if (end && !p.handler().ended) [[unlikely]] {
+      ec = ::boost::json::error::extra_data;
     }
   }
 };

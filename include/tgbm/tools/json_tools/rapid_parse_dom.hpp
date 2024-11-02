@@ -156,4 +156,5 @@ inline T parse_dom(std::string_view sv) {
 }
 
 }  // namespace rapid
+
 }  // namespace tgbm::json
