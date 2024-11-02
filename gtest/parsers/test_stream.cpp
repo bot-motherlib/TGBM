@@ -33,7 +33,6 @@ struct TestObject {
 };
 
 using parser = tgbm::json::stream_parser;
-using array_parser = tgbm::json::stream_parser;
 
 TEST(StreamParsing, Int) {
   TestObject expected{.int_field = {1}};
@@ -214,7 +213,7 @@ TEST(StreamParser, NestedObjectsInArray) {
   for (std::size_t i = 24; i < 25; i++) {
     std::vector<TestObject> got;
 
-    array_parser parser(got);
+    parser parser(got);
     std::string_view first = json.substr(0, i);
     std::string_view second = json.substr(i);
 
