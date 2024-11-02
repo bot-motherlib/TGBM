@@ -12,7 +12,7 @@ namespace tgbm::json::parse_dom {
 
 template <>
 struct parser<std::string> {
-  template <typename Json, json::json_traits Traits = json::default_json_traits<Json>>
+  template <typename Json, json::json_traits Traits>
   static void parse(const Json& json, std::string& out) {
     if (Traits::is_string(json)) {
       out = Traits::get_string(json);
@@ -24,7 +24,7 @@ struct parser<std::string> {
 
 template <>
 struct parser<tgbm::const_string> {
-  template <typename Json, json::json_traits Traits = json::default_json_traits<Json>>
+  template <typename Json, json::json_traits Traits>
   static void parse(const Json& json, tgbm::const_string& out) {
     if (Traits::is_string(json)) {
       out = Traits::get_string(json);
@@ -36,7 +36,7 @@ struct parser<tgbm::const_string> {
 
 template <std::integral T>
 struct parser<T> {
-  template <typename Json, json::json_traits Traits = json::default_json_traits<Json>>
+  template <typename Json, json::json_traits Traits>
   static void parse(const Json& json, T& out) {
     if (Traits::is_uinteger(json)) {
       safe_write(out, Traits::get_uinteger(json));

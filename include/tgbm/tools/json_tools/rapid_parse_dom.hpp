@@ -9,6 +9,7 @@
 
 #include "tgbm/api/common.hpp"
 #include "tgbm/tools/api_utils.hpp"
+#include "tgbm/tools/json_tools/stream_parser.hpp"
 #include "tgbm/tools/traits.hpp"
 #include "tgbm/tools/json_tools/exceptions.hpp"
 #include "tgbm/tools/json_tools/json_traits.hpp"
@@ -16,7 +17,8 @@
 
 namespace tgbm::json {
 
-struct rapid_json_traits {
+template <>
+struct default_traits<rapidjson::GenericValue<rapidjson::UTF8<>>> {
   using type = rapidjson::GenericValue<rapidjson::UTF8<>>;
   static bool is_bool(const type& json) {
     return json.IsBool();
@@ -31,7 +33,7 @@ struct rapid_json_traits {
   }
 
   static bool is_floating(const type& json) {
-    return json.IsDouble();
+    return json.IsNumber();
   }
 
   static bool is_string(const type& json) {
@@ -59,25 +61,17 @@ struct rapid_json_traits {
   }
 
   static std::int64_t get_integer(const type& json) {
-    assert(json.IsInt64() || json.IsInt());
-    if (json.IsInt64()) {
-      return json.GetInt64();
-    } else {
-      return json.GetInt();
-    }
+    assert(json.IsInt64());
+    return json.GetInt64();
   }
 
   static std::uint64_t get_uinteger(const type& json) {
-    assert(json.IsUint() || json.IsUint64());
-    if (json.IsUint64()) {
-      return json.GetInt64();
-    } else {
-      return json.GetInt();
-    }
+    assert(json.IsUint64());
+    return json.GetInt64();
   }
 
   static double get_floating(const type& json) {
-    assert(json.IsDouble());
+    assert(json.IsNumber());
     return json.GetDouble();
   }
 
@@ -135,37 +129,5 @@ struct rapid_json_traits {
   }
 };
 
-static_assert(tgbm::json::json_traits<rapid_json_traits>);
-
-}  // namespace tgbm::json
-
-namespace tgbm::json {
-
-namespace rapid {
-
-template <typename T>
-inline T parse_dom(std::string_view sv) {
-  T t;
-  rapidjson::Document document;
-  document.Parse(sv.data(), sv.size());
-  if (document.HasParseError()) {
-    TGBM_JSON_PARSE_ERROR;
-  }
-  tgbm::json::parse_dom::parser<T>::template parse<rapid_json_traits::type, rapid_json_traits>(document, t);
-  return t;
-}
-
-}  // namespace rapid
-
-template <typename T>
-void from_json(const rapid_json_traits::type& j, T& out) {
-  parse_dom::parser<T>::template parse<rapid_json_traits::type, rapid_json_traits>(j, out);
-}
-
-template <typename T>
-T from_json(const rapid_json_traits::type& j) {
-  T out;
-  parse_dom::parser<T>::template parse<rapid_json_traits::type, rapid_json_traits>(j, out);
-  return out;
-}
+static_assert(tgbm::json::json_traits<default_traits<rapidjson::GenericValue<rapidjson::UTF8<>>>>);
 }  // namespace tgbm::json

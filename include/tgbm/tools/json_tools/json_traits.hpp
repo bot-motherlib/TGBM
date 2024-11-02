@@ -46,9 +46,14 @@ concept json_traits = requires(const Json& json, std::string_view str, std::size
 
   { Traits::size(json) } -> std::same_as<std::size_t>;
 
+  //for (auto&& [key, value] : Traits::member_range(json)) {}
   { Traits::member_range(json) } -> std::ranges::range;
 };
 
-template <typename T>
-struct default_json_traits {};
+template <typename Json>
+struct default_traits{};
+
+template <typename Json>
+concept json_dom = json_traits<default_traits<std::remove_cvref_t<Json>>>;
+
 }  // namespace tgbm::json

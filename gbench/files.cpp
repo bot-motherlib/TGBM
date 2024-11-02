@@ -3,7 +3,6 @@
 #include "types.hpp"
 #include "tgbm/api/types/all.hpp"
 #include "tgbm/tools/json_tools/all.hpp"
-#include "tgbm/tools/json_tools/parse_dom/all.hpp"
 
 template <typename T>
 void execute_handler_rapid(std::string_view json) {
@@ -12,7 +11,12 @@ void execute_handler_rapid(std::string_view json) {
 
 template <typename T>
 void execute_dom_rapid(std::string_view json) {
-  benchmark::DoNotOptimize(tgbm::json::rapid::parse_dom<T>(json));
+  rapidjson::Document document;
+  document.Parse(json.data(), json.size());
+  if (document.HasParseError()) {
+    TGBM_JSON_PARSE_ERROR;
+  }
+  benchmark::DoNotOptimize(tgbm::json::from_json<T, rapidjson::GenericValue<rapidjson::UTF8<>>>(document));
 }
 
 template <typename T>
@@ -27,7 +31,8 @@ void execute_handler_boost(std::string_view json) {
 
 template <typename T>
 void execute_dom_boost(std::string_view json) {
-  benchmark::DoNotOptimize(tgbm::json::boost::parse_dom<T>(json));
+  ::boost::json::value j = boost::json::parse(json);
+  benchmark::DoNotOptimize(tgbm::json::from_json<T>(j));
 }
 
 template <typename T>
