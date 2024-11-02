@@ -140,7 +140,9 @@ static_assert(tgbm::json::json_traits<rapid_json_traits>);
 
 }  // namespace tgbm::json
 
-namespace tgbm::json::rapid {
+namespace tgbm::json {
+
+namespace rapid {
 
 template <typename T>
 inline T parse_dom(std::string_view sv) {
@@ -154,4 +156,5 @@ inline T parse_dom(std::string_view sv) {
   return t;
 }
 
-}  // namespace tgbm::json::rapid
+}  // namespace rapid
+}  // namespace tgbm::json

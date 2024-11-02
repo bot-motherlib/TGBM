@@ -32,35 +32,35 @@ struct TestObject {
   }
 };
 
-using parser = tgbm::json::boost::stream_parser<TestObject>;
-using array_parser = tgbm::json::boost::stream_parser<std::vector<TestObject>>;
+using parser = tgbm::json::stream_parser;
+using array_parser = tgbm::json::stream_parser;
 
 TEST(StreamParsing, Int) {
   TestObject expected{.int_field = {1}};
   TestObject got;
   parser parser(got);
-  parser.parse(STR(R"(
+  parser.feed(STR(R"(
 {"int_field": 1
 )"),
-               false);
-  parser.parse(STR(R"(
+              false);
+  parser.feed(STR(R"(
 23}
 )"),
-               true);
+              true);
 }
 
 TEST(StreamParsing, DoublePointLeft) {
   TestObject expected{.double_field = {21.12}};
   TestObject got;
   parser parser(got);
-  parser.parse(STR(R"(
+  parser.feed(STR(R"(
 {"double_field": 21.
 )"),
-               false);
-  parser.parse(STR(R"(
+              false);
+  parser.feed(STR(R"(
 12}
 )"),
-               true);
+              true);
 
   EXPECT_EQ(expected, got);
 }
@@ -69,14 +69,14 @@ TEST(StreamParsing, DoublePointRight) {
   TestObject expected{.double_field = {21.12}};
   TestObject got;
   parser parser(got);
-  parser.parse(STR(R"(
+  parser.feed(STR(R"(
 {"double_field": 21
 )"),
-               false);
-  parser.parse(STR(R"(
+              false);
+  parser.feed(STR(R"(
 .12}
 )"),
-               true);
+              true);
 
   EXPECT_EQ(expected, got);
 }
@@ -91,8 +91,8 @@ TEST(StreamParsing, Bool) {
     std::string_view second = full_json.substr(full_json.size() - i, i);
     TestObject got;
     parser parser(got);
-    parser.parse(first, false);
-    parser.parse(second, true);
+    parser.feed(first, false);
+    parser.feed(second, true);
 
     EXPECT_EQ(expected, got);
   }
@@ -108,8 +108,8 @@ TEST(StreamParsing, Null) {
     std::string_view second = full_json.substr(full_json.size() - i, i);
     TestObject got;
     parser parser(got);
-    parser.parse(first, false);
-    parser.parse(second, true);
+    parser.feed(first, false);
+    parser.feed(second, true);
 
     EXPECT_EQ(expected, got);
   }
@@ -128,8 +128,8 @@ field": "test"}
 
   TestObject got;
   parser parser(got);
-  parser.parse(first, false);
-  parser.parse(second, true);
+  parser.feed(first, false);
+  parser.feed(second, true);
   EXPECT_EQ(expected, got);
 }
 
@@ -147,9 +147,9 @@ field": "test"}
 
   TestObject got;
   parser parser(got);
-  parser.parse(first, false);
-  parser.parse(second, false);
-  parser.parse(third, true);
+  parser.feed(first, false);
+  parser.feed(second, false);
+  parser.feed(third, true);
   EXPECT_EQ(expected, got);
 }
 
@@ -167,9 +167,9 @@ t"}
 
   TestObject got;
   parser parser(got);
-  parser.parse(first, false);
-  parser.parse(second, false);
-  parser.parse(third, true);
+  parser.feed(first, false);
+  parser.feed(second, false);
+  parser.feed(third, true);
   EXPECT_EQ(expected, got);
 }
 
@@ -218,8 +218,8 @@ TEST(StreamParser, NestedObjectsInArray) {
     std::string_view first = json.substr(0, i);
     std::string_view second = json.substr(i);
 
-    parser.parse(first, false);
-    parser.parse(second, true);
+    parser.feed(first, false);
+    parser.feed(second, true);
     EXPECT_EQ(expected, got) << "failed on : " << i;
   }
 }

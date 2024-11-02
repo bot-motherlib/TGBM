@@ -43,9 +43,9 @@ void execute_generator_boost(std::string_view json) {
 template <typename T>
 void execute_stream_parser(std::string_view json) {
   T result;
-  tgbm::json::boost::stream_parser<T> parser(result);
+  tgbm::json::stream_parser parser(result);
   do {
-    parser.parse(json.substr(0, 1024), json.size() <= 1024);
+    parser.feed(json.substr(0, 1024), json.size() <= 1024);
     json.remove_prefix(std::min<int>(1024, json.size()));
   } while (!json.empty());
   benchmark::DoNotOptimize(result);

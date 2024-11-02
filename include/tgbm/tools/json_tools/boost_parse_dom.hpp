@@ -121,7 +121,8 @@ struct boost_json_traits {
 static_assert(json_traits<boost_json_traits, ::boost::json::value>);
 }  // namespace tgbm::json
 
-namespace tgbm::json::boost {
+namespace tgbm::json {
+namespace boost {
 
 template <typename T>
 T parse_dom(std::string_view val) {
@@ -132,4 +133,18 @@ T parse_dom(std::string_view val) {
   return out;
 }
 
-}  // namespace tgbm::json::boost
+}  // namespace boost
+
+template <typename T>
+void from_json(const ::boost::json::value& j, T& out) {
+  parse_dom::parser<T>::template parse<::boost::json::value, boost_json_traits>(j, out);
+}
+
+template <typename T>
+T from_json(const ::boost::json::value& j) {
+  T out;
+  parse_dom::parser<T>::template parse<::boost::json::value, boost_json_traits>(j, out);
+  return out;
+}
+
+}  // namespace tgbm::json
