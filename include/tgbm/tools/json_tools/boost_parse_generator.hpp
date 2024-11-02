@@ -1,8 +1,6 @@
 #pragma once
 
 #include <boost/json/basic_parser.hpp>
-#include "boost/system/detail/error_code.hpp"
-#include "tgbm/tools/json_tools/boost_parse_dom.hpp"
 
 #include "tgbm/tools/json_tools/generator_parser/basic_parser.hpp"
 

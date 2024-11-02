@@ -25,6 +25,10 @@ src/api_types_cmp.cpp
 .trash/
 build/
 out/
+include/tgbm/api/types*
+include/tgbm/api/methods*
+last_supported_api.html
+
 
 build*
 test.log

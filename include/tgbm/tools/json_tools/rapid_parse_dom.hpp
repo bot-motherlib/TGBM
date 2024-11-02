@@ -6,7 +6,6 @@
 #include <rapidjson/reader.h>
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
-#include <tgbm/tools/json_tools/parse_dom/basic.hpp>
 
 #include "tgbm/api/common.hpp"
 #include "tgbm/tools/api_utils.hpp"

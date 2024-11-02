@@ -1,5 +1,6 @@
 #pragma once
 
+#include "tgbm/logger.hpp"
 #include "tgbm/tools/json_tools/boost_parse_generator.hpp"
 
 namespace tgbm::json {
@@ -14,7 +15,7 @@ struct stream_parser {
     ::boost::system::error_code ec;
     p.write_some(!end, data.data(), data.size(), ec);
     if (ec || (end && !p.handler().ended)) {
-      LOG_ERR("ec: {}, ended: {}", ec.message(), p.handler().ended);
+      TGBM_LOG_ERROR("ec: {}, ended: {}", ec.message(), p.handler().ended);
       TGBM_JSON_PARSE_ERROR;
     }
   }
@@ -22,7 +23,7 @@ struct stream_parser {
   void feed(std::string_view data, bool end, ::boost::system::error_code& ec) {
     p.write_some(!end, data.data(), data.size(), ec);
     if (end && !p.handler().ended) {
-      LOG_ERR("ec: {}, ended: {}", ec.message(), p.handler().ended);
+      TGBM_LOG_ERROR("ec: {}, ended: {}", ec.message(), p.handler().ended);
       TGBM_JSON_PARSE_ERROR;
     }
   }
