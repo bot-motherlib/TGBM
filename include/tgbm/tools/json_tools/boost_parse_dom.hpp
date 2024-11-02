@@ -16,7 +16,6 @@
 
 namespace tgbm::json {
 
-
 template <>
 struct default_traits<::boost::json::value> {
   using type = ::boost::json::value;
