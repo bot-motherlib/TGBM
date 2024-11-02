@@ -2,6 +2,7 @@
 
 #include <boost/json.hpp>
 
+#include "boost/json/serialize_options.hpp"
 #include "tgbm/tools/box.hpp"
 #include "tgbm/tools/pfr_extension.hpp"
 #include "tgbm/tools/traits.hpp"

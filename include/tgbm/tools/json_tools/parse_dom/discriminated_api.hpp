@@ -25,7 +25,6 @@ struct parser<T> {
     if (!Traits::is_string(d_ref)) [[unlikely]] {
       Traits::on_error();
     }
-
     auto str = Traits::get_string(d_ref);
 
     T::discriminate(str, [&]<typename U>() {

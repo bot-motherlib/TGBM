@@ -15,7 +15,9 @@
 #include "tgbm/tools/json_tools/parse_dom/basic.hpp"
 
 namespace tgbm::json {
-struct boost_json_traits {
+
+template <>
+struct default_traits<::boost::json::value> {
   using type = ::boost::json::value;
 
   static bool is_bool(const type& json) {
@@ -113,23 +115,10 @@ struct boost_json_traits {
     if (!json.is_object()) {
       on_error();
     }
-
     return json.as_object();
   }
 };
 
-static_assert(json_traits<boost_json_traits, ::boost::json::value>);
+static_assert(json_traits<default_traits<::boost::json::value>, ::boost::json::value>);
+
 }  // namespace tgbm::json
-
-namespace tgbm::json::boost {
-
-template <typename T>
-T parse_dom(std::string_view val) {
-  using namespace ::boost::json;
-  value j = parse(val);
-  T out;
-  parse_dom::parser<T>::template parse<::boost::json::value, boost_json_traits>(j, out);
-  return out;
-}
-
-}  // namespace tgbm::json::boost

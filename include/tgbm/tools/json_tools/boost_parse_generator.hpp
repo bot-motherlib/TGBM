@@ -198,21 +198,4 @@ T parse_generator(std::string_view data) {
   return t;
 }
 
-template <typename T>
-struct stream_parser {
-  ::boost::json::basic_parser<details::wait_handler> p;
-  ::boost::json::error_code ec;
-
-  explicit stream_parser(T& t) : p(::boost::json::parse_options{}, t) {
-  }
-
-  void parse(std::string_view data, bool end) {
-    p.write_some(!end, data.data(), data.size(), ec);
-    if (ec || (end && !p.handler().ended)) {
-      TGBM_LOG_ERROR("ec: {}, ended: {}", ec.message(), p.handler().ended);
-      TGBM_JSON_PARSE_ERROR;
-    }
-  }
-};
-
 }  // namespace tgbm::json::boost
