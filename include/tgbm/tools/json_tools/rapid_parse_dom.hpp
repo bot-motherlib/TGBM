@@ -67,7 +67,7 @@ struct default_traits<rapidjson::GenericValue<rapidjson::UTF8<>>> {
 
   static std::uint64_t get_uinteger(const type& json) {
     assert(json.IsUint64());
-    return json.GetInt64();
+    return json.GetUint64();
   }
 
   static double get_floating(const type& json) {
