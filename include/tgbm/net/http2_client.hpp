@@ -129,6 +129,7 @@ struct http2_client : http_client {
 
   ~http2_client() override;
 
+  using http_client::send_request;
   dd::task<int> send_request(on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part, http_request,
                              duration_t timeout) override;
 

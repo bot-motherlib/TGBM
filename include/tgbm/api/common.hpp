@@ -17,6 +17,7 @@
 #include "tgbm/api/reply_markup.hpp"
 #include "tgbm/api/int_or_str.hpp"
 #include "tgbm/net/http_base.hpp"
+#include "tgbm/api/input_file.hpp"
 
 namespace tgbm::api {
 

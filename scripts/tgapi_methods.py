@@ -9,6 +9,147 @@ def load_file(path: str) -> str:
         content = file.read()
     return content
 
+MSG = 'Message'
+TRUE = 'bool' # True mapped to bool
+MSGID_ARRAY = 'arrayof<MessageId>'
+STRING = 'String'
+CHATINVLINK = 'ChatInviteLink'
+CHATMEMBER = 'ChatMember'
+MSGORTRUE = f'oneof<{TRUE}, {MSG}>'
+FILE = 'File'
+
+G_OPERATION_TO_RESULT = {
+    'getUpdates': 'arrayof<Update>',
+    'setWebhook': TRUE,
+    'deleteWebhook': TRUE,
+    'getWebhookInfo': 'WebhookInfo',
+    'getMe': 'User',
+    'logOut': TRUE,
+    'close': TRUE,
+    'sendMessage': MSG,
+    'forwardMessage': MSG,
+    'forwardMessages': MSGID_ARRAY,
+    'copyMessage': 'MessageId',
+    'copyMessages': MSGID_ARRAY,
+    'sendPhoto': MSG,
+    'sendAudio': MSG,
+    'sendDocument': MSG,
+    'sendVideo': MSG,
+    'sendAnimation': MSG,
+    'sendVoice': MSG,
+    'sendVideoNote': MSG,
+    'sendPaidMedia': MSG,
+    'sendMediaGroup': f'arrayof<{MSG}>',
+    'sendLocation': MSG,
+    'sendVenue': MSG,
+    'sendContact': MSG,
+    'sendPoll': MSG,
+    'sendDice': MSG,
+    'sendChatAction': TRUE,
+    'setMessageReaction': TRUE,
+    'getUserProfilePhotos': 'UserProfilePhotos',
+    'getFile': FILE,
+    'banChatMember': TRUE,
+    'unbanChatMember': TRUE,
+    'restrictChatMember': TRUE,
+    'promoteChatMember': TRUE,
+    'setChatAdministratorCustomTitle': TRUE,
+    'banChatSenderChat': TRUE,
+    'unbanChatSenderChat': TRUE,
+    'setChatPermissions': TRUE,
+    'exportChatInviteLink': STRING,
+    'createChatInviteLink': CHATINVLINK,
+    'editChatInviteLink': CHATINVLINK,
+    'createChatSubscriptionInviteLink': CHATINVLINK,
+    'editChatSubscriptionInviteLink': CHATINVLINK,
+    'revokeChatInviteLink': CHATINVLINK,
+    'approveChatJoinRequest': TRUE,
+    'declineChatJoinRequest': TRUE,
+    'setChatPhoto': TRUE,
+    'deleteChatPhoto': TRUE,
+    'setChatTitle': TRUE,
+    'setChatDescription': TRUE,
+    'pinChatMessage': TRUE,
+    'unpinChatMessage': TRUE,
+    'unpinAllChatMessages': TRUE,
+    'leaveChat': TRUE,
+    'getChat': 'ChatFullInfo',
+    'getChatAdministrators': f'arrayof<{CHATMEMBER}>',
+    'getChatMemberCount': 'Integer',
+    'getChatMember': CHATMEMBER,
+    'setChatStickerSet': TRUE,
+    'deleteChatStickerSet': TRUE,
+    'getForumTopicIconStickers': 'arrayof<Sticker>',
+    'createForumTopic': 'ForumTopic',
+    'editForumTopic': TRUE,
+    'closeForumTopic': TRUE,
+    'reopenForumTopic': TRUE,
+    'deleteForumTopic': TRUE,
+    'unpinAllForumTopicMessages': TRUE,
+    'editGeneralForumTopic': TRUE,
+    'closeGeneralForumTopic': TRUE,
+    'reopenGeneralForumTopic': TRUE,
+    'hideGeneralForumTopic': TRUE,
+    'unhideGeneralForumTopic': TRUE,
+    'unpinAllGeneralForumTopicMessages': TRUE,
+    'answerCallbackQuery': TRUE,
+    'getUserChatBoosts': 'UserChatBoosts',
+    'getBusinessConnection': 'BusinessConnection',
+    'setMyCommands': TRUE,
+    'deleteMyCommands': TRUE,
+    'getMyCommands': 'arrayof<BotCommand>',
+    'setMyName': TRUE,
+    'getMyName': 'BotName',
+    'setMyDescription': TRUE,
+    'getMyDescription': 'BotDescription',
+    'setMyShortDescription': TRUE,
+    'getMyShortDescription': 'BotShortDescription',
+    'setChatMenuButton': TRUE,
+    'getChatMenuButton': 'MenuButton',
+    'setMyDefaultAdministratorRights': TRUE,
+    'getMyDefaultAdministratorRights': 'ChatAdministratorRights',
+    'editMessageText': MSGORTRUE,
+    'editMessageCaption': MSGORTRUE,
+    'editMessageMedia': MSGORTRUE,
+    'editMessageLiveLocation': MSGORTRUE,
+    'stopMessageLiveLocation': MSGORTRUE,
+    'editMessageReplyMarkup': MSGORTRUE,
+    'stopPoll': 'Poll',
+    'deleteMessage': TRUE,
+    'deleteMessages': TRUE,
+    'sendSticker': MSG,
+    'getStickerSet': 'StickerSet',
+    'getCustomEmojiStickers': 'arrayof<Sticker>',
+    'uploadStickerFile': FILE,
+    'createNewStickerSet': TRUE,
+    'addStickerToSet': TRUE,
+    'setStickerPositionInSet': TRUE,
+    'deleteStickerFromSet': TRUE,
+    'replaceStickerInSet': TRUE,
+    'setStickerEmojiList': TRUE,
+    'setStickerKeywords': TRUE,
+    'setStickerMaskPosition': TRUE,
+    'setStickerSetTitle': TRUE,
+    'setStickerSetThumbnail': TRUE,
+    'setCustomEmojiStickerSetThumbnail': TRUE,
+    'deleteStickerSet': TRUE,
+    'answerInlineQuery': TRUE,
+    'answerWebAppQuery': 'SentWebAppMessage',
+    'sendInvoice': MSG,
+    'createInvoiceLink': STRING,
+    'answerShippingQuery': TRUE,
+    'answerPreCheckoutQuery': TRUE,
+    'getStarTransactions': 'StarTransactions',
+    'refundStarPayment': TRUE,
+    'setPassportDataErrors': TRUE,
+    'sendGame': MSG,
+    'setGameScore': MSGORTRUE,
+    'getGameHighScores': 'arrayof<GameHighScore>'
+}
+
+# TODO assert size == parsed types size (+print DIFF)
+# TODO expected<result, description + error_code>?
+
 # loads TG api (html)
 def load_api_html():
     url = "https://core.telegram.org/bots/api"
@@ -73,18 +214,33 @@ class param_t:
         self.is_optional = is_optional
         self.description = description
 
+# getUpdates -> get_updates
+def to_flat_naming(name: str):
+    r = ""
+    assert len(name) != 0 and name[0].islower()
+    for c in name:
+        if c.isupper():
+            r += '_'
+            r += c.lower()
+        else:
+            r += c
+    return r
+
 class method_info_t:
     def __init__(self, name, description):
         self.name = name
         self.parameters: List[Parameter] = []
         self.description = description
+        self.ret_type = G_OPERATION_TO_RESULT[name]
+        assert self.ret_type is not None
+    
+    def get_cppstruct_name(self) -> str:
+        return to_flat_naming(self.name) + '_r'
 
 def is_file_arg(m: param_t):
     return m.param_type == G_FILEORSTR or m.param_type == "InputFile"
 
-# accepts HTML with telegram api
-# returns array of 'method_info_t'
-def parse_methods(tgapi_html):
+def parse_methods(tgapi_html: str) -> list[method_info_t]:
     soup = BeautifulSoup(tgapi_html, 'html.parser')
 
     api_methods = []
@@ -118,24 +274,10 @@ def parse_methods(tgapi_html):
         api_methods.append(mi)
     return api_methods
 
-# getUpdates -> get_updates
-def to_flat_naming(name: str):
-    r = ""
-    assert len(name) != 0 and name[0].islower()
-    for c in name:
-        if c.isupper():
-            r += '_'
-            r += c.lower()
-        else:
-            r += c
-    return r
-
 # returns string with generated C++ code of api struct
 def generate_api_struct(method_desc: method_info_t):
     s = ""
-    s += f"/* {method_desc.description} */\n"
-
-    s += f"struct {to_flat_naming(method_desc.name) + '_r'} {{\n"
+    s += f"struct {method_desc.get_cppstruct_name()} {{\n"
     for param in method_desc.parameters:
         if not param.is_optional:
             # /* {param['description']} */\n
@@ -152,6 +294,11 @@ def generate_api_struct(method_desc: method_info_t):
             else:
                 s += f"  optional<{param.param_type}> {param.name};\n"
     s += '\n'
+
+    # using return_type
+
+    typ = G_OPERATION_TO_RESULT[method_desc.name]
+    s += f'using return_type = {typ};\n'
 
     # static constexpr file_info_e file_info
 
@@ -184,10 +331,10 @@ def generate_api_struct(method_desc: method_info_t):
         if param.param_type == G_FILEORSTR:
             # assume is str, because file must be filled in other fn
             if param.is_optional:
-                s += f'    if ({param.name})\n'
-                s += f'      body.arg("{param.name}", *(*{param.name}).get_str());\n'
+                s += f'    if ({param.name}) if (auto* str = {param.name}->get_str())'
+                s += f'      body.arg("{param.name}", *str);\n'
             else:
-                s += f'    body.arg("{param.name}", *{param.name}.get_str());\n'
+                s += f'    if (auto* str = {param.name}.get_str()) body.arg("{param.name}", *str);\n'
         elif param.param_type == 'InputFile':
             continue # must be filled in 'fill_file_args'
         else:
@@ -252,6 +399,15 @@ def collect_required_includes(method_desc: method_info_t) -> list[str]:
         ct = get_compound_type(p.param_type)
         if ct:
             ts.append(f'{ct}')
+    # return type
+    typ = G_OPERATION_TO_RESULT[method_desc.name]
+    if typ != MSGORTRUE:
+        typ = get_compound_type(typ)
+        if typ:
+            ts.append(typ)
+    else:
+        ts.append(MSG)
+
     return list(set(ts))
 
 # overwrites existing file
@@ -269,14 +425,81 @@ def generate_all_methods(methods: list[method_info_t], outdir: str):
     for m in methods:
         print(f'[TGBM] generating "{outdir}/{m.name}.hpp"')
         generate_into_file(m, f'{outdir}/{m.name}.hpp')
-    with open(f'{outdir}/methods.hpp', 'w', encoding='utf-8') as out:
-        print('#pragma once \n', file=out)
+
+    # all_fwd.hpp
+    with open(f'{outdir}/all_fwd.hpp', 'w', encoding='utf-8') as out:
+        print('#pragma once\n', file=out)
+        print('namespace tgbm::api {\n', file=out)
         for m in methods:
-            print(f'#include "{outdir}/{m.name}.hpp"', file=out)
+            print(f'struct {m.get_cppstruct_name()};', file=out)
+        print('\n}', file=out) # namespace tgbm::api
+
+    # all.hpp
+    with open(f'{outdir}/all.hpp', 'w', encoding='utf-8') as out:
+        print('#pragma once\n', file=out)
+        for m in methods:
+            print(f'#include "{m.name}.hpp"', file=out)
+
+################################## API generation #################################
+
+# out - file
+def generate_api_fwd_header(methods: list[method_info_t], out):
+    print(f'#pragma once\n', file=out)
+    print('#include <kelcoro/task.hpp>\n\n#include "tgbm/net/http_client.hpp"\n#include "tgbm/api/methods/all.hpp"\n', file=out)
+    print('namespace tgbm::api {\n', file=out)
+    print('struct telegram {', file=out)
+    # fields and ctor
+    print('\nhttp_client& client;\nconst_string bottoken;\n', file=out)
+    for m in methods:
+        apistructarg = f'api::{m.get_cppstruct_name()}, ' if len(m.parameters) != 0 else ""
+        print(f'/* {m.description} */\ndd::task<{m.ret_type}> {m.name}({apistructarg} duration_t timeout = duration_t::max());\n', file=out)
+    print('\n};\n', file=out) # struct telegram
+    print('}\n', file=out) # namespace tgbm::api
+
+# out - file
+def generate_api_impl_file(methods: list[method_info_t], out):
+    print('#include "tgbm/api/telegram.hpp"\n', file=out)
+    print('#include "tgbm/api/types/all.hpp"\n#include "tgbm/api/methods/all.hpp"\n#include "tgbm/api/const_string.hpp"', file=out)
+    print('#include "tgbm/api/requests.hpp"\n', file=out)
+    print('namespace tgbm::api {\n', file=out)
+    for m in methods:
+        if len(m.parameters) == 0:
+            implstr = f'''
+            dd::task<{m.ret_type}> telegram::{m.name}(duration_t timeout) {{
+                {m.ret_type}& result = co_await dd::this_coro::return_place;
+                reqerr_t err = co_await api::send_request(api::{m.get_cppstruct_name()}{{}}, client, bottoken, result, timeout);
+                if (err) [[unlikely]] {{
+                    TGBM_LOG_ERROR("{m.name} request ended with error, status: {{}}, description: {{}}", err.status, err.description.str());
+                    handle_telegram_http_status(err.status);
+                }}
+                co_return dd::rvo;
+            }}
+            '''
+            print(implstr, file=out)
+        else:
+            implstr = f'''
+            dd::task<{m.ret_type}> telegram::{m.name}(api::{m.get_cppstruct_name()} request, duration_t timeout) {{
+                {m.ret_type}& result = co_await dd::this_coro::return_place;
+                reqerr_t err = co_await api::send_request(request, client, bottoken, result, timeout);
+                if (err) [[unlikely]] {{
+                    TGBM_LOG_ERROR("{m.name} request ended with error, status: {{}}, description: {{}}", err.status, err.description.str());
+                    handle_telegram_http_status(err.status);
+                }}
+                co_return dd::rvo;
+            }}
+            '''
+            print(implstr, file=out)
+    print('}\n', file=out) # namespace tgbm::api
+
+def array_diff(arr1, arr2):
+    set1 = set(arr1)
+    set2 = set(arr2)
+    diff = list((set1 - set2) | (set2 - set1))
+    return diff
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--outdir", type=str, required=True, help="output dir for methods")
+    parser.add_argument("--outdir", type=str, required=True, help="output dir for methods, must be tgbm/api dir")
     parser.add_argument("--apifile", type=str, required=True, help="file with loaded TG api (HTML) (without quotes)")
 
     args = parser.parse_args()
@@ -284,7 +507,17 @@ def main():
     print(f'[TGBM] creating directory: {args.outdir}\n')
     os.makedirs(args.outdir, exist_ok=True)
 
-    generate_all_methods(parse_methods(load_file(args.apifile)), args.outdir)
+    methods = parse_methods(load_file(args.apifile))
+    if len(methods) != len(G_OPERATION_TO_RESULT):
+        print(array_diff([e.name for e in methods], G_OPERATION_TO_RESULT.keys()))
+    generate_all_methods(methods, args.outdir)
+
+    with open(f'{args.outdir}/../telegram.hpp', 'w', encoding='utf-8') as out:
+        generate_api_fwd_header(methods, out)
+    # methods / api / tgbm / include
+    # TODO description for parameters
+    with open(f'{args.outdir}/../../../../src/telegram.cpp', 'w', encoding='utf-8') as out:
+        generate_api_impl_file(methods, out)
 
 if __name__ == '__main__':
     main()

@@ -20,6 +20,9 @@ struct reqerr_e {
   };
 };
 
+// does nothing for good status, rethrows error (timeout, http_exception etc) for bad status
+void handle_telegram_http_status(int status);
+
 std::string_view e2str(reqerr_e::values e) noexcept;
 
 enum struct http_method_e : uint8_t {

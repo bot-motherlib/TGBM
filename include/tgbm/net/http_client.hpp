@@ -18,6 +18,7 @@ namespace tgbm {
 using on_header_fn_ptr = fn_ptr<void(std::string_view name, std::string_view value)>;
 
 using on_data_part_fn_ptr = fn_ptr<void(std::span<const byte_t> bytes, bool last_part)>;
+using on_data_part_fn_ref = fn_ref<void(std::span<const byte_t> bytes, bool last_part)>;
 
 struct http_client {
  protected:

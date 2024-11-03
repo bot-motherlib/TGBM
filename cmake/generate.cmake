@@ -8,7 +8,7 @@ function(TGBM_GENERATE_API)
 
     # formats all files in directory
     macro(TGBM_FORMAT_DIR DIRPATH)
-        message(STATUS "[TGBM] formatting ${TGBM_FORMAT_DIR}\n")
+        message(STATUS "[TGBM] formatting ${DIRPATH}\n")
         execute_process(
             COMMAND ${TGBM_CLANG_FORMAT} -i --style=file:${CMAKE_SOURCE_DIR}/.clang-format ./*
             WORKING_DIRECTORY ${DIRPATH}
@@ -68,5 +68,9 @@ function(TGBM_GENERATE_API)
     message(STATUS ${output})
     TGBM_FORMAT_DIR("${CMAKE_SOURCE_DIR}/include/tgbm/api/types")
     TGBM_FORMAT_DIR("${CMAKE_SOURCE_DIR}/include/tgbm/api/methods")
+    # src telegram.cpp telegram.hpp
+    TGBM_FORMAT_DIR("${CMAKE_SOURCE_DIR}/include/tgbm/api")
+    TGBM_FORMAT_DIR("${CMAKE_SOURCE_DIR}/src")
+
     set (TGBM_API_GENERATED true CACHE STRING "" FORCE)
 endfunction(TGBM_GENERATE_API)
