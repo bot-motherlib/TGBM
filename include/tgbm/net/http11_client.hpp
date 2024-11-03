@@ -24,6 +24,7 @@ struct http11_client : http_client {
   explicit http11_client(size_t connections_max_count = 64, std::string_view host = "api.telegram.org",
                          tcp_connection_options = {});
 
+  using http_client::send_request;
   // note: this client ignores timeouts, its propose to just work in any case
   dd::task<int> send_request(on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part, http_request,
                              duration_t timeout) override;

@@ -51,7 +51,7 @@ class field_info_t:
         self.is_optional = is_optional
         self.cpptype = map_tgtype_to_cpptype(tgtype)
         self.description = description
-    
+
     def to_dict(self):
         return {
             "name": self.name,
@@ -68,7 +68,11 @@ class type_info_t:
         self.description = description
         K_ONEOFS = ['Update', 'KeyboardButton', 'InlineKeyboardButton', 'InlineQueryResultsButton']
         self.is_merged_optional_fields = name in K_ONEOFS
-    
+        mand = [*self.mandatory_fields()]
+        opt_bools = [f for f in self.optional_fields() if (f.cpptype == 'bool' or f.cpptype == 'True')]
+        opt_not_bools = [f for f in self.optional_fields() if not (f.cpptype == 'bool' or f.cpptype == 'True')]
+        self.fields = [*mand, *opt_not_bools, *opt_bools]
+
     def to_dict(self):
         return {
             "name": self.name,
@@ -76,6 +80,12 @@ class type_info_t:
             "is_merged_optional_fields": self.is_merged_optional_fields,
             "fields": self.fields,
         }
+    
+    def optional_fields(self):
+        return [field for field in self.fields if field.is_optional]
+
+    def mandatory_fields(self):
+        return [field for field in self.fields if not field.is_optional]
 
 def parse_discriminator_value(alternative_description: str)->str:
     d = alternative_description
@@ -141,7 +151,7 @@ def parse_compound_type(name: str, description: str, fieldtable) -> type_info_t:
 # accepts type name, description and HTML node 'ul' (list) element of subtypes
 def parse_oneof_type(name: str, description: str, fieldtable) -> oneof_info_t:
     alts: list[str] = []
-    # Собираем все альтернативы из списка
+
     for row in fieldtable.find_all('li'):
         alts.append(row.find('a').text.strip())
 
@@ -150,14 +160,14 @@ def parse_oneof_type(name: str, description: str, fieldtable) -> oneof_info_t:
 
     for alt in alts:
         h4_node = fieldtable.find_next(lambda tag: tag.name == 'h4' and tag.find('a', href=f'#{alt.lower()}'))
-        assert h4_node is not None, f"Не найден элемент h4 для {alt}"
+        assert h4_node is not None
 
         description_node = h4_node.find_next('p')
-        assert description_node is not None, f"Описание не найдено для {alt}"
+        assert description_node is not None
         alt_description = description_node.text.strip()
 
         table_node = description_node.find_next('table')
-        assert table_node is not None, f"Таблица не найдена для {alt}"
+        assert table_node is not None
 
         tmptype: type_info_t = parse_compound_type(alt, description, table_node)
 
@@ -165,7 +175,7 @@ def parse_oneof_type(name: str, description: str, fieldtable) -> oneof_info_t:
             if discriminator_name is None:
                 discriminator_name = tmptype.fields[0].name
             else:
-                assert discriminator_name == tmptype.fields[0].name, f"Неправильное имя дискриминатора для {alt}"
+                assert discriminator_name == tmptype.fields[0].name
         PARSED_TYPES[alt] = True
         alternatives.append(oneof_alternative_t(alt, tmptype, alt_description, name))
 
@@ -175,6 +185,7 @@ IGNORED_TYPES = {
     'InputFile',
     'MaybeInaccessibleMessage'
 }
+
 # accepts HTML with telegram api
 # returns pair: array of 'type_info_t' and array of 'oneof_info_t'
 def parse_types(tgapi_html: str):
@@ -242,29 +253,26 @@ def generate_halfoneof_api_struct(t: type_info_t) -> str:
 
     # mandatory fields
 
-    for f in t.fields:
-        if not f.is_optional:
-            if is_boxed_type(f.cpptype):
-                s += f'  box<{f.cpptype}> {f.name};'
-            else:
-                s += f'  {f.cpptype} {f.name};'
+    for f in t.mandatory_fields():
+        if is_boxed_type(f.cpptype):
+            s += f'  box<{f.cpptype}> {f.name};'
+        else:
+            s += f'  {f.cpptype} {f.name};'
 
     # generate field-structs
 
-    for f in t.fields:
-        if f.is_optional:
-            s += f'  struct {f.name} {{ {f.cpptype} value; }};\n'
+    for f in t.optional_fields():
+        s += f'  struct {f.name} {{ {f.cpptype} value; }};\n'
 
     # data
 
-    s += f'  oneof<{", ".join(f.name for f in t.fields if f.is_optional)}> data;\n'
+    s += f'  oneof<{", ".join(f.name for f in t.optional_fields())}> data;\n'
 
     # enum struct type_e
 
     s += '  enum struct type_e {\n'
-    for f in t.fields:
-        if f.is_optional:
-            s += f'    k_{f.name},\n'
+    for f in t.optional_fields():
+        s += f'    k_{f.name},\n'
     s += '    nothing,\n  };\n'
 
     # static constexpr size_t variant_size
@@ -277,17 +285,15 @@ def generate_halfoneof_api_struct(t: type_info_t) -> str:
 
     # get ifs
 
-    for f in t.fields:
-        if f.is_optional:
-            s += f'  {f.cpptype}* get_{f.name}() noexcept {{ auto* p = data.get_if<{f.name}>(); return p ? &p->value : nullptr; }}\n'
-            s += f'  const {f.cpptype}* get_{f.name}() const noexcept {{ auto* p = data.get_if<{f.name}>(); return p ? &p->value : nullptr; }}\n'
+    for f in t.optional_fields():
+        s += f'  {f.cpptype}* get_{f.name}() noexcept {{ auto* p = data.get_if<{f.name}>(); return p ? &p->value : nullptr; }}\n'
+        s += f'  const {f.cpptype}* get_{f.name}() const noexcept {{ auto* p = data.get_if<{f.name}>(); return p ? &p->value : nullptr; }}\n'
     
     # static constexpr decltype(auto) discriminate_field(std::string_view val, auto&& visitor)
 
     s += '  static constexpr decltype(auto) discriminate_field(std::string_view val, auto&& visitor) {\n'
-    for f in t.fields:
-        if f.is_optional:
-            s += f'    if (val == "{f.name}") return visitor.template operator()<{f.name}>();'
+    for f in t.optional_fields():
+        s += f'    if (val == "{f.name}") return visitor.template operator()<{f.name}>();'
     s += '    return visitor.template operator()<void>();'
     s += '  }\n\n'
     s += '};\n' # end struct
@@ -298,9 +304,8 @@ def generate_halfoneof_api_struct(t: type_info_t) -> str:
     s += f'inline std::string_view to_string_view({t.name}::type_e v) {{\n'
     s += f'  using enum {t.name}::type_e;'
     s += '  switch(v) {\n'
-    for f in t.fields:
-        if f.is_optional:
-            s += f' case k_{f.name}: return "{f.name}";\n'
+    for f in t.optional_fields():
+        s += f' case k_{f.name}: return "{f.name}";\n'
     s += 'case nothing: return "nothing";\n'
     s += 'default: unreachable();\n'
     s += '  }\n}\n'
@@ -316,19 +321,17 @@ def generate_api_struct(t: type_info_t) -> str:
 
     # mandatory fields first
 
-    for field in t.fields:
+    for field in t.mandatory_fields():
         tp = f'  box<{field.cpptype}>' if is_boxed_type(field.cpptype) else field.cpptype
-        if not field.is_optional:
-            s += f'  {tp} {field.name};\n'
+        s += f'  {tp} {field.name};\n'
 
     # optional fields
 
-    for field in t.fields:
-        if field.is_optional:
-            if is_boxed_type(field.cpptype):
-                s += f'  box<{field.cpptype}> {field.name};\n'
-            else:
-                s += f'  optional<{field.cpptype}> {field.name};\n'
+    for field in t.optional_fields():
+        if is_boxed_type(field.cpptype):
+            s += f'  box<{field.cpptype}> {field.name};\n'
+        else:
+            s += f'  optional<{field.cpptype}> {field.name};\n'
 
     # consteval static bool is_optional_field(std::string_view name)
 

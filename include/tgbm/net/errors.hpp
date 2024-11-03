@@ -34,16 +34,19 @@ struct timeout_exception : std::exception {
   }
 };
 
-struct http_exception : network_exception {
-  using network_exception::network_exception;
+struct http_exception : std::exception {
+  int status = 0;
+
+  explicit http_exception(int status) noexcept : status(status) {
+  }
 };
 
 #define TGBM_TG_EXCEPTION(ERRC, FMT_STR, ...) \
   ::tgbm::tg_exception(FMT_STR " errc: {}" __VA_OPT__(, ) __VA_ARGS__, e2str(ERRC))
 
 // thrown when Telegram refuses API request
-struct tg_exception : http_exception {
-  using http_exception::http_exception;
+struct tg_exception : network_exception {
+  using network_exception::network_exception;
 };
 
 struct connection_shutted_down : std::exception {

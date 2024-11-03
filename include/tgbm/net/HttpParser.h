@@ -1,6 +1,5 @@
 #pragma once
 
-#include <span>
 #include <string>
 #include <unordered_map>
 #include <cassert>
@@ -30,7 +29,7 @@ struct HttpParser {
                                bool isKeepAlive) const;
   std::unordered_map<std::string, std::string> parseHeader(const std::string& data, bool isRequest) const;
 };
-// TODO boost serializer
+
 struct rj_refbuffer_t {
   bytes_t& buf;
 

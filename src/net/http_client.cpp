@@ -3,6 +3,36 @@
 
 namespace tgbm {
 
+[[noreturn]] static void throw_bad_status(int status) {
+  assert(status < 0);
+  using enum reqerr_e::values;
+  switch (reqerr_e::values(status)) {
+    case done:
+      unreachable();
+    case timeout:
+      throw timeout_exception{};
+    case network_err:
+      throw network_exception{""};
+    case protocol_err:
+      throw protocol_error{};
+    case cancelled:
+      throw std::runtime_error("HTTP client: request was canceled");
+    case server_cancelled_request:
+      throw std::runtime_error("HTTP client: request was canceled by server");
+    default:
+    case user_exception:
+    case unknown_err:
+      throw std::runtime_error("HTTP client unknown error happens");
+  }
+}
+
+void handle_telegram_http_status(int status) {
+  if (status < 0)
+    throw_bad_status(status);
+  if (status != 200)
+    throw http_exception(status);
+}
+
 http_client::http_client(std::string_view host) : host(host) {
   if (host.empty() || host.starts_with("https://") || host.starts_with("http://"))
     throw std::invalid_argument("host should not be full url, correct example: \"api.telegram.org\"");
@@ -17,27 +47,9 @@ dd::task<http_response> http_client::send_request(http_request request, duration
     rsp.body.insert(rsp.body.end(), bytes.begin(), bytes.end());
   };
   rsp.status = co_await send_request(&on_header, &on_data_part, std::move(request), timeout);
-  if (rsp.status < 0) {
-    using enum reqerr_e::values;
-    switch (reqerr_e::values(rsp.status)) {
-      default:
-      case done:
-      case user_exception:
-        unreachable();
-      case timeout:
-        throw timeout_exception{};
-      case network_err:
-        throw network_exception{""};
-      case protocol_err:
-        throw protocol_error{};
-      case cancelled:
-        throw std::runtime_error("HTTP client: request was canceled");
-      case server_cancelled_request:
-        throw std::runtime_error("HTTP client: request was canceled by server");
-      case unknown_err:
-        throw std::runtime_error("HTTP client unknown error happens");
-    }
-  }
+  if (rsp.status < 0)
+    throw_bad_status(rsp.status);
+
   co_return std::move(rsp);
 }
 

@@ -1268,6 +1268,9 @@ connection_dropped:
 
 http2_client::~http2_client() {
   stop();
+  // in any case, even if client stopped now, some requests may wait
+  notify_connection_waiters(nullptr);
+  drop_connection(reqerr_e::cancelled);
 }
 
 http2_client::http2_client(std::string_view host, http2_client_options opts, tcp_connection_options tcp_opts)
