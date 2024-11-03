@@ -25,24 +25,24 @@ struct event_holder {
   }
 
   enum wait_e {
-    array_begin = 1,
-    array_end = 2,
-    object_begin = 4,
-    object_end = 8,
-    string = 16,
-    key = 32,
-    int64 = 64,
-    uint64 = 128,
-    double_ = 256,
-    bool_ = 512,
-    null = 1024,
-    part = 2048
+    array_begin = 1 << 0,
+    array_end = 1 << 1,
+    object_begin = 1 << 2,
+    object_end = 1 << 3,
+    string = 1 << 4,
+    key = 1 << 5,
+    int64 = 1 << 6,
+    uint64 = 1 << 7,
+    double_ = 1 << 8,
+    bool_ = 1 << 9,
+    null = 1 << 10,
+    part = 1 << 11,
   };
 
   static constexpr std::int16_t all = ~0;
   wait_e got;
 
-  void expect(std::int16_t tokens) {
+  void expect(std::int16_t tokens) const {
     if (!(got & tokens)) {
       TGBM_JSON_PARSE_ERROR;
     }
