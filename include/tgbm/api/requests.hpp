@@ -10,7 +10,7 @@
 #include "tgbm/net/http_client.hpp"
 #include "tgbm/tools/deadline.hpp"
 #include "tgbm/tools/memory.hpp"
-
+#include "tgbm/api/telegram_answer.hpp"
 #include "tgbm/tools/json_tools/stream_parser.hpp"
 
 namespace tgbm::api {
@@ -23,18 +23,6 @@ concept tgapi_request_decayed = requires {
   { T::api_method_name } -> std::convertible_to<std::string_view>;
   { T::http_method } -> std::convertible_to<http_method_e>;
   typename T::return_type;
-};
-
-// TODO parsing
-template <typename T>
-struct tg_result {
-  bool ok = false;
-  T& result;                 // optional
-  const_string description;  // optional
-
-  explicit tg_result(T& out) noexcept : result(out) {
-  }
-  // error_code - optional if !ok
 };
 
 }  // namespace noexport
@@ -121,7 +109,7 @@ template <tgapi_request R>
   requires(!tgapi_file_request<R>)
 dd::task<reqerr_t> send_request(const R& request, http_client& client, const_string bottoken,
                                 request_return_t<R>& out, duration_t timeout) {
-  noexport::tg_result r(out);
+  telegram_answer r(out);
   json::stream_parser parser(r);
 
   auto parse_to_out = [&, ec = io_error_code{}](std::span<byte_t> bytes, bool last_part) mutable {
@@ -134,11 +122,12 @@ dd::task<reqerr_t> send_request(const R& request, http_client& client, const_str
   co_return reqerr_t{.status = status, .description = std::move(r.descripion)};
 }
 
-// ignores telegram answer
+// ignores result, but waits telegram answer for status
 // returns http status or reqerr_e (< 0)
 template <tgapi_request R>
 dd::task<int> send_request(const R& request, http_client& client, const_string bottoken, duration_t timeout) {
-  return client.send_request(nullptr, nullptr, make_request(request, bottoken.str()), timeout);
+  auto noop = [](std::string_view, std::string_view) {};
+  return client.send_request(&noop, nullptr, make_request(request, bottoken.str()), timeout);
 }
 
 // for files

@@ -34,8 +34,9 @@ struct boost_domless_parser<T> {
     }
     co_yield {};
     holder.expect(wait::string);
-    auto generator_suboneof = get_generator_suboneof(holder.str_m, t_, holder);
+    // change 'got' before generator creation (may be function returning generator)
     holder.got = event_holder::object_begin;
+    auto generator_suboneof = get_generator_suboneof(holder.str_m, t_, holder);
     auto it = generator_suboneof.begin();
     co_yield {};
     co_yield dd::elements_of(generator_suboneof);
