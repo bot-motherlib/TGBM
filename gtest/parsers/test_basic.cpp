@@ -7,13 +7,8 @@ struct SomeStruct {
   tgbm::api::Double b;
   std::string c;
 
-  static bool consteval is_optional_field(std::string_view name) {
-    return tgbm::utils::string_switch<std::optional<bool>>(name)
-        .case_("a", true)
-        .case_("b", true)
-        .case_("c", true)
-        .or_default(std::nullopt)
-        .value();
+  static consteval bool is_mandatory_field(std::string_view name) {
+    return false;
   }
 
   std::strong_ordering operator<=>(const SomeStruct&) const = default;

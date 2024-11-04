@@ -63,7 +63,7 @@ inline void tag_invoke(value_from_tag, value& jv, const T& t) {
     constexpr std::string_view name = Info::name.AsStringView();
     obj[name] = boost::json::value_from(field);
     if (obj[name].is_null()) {
-      if (T::is_optional_field(name)) {
+      if (!T::is_mandatory_field(name)) {
         obj.erase(name);
       } else {
         TGBM_JSON_SERIALIZE_ERROR;

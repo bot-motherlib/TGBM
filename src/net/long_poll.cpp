@@ -7,7 +7,7 @@
 
 namespace tgbm {
 
-static dd::channel<api::Update> long_poll_with_preconfirm(api::telegram tg, api::get_updates_r request,
+static dd::channel<api::Update> long_poll_with_preconfirm(api::telegram tg, api::get_updates_request request,
                                                           duration_t network_timeout) {
   for (;;) {
     api::arrayof<api::Update> updates = co_await tg.getUpdates(request, network_timeout);
@@ -32,7 +32,8 @@ static dd::channel<api::Update> long_poll_with_preconfirm(api::telegram tg, api:
   }
 }
 
-static dd::channel<api::Update> long_poll_without_preconfirm(api::telegram tg, api::get_updates_r request,
+static dd::channel<api::Update> long_poll_without_preconfirm(api::telegram tg,
+                                                             api::get_updates_request request,
                                                              duration_t network_timeout) {
   for (;;) {
     api::arrayof<api::Update> updates = co_await tg.getUpdates(request, network_timeout);
@@ -51,7 +52,7 @@ dd::channel<api::Update> long_poll(api::telegram tg, std::int32_t limit, std::ch
     throw bad_request("getUpdates 'limit': only values 1 to 100 accepted");
   if (timeout.count() < 0)
     throw bad_request("getUpdates timeout must be >= 0");
-  api::get_updates_r req;
+  api::get_updates_request req;
   using namespace std::chrono_literals;
   duration_t network_timeout = duration_t::max() - timeout <= 5s ? duration_t::max() : timeout + 5s;
   assert(network_timeout >= timeout);

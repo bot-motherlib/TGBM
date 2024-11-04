@@ -18,17 +18,8 @@ struct TestObject {
   tgbm::api::optional<std::vector<tgbm::api::Integer>> array_field;
   tgbm::api::optional<std::vector<tgbm::box<TestObject>>> nested_objects;
 
-  consteval static bool is_optional_field(std::string_view name) {
-    return tgbm::utils::string_switch<std::optional<bool>>(name)
-        .case_("int_field", true)
-        .case_("double_field", true)
-        .case_("bool_field", true)
-        .case_("string_field", true)
-        .case_("optional_field", true)
-        .case_("array_field", true)
-        .case_("nested_objects", true)
-        .or_default(std::nullopt)
-        .value();
+  consteval static bool is_mandatory_field(std::string_view name) {
+    return false;
   }
 };
 

@@ -120,9 +120,7 @@ template <common_api_type A>
 void rj_tojson(rjson_writer auto& writer, const A& v) {
   pfr_extension::visit_object(v, [&]<typename Info>(auto& field) {
     constexpr std::string_view name = Info::name.AsStringView();
-    // TODO понять что там за опшнл поля и в итоге сделать все опциональные поля optional<...>
-    // и избавиться от is_optional field
-    if constexpr (A::is_optional_field(name)) {
+    if constexpr (!A::is_mandatory_field(name)) {
       auto* f = noexport::optional_field_get_value(field);
       if (!f)
         return;

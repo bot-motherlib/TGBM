@@ -9,12 +9,8 @@ struct User {
   tgbm::api::Integer id;
   std::string name;
 
-  consteval static bool is_optional_field(std::string_view name) {
-    return utils::string_switch<std::optional<bool>>(name)
-        .case_("id", false)
-        .case_("name", false)
-        .or_default(std::nullopt)
-        .value();
+  consteval static bool is_mandatory_field(std::string_view name) {
+    return true;
   }
 
   bool operator==(const User& other) const {
@@ -26,12 +22,8 @@ struct Chat {
   tgbm::api::Integer id;
   std::string title;
 
-  consteval static bool is_optional_field(std::string_view name) {
-    return utils::string_switch<std::optional<bool>>(name)
-        .case_("id", false)
-        .case_("title", false)
-        .or_default(std::nullopt)
-        .value();
+  consteval static bool is_mandatory_field(std::string_view name) {
+    return true;
   }
 
   bool operator==(const Chat& other) const = default;
@@ -41,12 +33,8 @@ struct Channel {
   tgbm::api::Integer id;
   std::string name;
 
-  consteval static bool is_optional_field(std::string_view name) {
-    return utils::string_switch<std::optional<bool>>(name)
-        .case_("id", false)
-        .case_("name", false)
-        .or_default(std::nullopt)
-        .value();
+  consteval static bool is_mandatory_field(std::string_view name) {
+    return true;
   }
 
   bool operator==(const Channel& other) const = default;
@@ -56,12 +44,8 @@ struct MessageOriginUser {
   tgbm::api::Integer date;
   tgbm::box<User> sender_user;
 
-  consteval static bool is_optional_field(std::string_view name) {
-    return utils::string_switch<std::optional<bool>>(name)
-        .case_("date", false)
-        .case_("sender_user", false)
-        .or_default(std::nullopt)
-        .value();
+  consteval static bool is_mandatory_field(std::string_view name) {
+    return true;
   }
 
   bool operator==(const MessageOriginUser& other) const = default;
@@ -71,12 +55,8 @@ struct MessageOriginHiddenUser {
   tgbm::api::Integer date;
   std::string sender_name;
 
-  consteval static bool is_optional_field(std::string_view name) {
-    return utils::string_switch<std::optional<bool>>(name)
-        .case_("date", false)
-        .case_("sender_name", false)
-        .or_default(std::nullopt)
-        .value();
+  consteval static bool is_mandatory_field(std::string_view name) {
+    return true;
   }
 
   bool operator==(const MessageOriginHiddenUser& other) const = default;
@@ -86,12 +66,8 @@ struct MessageOriginChat {
   tgbm::api::Integer date;
   tgbm::box<Chat> sender_chat;
 
-  consteval static bool is_optional_field(std::string_view name) {
-    return utils::string_switch<std::optional<bool>>(name)
-        .case_("date", false)
-        .case_("sender_chat", false)
-        .or_default(std::nullopt)
-        .value();
+  consteval static bool is_mandatory_field(std::string_view name) {
+    return true;
   }
 
   bool operator==(const MessageOriginChat& other) const = default;
@@ -101,12 +77,8 @@ struct MessageOriginChannel {
   tgbm::api::Integer date;
   tgbm::box<Channel> sender_channel;
 
-  consteval static bool is_optional_field(std::string_view name) {
-    return utils::string_switch<std::optional<bool>>(name)
-        .case_("date", false)
-        .case_("sender_channel", false)
-        .or_default(std::nullopt)
-        .value();
+  consteval static bool is_mandatory_field(std::string_view name) {
+    return true;
   }
 
   bool operator==(const MessageOriginChannel& other) const = default;

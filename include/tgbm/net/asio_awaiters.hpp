@@ -303,7 +303,6 @@ struct net_t {
   }
 
   // returns count of bytes transmitted
-  // TODO return span to readen bytes? And what to accept? dynbuf + temp buf?
   template <typename Stream>
   KELCORO_CO_AWAIT_REQUIRED static auto read_some(Stream& stream, std::span<byte_t> buffer,
                                                   io_error_code& ec) {

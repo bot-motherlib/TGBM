@@ -39,7 +39,6 @@ using request_return_t = typename R::return_type;
 
 using default_http_body = application_json_body;
 
-// TODO tests for this function
 template <tgapi_request R>
 [[nodiscard]] http_body make_http_boby(const R& request) {
   static_assert(R::file_info == file_info_e::no || R::file_info == file_info_e::yes ||
@@ -94,7 +93,6 @@ struct reqerr_t {
     return status >= 0;
   }
   [[nodiscard]] bool successfully_received() const noexcept {
-    // TODO check telegram always sends 200 if "ok": true
     return status == 200;
   }
 

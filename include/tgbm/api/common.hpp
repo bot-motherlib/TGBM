@@ -30,10 +30,4 @@ enum struct file_info_e {
 
 using String = std::string;
 
-struct placeholder {
-  consteval static bool is_optional_field(std::string_view) {
-    return false;
-  }
-};
-
 }  // namespace tgbm::api

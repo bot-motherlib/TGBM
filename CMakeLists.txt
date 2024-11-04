@@ -60,7 +60,6 @@ set(TGBM_SRC_LIST
     src/net/tcp_connection.cpp
     src/net/http11_client.cpp
     src/net/http_client.cpp
-    src/net/HttpParser.cpp
     src/net/long_poll.cpp
     src/net/ssl_context.cpp
     src/tools/FileTools.cpp
