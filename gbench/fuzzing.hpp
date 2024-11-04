@@ -459,7 +459,7 @@ struct randomizer<T> {
 
     pfr_extension::visit_object(t, [&]<typename Info, typename Field>(Field& field) {
       constexpr std::string_view name = Info::name.AsStringView();
-      constexpr bool is_optional = T::is_optional_field(name);
+      constexpr bool is_optional = !T::is_mandatory_field(name);
       auto need_generate = [&]() -> bool {
         if (!is_optional) {
           return true;

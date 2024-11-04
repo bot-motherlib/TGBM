@@ -33,19 +33,17 @@ struct parser<T> : basic_parser<T> {
     TGBM_JSON_HANDLER_PARSE_ERROR;
   }
 
-  static constexpr std::array<bool, N> is_optional = []<std::size_t... I>(std::index_sequence<I...>) {
+  static constexpr std::array<bool, N> is_mandatory = []<std::size_t... I>(std::index_sequence<I...>) {
     auto helper = []<std::size_t J>(std::index_sequence<J>) {
       constexpr std::string_view name = pfr_extension::get_name<J, T>();
-      constexpr std::optional<bool> val = T::is_optional_field(name);
-      static_assert(val.has_value());
-      return *val;
+      return T::is_mandatory_field(name);
     };
     return std::array<bool, N>{helper(std::index_sequence<I>{})...};
   }(seq{});
 
   bool all_parsed() {
     for (std::size_t i = 0; i < N; i++) {
-      if (!is_optional[i] && !parsed_fields_[i]) {
+      if (is_mandatory[i] && !parsed_fields_[i]) {
         return false;
       }
     }

@@ -20,7 +20,7 @@ struct boost_domless_parser<T> {
       std::bitset<N> res;
       auto store_required = [&]<std::size_t J>(std::index_sequence<J>) {
         constexpr std::string_view name = pfr_extension::element_name_v<J, T>;
-        res[J] = !T::is_optional_field(name);
+        res[J] = T::is_mandatory_field(name);
       };
       (store_required(std::index_sequence<I>{}), ...);
       return res;

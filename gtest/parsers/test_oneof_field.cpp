@@ -7,12 +7,8 @@ struct object1 {
   int age;
   std::strong_ordering operator<=>(const object1&) const = default;
 
-  static consteval bool is_optional_field(std::string_view key) {
-    return tgbm::utils::string_switch<std::optional<bool>>(key)
-        .case_("name", false)
-        .case_("age", false)
-        .or_default(std::nullopt)
-        .value();
+  static consteval bool is_mandatory_field(std::string_view key) {
+    return true;
   }
 };
 
@@ -21,12 +17,8 @@ struct object2 {
   std::vector<std::string> tags;
   std::strong_ordering operator<=>(const object2&) const = default;
 
-  static consteval bool is_optional_field(std::string_view key) {
-    return tgbm::utils::string_switch<std::optional<bool>>(key)
-        .case_("description", false)
-        .case_("tags", false)
-        .or_default(std::nullopt)
-        .value();
+  static consteval bool is_mandatory_field(std::string_view key) {
+    return true;
   }
 };
 
@@ -34,12 +26,8 @@ struct custom {
   std::string info;
   tgbm::api::optional<std::string> details;
 
-  static consteval bool is_optional_field(std::string_view key) {
-    return tgbm::utils::string_switch<std::optional<bool>>(key)
-        .case_("info", false)
-        .case_("details", true)
-        .or_default(std::nullopt)
-        .value();
+  static consteval bool is_mandatory_field(std::string_view key) {
+    return key == "info";
   }
 
   std::strong_ordering operator<=>(const custom&) const = default;

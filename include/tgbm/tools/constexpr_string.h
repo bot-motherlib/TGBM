@@ -37,17 +37,10 @@ struct string {
     return std::string_view{data_.data(), len};
   }
 
-  std::string AsString() const {
-    return std::string(AsStringView());
-  }
-
   constexpr operator std::string_view() const {
     return AsStringView();
   }
 
-  constexpr auto c_str() const -> const char* {
-    return data_.data();
-  }
   friend constexpr bool operator==(const string& string, const char* rhs) {
     std::string_view right{rhs};
     return string.AsStringView() == right;
@@ -64,7 +57,7 @@ struct string {
     return len == 0;
   }
 
-  constexpr auto data() const {
+  constexpr const char* data() const {
     return data_.data();
   }
 

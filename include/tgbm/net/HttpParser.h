@@ -22,14 +22,6 @@ struct http_body {
   bytes_t data;
 };
 
-// TODO wtf это всё статические функции вообще
-struct HttpParser {
-  std::string generateResponse(const std::string& data, const std::string& mimeType,
-                               unsigned short statusCode, const std::string& statusStr,
-                               bool isKeepAlive) const;
-  std::unordered_map<std::string, std::string> parseHeader(const std::string& data, bool isRequest) const;
-};
-
 struct rj_refbuffer_t {
   bytes_t& buf;
 

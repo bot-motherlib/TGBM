@@ -26,10 +26,10 @@ concept aggregate = std::is_aggregate_v<T>;
 namespace details {
 
 template <typename T>
-concept common_api_type = aggregate<T> && requires(std::string_view sv) {
-  { T::is_optional_field(sv) } -> std::same_as<bool>;
+concept common_api_type = aggregate<T> && requires {
+  { T::is_mandatory_field(std::string_view{}) } -> std::same_as<bool>;
 };
-// TODO решить тут проблему повторения discriminate/discriminate_field
+
 template <typename T>
 concept discriminated_api_type = aggregate<T> && requires(const T& t) {
   {

@@ -254,6 +254,7 @@ def generate_halfoneof_api_struct(t: type_info_t) -> str:
     # mandatory fields
 
     for f in t.mandatory_fields():
+        s += f'/* {f.description} */\n'
         if is_boxed_type(f.cpptype):
             s += f'  box<{f.cpptype}> {f.name};'
         else:
@@ -272,6 +273,7 @@ def generate_halfoneof_api_struct(t: type_info_t) -> str:
 
     s += '  enum struct type_e {\n'
     for f in t.optional_fields():
+        s += f'/* {f.description} */\n'
         s += f'    k_{f.name},\n'
     s += '    nothing,\n  };\n'
 
@@ -322,24 +324,26 @@ def generate_api_struct(t: type_info_t) -> str:
     # mandatory fields first
 
     for field in t.mandatory_fields():
+        s += f'/* {field.description} */\n'
         tp = f'  box<{field.cpptype}>' if is_boxed_type(field.cpptype) else field.cpptype
         s += f'  {tp} {field.name};\n'
 
     # optional fields
 
     for field in t.optional_fields():
+        s += f'/* {field.description} */\n'
         if is_boxed_type(field.cpptype):
             s += f'  box<{field.cpptype}> {field.name};\n'
         else:
             s += f'  optional<{field.cpptype}> {field.name};\n'
 
-    # consteval static bool is_optional_field(std::string_view name)
+    # consteval static bool is_mandatory_field(std::string_view name)
 
-    s += '\n  consteval static bool is_optional_field(std::string_view name) {\n'
-    s += '    return utils::string_switch<std::optional<bool>>(name)\n'
-    for field in t.fields:
-        s += f'    .case_("{field.name}", {"true" if field.is_optional else "false"})\n'
-    s += '    .or_default(std::nullopt).value();\n'
+    s += '\n  consteval static bool is_mandatory_field(std::string_view name) {\n'
+    s += '    return utils::string_switch<bool>(name)\n'
+    for f in t.mandatory_fields():
+        s += f'    .case_("{f.name}", true)\n'
+    s += '    .or_default(false);\n'
     s += '  }\n\n'
     s += '};\n' # struct end
 

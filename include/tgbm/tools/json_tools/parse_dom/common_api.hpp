@@ -19,7 +19,7 @@ struct parser<T> {
       constexpr std::string_view name = Info::name.AsStringView();
       auto json_field = Traits::find_field(json, name);
       if (!json_field) [[unlikely]] {
-        if constexpr (T::is_optional_field(name)) {
+        if constexpr (!T::is_mandatory_field(name)) {
           field = Field{};
           return;
         } else {

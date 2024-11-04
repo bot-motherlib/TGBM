@@ -147,9 +147,6 @@ G_OPERATION_TO_RESULT = {
     'getGameHighScores': 'arrayof<GameHighScore>'
 }
 
-# TODO assert size == parsed types size (+print DIFF)
-# TODO expected<result, description + error_code>?
-
 # loads TG api (html)
 def load_api_html():
     url = "https://core.telegram.org/bots/api"
@@ -235,7 +232,7 @@ class method_info_t:
         assert self.ret_type is not None
     
     def get_cppstruct_name(self) -> str:
-        return to_flat_naming(self.name) + '_r'
+        return to_flat_naming(self.name) + '_request'
 
 def is_file_arg(m: param_t):
     return m.param_type == G_FILEORSTR or m.param_type == "InputFile"
@@ -280,7 +277,7 @@ def generate_api_struct(method_desc: method_info_t):
     s += f"struct {method_desc.get_cppstruct_name()} {{\n"
     for param in method_desc.parameters:
         if not param.is_optional:
-            # /* {param['description']} */\n
+            s += f'/* {param.description} */\n'
             if is_boxed_type(param.param_type):
                 s += f'  box<{param.param_type}> {param.name};\n'
             else:
@@ -288,7 +285,7 @@ def generate_api_struct(method_desc: method_info_t):
 
     for param in method_desc.parameters:
         if param.is_optional:
-            # /* {param['description']} */\n
+            s += f'/* {param.description} */\n'
             if is_boxed_type(param.param_type):
                 s += f'  box<{param.param_type}> {param.name};\n'
             else:
@@ -515,7 +512,6 @@ def main():
     with open(f'{args.outdir}/../telegram.hpp', 'w', encoding='utf-8') as out:
         generate_api_fwd_header(methods, out)
     # methods / api / tgbm / include
-    # TODO description for parameters
     with open(f'{args.outdir}/../../../../src/telegram.cpp', 'w', encoding='utf-8') as out:
         generate_api_impl_file(methods, out)
 

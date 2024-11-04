@@ -14,17 +14,13 @@ struct SimpleObject {
 
   std::strong_ordering operator<=>(const SimpleObject&) const = default;
 
-  consteval static bool is_optional_field(std::string_view name) {
-    return tgbm::utils::string_switch<std::optional<bool>>(name)
-        .case_("int_field", false)
-        .case_("double_field", false)
-        .case_("bool_field", false)
-        .case_("string_field", false)
-        .case_("optional_field", true)
-        .case_("array_field", true)
-        .case_("nested_objects", true)
-        .or_default(std::nullopt)
-        .value();
+  consteval static bool is_mandatory_field(std::string_view name) {
+    return tgbm::utils::string_switch<bool>(name)
+        .case_("int_field", true)
+        .case_("double_field", true)
+        .case_("bool_field", true)
+        .case_("string_field", true)
+        .or_default(false);
   }
 };
 

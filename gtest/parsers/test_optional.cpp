@@ -11,12 +11,8 @@ struct SimpleType {
   int value;
 
   // Здесь ни одно поле не является optional или tgbm::box
-  consteval static bool is_optional_field(std::string_view name) {
-    return tgbm::utils::string_switch<std::optional<bool>>(name)
-        .case_("name", false)
-        .case_("value", false)
-        .or_default(std::nullopt)
-        .value();
+  consteval static bool is_mandatory_field(std::string_view name) {
+    return true;
   }
 };
 
@@ -31,14 +27,8 @@ struct ComplexOptionalType {
   tgbm::api::optional<std::vector<int>> optional_array;
 
   // Указываем, что только optional-поля отмечаются как optional
-  consteval static bool is_optional_field(std::string_view name) {
-    return tgbm::utils::string_switch<std::optional<bool>>(name)
-        .case_("name", false)
-        .case_("optional_number", true)
-        .case_("optional_object", true)
-        .case_("optional_array", true)
-        .or_default(std::nullopt)
-        .value();
+  consteval static bool is_mandatory_field(std::string_view name) {
+    return name == "name";
   }
 };
 
