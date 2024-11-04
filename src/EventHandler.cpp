@@ -1,8 +1,9 @@
-#include "tgbm/EventHandler.h"
+#if 0
+  #include "tgbm/EventHandler.h"
 
 namespace tgbm {
 
-void EventHandler::handleUpdate(const Update::Ptr& update) const {
+void EventHandler::handleUpdate(const api::Update& update) const {
   if (update->message != nullptr) {
     handleMessage(update->message);
   }
@@ -75,3 +76,4 @@ void EventHandler::handleMessage(const Message::Ptr& message) const {
 }
 
 }  // namespace tgbm
+#endif

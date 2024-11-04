@@ -1,8 +1,6 @@
 #pragma once
 
-#include <compare>
 #include <string>
-#include <vector>
 #include <string_view>
 
 #include "tgbm/api/const_string.hpp"
@@ -18,6 +16,9 @@
 #include "tgbm/api/int_or_str.hpp"
 #include "tgbm/net/http_base.hpp"
 #include "tgbm/api/input_file.hpp"
+#include "tgbm/api/arrayof.hpp"
+#include "tgbm/api/oneof.hpp"
+#include "tgbm/api/true.hpp"
 
 namespace tgbm::api {
 
@@ -28,16 +29,6 @@ enum struct file_info_e {
 };
 
 using String = std::string;
-
-struct True {
-  constexpr std::strong_ordering operator<=>(const True&) const = default;
-};
-
-template <typename T>
-using arrayof = std::vector<T>;
-
-template <typename... U>
-using oneof = box_union<U...>;
 
 struct placeholder {
   consteval static bool is_optional_field(std::string_view) {

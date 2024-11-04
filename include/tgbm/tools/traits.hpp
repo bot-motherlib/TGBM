@@ -1,22 +1,9 @@
 #pragma once
-#include <optional>
+
 #include <string_view>
 #include <type_traits>
 
-#include "tgbm/api/optional.hpp"
-
 namespace tgbm {
-template <typename T>
-struct is_optional : std::false_type {};
-
-template <typename T>
-struct is_optional<std::optional<T>> : std::true_type {};
-
-template <typename T>
-struct is_optional<api::optional<T>> : std::true_type {};
-
-template <typename T>
-constexpr auto is_optional_v = is_optional<T>::value;
 
 template <typename T, typename... Types>
 concept any_of = (std::is_same_v<T, Types> || ...);
@@ -36,27 +23,29 @@ concept array_like = std::ranges::range<T> && !string_like<T>;
 template <typename T>
 concept aggregate = std::is_aggregate_v<T>;
 
-template <typename T>
-concept nesting = aggregate<T> || array_like<T>;
-
 namespace details {
+
 template <typename T>
 concept common_api_type = aggregate<T> && requires(std::string_view sv) {
   { T::is_optional_field(sv) } -> std::same_as<bool>;
 };
-
+// TODO решить тут проблему повторения discriminate/discriminate_field
 template <typename T>
-concept discriminated_api_type = aggregate<T> && requires(std::string_view sv) {
+concept discriminated_api_type = aggregate<T> && requires(const T& t) {
   {
-    T::discriminate(sv, []<typename>() {})
+    T::discriminate(std::string_view{}, []<typename>() {})
   };
+  { t.discriminator_now() } -> std::same_as<std::string_view>;
+  { t.data };
 };
 
 template <typename T>
-concept oneof_field_api_type = aggregate<T> && requires(std::string_view sv) {
+concept oneof_field_api_type = aggregate<T> && requires(const T& t) {
   {
-    T::discriminate_field(sv, []<typename>() {})
+    T::discriminate_field(std::string_view{}, []<typename>() {})
   };
+  { t.discriminator_now() } -> std::same_as<std::string_view>;
+  { t.data };
 };
 }  // namespace details
 

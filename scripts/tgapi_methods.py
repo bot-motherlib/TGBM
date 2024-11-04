@@ -323,18 +323,18 @@ def generate_api_struct(method_desc: method_info_t):
         s += '};\n'
         return s # GET methods without args
 
-    # void fill_nonfile_args(auto& body)
+    # void fill_nonfile_args(auto& body) const
 
-    s += '\n  void fill_nonfile_args(auto& body) {\n'
+    s += '\n  void fill_nonfile_args(auto& body) const {\n'
 
     for param in method_desc.parameters:
         if param.param_type == G_FILEORSTR:
             # assume is str, because file must be filled in other fn
             if param.is_optional:
-                s += f'    if ({param.name}) if (auto* str = {param.name}->get_str())'
+                s += f'    if ({param.name}) if (const auto* str = {param.name}->get_str())'
                 s += f'      body.arg("{param.name}", *str);\n'
             else:
-                s += f'    if (auto* str = {param.name}.get_str()) body.arg("{param.name}", *str);\n'
+                s += f'    if (const auto* str = {param.name}.get_str()) body.arg("{param.name}", *str);\n'
         elif param.param_type == 'InputFile':
             continue # must be filled in 'fill_file_args'
         else:
@@ -369,9 +369,9 @@ def generate_api_struct(method_desc: method_info_t):
         s += '    return false;\n'
     s += '  }\n'
 
-    # void fill_file_args(application_multipart_form_data& body)
+    # void fill_file_args(application_multipart_form_data& body) const
 
-    s += '\n  void fill_file_args(application_multipart_form_data& body) {\n'
+    s += '\n  void fill_file_args(application_multipart_form_data& body) const {\n'
     for param in method_desc.parameters:
         # using overload for InputFile in multipart body
         if param.param_type == 'InputFile':
@@ -382,10 +382,10 @@ def generate_api_struct(method_desc: method_info_t):
                 s += f'    body.arg("{param.name}", {param.name});\n'
         elif param.param_type == G_FILEORSTR:
             if param.is_optional:
-                s += f'    if ({param.name}) if (InputFile* f = {param.name}->get_file())\n'
+                s += f'    if ({param.name}) if (const InputFile* f = {param.name}->get_file())\n'
                 s += f'      body.arg("{param.name}", *f);\n'
             else:
-                s += f'    if (InputFile* f = {param.name}.get_file())\n'
+                s += f'    if (const InputFile* f = {param.name}.get_file())\n'
                 s += f'      body.arg("{param.name}", *f);\n'
     s += '  }\n'
 

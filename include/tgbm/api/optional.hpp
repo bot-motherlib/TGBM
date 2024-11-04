@@ -242,8 +242,11 @@ struct TGBM_TRIVIAL_ABI optional {
   constexpr optional() noexcept {
     reset();
   }
-  constexpr optional(T v) noexcept(std::is_nothrow_move_constructible_v<T>) {
-    emplace(std::move(v));
+  template <typename U = T>
+  constexpr optional(U&& v) noexcept(std::is_nothrow_constructible_v<T, U&&>)
+    requires(std::is_constructible_v<T, U &&>)
+  {
+    emplace(std::forward<U>(v));
   }
   constexpr optional(std::nullopt_t) noexcept : optional() {
   }
@@ -260,8 +263,9 @@ struct TGBM_TRIVIAL_ABI optional {
     reset();
     return *this;
   }
-  constexpr optional& operator=(T v) noexcept(std::is_nothrow_move_constructible_v<T>) {
-    emplace(std::move(v));
+  template <typename U = T>
+  constexpr optional& operator=(U&& v) noexcept(std::is_nothrow_constructible_v<T, U&&>) {
+    emplace(std::forward<U>(v));
     return *this;
   }
 

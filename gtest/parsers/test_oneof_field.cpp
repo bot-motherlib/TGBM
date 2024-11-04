@@ -92,7 +92,6 @@ struct CustomStruct {
 
   static constexpr size_t variant_size = size_t(type_e::nothing);
 
-  // Функция для дискриминации по строковому значению
   static constexpr decltype(auto) discriminate_field(std::string_view val, auto&& visiter) {
     if (val == "optional_bool")
       return visiter.template operator()<optional_bool>();
@@ -108,28 +107,29 @@ struct CustomStruct {
       return visiter.template operator()<optional_custom>();
     return visiter.template operator()<void>();
   }
-};
-
-// Преобразование type_e в строковое представление
-inline std::string_view to_string_view(CustomStruct::type_e e) {
-  using From = CustomStruct::type_e;
-  switch (e) {
-    case From::k_optional_bool:
-      return "optional_bool";
-    case From::k_optional_double:
-      return "optional_double";
-    case From::k_optional_array:
-      return "optional_array";
-    case From::k_optional_object1:
-      return "optional_object1";
-    case From::k_optional_object2:
-      return "optional_object2";
-    case From::k_optional_custom:
-      return "optional_custom";
-    case From::nothing:
-      return "nothing";
+  type_e type() const {
+    return static_cast<type_e>(data.index());
   }
-}
+  std::string_view discriminator_now() const noexcept {
+    using From = CustomStruct::type_e;
+    switch (type()) {
+      case From::k_optional_bool:
+        return "optional_bool";
+      case From::k_optional_double:
+        return "optional_double";
+      case From::k_optional_array:
+        return "optional_array";
+      case From::k_optional_object1:
+        return "optional_object1";
+      case From::k_optional_object2:
+        return "optional_object2";
+      case From::k_optional_custom:
+        return "optional_custom";
+      case From::nothing:
+        return "nothing";
+    }
+  }
+};
 
 JSON_PARSE_TEST(TestOneOfFieldOptionalBool, {
   CustomStruct expected;

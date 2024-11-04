@@ -296,19 +296,19 @@ def generate_halfoneof_api_struct(t: type_info_t) -> str:
         s += f'    if (val == "{f.name}") return visitor.template operator()<{f.name}>();'
     s += '    return visitor.template operator()<void>();'
     s += '  }\n\n'
-    s += '};\n' # end struct
 
-    # TODO .discriminator_str in type
-    # std::string_view to_string_view({t.name}::type_e)
+    # std::string_view discriminator_now() const
 
-    s += f'inline std::string_view to_string_view({t.name}::type_e v) {{\n'
-    s += f'  using enum {t.name}::type_e;'
-    s += '  switch(v) {\n'
+    s += f'std::string_view discriminator_now() const noexcept {{\n'
+    s += f'using enum {t.name}::type_e;'
+    s += 'switch(type()) {\n'
     for f in t.optional_fields():
         s += f' case k_{f.name}: return "{f.name}";\n'
     s += 'case nothing: return "nothing";\n'
     s += 'default: unreachable();\n'
-    s += '  }\n}\n'
+    s += '}\n}\n'
+
+    s += '};\n' # end struct
 
     return s
 
@@ -399,19 +399,19 @@ def generate_api_struct_oneof(t: oneof_info_t) -> str:
         s += f'    if (val == "{alt.discriminator_value}") return visitor.template operator()<{alt.name}>();'
     s += '    return visitor.template operator()<void>();\n'
     s += '  }\n\n'
-    s += '};\n' # end struct
 
-    # TODO .discriminator_str in type
-    # std::string_view to_string_view({t.name}::type_e)
+    # std::string_view discriminator_now() const
 
-    s += f'inline std::string_view to_string_view({t.name}::type_e v) {{\n'
+    s += f'std::string_view discriminator_now() const noexcept {{\n'
     s += f'  using enum {t.name}::type_e;'
-    s += '  switch(v) {\n'
+    s += '  switch(type()) {\n'
     for alt in t.alternatives:
         s += f' case k_{cut_oneofname(alt.name, t.name)}: return "{alt.discriminator_value}";\n'
     s += 'case nothing: return "nothing";\n'
     s += 'default: unreachable();\n'
     s += '  }\n}\n'
+
+    s += '};\n' # end struct
 
     return s
 
