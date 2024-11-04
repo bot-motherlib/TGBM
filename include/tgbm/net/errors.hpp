@@ -6,6 +6,7 @@
 
 #include <fmt/core.h>
 
+#include "tgbm/api/const_string.hpp"
 #include "tgbm/tools/macro.hpp"
 
 namespace tgbm {
@@ -38,6 +39,13 @@ struct http_exception : std::exception {
   int status = 0;
 
   explicit http_exception(int status) noexcept : status(status) {
+  }
+};
+
+struct bad_request : http_exception {
+  const_string description;
+
+  explicit bad_request(const_string s) noexcept : http_exception(404), description(std::move(s)) {
   }
 };
 

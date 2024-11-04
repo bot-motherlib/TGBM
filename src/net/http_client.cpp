@@ -29,8 +29,12 @@ namespace tgbm {
 void handle_telegram_http_status(int status) {
   if (status < 0)
     throw_bad_status(status);
-  if (status != 200)
-    throw http_exception(status);
+  if (status != 200) {
+    if (status == 404)
+      throw bad_request({});
+    else
+      throw http_exception(status);
+  }
 }
 
 http_client::http_client(std::string_view host) : host(host) {

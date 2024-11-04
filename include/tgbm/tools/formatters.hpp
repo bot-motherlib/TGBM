@@ -39,7 +39,7 @@ template <tgbm::discriminated_api_type T>
 struct formatter<T> : formatter<std::string_view> {
   static auto format(const T& t, auto& ctx) -> decltype(ctx.out()) {
     auto out = ctx.out();
-    out = fmt::format_to(out, "{}: [{}]", T::discriminator, to_string_view(t.type()));
+    out = fmt::format_to(out, "{}: [{}]", T::discriminator, t.discriminator_now());
     auto visitor = [&](const auto& field) { return fmt::format_to(out, ", {}", field); };
     return t.data.visit(visitor);
   }

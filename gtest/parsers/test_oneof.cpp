@@ -151,23 +151,23 @@ struct MessageOrigin {
   type_e type() const {
     return static_cast<type_e>(data.index());
   }
-};
 
-std::string_view to_string_view(MessageOrigin::type_e e) {
-  switch (e) {
-    case MessageOrigin::type_e::k_user:
-      return "user";
-    case MessageOrigin::type_e::k_hidden_user:
-      return "hidden_user";
-    case MessageOrigin::type_e::k_chat:
-      return "chat";
-    case MessageOrigin::type_e::k_channel:
-      return "channel";
-    case MessageOrigin::type_e::nothing:
-      return "nothing";
+  std::string_view discriminator_now() const noexcept {
+    switch (type()) {
+      case MessageOrigin::type_e::k_user:
+        return "user";
+      case MessageOrigin::type_e::k_hidden_user:
+        return "hidden_user";
+      case MessageOrigin::type_e::k_chat:
+        return "chat";
+      case MessageOrigin::type_e::k_channel:
+        return "channel";
+      case MessageOrigin::type_e::nothing:
+        return "nothing";
+    }
+    tgbm::unreachable();
   }
-  tgbm::unreachable();
-}
+};
 
 // Test for "user" type
 JSON_PARSE_TEST(OneOfUserType, {

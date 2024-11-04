@@ -81,7 +81,7 @@ inline void tag_invoke(value_from_tag, value& jv, const T& t) {
   auto m = tgbm::matcher{[&]<typename F>(F& suboneof) {
                            obj = boost::json::object{};
                            auto& o = obj.as_object();
-                           o[T::discriminator] = to_string_view(t.type());
+                           o[T::discriminator] = t.discriminator_now();
                            boost::json::value_from(suboneof, obj);
                            is_empty = false;
                          },
@@ -110,7 +110,7 @@ inline void tag_invoke(value_from_tag, value& jv, const T& t) {
         }
       });
 
-  std::string_view opt_field = to_string_view(t.type());
+  std::string_view opt_field = t.discriminator_now();
   tgbm::oneof_field_utils::visit(
       t, [&](auto& field) { obj[opt_field] = boost::json::value_from(field); },
       []() { TGBM_JSON_SERIALIZE_ERROR; });

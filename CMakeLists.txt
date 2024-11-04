@@ -52,6 +52,7 @@ set(TGBM_SRC_LIST
     src/Api.cpp
     # src/api_types_cmp.cpp
     src/Bot.cpp
+    src/telegram.cpp
     src/EventHandler.cpp
     src/TgTypeParser.cpp
     src/net/http2/protocol.cpp

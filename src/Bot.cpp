@@ -1,13 +1,14 @@
-#include "tgbm/Bot.h"
+#if 0
+  #include "tgbm/Bot.h"
 
-#include "tgbm/EventBroadcaster.h"
-#include "tgbm/net/http2_client.hpp"
+  #include "tgbm/EventBroadcaster.h"
+  #include "tgbm/net/http2_client.hpp"
 
-#include <memory>
-#include <string>
+  #include <memory>
+  #include <string>
 
-#include "tgbm/logger.hpp"
-#include "tgbm/tools/scope_exit.h"
+  #include "tgbm/logger.hpp"
+  #include "tgbm/tools/scope_exit.h"
 
 namespace tgbm {
 // TODO any client
@@ -36,9 +37,11 @@ dd::task<void> Bot::get_and_handle_updates(std::chrono::seconds update_wait_time
     _client->stop();
   };
   try {
-    co_foreach(Update::Ptr update,
-               long_poll(get_api(), 100, update_wait_timeout, nullptr, /*confirm_before_handle=*/true)) {
-      _eventHandler.handleUpdate(update);
+    co_foreach(api::Update && update,
+               long_poll(api::telegram(get_client(), get_token()), 100, update_wait_timeout, {},
+                         /*confirm_before_handle=*/true)) {
+      TGBM_LOG_INFO("getUpdate: {}", update.discriminator_now());
+      // TODO _eventHandler.handleUpdate(update);
     }
   } catch (std::exception& e) {
     TGBM_LOG_ERROR("Bot getUpdates ended with exception, its ignored, err: {}", e.what());
@@ -67,3 +70,4 @@ void Bot::stop() {
 }
 
 }  // namespace tgbm
+#endif

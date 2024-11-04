@@ -3,8 +3,10 @@
 #include "boost/json/error.hpp"
 #include "tgbm/tools/json_tools/boost_parse_generator.hpp"
 #include "tgbm/tools/json_tools/exceptions.hpp"
+#include "tgbm/tools/json_tools/generator_parser/all.hpp"
 
 namespace tgbm::json {
+
 struct stream_parser {
   ::boost::json::basic_parser<boost::details::wait_handler> p;
 
@@ -43,4 +45,5 @@ T from_json(std::string_view json) {
   from_json(json, out);
   return out;
 }
+
 }  // namespace tgbm::json

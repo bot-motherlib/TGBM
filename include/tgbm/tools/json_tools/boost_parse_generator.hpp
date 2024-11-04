@@ -1,16 +1,18 @@
 #pragma once
 
-#include <boost/json/basic_parser.hpp>
+#include <boost/json/basic_parser_impl.hpp>
 
 #include "tgbm/tools/json_tools/generator_parser/basic_parser.hpp"
 
 namespace fmt {
+
 template <>
 struct formatter<::boost::json::string_view> : formatter<std::string_view> {
   static auto format(::boost::json::string_view sv, auto& ctx) -> decltype(ctx.out()) {
     return fmt::format_to(ctx.out(), "{}", std::string_view{sv.data(), sv.size()});
   }
 };
+
 }  // namespace fmt
 
 namespace tgbm::json::boost {

@@ -111,15 +111,15 @@ dd::task<reqerr_t> send_request(const R& request, http_client& client, const_str
                                 request_return_t<R>& out, duration_t timeout) {
   telegram_answer r(out);
   json::stream_parser parser(r);
-
-  auto parse_to_out = [&, ec = io_error_code{}](std::span<byte_t> bytes, bool last_part) mutable {
+  io_error_code ec;
+  auto parse_to_out = [&](std::span<const byte_t> bytes, bool last_part) {
     parser.feed(std::string_view((const char*)bytes.data(), bytes.size()), last_part, ec);
     if (ec)
       throw json::parse_error(ec.what());
   };
   int status =
       co_await client.send_request(nullptr, &parse_to_out, make_request(request, bottoken.str()), timeout);
-  co_return reqerr_t{.status = status, .description = std::move(r.descripion)};
+  co_return reqerr_t{.status = status, .description = std::move(r.description)};
 }
 
 // ignores result, but waits telegram answer for status

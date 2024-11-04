@@ -1,11 +1,12 @@
-#pragma once
+#if 0
+  #pragma once
 
-#include "tgbm/Api.h"
-#include "tgbm/EventHandler.h"
-#include "tgbm/net/long_poll.hpp"
+  #include "tgbm/Api.h"
+  #include "tgbm/EventHandler.h"
+  #include "tgbm/net/long_poll.hpp"
 
-#include <memory>
-#include <string>
+  #include <memory>
+  #include <string>
 
 namespace tgbm {
 
@@ -68,3 +69,4 @@ struct Bot {
 };
 
 }  // namespace tgbm
+#endif
