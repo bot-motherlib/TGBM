@@ -210,7 +210,7 @@ http11_client::http11_client(size_t connections_max_count, std::string_view host
 }
 
 dd::task<int> http11_client::send_request(on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part,
-                                          http_request request, duration_t) {
+                                          http_request request, deadline_t) {
   if (stop_requested)
     co_return reqerr_e::cancelled;
   ++requests_in_progress;

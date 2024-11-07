@@ -27,7 +27,7 @@ struct http11_client : http_client {
   using http_client::send_request;
   // note: this client ignores timeouts, its propose to just work in any case
   dd::task<int> send_request(on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part, http_request,
-                             duration_t timeout) override;
+                             deadline_t deadline) override;
 
   void run() override;
 

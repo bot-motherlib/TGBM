@@ -1,0 +1,22 @@
+#pragma once
+
+#include "all_fwd.hpp"
+
+namespace tgbm::api {
+
+/*Describes the opening hours of a business.*/
+struct BusinessOpeningHours {
+  /* Unique name of the time zone for which the opening hours are defined */
+  String time_zone_name;
+  /* List of time intervals describing business opening hours */
+  arrayof<BusinessOpeningHoursInterval> opening_hours;
+
+  consteval static bool is_mandatory_field(std::string_view name) {
+    return utils::string_switch<bool>(name)
+        .case_("time_zone_name", true)
+        .case_("opening_hours", true)
+        .or_default(false);
+  }
+};
+
+}  // namespace tgbm::api

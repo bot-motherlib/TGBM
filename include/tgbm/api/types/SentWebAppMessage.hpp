@@ -1,0 +1,18 @@
+#pragma once
+
+#include "all_fwd.hpp"
+
+namespace tgbm::api {
+
+/*Describes an inline message sent by a Web App on behalf of a user.*/
+struct SentWebAppMessage {
+  /* Optional. Identifier of the sent inline message. Available only if there is an inline keyboard attached
+   * to the message. */
+  optional<String> inline_message_id;
+
+  consteval static bool is_mandatory_field(std::string_view name) {
+    return utils::string_switch<bool>(name).or_default(false);
+  }
+};
+
+}  // namespace tgbm::api

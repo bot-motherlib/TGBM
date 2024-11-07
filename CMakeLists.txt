@@ -49,12 +49,10 @@ endif()
 
 set(TGBM_SRC_LIST
     src/net/http2_client.cpp
-    src/Api.cpp
     # src/api_types_cmp.cpp
-    src/Bot.cpp
+    src/bot.cpp
+    src/api/input_file.cpp
     src/telegram.cpp
-    src/EventHandler.cpp
-    src/TgTypeParser.cpp
     src/net/http2/protocol.cpp
     src/net/http2_server.cpp
     src/net/tcp_connection.cpp
@@ -62,19 +60,7 @@ set(TGBM_SRC_LIST
     src/net/http_client.cpp
     src/net/long_poll.cpp
     src/net/ssl_context.cpp
-    src/tools/FileTools.cpp
     src/tools/StringTools.cpp
-    src/types/BotCommandScope.cpp
-    src/types/ChatBoostSource.cpp
-    src/types/ChatMember.cpp
-    src/types/InlineQueryResult.cpp
-    src/types/InputFile.cpp
-    src/types/InputMedia.cpp 
-    src/types/InputMessageContent.cpp
-    src/types/MenuButton.cpp
-    src/types/MessageOrigin.cpp
-    src/types/PassportElementError.cpp
-    src/types/ReactionType.cpp
     )
 
 add_library(tgbmlib ${TGBM_SRC_LIST})

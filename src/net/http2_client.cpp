@@ -1320,7 +1320,7 @@ void http2_client::drop_connection(reqerr_e::values reason) noexcept {
 }
 
 dd::task<int> http2_client::send_request(on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part,
-                                         http_request request, duration_t timeout) {
+                                         http_request request, deadline_t deadline) {
   assert((threadid == std::thread::id{} || threadid == std::this_thread::get_id()) &&
          "client must be used in one thread");
   // TODO retries (in the api)
@@ -1333,8 +1333,6 @@ dd::task<int> http2_client::send_request(on_header_fn_ptr on_header, on_data_par
   on_scope_exit {
     --requests_in_progress;
   };
-  // calculates deadline before borrowing connection
-  deadline_t deadline = deadline_after(timeout);
   http2_connection_ptr con = co_await borrow_connection();
   if (!con)
     co_return reqerr_e::network_err;

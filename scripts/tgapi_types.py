@@ -306,7 +306,7 @@ def generate_halfoneof_api_struct(t: type_info_t) -> str:
     s += 'switch(type()) {\n'
     for f in t.optional_fields():
         s += f' case k_{f.name}: return "{f.name}";\n'
-    s += 'case nothing: return "nothing";\n'
+    s += 'case nothing: return "";\n'
     s += 'default: unreachable();\n'
     s += '}\n}\n'
 
@@ -411,7 +411,7 @@ def generate_api_struct_oneof(t: oneof_info_t) -> str:
     s += '  switch(type()) {\n'
     for alt in t.alternatives:
         s += f' case k_{cut_oneofname(alt.name, t.name)}: return "{alt.discriminator_value}";\n'
-    s += 'case nothing: return "nothing";\n'
+    s += 'case nothing: return "";\n'
     s += 'default: unreachable();\n'
     s += '  }\n}\n'
 

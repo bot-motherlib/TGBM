@@ -42,7 +42,7 @@ http_client::http_client(std::string_view host) : host(host) {
     throw std::invalid_argument("host should not be full url, correct example: \"api.telegram.org\"");
 }
 
-dd::task<http_response> http_client::send_request(http_request request, duration_t timeout) {
+dd::task<http_response> http_client::send_request(http_request request, deadline_t deadline) {
   http_response rsp;
   auto on_header = [&](std::string_view name, std::string_view value) {
     rsp.headers.emplace_back(std::string(name), std::string(value));
@@ -50,7 +50,7 @@ dd::task<http_response> http_client::send_request(http_request request, duration
   auto on_data_part = [&](std::span<const byte_t> bytes, bool last_part) {
     rsp.body.insert(rsp.body.end(), bytes.begin(), bytes.end());
   };
-  rsp.status = co_await send_request(&on_header, &on_data_part, std::move(request), timeout);
+  rsp.status = co_await send_request(&on_header, &on_data_part, std::move(request), deadline);
   if (rsp.status < 0)
     throw_bad_status(rsp.status);
 

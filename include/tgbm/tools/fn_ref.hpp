@@ -16,4 +16,7 @@ using fn_ptr = aa::ptr<aa::call<Signature>>;
 template <typename Signature>
 using fn_cptr = aa::cptr<aa::call<Signature>>;
 
+template <typename Signature>
+using move_only_fn = aa::any_with<aa::call<Signature>, aa::move>;
+
 }  // namespace tgbm

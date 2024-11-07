@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <filesystem>
 
 namespace tgbm::api {
 // TODO better
@@ -10,8 +11,7 @@ struct InputFile {
   std::string mimetype;
   std::string data;
 
-  // TODO impl
-  static InputFile fromFile(const std::string& filePath, const std::string& mimeType);
+  static InputFile from_file(std::filesystem::path file_path, std::string mime_type);
 };
 
 }  // namespace tgbm::api

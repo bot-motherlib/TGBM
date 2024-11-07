@@ -1,73 +1,114 @@
-#if 0
-  #include "tgbm/Bot.h"
+#include "tgbm/bot.hpp"
 
-  #include "tgbm/EventBroadcaster.h"
-  #include "tgbm/net/http2_client.hpp"
-
-  #include <memory>
-  #include <string>
-
-  #include "tgbm/logger.hpp"
-  #include "tgbm/tools/scope_exit.h"
+#include "tgbm/net/http2_client.hpp"
+#include "tgbm/net/long_poll.hpp"
 
 namespace tgbm {
-// TODO any client
+
 std::unique_ptr<http_client> default_http_client(std::string_view host) {
   return std::unique_ptr<http_client>(new http2_client(host));
 }
 
-Bot::Bot(std::string token, std::string host)
-    : _client(default_http_client(host)),
-      _api(token, *_client),
-      _eventBroadcaster(new EventBroadcaster),
-      _eventHandler(*_eventBroadcaster) {
+[[nodiscard]] bool bot_commands::is_valid_name(std::string_view name) noexcept {
+  // TODO
+  return true;
 }
 
-Bot::Bot(std::string token, std::unique_ptr<http_client> httpClient)
-    : _client(std::move(httpClient)),
-      _api(token, *_client),
-      // TODO rm эти штуки, заменить на update_visitor + updater типа того
-      _eventBroadcaster(new EventBroadcaster),
-      _eventHandler(*_eventBroadcaster) {
-  assert(_client && "client must not be nullptr");
+void bot_commands::add(std::string name, on_command_handler_t oncommand, std::string description) {
+  if (!is_valid_name(name))
+    throw std::runtime_error(fmt::format("\"{}\" is not valid name for bot command", name));
+  commands.insert_or_assign(std::move(name), command(std::move(oncommand), std::move(description)));
 }
 
-dd::task<void> Bot::get_and_handle_updates(std::chrono::seconds update_wait_timeout) {
-  on_scope_exit {
-    _client->stop();
+bot_commands::on_command_handler_t::cptr bot_commands::find(std::string_view name) const noexcept {
+  // TODO transparent search
+  auto it = commands.find(std::string(name));
+  if (it == commands.end())
+    return nullptr;
+  return &it->second.handler;
+}
+
+static constexpr std::string_view parse_command(std::string_view text) {
+  // rm whitespaces
+  while (!text.empty()) {
+    char arr[] = " \n\t";
+    if (std::ranges::find(arr, text.front()) == std::end(arr))
+      break;
+    text.remove_prefix(1);
+  }
+  if (text.empty() || text.front() != '/')
+    return "";
+  text.remove_prefix(1);
+  auto index = text.find_first_of(" \n\t");
+  return text.substr(0, index - 1);
+}
+
+static_assert(parse_command("fdsfsf") == "");
+static_assert(parse_command("/start") == "start");
+static_assert(parse_command("   \t\n/start") == "start");
+
+dd::channel<api::Update> bot::updates(api::arrayof<api::String> allowed_updates,
+                                      std::chrono::seconds update_wait_timeout, bool drop_pending_updates) {
+  dd::channel chan =
+      long_poll(api, 100, update_wait_timeout, std::move(allowed_updates), drop_pending_updates);
+
+  auto maybe_handle_command = [&](api::Message& m) {
+    if (!m.text)
+      return false;
+    std::string_view command = parse_command(*m.text);
+    if (command.empty())
+      return false;
+    auto handler = commands.find(command);
+    if (!handler)
+      return false;
+    (*handler)(std::move(m));
+    return true;
   };
-  try {
-    co_foreach(api::Update && update,
-               long_poll(api::telegram(get_client(), get_token()), 100, update_wait_timeout, {},
-                         /*confirm_before_handle=*/true)) {
-      TGBM_LOG_INFO("getUpdate: {}", update.discriminator_now());
-      // TODO _eventHandler.handleUpdate(update);
+  co_foreach(api::Update && u, chan) {
+    switch (u.type()) {
+      case api::Update::type_e::k_channel_post:
+        if (maybe_handle_command(*u.get_channel_post()))
+          continue;
+        [[fallthrough]];
+      case api::Update::type_e::k_message:
+        if (maybe_handle_command(*u.get_message()))
+          continue;
+        [[fallthrough]];
+      default:
+        co_yield std::move(u);
+        continue;
     }
+  }
+}
+
+dd::task<int> download_file(api::telegram api, api::String file_path, on_data_part_fn_ref on_data_part,
+                            deadline_t deadline) {
+  int status = co_await api.client.send_request(
+      nullptr, &on_data_part,
+      http_request{.authority = {},
+                   .path = fmt::format("/file/bot{}/{}", api.bottoken.str(), file_path),
+                   .method = http_method_e::GET,
+                   .scheme = scheme_e::HTTPS},
+      deadline);
+  co_return status;
+}
+
+dd::task<int> download_file_by_id(api::telegram api, api::String fileid,
+                                  fn_ref<void(std::span<const byte_t>, bool is_last_chunk)> on_data_part,
+                                  deadline_t deadline) {
+  api::File info = co_await api.getFile({.file_id = std::move(fileid)}, deadline);
+  if (!info.file_path)
+    co_return 404;
+  co_return co_await download_file(std::move(api), std::move(*info.file_path), on_data_part, deadline);
+}
+
+dd::task<bool> bot::blocked_by_user(api::Integer chatid, deadline_t deadline) const {
+  try {
+    (void)co_await api.sendChatAction({.chat_id = chatid, .action = "typing"});
+    co_return false;
   } catch (std::exception& e) {
-    TGBM_LOG_ERROR("Bot getUpdates ended with exception, its ignored, err: {}", e.what());
-    TGBM_LOG_ERROR("getUpdates ended with exception, http client will be stopped, what: {}", e.what());
-  } catch (...) {
-    TGBM_LOG_ERROR("getUpdates ended with unknown exception, http client will be stopped");
+    co_return std::string_view("Forbidden: bot was blocked by the user") == e.what();
   }
-}
-
-void Bot::run(std::chrono::seconds update_wait_timeout) {
-  auto handle = get_and_handle_updates(update_wait_timeout).start_and_detach(/*stop_at_end=*/true);
-  TGBM_LOG_DEBUG("start bot");
-  _client->run();
-  std::exception_ptr e = handle.promise().exception;
-  handle.destroy();
-  if (e) {
-    TGBM_LOG_INFO("Bot stopped with exception in getUpdates");
-    std::rethrow_exception(e);
-  } else {
-    TGBM_LOG_INFO("Bot stopped without exception");
-  }
-}
-
-void Bot::stop() {
-  _client->stop();
 }
 
 }  // namespace tgbm
-#endif
