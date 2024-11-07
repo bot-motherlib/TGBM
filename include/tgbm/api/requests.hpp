@@ -30,10 +30,6 @@ concept tgapi_request_decayed = requires {
 template <typename T>
 concept tgapi_request = noexport::tgapi_request_decayed<std::decay_t<T>>;
 
-template <typename T>
-concept tgapi_file_request =
-    tgapi_request<T> && std::same_as<typename std::decay_t<T>::return_type, InputFile>;
-
 template <tgapi_request R>
 using request_return_t = typename R::return_type;
 
@@ -104,9 +100,8 @@ struct reqerr_t {
 
 // Note: 'out' must be alive while coroutine working
 template <tgapi_request R>
-  requires(!tgapi_file_request<R>)
 dd::task<reqerr_t> send_request(const R& request, http_client& client, const_string bottoken,
-                                request_return_t<R>& out, duration_t timeout) {
+                                request_return_t<R>& out, deadline_t deadline) {
   telegram_answer r(out);
   json::stream_parser parser(r);
   io_error_code ec;
@@ -116,25 +111,17 @@ dd::task<reqerr_t> send_request(const R& request, http_client& client, const_str
       throw json::parse_error(ec.what());
   };
   int status =
-      co_await client.send_request(nullptr, &parse_to_out, make_request(request, bottoken.str()), timeout);
+      co_await client.send_request(nullptr, &parse_to_out, make_request(request, bottoken.str()), deadline);
   co_return reqerr_t{.status = status, .description = std::move(r.description)};
 }
 
 // ignores result, but waits telegram answer for status
 // returns http status or reqerr_e (< 0)
 template <tgapi_request R>
-dd::task<int> send_request(const R& request, http_client& client, const_string bottoken, duration_t timeout) {
-  auto noop = [](std::string_view, std::string_view) {};
-  return client.send_request(&noop, nullptr, make_request(request, bottoken.str()), timeout);
-}
-
-// for files
-// Note: on_data_part ptr must be alive while coroutine works
-// returns http status or reqerr_e (< 0)
-template <tgapi_file_request R>
 dd::task<int> send_request(const R& request, http_client& client, const_string bottoken,
-                           on_data_part_fn_ref on_data_part, duration_t timeout) {
-  return client.send_request(nullptr, &on_data_part, make_request(request, bottoken.str()), timeout);
+                           deadline_t deadline) {
+  auto noop = [](std::string_view, std::string_view) {};
+  return client.send_request(&noop, nullptr, make_request(request, bottoken.str()), deadline);
 }
 
 }  // namespace tgbm::api

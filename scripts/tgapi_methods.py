@@ -443,13 +443,14 @@ def generate_all_methods(methods: list[method_info_t], outdir: str):
 def generate_api_fwd_header(methods: list[method_info_t], out):
     print(f'#pragma once\n', file=out)
     print('#include <kelcoro/task.hpp>\n\n#include "tgbm/net/http_client.hpp"\n#include "tgbm/api/methods/all.hpp"\n', file=out)
+    print('#include "tgbm/api/types/all.hpp"\n', file=out)
     print('namespace tgbm::api {\n', file=out)
     print('struct telegram {', file=out)
     # fields and ctor
     print('\nhttp_client& client;\nconst_string bottoken;\n', file=out)
     for m in methods:
         apistructarg = f'api::{m.get_cppstruct_name()}, ' if len(m.parameters) != 0 else ""
-        print(f'/* {m.description} */\ndd::task<{m.ret_type}> {m.name}({apistructarg} duration_t timeout = duration_t::max());\n', file=out)
+        print(f'/* {m.description} */\ndd::task<{m.ret_type}> {m.name}({apistructarg} deadline_t deadline = deadline_t::never()) const;\n', file=out)
     print('\n};\n', file=out) # struct telegram
     print('}\n', file=out) # namespace tgbm::api
 
@@ -458,13 +459,14 @@ def generate_api_impl_file(methods: list[method_info_t], out):
     print('#include "tgbm/api/telegram.hpp"\n', file=out)
     print('#include "tgbm/api/types/all.hpp"\n#include "tgbm/api/methods/all.hpp"\n#include "tgbm/api/const_string.hpp"', file=out)
     print('#include "tgbm/api/requests.hpp"\n', file=out)
+    print('#include "tgbm/tools/deadline.hpp"\n', file=out)
     print('namespace tgbm::api {\n', file=out)
     for m in methods:
         if len(m.parameters) == 0:
             implstr = f'''
-            dd::task<{m.ret_type}> telegram::{m.name}(duration_t timeout) {{
+            dd::task<{m.ret_type}> telegram::{m.name}(deadline_t deadline) const {{
                 {m.ret_type}& result = co_await dd::this_coro::return_place;
-                reqerr_t err = co_await api::send_request(api::{m.get_cppstruct_name()}{{}}, client, bottoken, result, timeout);
+                reqerr_t err = co_await api::send_request(api::{m.get_cppstruct_name()}{{}}, client, bottoken, result, deadline);
                 if (err) [[unlikely]] {{
                     TGBM_LOG_ERROR("{m.name} request ended with error, status: {{}}, description: {{}}", err.status, err.description.str());
                     handle_telegram_http_status(err.status);
@@ -475,9 +477,9 @@ def generate_api_impl_file(methods: list[method_info_t], out):
             print(implstr, file=out)
         else:
             implstr = f'''
-            dd::task<{m.ret_type}> telegram::{m.name}(api::{m.get_cppstruct_name()} request, duration_t timeout) {{
+            dd::task<{m.ret_type}> telegram::{m.name}(api::{m.get_cppstruct_name()} request, deadline_t deadline) const {{
                 {m.ret_type}& result = co_await dd::this_coro::return_place;
-                reqerr_t err = co_await api::send_request(request, client, bottoken, result, timeout);
+                reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
                 if (err) [[unlikely]] {{
                     TGBM_LOG_ERROR("{m.name} request ended with error, status: {{}}, description: {{}}", err.status, err.description.str());
                     handle_telegram_http_status(err.status);

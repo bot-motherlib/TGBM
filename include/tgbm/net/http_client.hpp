@@ -28,6 +28,7 @@ struct http_client {
   std::string_view get_host() const noexcept {
     return host;
   }
+
   // 'host' used for
   //   * connecting when required
   //   * SSL host name verification
@@ -46,10 +47,14 @@ struct http_client {
   // 0 if request done, but both handlers nullptr and status not parsed
   // > 0 if 3-digit server response code
   virtual dd::task<int> send_request(on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part,
-                                     http_request request, duration_t timeout) = 0;
+                                     http_request request, deadline_t) = 0;
 
   // throws on errors
-  dd::task<http_response> send_request(http_request request, duration_t timeout);
+  dd::task<http_response> send_request(http_request request, deadline_t);
+
+  dd::task<http_response> send_request(http_request request, duration_t timeout) {
+    return send_request(std::move(request), deadline_after(timeout));
+  }
 
   // run until all work done
   virtual void run() = 0;
