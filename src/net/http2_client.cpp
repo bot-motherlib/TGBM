@@ -51,6 +51,7 @@ resources:
 #include "tgbm/tools/deadline.hpp"
 
 #include <kelcoro/channel.hpp>
+#include <kelcoro/algorithm.hpp>
 
 #include <boost/intrusive/unordered_set.hpp>
 #include <boost/intrusive/treap_set.hpp>
@@ -379,7 +380,7 @@ struct http2_connection {
     TGBM_LOG_DEBUG("[HTTP2]: stream {} finished, status: {}", node.req.streamid, status);
     node.status = status;
     auto t = std::exchange(node.task, nullptr);
-    if (status == reqerr_e::cancelled)
+    if (status == reqerr_e::cancelled || status == reqerr_e::timeout)
       // ignore possible bad alloc for coroutine
       send_rst_stream(this, node.req.streamid, http2::errc_e::CANCEL).start_and_detach();
     t.resume();
@@ -1323,12 +1324,10 @@ dd::task<int> http2_client::send_request(on_header_fn_ptr on_header, on_data_par
                                          http_request request, deadline_t deadline) {
   assert((threadid == std::thread::id{} || threadid == std::this_thread::get_id()) &&
          "client must be used in one thread");
-  // TODO retries (in the api)
-  // TODO client-pool, client with retries(template), may be client with metrics (what recived/sended)
-  // how much time request etc)
-  if (stop_requested)
+  if (stop_requested) [[unlikely]]
     co_return reqerr_e::cancelled;
-
+  if (deadline.is_reached()) [[unlikely]]
+    co_return reqerr_e::timeout;
   ++requests_in_progress;
   on_scope_exit {
     --requests_in_progress;
@@ -1404,6 +1403,22 @@ void http2_client::stop() {
   if (stop_requested)
     return;
   stop_requested = true;
+
+  // notify server that streams closed
+
+  if (connection) {
+    std::vector<dd::task<void>> streams;
+    for (auto& r : connection->responses)
+      streams.push_back(send_rst_stream(connection, r.req.streamid, http2::errc_e::CANCEL));
+    bool done = false;
+    auto rst_all_streams = [](std::vector<dd::task<void>> streams, bool& done) -> dd::task<void> {
+      (void)co_await dd::when_all(std::move(streams));
+      done = true;
+    };
+    rst_all_streams(std::move(streams), done).start_and_detach();
+    while (!done)
+      io_ctx.run_one();
+  }
   drop_connection(reqerr_e::cancelled);
   while (requests_in_progress != 0)
     io_ctx.run_one();

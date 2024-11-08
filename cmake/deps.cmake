@@ -9,7 +9,7 @@ CPMAddPackage(
   SYSTEM OFF
 )
 
-set(BOOST_INCLUDE_LIBRARIES system asio property_tree pfr json)
+set(BOOST_INCLUDE_LIBRARIES system asio pfr json)
 CPMAddPackage(
   NAME Boost
   VERSION 1.84.0
@@ -17,7 +17,7 @@ CPMAddPackage(
   OPTIONS "BOOST_ENABLE_CMAKE ON"
 )
 unset(BOOST_INCLUDE_LIBRARIES)
-find_package(Boost 1.84 COMPONENTS system asio property_tree pfr json REQUIRED)
+find_package(Boost 1.84 COMPONENTS system asio pfr json REQUIRED)
 
 CPMAddPackage("gh:fmtlib/fmt#11.0.2")
 

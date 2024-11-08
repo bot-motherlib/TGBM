@@ -3,7 +3,7 @@
 #include <string_view>
 
 #include "tgbm/net/http_client.hpp"
-#include "tgbm/net/connectiion_pool.hpp"
+#include "tgbm/net/connection_pool.hpp"
 
 #include "tgbm/net/tcp_connection.hpp"
 
@@ -12,7 +12,7 @@ namespace tgbm {
 namespace asio = boost::asio;
 
 struct http11_client : http_client {
- private:
+ protected:
   // invariant: .run() invoked on 0 or 1 threads
   asio::io_context io_ctx;
   tcp_connection_options tcp_options;

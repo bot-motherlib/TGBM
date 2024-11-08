@@ -1,5 +1,5 @@
 
-#include "tgbm/net/connectiion_pool.hpp"
+#include "tgbm/net/connection_pool.hpp"
 
 #include <iostream>
 #include <source_location>

@@ -38,8 +38,7 @@ dd::task<tcp_connection_ptr> tcp_connection::create(asio::io_context& io_ctx, st
   io_error_code ec;
   auto results = co_await net.resolve(resolver, query, ec);
   if (ec) {
-    TGBM_LOG_ERROR("[TCP] cannot resolve host: {}: service: {}, err: {}", query.host_name(),
-                   query.service_name(), ec.message());
+    TGBM_LOG_ERROR("[TCP] cannot resolve host: {}, err: {}", host, ec.what());
     throw network_exception(ec);
   }
   auto& tcp_sock = socket.lowest_layer();

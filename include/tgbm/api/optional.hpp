@@ -11,7 +11,7 @@ namespace tgbm {
 
 template <typename Traits, typename T>
 concept optional_traits_for = requires { requires std::is_destructible_v<typename Traits::state_type>; } &&
-                              requires(T& value, typename Traits::state_type& state) {
+                              requires(typename Traits::state_type& state) {
                                 // may be used to get pointer to uninitialized memory
                                 { Traits::get_value_ptr(state) } noexcept -> std::same_as<T*>;
                                 { Traits::do_swap(state, state) } -> std::same_as<void>;

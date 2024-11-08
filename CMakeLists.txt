@@ -75,7 +75,6 @@ target_link_libraries(tgbmlib PUBLIC
     hpacklib
     Boost::system
     Boost::asio
-    Boost::property_tree
     Boost::pfr
     Boost::json
     fmt::fmt
