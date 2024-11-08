@@ -38,8 +38,8 @@ struct bot_commands {
 struct bot {
  private:
   // invariant: != nullptr
-  // TODO ?any client?
   std::unique_ptr<http_client> client;
+  bool stopped = false;
 
  public:
   api::telegram api;
@@ -79,14 +79,16 @@ struct bot {
   //  * ignores update, which handled by bot.commands already
   dd::channel<api::Update> updates(
       api::arrayof<api::String> allowed_updates = api::allowed_updates::almost_all(),
-      std::chrono::seconds update_wait_timeout = std::chrono::seconds(10), bool drop_pending_updates = false);
+      bool drop_pending_updates = false);
 
   // works until all done or error happens
   void run() {
+    stopped = false;
     client->run();
   }
 
   void stop() {
+    stopped = true;
     client->stop();
   }
 

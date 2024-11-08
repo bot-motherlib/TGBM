@@ -100,7 +100,7 @@ struct reqerr_t {
 
 // Note: 'out' must be alive while coroutine working
 template <tgapi_request R>
-dd::task<reqerr_t> send_request(const R& request, http_client& client, const_string bottoken,
+dd::task<reqerr_t> send_request(const R& request, http_client& client, const const_string& bottoken,
                                 request_return_t<R>& out, deadline_t deadline) {
   telegram_answer r(out);
   json::stream_parser parser(r);
@@ -118,7 +118,7 @@ dd::task<reqerr_t> send_request(const R& request, http_client& client, const_str
 // ignores result, but waits telegram answer for status
 // returns http status or reqerr_e (< 0)
 template <tgapi_request R>
-dd::task<int> send_request(const R& request, http_client& client, const_string bottoken,
+dd::task<int> send_request(const R& request, http_client& client, const const_string& bottoken,
                            deadline_t deadline) {
   auto noop = [](std::string_view, std::string_view) {};
   return client.send_request(&noop, nullptr, make_request(request, bottoken.str()), deadline);

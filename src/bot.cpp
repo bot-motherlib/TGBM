@@ -47,10 +47,8 @@ static_assert(parse_command("fdsfsf") == "");
 static_assert(parse_command("/start") == "start");
 static_assert(parse_command("   \t\n/start") == "start");
 
-dd::channel<api::Update> bot::updates(api::arrayof<api::String> allowed_updates,
-                                      std::chrono::seconds update_wait_timeout, bool drop_pending_updates) {
-  dd::channel chan =
-      long_poll(api, 100, update_wait_timeout, std::move(allowed_updates), drop_pending_updates);
+dd::channel<api::Update> bot::updates(api::arrayof<api::String> allowed_updates, bool drop_pending_updates) {
+  dd::channel chan = long_poll(api, std::move(allowed_updates), drop_pending_updates);
 
   auto maybe_handle_command = [&](api::Message& m) {
     if (!m.text)
@@ -68,16 +66,18 @@ dd::channel<api::Update> bot::updates(api::arrayof<api::String> allowed_updates,
     switch (u.type()) {
       case api::Update::type_e::k_channel_post:
         if (maybe_handle_command(*u.get_channel_post()))
-          continue;
+          break;
         [[fallthrough]];
       case api::Update::type_e::k_message:
         if (maybe_handle_command(*u.get_message()))
-          continue;
+          break;
         [[fallthrough]];
       default:
         co_yield std::move(u);
-        continue;
+        break;
     }
+    if (stopped)
+      co_return;
   }
 }
 

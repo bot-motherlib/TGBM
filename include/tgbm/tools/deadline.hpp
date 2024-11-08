@@ -17,6 +17,10 @@ struct deadline_t {
     return tp <= point;
   }
 
+  duration_t remaining_time() const noexcept {
+    return tp - std::chrono::steady_clock::now();
+  }
+
   static constexpr deadline_t never() noexcept {
     return deadline_t{time_point_t::max()};
   }
@@ -25,6 +29,7 @@ struct deadline_t {
   }
   std::strong_ordering operator<=>(const deadline_t&) const = default;
 };
+
 // TODO tests.. Hmm, what if duration overflows bottom?
 inline deadline_t deadline_after(duration_t duration) noexcept {
   // avoid overflow
