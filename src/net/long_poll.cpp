@@ -5,9 +5,8 @@
 
 namespace tgbm {
 
-static dd::channel<api::Update> long_poll_without_preconfirm(api::telegram api,
-                                                             api::get_updates_request request,
-                                                             duration_t timeout) {
+static dd::channel<api::Update> long_poll_loop(api::telegram api, api::get_updates_request request,
+                                               duration_t timeout) {
   for (;;) {
     api::arrayof<api::Update> updates = co_await api.getUpdates(request, deadline_after(timeout));
     for (api::Update& item : updates) {
@@ -17,12 +16,10 @@ static dd::channel<api::Update> long_poll_without_preconfirm(api::telegram api,
     }
   }
 }
-
-dd::channel<api::Update> long_poll(api::telegram api, api::arrayof<api::String> allowed_updates,
-                                   bool drop_pending_updates) {
+dd::channel<api::Update> long_poll(api::telegram api, long_poll_options options) {
   // validate
 
-  for (std::string_view str : allowed_updates)
+  for (std::string_view str : options.allowed_updates)
     if (!api::allowed_updates::is_valid_update_category(str))
       throw bad_request(fmt::format("\"{}\" is not valid update name", str));
 
@@ -33,13 +30,14 @@ dd::channel<api::Update> long_poll(api::telegram api, api::arrayof<api::String> 
   // telegram automatically answeres 0 updates after 50 seconds
   seconds timeout(50);
   req.timeout = 45;
-  //  req.limit == 100 by default
-  if (!allowed_updates.empty())
-    req.allowed_updates = std::move(allowed_updates);
+  // req.limit == 100 by default
+  if (!options.allowed_updates.empty())
+    req.allowed_updates = options.allowed_updates;
 
   // if webhook exist, long poll is not available
 
-  (void)co_await api.deleteWebhook({.drop_pending_updates = drop_pending_updates}, deadline_after(5s));
+  (void)co_await api.deleteWebhook({.drop_pending_updates = options.drop_pending_updates},
+                                   deadline_after(5s));
 
   // send first request with 'allowed_updates' (telegram will remember it)
 
@@ -52,7 +50,7 @@ dd::channel<api::Update> long_poll(api::telegram api, api::arrayof<api::String> 
       req.offset = u.update_id + 1;
     co_yield std::move(u);
   }
-  co_yield dd::elements_of(long_poll_without_preconfirm(std::move(api), std::move(req), timeout));
+  co_yield dd::elements_of(long_poll_loop(std::move(api), std::move(req), timeout));
 }
 
 }  // namespace tgbm

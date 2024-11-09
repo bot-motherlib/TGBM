@@ -7,7 +7,7 @@
 
 #include "tgbm/api/telegram.hpp"
 #include "tgbm/net/http_client.hpp"
-#include "tgbm/api/allowed_updates.hpp"
+#include "tgbm/net/long_poll.hpp"
 
 namespace tgbm {
 
@@ -77,9 +77,7 @@ struct bot {
   // Notes:
   //  * there are must be <= 1 getUpdates request for bot globally at one time
   //  * ignores update, which handled by bot.commands already
-  dd::channel<api::Update> updates(
-      api::arrayof<api::String> allowed_updates = api::allowed_updates::almost_all(),
-      bool drop_pending_updates = false);
+  dd::channel<api::Update> updates(long_poll_options = {});
 
   // works until all done or error happens
   void run() {

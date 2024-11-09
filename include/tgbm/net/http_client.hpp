@@ -8,7 +8,7 @@
 #include <anyany/anyany.hpp>
 
 #include "tgbm/net/http_base.hpp"
-#include "tgbm/net/HttpParser.h"
+#include "tgbm/net/http_body.hpp"
 #include "tgbm/tools/fn_ref.hpp"
 #include "tgbm/tools/memory.hpp"
 #include "tgbm/tools/deadline.hpp"

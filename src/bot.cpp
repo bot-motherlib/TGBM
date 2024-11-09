@@ -47,8 +47,8 @@ static_assert(parse_command("fdsfsf") == "");
 static_assert(parse_command("/start") == "start");
 static_assert(parse_command("   \t\n/start") == "start");
 
-dd::channel<api::Update> bot::updates(api::arrayof<api::String> allowed_updates, bool drop_pending_updates) {
-  dd::channel chan = long_poll(api, std::move(allowed_updates), drop_pending_updates);
+dd::channel<api::Update> bot::updates(long_poll_options options) {
+  dd::channel chan = long_poll(api, std::move(options));
 
   auto maybe_handle_command = [&](api::Message& m) {
     if (!m.text)
