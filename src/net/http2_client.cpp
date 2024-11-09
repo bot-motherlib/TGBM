@@ -51,7 +51,6 @@ resources:
 #include "tgbm/tools/deadline.hpp"
 
 #include <kelcoro/channel.hpp>
-#include <kelcoro/algorithm.hpp>
 
 #include <boost/intrusive/unordered_set.hpp>
 #include <boost/intrusive/treap_set.hpp>
@@ -1403,22 +1402,6 @@ void http2_client::stop() {
   if (stop_requested)
     return;
   stop_requested = true;
-
-  // notify server that streams closed
-
-  if (connection) {
-    std::vector<dd::task<void>> streams;
-    for (auto& r : connection->responses)
-      streams.push_back(send_rst_stream(connection, r.req.streamid, http2::errc_e::CANCEL));
-    bool done = false;
-    auto rst_all_streams = [](std::vector<dd::task<void>> streams, bool& done) -> dd::task<void> {
-      (void)co_await dd::when_all(std::move(streams));
-      done = true;
-    };
-    rst_all_streams(std::move(streams), done).start_and_detach();
-    while (!done)
-      io_ctx.run_one();
-  }
   drop_connection(reqerr_e::cancelled);
   while (requests_in_progress != 0)
     io_ctx.run_one();

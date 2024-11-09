@@ -11,6 +11,8 @@
 #include "tgbm/tools/algorithm.hpp"
 #include "tgbm/api/optional.hpp"
 
+#include <fmt/core.h>
+
 namespace tgbm {
 
 struct uninitialized_t {
@@ -224,3 +226,20 @@ struct hash<::tgbm::const_string> {
 };
 
 }  // namespace std
+
+namespace fmt {
+
+template <>
+struct formatter<::tgbm::const_string> {
+  static constexpr const char* parse(fmt::format_parse_context& ctx) {
+    if (ctx.begin() == ctx.end() || *ctx.begin() == '}')
+      return ctx.begin();
+    throw fmt::format_error("");
+  }
+
+  static auto format(const ::tgbm::const_string& str, auto& context) -> decltype(context.out()) {
+    return std::copy_n(str.data(), str.size(), context.out());
+  }
+};
+
+}  // namespace fmt
