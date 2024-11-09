@@ -42,6 +42,14 @@ inline dd::generator<generator_parser::nothing_t> unite_generate(
   co_await dd::this_coro::destroy_and_transfer_control_to(field_gen.raw_handle().promise().current_worker);
 }
 
+template <typename T>
+dd::generator<dd::nothing_t> generator_starter(T& v, generator_parser::event_holder& tok, bool& ended) {
+  co_yield dd::elements_of(generator_parser::boost_domless_parser<T>::parse(v, tok));
+  ended = true;
+  co_yield {};
+  TGBM_JSON_PARSE_ERROR;
+}
+
 struct wait_handler {
   using error_code = ::boost::json::error_code;
   using string_view = ::boost::json::string_view;
@@ -59,11 +67,8 @@ struct wait_handler {
   std::vector<char> buf;
   bool part = false;
 
-  template <typename T>
-  wait_handler(T& t_)
-      : gen(generator_parser::generator_starter(generator_parser::boost_domless_parser<T>::parse(t_, event),
-                                                ended)) {
-    gen.begin();
+  wait_handler(auto& v) : gen(generator_starter(v, event, ended)) {
+    gen.prepare_to_start();
   }
 
   wait_handler(wait_handler&&) = delete;

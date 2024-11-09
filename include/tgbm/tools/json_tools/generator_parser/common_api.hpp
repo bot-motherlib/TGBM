@@ -12,10 +12,8 @@ namespace tgbm::generator_parser {
 template <common_api_type T>
 struct boost_domless_parser<T> {
   static constexpr auto N = ::pfr_extension::tuple_size_v<T>;
-  static constexpr bool simple = false;
-  using seq = std::make_index_sequence<N>;
 
-  static bool all_parsed(std::bitset<N>& parsed_) {
+  static bool all_parsed(const std::bitset<N>& parsed_) {
     static std::bitset<N> required_mask = []<std::size_t... I>(std::index_sequence<I...>) {
       std::bitset<N> res;
       auto store_required = [&]<std::size_t J>(std::index_sequence<J>) {
@@ -24,57 +22,44 @@ struct boost_domless_parser<T> {
       };
       (store_required(std::index_sequence<I>{}), ...);
       return res;
-    }(seq{});
+    }(std::make_index_sequence<N>{});
     return (parsed_ & required_mask) == required_mask;
   }
 
-  static dd::generator<nothing_t> generator_field(T& t_, std::string_view key, event_holder& holder,
+  static dd::generator<nothing_t> generator_field(T& v, std::string_view key, event_holder& tok,
                                                   std::bitset<N>& parsed_) {
     if constexpr (N > 0) {
       return pfr_extension::visit_struct_field<T, dd::generator<nothing_t>>(
           key,
           [&]<std::size_t I>() {
-            using Field = pfr_extension::tuple_element_t<I, T>;
-            auto& field = pfr_extension::get<I>(t_);
-            using parser = boost_domless_parser<Field>;
-            if (parsed_[I]) {
+            auto& field = pfr_extension::get<I>(v);
+            if (parsed_[I])
               TGBM_JSON_PARSE_ERROR;
-            }
             parsed_[I] = true;
-            if constexpr (is_simple<Field>) {
-              parser::simple_parse(field, holder);
-              return dd::generator<nothing_t>{};
-            } else {
-              return parser::parse(field, holder);
-            }
+            return boost_domless_parser<pfr_extension::tuple_element_t<I, T>>::parse(field, tok);
           },
-          [&]() { return ignore_parser::parse(holder); });
+          [&]() { return ignore_parser::parse(tok); });
     } else {
-      return ignore_parser::parse(holder);
+      return ignore_parser::parse(tok);
     }
   }
 
-  static dd::generator<nothing_t> parse(T& t_, event_holder& holder) {
-    using wait = event_holder::wait_e;
+  static dd::generator<nothing_t> parse(T& v, event_holder& tok) {
     std::bitset<N> parsed_;
-    holder.expect(wait::object_begin);
+    tok.expect(tok.object_begin);
 
-    while (true) {
+    for (;;) {
       co_yield {};
-      holder.expect(wait::key | wait::object_end);
-      if (holder.got == wait::object_end) {
+      if (tok.got == tok.object_end)
         break;
-      }
-      std::string_view cur_key = holder.str_m;
+      tok.expect(tok.key);
+      std::string_view cur_key = tok.str_m;
       co_yield {};
-      auto gen_field = generator_field(t_, cur_key, holder, parsed_);
-      if (!gen_field.empty()) {
-        co_yield (dd::elements_of(gen_field));
-      }
+      co_yield dd::elements_of(generator_field(v, cur_key, tok, parsed_));
     }
-    if (!all_parsed(parsed_)) {
+    if (!all_parsed(parsed_)) [[unlikely]]
       TGBM_JSON_PARSE_ERROR;
-    }
   }
 };
+
 }  // namespace tgbm::generator_parser
