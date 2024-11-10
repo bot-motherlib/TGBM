@@ -103,7 +103,7 @@ template <tgapi_request R>
 dd::task<reqerr_t> send_request(const R& request, http_client& client, const const_string& bottoken,
                                 request_return_t<R>& out, deadline_t deadline) {
   telegram_answer r(out);
-  json::stream_parser<> parser(r);
+  json::stream_parser parser(r);
   io_error_code ec;
   auto parse_to_out = [&](std::span<const byte_t> bytes, bool last_part) {
     parser.feed(std::string_view((const char*)bytes.data(), bytes.size()), last_part, ec);

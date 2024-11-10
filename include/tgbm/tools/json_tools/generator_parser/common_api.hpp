@@ -27,7 +27,7 @@ struct boost_domless_parser<T> {
   }
 
   static dd::generator<nothing_t> generator_field(T& v, std::string_view key, event_holder& tok,
-                                                  std::bitset<N>& parsed_, memres_tag auto resource) {
+                                                  std::bitset<N>& parsed_) {
     if constexpr (N > 0) {
       return pfr_extension::visit_struct_field<T, dd::generator<nothing_t>>(
           key,
@@ -36,16 +36,15 @@ struct boost_domless_parser<T> {
             if (parsed_.test(I))
               TGBM_JSON_PARSE_ERROR;
             parsed_.set(I);
-            return boost_domless_parser<pfr_extension::tuple_element_t<I, T>>::parse(field, tok,
-                                                                                     std::move(resource));
+            return boost_domless_parser<pfr_extension::tuple_element_t<I, T>>::parse(field, tok);
           },
-          [&]() { return ignore_parser::parse(tok, std::move(resource)); });
+          [&]() { return ignore_parser::parse(tok); });
     } else {
-      return ignore_parser::parse(tok, std::move(resource));
+      return ignore_parser::parse(tok);
     }
   }
 
-  static dd::generator<nothing_t> parse(T& v, event_holder& tok, memres_tag auto resource) {
+  static dd::generator<nothing_t> parse(T& v, event_holder& tok) {
     using enum event_holder::wait_e;
     std::bitset<N> parsed_;
     tok.expect(object_begin);
@@ -57,7 +56,7 @@ struct boost_domless_parser<T> {
       tok.expect(key);
       std::string_view cur_key = tok.str_m;
       co_yield {};
-      co_yield dd::elements_of(generator_field(v, cur_key, tok, parsed_, resource));
+      co_yield dd::elements_of(generator_field(v, cur_key, tok, parsed_));
     }
     if (!all_parsed(parsed_)) [[unlikely]]
       TGBM_JSON_PARSE_ERROR;

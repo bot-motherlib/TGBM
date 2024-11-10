@@ -20,8 +20,6 @@ struct formatter<::boost::json::string_view> : formatter<std::string_view> {
 namespace tgbm::json::boost {
 namespace details {
 
-// TODO dd::memory_resource (gcc internal error)
-template <typename Resource>
 struct wait_handler {
   using error_code = ::boost::json::error_code;
   using string_view = ::boost::json::string_view;
@@ -38,11 +36,10 @@ struct wait_handler {
   std::vector<char> buf;
   bool ended = false;
   bool part = false;
-  KELCORO_NO_UNIQUE_ADDRESS Resource resource;
 
  private:
   dd::generator<generator_parser::nothing_t> unite_generate(
-      dd::generator<generator_parser::nothing_t> old_gen, generator_parser::memres_tag auto) {
+      dd::generator<generator_parser::nothing_t> old_gen) {
     event.expect(event.part);
     part = true;
     buf.clear();
@@ -67,16 +64,15 @@ struct wait_handler {
   }
 
   template <typename T>
-  dd::generator<dd::nothing_t> starter(T& v, generator_parser::memres_tag auto resource) {
-    co_yield dd::elements_of(generator_parser::boost_domless_parser<T>::parse(v, event, std::move(resource)));
+  dd::generator<dd::nothing_t> starter(T& v) {
+    co_yield dd::elements_of(generator_parser::boost_domless_parser<T>::parse(v, event));
     ended = true;
     co_yield {};
     TGBM_JSON_PARSE_ERROR;
   }
 
  public:
-  wait_handler(auto& v, Resource resource)
-      : gen(starter(v, /*dd::with_resource*/ resource)), resource(std::move(resource)) {
+  wait_handler(auto& v) : gen(starter(v)) {
     gen.prepare_to_start();
   }
 
@@ -171,7 +167,7 @@ struct wait_handler {
     event.got = generator_parser::event_holder::part;
     event.str_m = s;
     if (!part) {
-      gen = unite_generate(std::move(gen), /*dd::with_resource*/ resource);
+      gen = unite_generate(std::move(gen));
       gen.prepare_to_start();
     }
     resume_generator();
@@ -205,8 +201,7 @@ struct wait_handler {
 template <typename T>
 T parse_generator(std::string_view data) {
   T v;
-  ::boost::json::basic_parser<details::wait_handler<generator_parser::placeholder_resource>> p{
-      ::boost::json::parse_options{}, v, generator_parser::placeholder_resource{}};
+  ::boost::json::basic_parser<details::wait_handler> p{::boost::json::parse_options{}, v};
   ::boost::json::error_code ec;
   p.write_some(false, data.data(), data.size(), ec);
   if (ec || !p.handler().ended)

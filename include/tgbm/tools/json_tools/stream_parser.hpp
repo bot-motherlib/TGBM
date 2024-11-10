@@ -7,12 +7,11 @@
 
 namespace tgbm::json {
 
-template <typename R = generator_parser::placeholder_resource>
 struct stream_parser {
-  ::boost::json::basic_parser<boost::details::wait_handler<R>> p;
+  ::boost::json::basic_parser<boost::details::wait_handler> p;
 
   template <typename T>
-  explicit stream_parser(T& t, R resource = R{}) : p(::boost::json::parse_options{}, t, std::move(resource)) {
+  explicit stream_parser(T& t) : p(::boost::json::parse_options{}, t) {
   }
 
   void feed(std::string_view data, bool end) {
@@ -36,14 +35,14 @@ struct stream_parser {
 
 template <typename T>
 void from_json(std::string_view json, T& out) {
-  stream_parser p(out, generator_parser::placeholder_resource{});
+  stream_parser p(out);
   p.feed(json, true);
 }
 
 template <typename T>
 T from_json(std::string_view json) {
   T out;
-  from_json(json, out, generator_parser::placeholder_resource{});
+  from_json(json, out);
   return out;
 }
 

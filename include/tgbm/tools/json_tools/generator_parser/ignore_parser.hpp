@@ -18,7 +18,7 @@ struct ignore_parser {
     }
   }
 
-  static dd::generator<nothing_t> parse(event_holder& holder, memres_tag auto) {
+  static dd::generator<nothing_t> parse(event_holder& holder) {
     if (is_value(holder))
       co_return;
     std::size_t depth = 0;
