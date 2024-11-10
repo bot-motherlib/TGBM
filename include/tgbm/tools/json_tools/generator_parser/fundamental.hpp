@@ -10,7 +10,7 @@ namespace tgbm::generator_parser {
 
 template <>
 struct boost_domless_parser<bool> {
-  static dd::generator<nothing_t> parse(bool& v, event_holder& tok) {
+  static dd::generator<nothing_t> parse(bool& v, event_holder& tok, memres_tag auto&&) {
     tok.expect(tok.bool_);
     v = tok.bool_m;
     return {};
@@ -19,7 +19,7 @@ struct boost_domless_parser<bool> {
 
 template <>
 struct boost_domless_parser<api::True> {
-  static dd::generator<nothing_t> parse(api::True&, event_holder& tok) {
+  static dd::generator<nothing_t> parse(api::True&, event_holder& tok, memres_tag auto&&) {
     if (tok.got != tok.bool_ || !tok.bool_m) [[unlikely]]
       TGBM_JSON_PARSE_ERROR;
     return {};
@@ -28,7 +28,7 @@ struct boost_domless_parser<api::True> {
 
 template <>
 struct boost_domless_parser<std::string> {
-  static dd::generator<nothing_t> parse(std::string& v, event_holder& tok) {
+  static dd::generator<nothing_t> parse(std::string& v, event_holder& tok, memres_tag auto&&) {
     tok.expect(tok.string);
     v = tok.str_m;
     return {};
@@ -37,7 +37,7 @@ struct boost_domless_parser<std::string> {
 
 template <>
 struct boost_domless_parser<tgbm::const_string> {
-  static dd::generator<nothing_t> parse(tgbm::const_string& v, event_holder& tok) {
+  static dd::generator<nothing_t> parse(tgbm::const_string& v, event_holder& tok, memres_tag auto&&) {
     tok.expect(tok.string);
     v = tok.str_m;
     return {};
@@ -47,7 +47,7 @@ struct boost_domless_parser<tgbm::const_string> {
 template <typename T>
   requires(std::integral<T> || std::same_as<api::Integer, T>)
 struct boost_domless_parser<T> {
-  static dd::generator<nothing_t> parse(T& v, event_holder& tok) {
+  static dd::generator<nothing_t> parse(T& v, event_holder& tok, memres_tag auto&&) {
     switch (tok.got) {
       case tok.int64:
         safe_write(v, tok.int_m);
@@ -64,7 +64,7 @@ struct boost_domless_parser<T> {
 template <typename T>
   requires(std::floating_point<T> || std::same_as<api::Double, T>)
 struct boost_domless_parser<T> {
-  static dd::generator<nothing_t> parse(T& v, event_holder& tok) {
+  static dd::generator<nothing_t> parse(T& v, event_holder& tok, memres_tag auto&&) {
     tok.expect(tok.double_);
     v = tok.double_m;
     return {};

@@ -19,29 +19,31 @@ struct boost_domless_parser<T> {
   static_assert(std::same_as<pfr_extension::tuple_element_t<N, T>, decltype(T::data)>);
 
   static dd::generator<nothing_t> get_generator_field(T& t_, std::string_view key, event_holder& tok,
-                                                      std::bitset<N>& parsed_) {
+                                                      std::bitset<N>& parsed_, memres_tag auto resource) {
     return pfr_extension::visit_struct_field<T, dd::generator<nothing_t>, N>(
         key,
         [&]<std::size_t I>() {
           using Field = pfr_extension::tuple_element_t<I, T>;
           auto& field = pfr_extension::get<I>(t_);
           using parser = boost_domless_parser<Field>;
-          if (parsed_[I])
+          if (parsed_.test(I))
             TGBM_JSON_PARSE_ERROR;
-          parsed_[I] = true;
-          return parser::parse(field, tok);
+          parsed_.set(I);
+          return parser::parse(field, tok, std::move(resource));
         },
         // unknown field (discriminated 'data' or unknown field which must be ignored)
         [&]() {
           return oneof_field_utils::emplace_field<T, dd::generator<nothing_t>>(
               t_.data, key,
-              [&]<typename Field>(Field& field) { return boost_domless_parser<Field>::parse(field, tok); },
+              [&]<typename Field>(Field& field) {
+                return boost_domless_parser<Field>::parse(field, tok, std::move(resource));
+              },
               []() -> dd::generator<nothing_t> { TGBM_JSON_PARSE_ERROR; },
-              [&]() -> dd::generator<nothing_t> { return ignore_parser::parse(tok); });
+              [&]() -> dd::generator<nothing_t> { return ignore_parser::parse(tok, std::move(resource)); });
         });
   }
 
-  static dd::generator<nothing_t> parse(T& v, event_holder& tok) {
+  static dd::generator<nothing_t> parse(T& v, event_holder& tok, memres_tag auto resource) {
     std::bitset<N> parsed_;
 
     tok.expect(tok.object_begin);
@@ -53,7 +55,7 @@ struct boost_domless_parser<T> {
       tok.expect(tok.key);
       std::string_view key = tok.str_m;
       co_yield {};
-      co_yield dd::elements_of(get_generator_field(v, key, tok, parsed_));
+      co_yield dd::elements_of(get_generator_field(v, key, tok, parsed_, resource));
     }
     if (!parsed_.all())
       TGBM_JSON_PARSE_ERROR;

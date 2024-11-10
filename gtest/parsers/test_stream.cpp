@@ -23,7 +23,7 @@ struct TestObject {
   }
 };
 
-using parser = tgbm::json::stream_parser;
+using parser = tgbm::json::stream_parser<>;
 
 TEST(StreamParsing, Int) {
   TestObject expected{.int_field = {1}};

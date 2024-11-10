@@ -10,10 +10,10 @@ template <typename Optional>
 struct basic_optional_parser {
   using T = typename Optional::value_type;
 
-  static dd::generator<nothing_t> parse(Optional& v, event_holder& tok) {
+  static dd::generator<nothing_t> parse(Optional& v, event_holder& tok, memres_tag auto resource) {
     if (tok.got == event_holder::null) [[unlikely]]
       return {};
-    return boost_domless_parser<T>::parse(v.emplace(), tok);
+    return boost_domless_parser<T>::parse(v.emplace(), tok, std::move(resource));
   }
 };
 

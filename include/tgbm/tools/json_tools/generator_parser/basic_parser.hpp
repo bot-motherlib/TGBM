@@ -49,8 +49,12 @@ struct event_holder {
 };
 
 template <typename T>
+concept memres_tag = dd::last_is_memory_resource_tag<std::decay_t<T>>;
+
+template <typename T>
 struct boost_domless_parser {
-  // dd::generator<nothing_t> parse(T& t_, event_holder& holder)
+  // required interface:
+  //   dd::generator<nothing_t> parse(T& v, event_holder& tok, memres_tag auto)
 };
 
 }  // namespace tgbm::generator_parser

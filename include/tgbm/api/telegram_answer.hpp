@@ -29,7 +29,8 @@ namespace tgbm::generator_parser {
 
 template <typename T>
 struct boost_domless_parser<api::telegram_answer<T>> {
-  static dd::generator<dd::nothing_t> parse(api::telegram_answer<T>& out, event_holder& tok) {
+  static dd::generator<dd::nothing_t> parse(api::telegram_answer<T>& out, event_holder& tok,
+                                            generator_parser::memres_tag auto resource) {
     using enum event_holder::wait_e;
     tok.expect(object_begin);
 
@@ -64,14 +65,14 @@ struct boost_domless_parser<api::telegram_answer<T>> {
           out.ok = tok.bool_m;
           continue;
         case result_key:
-          co_yield dd::elements_of(boost_domless_parser<T>::parse(out.result, tok));
+          co_yield dd::elements_of(boost_domless_parser<T>::parse(out.result, tok, resource));
           continue;
         case description_key:
           tok.expect(string);
           out.description = tok.str_m;
           continue;
         case unknown_key:
-          co_yield dd::elements_of(ignore_parser::parse(tok));
+          co_yield dd::elements_of(ignore_parser::parse(tok, resource));
           continue;
       }
     }
@@ -84,14 +85,15 @@ struct boost_domless_parser<api::telegram_answer<T>> {
 // for parsing return type of some operations
 template <>
 struct boost_domless_parser<tgbm::box_union<bool, tgbm::api::Message>> {
-  static dd::generator<dd::nothing_t> parse(tgbm::box_union<bool, tgbm::api::Message>& out,
-                                            event_holder& tok) {
+  static dd::generator<dd::nothing_t> parse(tgbm::box_union<bool, tgbm::api::Message>& out, event_holder& tok,
+                                            generator_parser::memres_tag auto resource) {
     using enum event_holder::wait_e;
     if (tok.got == bool_) {
       out = tok.bool_m;
       return {};
     }
-    return boost_domless_parser<api::Message>::parse(out.emplace<tgbm::api::Message>(), tok);
+    return boost_domless_parser<api::Message>::parse(out.emplace<tgbm::api::Message>(), tok,
+                                                     std::move(resource));
   }
 };
 
