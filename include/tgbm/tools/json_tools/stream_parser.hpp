@@ -7,7 +7,7 @@
 
 namespace tgbm::json {
 
-template <dd::memory_resource R = dd::new_delete_resource>
+template <typename R = generator_parser::placeholder_resource>
 struct stream_parser {
   ::boost::json::basic_parser<boost::details::wait_handler<R>> p;
 
@@ -34,16 +34,16 @@ struct stream_parser {
   }
 };
 
-template <typename T, dd::memory_resource R = dd::new_delete_resource>
-void from_json(std::string_view json, T& out, R resource = R{}) {
-  stream_parser p(out, std::move(resource));
+template <typename T>
+void from_json(std::string_view json, T& out) {
+  stream_parser p(out, generator_parser::placeholder_resource{});
   p.feed(json, true);
 }
 
-template <typename T, dd::memory_resource R = dd::new_delete_resource>
-T from_json(std::string_view json, R resource = R{}) {
+template <typename T>
+T from_json(std::string_view json) {
   T out;
-  from_json(json, out, std::move(resource));
+  from_json(json, out, generator_parser::placeholder_resource{});
   return out;
 }
 

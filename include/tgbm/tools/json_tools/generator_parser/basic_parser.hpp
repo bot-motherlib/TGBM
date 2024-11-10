@@ -48,8 +48,11 @@ struct event_holder {
   }
 };
 
+// cannot be used now because of gcc internal error in send_request
+struct placeholder_resource {};
 template <typename T>
-concept memres_tag = dd::last_is_memory_resource_tag<std::decay_t<T>>;
+concept memres_tag =
+    std::same_as<std::decay_t<T>, placeholder_resource>;  // dd::last_is_memory_resource_tag<std::decay_t<T>>;
 
 template <typename T>
 struct boost_domless_parser {
