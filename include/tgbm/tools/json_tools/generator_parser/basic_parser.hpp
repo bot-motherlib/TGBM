@@ -43,28 +43,15 @@ struct event_holder {
   wait_e got;
 
   void expect(std::int16_t tokens) const {
-    if (!(got & tokens)) {
+    if (!(got & tokens))
       TGBM_JSON_PARSE_ERROR;
-    }
   }
 };
 
-inline dd::generator<nothing_t> generator_starter(dd::generator<nothing_t> gen, bool& ended) {
-  co_yield {};
-  co_yield dd::elements_of(gen);
-  ended = true;
-  co_yield {};
-  TGBM_JSON_PARSE_ERROR;
-}
-
 template <typename T>
 struct boost_domless_parser {
-  static constexpr bool simple = false;
-  // dd::generator<nothing_t> parse(T& t_, event_holder& holder)
-  // void simple_parse(T& t_, event_holder& holder)
+  // required interface:
+  //   dd::generator<nothing_t> parse(T& v, event_holder& tok)
 };
-
-template <typename T>
-constexpr bool is_simple = requires { requires boost_domless_parser<T>::simple; };
 
 }  // namespace tgbm::generator_parser

@@ -3,6 +3,8 @@
 #include <boost/json/basic_parser_impl.hpp>
 
 #include "tgbm/tools/json_tools/generator_parser/basic_parser.hpp"
+#include "tgbm/tools/json_tools/generator_parser/stack_memory_resource.hpp"
+#include "tgbm/tools/scope_exit.h"
 
 namespace fmt {
 
@@ -18,30 +20,6 @@ struct formatter<::boost::json::string_view> : formatter<std::string_view> {
 namespace tgbm::json::boost {
 namespace details {
 
-inline dd::generator<generator_parser::nothing_t> unite_generate(
-    std::vector<char>& buf, bool& part, generator_parser::event_holder& holder,
-    dd::generator<generator_parser::nothing_t>& field_gen,
-    dd::generator<generator_parser::nothing_t> old_gen) {
-  holder.expect(generator_parser::event_holder::part);
-  part = true;
-  buf.clear();
-
-  while (holder.got == generator_parser::event_holder::part) {
-    buf.insert(buf.end(), holder.str_m.begin(), holder.str_m.end());
-    co_yield {};
-  }
-
-  buf.insert(buf.end(), holder.str_m.begin(), holder.str_m.end());
-  holder.str_m = std::string_view{buf.data(), buf.size()};
-
-  (void)field_gen.release();
-  field_gen = std::move(old_gen);
-
-  part = false;
-
-  co_await dd::this_coro::destroy_and_transfer_control_to(field_gen.raw_handle().promise().current_worker);
-}
-
 struct wait_handler {
   using error_code = ::boost::json::error_code;
   using string_view = ::boost::json::string_view;
@@ -53,17 +31,49 @@ struct wait_handler {
 
   using wait_e = generator_parser::event_holder::wait_e;
 
-  generator_parser::event_holder event{};
-  bool ended = false;
   dd::generator<generator_parser::nothing_t> gen;
+  generator_parser::event_holder event{};
   std::vector<char> buf;
+  bool ended = false;
   bool part = false;
 
+ private:
+  dd::generator<generator_parser::nothing_t> unite_generate(
+      dd::generator<generator_parser::nothing_t> old_gen) {
+    event.expect(event.part);
+    part = true;
+    buf.clear();
+    on_scope_failure(destroy_gen) {
+      // guarantee order of deallocactions for resources, firstly this generator, then old_gen
+      gen = std::move(old_gen);
+    };
+    while (event.got == event.part) {
+      buf.insert(buf.end(), event.str_m.begin(), event.str_m.end());
+      co_yield {};
+    }
+
+    buf.insert(buf.end(), event.str_m.begin(), event.str_m.end());
+    event.str_m = std::string_view{buf.data(), buf.size()};
+    destroy_gen.no_longer_needed();
+    (void)gen.release();
+    gen = std::move(old_gen);
+
+    part = false;
+
+    co_await dd::this_coro::destroy_and_transfer_control_to(gen.raw_handle().promise().current_worker);
+  }
+
   template <typename T>
-  wait_handler(T& t_)
-      : gen(generator_parser::generator_starter(generator_parser::boost_domless_parser<T>::parse(t_, event),
-                                                ended)) {
-    gen.begin();
+  dd::generator<dd::nothing_t> starter(T& v) {
+    co_yield dd::elements_of(generator_parser::boost_domless_parser<T>::parse(v, event));
+    ended = true;
+    co_yield {};
+    TGBM_JSON_PARSE_ERROR;
+  }
+
+ public:
+  wait_handler(auto& v) : gen(starter(v)) {
+    gen.prepare_to_start();
   }
 
   wait_handler(wait_handler&&) = delete;
@@ -157,7 +167,7 @@ struct wait_handler {
     event.got = generator_parser::event_holder::part;
     event.str_m = s;
     if (!part) {
-      gen = unite_generate(buf, part, event, gen, std::move(gen));
+      gen = unite_generate(std::move(gen));
       gen.prepare_to_start();
     }
     resume_generator();
@@ -190,14 +200,13 @@ struct wait_handler {
 
 template <typename T>
 T parse_generator(std::string_view data) {
-  T t;
-  ::boost::json::basic_parser<details::wait_handler> p{::boost::json::parse_options{}, t};
+  T v;
+  ::boost::json::basic_parser<details::wait_handler> p{::boost::json::parse_options{}, v};
   ::boost::json::error_code ec;
   p.write_some(false, data.data(), data.size(), ec);
-  if (ec || !p.handler().ended) {
+  if (ec || !p.handler().ended)
     TGBM_JSON_PARSE_ERROR;
-  }
-  return t;
+  return v;
 }
 
 }  // namespace tgbm::json::boost

@@ -19,11 +19,10 @@ struct ignore_parser {
   }
 
   static dd::generator<nothing_t> parse(event_holder& holder) {
-    if (is_value(holder)) {
+    if (is_value(holder))
       co_return;
-    }
     std::size_t depth = 0;
-    while (true) {
+    for (;;) {
       switch (holder.got) {
         case event_holder::array_begin:
         case event_holder::object_begin:

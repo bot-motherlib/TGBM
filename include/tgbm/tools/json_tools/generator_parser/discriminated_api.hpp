@@ -7,40 +7,31 @@ namespace tgbm::generator_parser {
 
 template <discriminated_api_type T>
 struct boost_domless_parser<T> {
-  static constexpr auto N = T::variant_size;
-  static constexpr bool simple = false;
-
-  static dd::generator<nothing_t> get_generator_suboneof(std::string_view key, T& t_, event_holder& holder) {
+  static dd::generator<nothing_t> get_generator_suboneof(std::string_view key, T& v, event_holder& tok) {
     auto emplacer = [&]<typename Suboneof>() -> dd::generator<nothing_t> {
-      if constexpr (!std::same_as<Suboneof, void>) {
-        auto& suboneof = t_.data.template emplace<Suboneof>();
-        return boost_domless_parser<Suboneof>::parse(suboneof, holder);
-      } else {
+      if constexpr (!std::same_as<Suboneof, void>)
+        return boost_domless_parser<Suboneof>::parse(v.data.template emplace<Suboneof>(), tok);
+      else
         TGBM_JSON_PARSE_ERROR;
-      }
     };
-    return t_.discriminate(key, emplacer);
+    return v.discriminate(key, emplacer);
   }
 
-  static dd::generator<nothing_t> parse(T& t_, event_holder& holder) {
-    using wait = event_holder::wait_e;
-
-    holder.expect(wait::object_begin);
-
+  static dd::generator<nothing_t> parse(T& v, event_holder& tok) {
+    using enum event_holder::wait_e;
+    tok.expect(object_begin);
     co_yield {};
-    holder.expect(wait::key | wait::object_end);
-    if (holder.got == wait::object_end) {
+    if (tok.got == object_end)
       co_return;
-    }
+    tok.expect(key);
+    if (tok.got != key || tok.str_m != T::discriminator) [[unlikely]]
+      json::throw_json_parse_error();
     co_yield {};
-    holder.expect(wait::string);
+    tok.expect(string);
     // change 'got' before generator creation (may be function returning generator)
-    holder.got = event_holder::object_begin;
-    auto generator_suboneof = get_generator_suboneof(holder.str_m, t_, holder);
-    auto it = generator_suboneof.begin();
-    co_yield {};
-    co_yield dd::elements_of(generator_suboneof);
-    assert(holder.got == event_holder::object_end);
+    tok.got = object_begin;
+    co_yield dd::elements_of(get_generator_suboneof(tok.str_m, v, tok));
   }
 };
+
 }  // namespace tgbm::generator_parser

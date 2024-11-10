@@ -5,6 +5,8 @@
 #include <utility>
 
 #include "tgbm/tools/json_tools/generator_parser/basic_parser.hpp"
+#include "tgbm/tools/json_tools/generator_parser/ignore_parser.hpp"
+
 #include "tgbm/tools/api_utils.hpp"
 #include "tgbm/tools/traits.hpp"
 
@@ -13,80 +15,50 @@ namespace tgbm::generator_parser {
 template <oneof_field_api_type T>
 struct boost_domless_parser<T> {
   static constexpr auto N = pfr_extension::tuple_size_v<T> - 1;
-  using seq = std::make_index_sequence<N>;
-  static constexpr bool simple = false;
 
-  // проверяем, что oneof лежит последним полем data
   static_assert(std::same_as<pfr_extension::tuple_element_t<N, T>, decltype(T::data)>);
 
-  static bool all_parsed(std::bitset<N>& parsed_) {
-    return parsed_.all();
-  }
-
-  static dd::generator<nothing_t> get_generator_field(T& t_, std::string_view key, event_holder& holder,
+  static dd::generator<nothing_t> get_generator_field(T& t_, std::string_view key, event_holder& tok,
                                                       std::bitset<N>& parsed_) {
-    dd::generator<nothing_t> result;
-    auto opt_gen = pfr_extension::visit_struct_field<T, bool, N>(
+    return pfr_extension::visit_struct_field<T, dd::generator<nothing_t>, N>(
         key,
         [&]<std::size_t I>() {
           using Field = pfr_extension::tuple_element_t<I, T>;
           auto& field = pfr_extension::get<I>(t_);
           using parser = boost_domless_parser<Field>;
-          if (parsed_[I]) {
+          if (parsed_.test(I))
             TGBM_JSON_PARSE_ERROR;
-          }
-          parsed_[I] = true;
-          if constexpr (is_simple<Field>) {
-            parser::simple_parse(field, holder);
-            result = dd::generator<nothing_t>{};
-            return true;
-          } else {
-            result = parser::parse(field, holder);
-            return true;
-          }
+          parsed_.set(I);
+          return parser::parse(field, tok);
         },
-        [&]() { return false; });
-    if (opt_gen) {
-      return result;
-    }
-    result = oneof_field_utils::emplace_field<T, dd::generator<nothing_t>>(
-        t_.data, key,
-        [&]<typename Field>(Field& field) {
-          using parser = boost_domless_parser<Field>;
-          if constexpr (!is_simple<Field>) {
-            return boost_domless_parser<Field>::parse(field, holder);
-          } else {
-            boost_domless_parser<Field>::simple_parse(field, holder);
-            return dd::generator<nothing_t>{};
-          }
-        },
-        []() -> dd::generator<nothing_t> { TGBM_JSON_PARSE_ERROR; },
-        []() -> dd::generator<nothing_t> { return {}; });
-    return result;
+        // unknown field (discriminated 'data' or unknown field which must be ignored)
+        [&]() {
+          return oneof_field_utils::emplace_field<T, dd::generator<nothing_t>>(
+              t_.data, key,
+              [&]<typename Field>(Field& field) { return boost_domless_parser<Field>::parse(field, tok); },
+              []() -> dd::generator<nothing_t> { TGBM_JSON_PARSE_ERROR; },
+              [&]() -> dd::generator<nothing_t> { return ignore_parser::parse(tok); });
+        });
   }
 
-  static dd::generator<nothing_t> parse(T& t_, event_holder& holder) {
-    using wait = event_holder::wait_e;
+  static dd::generator<nothing_t> parse(T& v, event_holder& tok) {
+    using enum event_holder::wait_e;
     std::bitset<N> parsed_;
 
-    holder.expect(wait::object_begin);
+    tok.expect(object_begin);
 
-    while (true) {
+    for (;;) {
       co_yield {};
-      holder.expect(wait::key | wait::object_end);
-      if (holder.got == wait::object_end) {
+      if (tok.got == object_end)
         break;
-      }
-      std::string_view key = holder.str_m;
+      tok.expect(key);
+      std::string_view key = tok.str_m;
       co_yield {};
-      auto generator_suboneof = get_generator_field(t_, key, holder, parsed_);
-      co_yield dd::elements_of(generator_suboneof);
+      co_yield dd::elements_of(get_generator_field(v, key, tok, parsed_));
     }
-
-    if (!all_parsed(parsed_)) {
+    if (!parsed_.all())
       TGBM_JSON_PARSE_ERROR;
-    }
-    assert(holder.got == event_holder::object_end);
+    assert(tok.got == object_end);
   }
 };
 }  // namespace tgbm::generator_parser
