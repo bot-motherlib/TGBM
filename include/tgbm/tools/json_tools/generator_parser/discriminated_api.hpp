@@ -20,17 +20,18 @@ struct boost_domless_parser<T> {
   }
 
   static dd::generator<nothing_t> parse(T& v, event_holder& tok, memres_tag auto resource) {
-    tok.expect(tok.object_begin);
+    using enum event_holder::wait_e;
+    tok.expect(object_begin);
     co_yield {};
-    if (tok.got == tok.object_end)
+    if (tok.got == object_end)
       co_return;
-    tok.expect(tok.key);
-    if (tok.got != tok.key || tok.str_m != T::discriminator) [[unlikely]]
+    tok.expect(key);
+    if (tok.got != key || tok.str_m != T::discriminator) [[unlikely]]
       json::throw_json_parse_error();
     co_yield {};
-    tok.expect(tok.string);
+    tok.expect(string);
     // change 'got' before generator creation (may be function returning generator)
-    tok.got = event_holder::object_begin;
+    tok.got = object_begin;
     co_yield dd::elements_of(get_generator_suboneof(tok.str_m, v, tok, resource));
   }
 };

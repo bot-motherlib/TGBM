@@ -200,12 +200,8 @@ struct wait_handler {
 template <typename T, dd::memory_resource R = dd::new_delete_resource>
 T parse_generator(std::string_view data, R resource = R{}) {
   T v;
-  // TODO rm
-  alignas(dd::coroframe_align()) byte_t bytes[512];
-  stack_resource r(bytes);
-  // TODO return wait_handler<R>
-  ::boost::json::basic_parser<details::wait_handler<dd::chunk_from<stack_resource>>> p{
-      ::boost::json::parse_options{}, v, dd::chunk_from(r)};  // TODO, std::move(resource)};
+  ::boost::json::basic_parser<details::wait_handler<R>> p{::boost::json::parse_options{}, v,
+                                                          std::move(resource)};
   ::boost::json::error_code ec;
   p.write_some(false, data.data(), data.size(), ec);
   if (ec || !p.handler().ended)

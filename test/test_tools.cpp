@@ -63,7 +63,7 @@ static void test_allocator(size_t seed) {
       resource.deallocate(chunks.back().first, chunks.back().second);
       chunks.pop_back();
     } else {
-      size_t len = std::uniform_int_distribution<size_t>(1, 200)(gen);
+      size_t len = std::uniform_int_distribution<size_t>(0, 200)(gen);
       chunks.emplace_back(resource.allocate(len), len);
       assert(((uintptr_t)chunks.back().first % 16) == 0);
     }
@@ -80,6 +80,7 @@ static void test_allocator2() {
 #define MINUS(N)                \
   r.deallocate(ptrs.back(), N); \
   ptrs.pop_back()
+
   PLUS(3);
   PLUS(85);
   PLUS(33);

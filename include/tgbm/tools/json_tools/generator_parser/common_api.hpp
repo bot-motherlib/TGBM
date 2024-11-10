@@ -46,14 +46,15 @@ struct boost_domless_parser<T> {
   }
 
   static dd::generator<nothing_t> parse(T& v, event_holder& tok, memres_tag auto resource) {
+    using enum event_holder::wait_e;
     std::bitset<N> parsed_;
-    tok.expect(tok.object_begin);
+    tok.expect(object_begin);
 
     for (;;) {
       co_yield {};
-      if (tok.got == tok.object_end)
+      if (tok.got == object_end)
         break;
-      tok.expect(tok.key);
+      tok.expect(key);
       std::string_view cur_key = tok.str_m;
       co_yield {};
       co_yield dd::elements_of(generator_field(v, cur_key, tok, parsed_, resource));

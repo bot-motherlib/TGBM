@@ -10,6 +10,7 @@
 namespace tgbm {
 
 // assumes, that only last allocated chunk may be deallocated (like real stack)
+// (so it may be used with SAX parsing with generators)
 struct stack_resource {
  private:
   std::span<byte_t> initial_buffer;
@@ -31,10 +32,10 @@ struct stack_resource {
 
  public:
   // precondition: 'bytes' aligned correctly to dd::coroframe_align
-  explicit stack_resource(std::span<byte_t> bytes)
+  constexpr explicit stack_resource(std::span<byte_t> bytes = {})
       : initial_buffer(bytes), b(bytes.data()), m(b), e(b + bytes.size()) {
-    assert(!bytes.empty());
-    assert(((uintptr_t)bytes.data() % dd::coroframe_align()) == 0 && "incorrect align!");
+    if (!std::is_constant_evaluated())
+      assert(((uintptr_t)bytes.data() % dd::coroframe_align()) == 0 && "incorrect align!");
   }
 
   ~stack_resource() {
@@ -53,25 +54,21 @@ struct stack_resource {
   };
 
   void* allocate(size_t len) {
-    assert(len != 0);
     len = bytes_len(len);
-    if (e - m >= len) {
-      assert(((uintptr_t)(m + len) % 16) == 0);
+    if (e - m >= len)
       return std::exchange(m, m + len);
-    }
     // allocate atleast * 2 current size
-    const size_t alloc_bytes = (len + (e - b)) * 2;
+    const size_t alloc_bytes = (len + (e - b) + initial_buffer.size()) * 2;
     byte_t* chunk = new byte_t[sizeof(chunk_header) + alloc_bytes];
     new (chunk) chunk_header(b, m, e);
     b = chunk + sizeof(chunk_header);
     m = b + len;
     e = b + alloc_bytes;
-    assert(((uintptr_t)b % 16) == 0);
     return b;
   }
 
   void deallocate(void* ptr, size_t len) noexcept {
-    assert(((uintptr_t)ptr % 16) == 0);
+    assert(((uintptr_t)ptr % 16) == 0 && "dealloc not allocated memory");
     len = bytes_len(len);
     // not in current chunk, must be in some of prev
     // in most cases its literaly previous chunk, but its possible
