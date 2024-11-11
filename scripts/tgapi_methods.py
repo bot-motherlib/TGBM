@@ -405,7 +405,7 @@ def collect_required_includes(method_desc: method_info_t) -> list[str]:
     else:
         ts.append(MSG)
 
-    return list(set(ts))
+    return sorted(list(set(ts)))
 
 # overwrites existing file
 def generate_into_file(method_desc: method_info_t, filepath: str):

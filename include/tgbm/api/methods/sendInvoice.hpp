@@ -1,9 +1,9 @@
 #pragma once
 
 #include "tgbm/api/common.hpp"
+#include "tgbm/api/types/InlineKeyboardMarkup.hpp"
 #include "tgbm/api/types/LabeledPrice.hpp"
 #include "tgbm/api/types/Message.hpp"
-#include "tgbm/api/types/InlineKeyboardMarkup.hpp"
 #include "tgbm/api/types/ReplyParameters.hpp"
 
 namespace tgbm::api {

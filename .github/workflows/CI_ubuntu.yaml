@@ -17,7 +17,7 @@ jobs:
   build_and_test:
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'NO_PIPELINE') }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:  
           - type: debug
