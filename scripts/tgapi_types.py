@@ -443,7 +443,7 @@ def collect_required_includes(t) -> list[str]:
         t = get_compound_type(f.cpptype)
         if t:
             incs.append(f'"{t}.hpp"')
-    return list(set(incs))
+    return sorted(list(set(incs)))
 
 # accepts array of oneofs or simple types
 def generate_all_types(types: list[type_info_t], outdir: str):

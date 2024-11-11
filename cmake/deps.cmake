@@ -67,3 +67,18 @@ if (TGBM_ENABLE_BENCHS)
 endif()
 
 find_package(Threads REQUIRED)
+
+CPMAddPackage(
+  NAME telegram_bot_api_html
+  GIT_REPOSITORY https://github.com/kelbon/telegram_bot_api_html
+  GIT_TAG v7.11 # last supported api
+  DOWNLOAD_ONLY YES
+)
+
+if (NOT DEFINED telegram_bot_api_html_SOURCE_DIR)
+  message(FATAL "[TGBM] cannot load telegram bot api")
+endif()
+
+set(TGBM_APIFILE ${telegram_bot_api_html_SOURCE_DIR}/telegram_bot_api.html)
+
+message(STATUS "[TGBM] telegram bot api file: ${TGBM_APIFILE}")
