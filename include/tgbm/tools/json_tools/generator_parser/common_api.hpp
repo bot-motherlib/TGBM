@@ -7,10 +7,10 @@
 #include "tgbm/tools/pfr_extension.hpp"
 #include "tgbm/tools/traits.hpp"
 
-namespace tgbm::generator_parser {
+namespace tgbm::sax {
 
 template <common_api_type T>
-struct boost_domless_parser<T> {
+struct parser<T> {
   static constexpr auto N = ::pfr_extension::tuple_size_v<T>;
 
   static bool all_parsed(const std::bitset<N>& parsed_) {
@@ -26,17 +26,16 @@ struct boost_domless_parser<T> {
     return (parsed_ & required_mask) == required_mask;
   }
 
-  static dd::generator<nothing_t> generator_field(T& v, std::string_view key, event_holder& tok,
-                                                  std::bitset<N>& parsed_) {
+  static parser_t generator_field(T& v, std::string_view key, event_holder& tok, std::bitset<N>& parsed_) {
     if constexpr (N > 0) {
-      return pfr_extension::visit_struct_field<T, dd::generator<nothing_t>>(
+      return pfr_extension::visit_struct_field<T, parser_t>(
           key,
           [&]<std::size_t I>() {
             auto& field = pfr_extension::get<I>(v);
             if (parsed_.test(I))
               TGBM_JSON_PARSE_ERROR;
             parsed_.set(I);
-            return boost_domless_parser<pfr_extension::tuple_element_t<I, T>>::parse(field, tok);
+            return parser<pfr_extension::tuple_element_t<I, T>>::parse(field, tok);
           },
           [&]() { return ignore_parser::parse(tok); });
     } else {
@@ -44,7 +43,7 @@ struct boost_domless_parser<T> {
     }
   }
 
-  static dd::generator<nothing_t> parse(T& v, event_holder& tok) {
+  static parser_t parse(T& v, event_holder& tok) {
     using enum event_holder::wait_e;
     std::bitset<N> parsed_;
     tok.expect(object_begin);
@@ -63,4 +62,4 @@ struct boost_domless_parser<T> {
   }
 };
 
-}  // namespace tgbm::generator_parser
+}  // namespace tgbm::sax

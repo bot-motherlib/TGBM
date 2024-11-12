@@ -15,13 +15,13 @@ struct parse_proxy {
 
 }  // namespace tgbm
 
-namespace tgbm::generator_parser {
+namespace tgbm::sax {
 
 template <typename T>
-struct boost_domless_parser<parse_proxy<T>> {
-  dd::generator<dd::nothing_t> parse(parse_proxy<T>& out, event_holder& tok) {
-    return boost_domless_parser<T>::parse(out.out, tok);
+struct parser<parse_proxy<T>> {
+  static parser_t parse(parse_proxy<T>& out, event_holder& tok) {
+    return parser<T>::parse(out.out, tok);
   }
 };
 
-}  // namespace tgbm::generator_parser
+}  // namespace tgbm::sax

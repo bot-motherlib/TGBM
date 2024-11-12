@@ -56,16 +56,39 @@ static_assert(!is_lowercase("rttr___trertg;..;A"));
 static void test_allocator(size_t seed) {
   alignas(dd::coroframe_align()) unsigned char bytes[1];
   tgbm::stack_resource resource(bytes);
-  std::vector<std::pair<void*, size_t>> chunks;
+
+  struct chunk_data {
+    void* ptr;
+    size_t size;
+    tgbm::byte_t filling;
+
+    chunk_data(void* p, size_t sz, tgbm::byte_t fill) noexcept : ptr(p), size(sz), filling(fill) {
+      std::span data((tgbm::byte_t*)p, sz);
+      std::fill(data.begin(), data.end(), fill);
+    }
+
+    void invariant_check() {
+      tgbm::byte_t* b = (tgbm::byte_t*)ptr;
+      for (tgbm::byte_t byte : std::span(b, size)) {
+        if (byte != filling)
+          throw std::runtime_error("invariant failed");
+      }
+    }
+  };
+
+  std::vector<chunk_data> chunks;
   std::mt19937 gen(seed);
   for (int i = 0; i < 1000; ++i) {
     if (chunks.size() && std::bernoulli_distribution(0.5)(gen)) {
-      resource.deallocate(chunks.back().first, chunks.back().second);
+      // fmt::println("MINUS({})", chunks.back().size);
+      chunks.back().invariant_check();
+      resource.deallocate(chunks.back().ptr, chunks.back().size);
       chunks.pop_back();
     } else {
       size_t len = std::uniform_int_distribution<size_t>(0, 200)(gen);
-      chunks.emplace_back(resource.allocate(len), len);
-      assert(((uintptr_t)chunks.back().first % 16) == 0);
+      // fmt::println("PLUS({})", len);
+      chunks.emplace_back(resource.allocate(len), len, std::uniform_int_distribution<int>('A', 'Z')(gen));
+      assert(((uintptr_t)chunks.back().ptr % 16) == 0);
     }
   }
 }

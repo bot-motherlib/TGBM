@@ -29,17 +29,17 @@ struct wait_handler {
   static constexpr std::size_t max_string_size = -1;
   static constexpr std::size_t max_key_size = -1;
 
-  using wait_e = generator_parser::event_holder::wait_e;
+  using wait_e = sax::event_holder::wait_e;
+  using parser_t = sax::parser_t;
 
-  dd::generator<generator_parser::nothing_t> gen;
-  generator_parser::event_holder event{};
+  parser_t gen;
+  sax::event_holder event{};
   std::vector<char> buf;
   bool ended = false;
   bool part = false;
 
  private:
-  dd::generator<generator_parser::nothing_t> unite_generate(
-      dd::generator<generator_parser::nothing_t> old_gen) {
+  parser_t unite_generate(parser_t old_gen) {
     event.expect(event.part);
     part = true;
     buf.clear();
@@ -64,8 +64,8 @@ struct wait_handler {
   }
 
   template <typename T>
-  dd::generator<dd::nothing_t> starter(T& v) {
-    co_yield dd::elements_of(generator_parser::boost_domless_parser<T>::parse(v, event));
+  parser_t starter(T& v) {
+    co_yield dd::elements_of(sax::parser<T>::parse(v, event));
     ended = true;
     co_yield {};
     TGBM_JSON_PARSE_ERROR;
@@ -87,8 +87,7 @@ struct wait_handler {
   }
 
   void resume_generator() {
-    auto it = dd::generator_iterator<generator_parser::nothing_t>(gen);
-    ++it;
+    ++gen.cur_iterator();
   }
 
   bool on_array_begin(error_code& ec) {
@@ -164,7 +163,7 @@ struct wait_handler {
   }
 
   void on_part(string_view s) {
-    event.got = generator_parser::event_holder::part;
+    event.got = sax::event_holder::part;
     event.str_m = s;
     if (!part) {
       gen = unite_generate(std::move(gen));

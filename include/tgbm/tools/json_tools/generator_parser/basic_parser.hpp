@@ -1,14 +1,13 @@
 #pragma once
 
+#include "tgbm/tools/json_tools/generator_parser/stack_memory_resource.hpp"
 #include "tgbm/tools/pfr_extension.hpp"
 #include "tgbm/tools/json_tools/exceptions.hpp"
 #include "tgbm/logger.hpp"
 
 #include <kelcoro/generator.hpp>
 
-namespace tgbm::generator_parser {
-
-using nothing_t = dd::nothing_t;
+namespace tgbm::sax {
 
 struct event_holder {
   union {
@@ -24,7 +23,7 @@ struct event_holder {
   ~event_holder() {
   }
 
-  enum wait_e {
+  enum wait_e : uint16_t {
     array_begin = 1 << 0,
     array_end = 1 << 1,
     object_begin = 1 << 2,
@@ -48,10 +47,12 @@ struct event_holder {
   }
 };
 
-template <typename T>
-struct boost_domless_parser {
+using parser_t = dd::generator<dd::nothing_t>;
+
+template <typename>
+struct parser {
   // required interface:
-  //   dd::generator<nothing_t> parse(T& v, event_holder& tok)
+  //   static parser_t parse(T& v, event_holder& tok)
 };
 
-}  // namespace tgbm::generator_parser
+}  // namespace tgbm::sax

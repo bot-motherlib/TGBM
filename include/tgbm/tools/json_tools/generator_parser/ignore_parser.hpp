@@ -1,7 +1,7 @@
 #pragma once
 #include "tgbm/tools/json_tools/generator_parser/basic_parser.hpp"
 
-namespace tgbm::generator_parser {
+namespace tgbm::sax {
 
 struct ignore_parser {
   static bool is_value(event_holder& holder) {
@@ -18,7 +18,7 @@ struct ignore_parser {
     }
   }
 
-  static dd::generator<nothing_t> parse(event_holder& holder) {
+  static parser_t parse(event_holder& holder) {
     if (is_value(holder))
       co_return;
     std::size_t depth = 0;
@@ -48,4 +48,4 @@ struct ignore_parser {
     }
   }
 };
-}  // namespace tgbm::generator_parser
+}  // namespace tgbm::sax

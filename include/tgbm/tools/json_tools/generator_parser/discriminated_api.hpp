@@ -3,21 +3,21 @@
 #include "tgbm/tools/json_tools/generator_parser/basic_parser.hpp"
 #include "tgbm/tools/traits.hpp"
 
-namespace tgbm::generator_parser {
+namespace tgbm::sax {
 
 template <discriminated_api_type T>
-struct boost_domless_parser<T> {
-  static dd::generator<nothing_t> get_generator_suboneof(std::string_view key, T& v, event_holder& tok) {
-    auto emplacer = [&]<typename Suboneof>() -> dd::generator<nothing_t> {
+struct parser<T> {
+  static parser_t get_generator_suboneof(std::string_view key, T& v, event_holder& tok) {
+    auto emplacer = [&]<typename Suboneof>() -> parser_t {
       if constexpr (!std::same_as<Suboneof, void>)
-        return boost_domless_parser<Suboneof>::parse(v.data.template emplace<Suboneof>(), tok);
+        return parser<Suboneof>::parse(v.data.template emplace<Suboneof>(), tok);
       else
         TGBM_JSON_PARSE_ERROR;
     };
     return v.discriminate(key, emplacer);
   }
 
-  static dd::generator<nothing_t> parse(T& v, event_holder& tok) {
+  static parser_t parse(T& v, event_holder& tok) {
     using enum event_holder::wait_e;
     tok.expect(object_begin);
     co_yield {};
@@ -34,4 +34,4 @@ struct boost_domless_parser<T> {
   }
 };
 
-}  // namespace tgbm::generator_parser
+}  // namespace tgbm::sax
