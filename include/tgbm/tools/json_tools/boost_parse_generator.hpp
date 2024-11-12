@@ -2,58 +2,43 @@
 
 #include <boost/json/basic_parser_impl.hpp>
 
+#include "tgbm/net/errors.hpp"
 #include "tgbm/tools/json_tools/generator_parser/basic_parser.hpp"
-#include "tgbm/tools/json_tools/generator_parser/stack_memory_resource.hpp"
 #include "tgbm/tools/scope_exit.h"
 
-namespace fmt {
+namespace tgbm::sax {
 
-template <>
-struct formatter<::boost::json::string_view> : formatter<std::string_view> {
-  static auto format(::boost::json::string_view sv, auto& ctx) -> decltype(ctx.out()) {
-    return fmt::format_to(ctx.out(), "{}", std::string_view{sv.data(), sv.size()});
-  }
-};
+struct json_tokenizer {
+  static constexpr size_t max_array_size = -1;
+  static constexpr size_t max_object_size = -1;
+  static constexpr size_t max_string_size = -1;
+  static constexpr size_t max_key_size = -1;
 
-}  // namespace fmt
-
-namespace tgbm::json::boost {
-namespace details {
-
-struct wait_handler {
-  using error_code = ::boost::json::error_code;
-  using string_view = ::boost::json::string_view;
-
-  static constexpr std::size_t max_array_size = -1;
-  static constexpr std::size_t max_object_size = -1;
-  static constexpr std::size_t max_string_size = -1;
-  static constexpr std::size_t max_key_size = -1;
-
+ private:
   using wait_e = sax::event_holder::wait_e;
   using parser_t = sax::parser_t;
 
   parser_t gen;
   sax::event_holder event{};
-  std::vector<char> buf;
+  // must be outside unite generator for string view
+  std::string partbuf;
   bool ended = false;
   bool part = false;
 
- private:
   parser_t unite_generate(parser_t old_gen) {
     event.expect(event.part);
     part = true;
-    buf.clear();
+    partbuf.clear();
     on_scope_failure(destroy_gen) {
       // guarantee order of deallocactions for resources, firstly this generator, then old_gen
       gen = std::move(old_gen);
     };
     while (event.got == event.part) {
-      buf.insert(buf.end(), event.str_m.begin(), event.str_m.end());
+      partbuf += event.str_m;
       co_yield {};
     }
-
-    buf.insert(buf.end(), event.str_m.begin(), event.str_m.end());
-    event.str_m = std::string_view{buf.data(), buf.size()};
+    partbuf += event.str_m;
+    event.str_m = partbuf;
     destroy_gen.no_longer_needed();
     (void)gen.release();
     gen = std::move(old_gen);
@@ -71,18 +56,25 @@ struct wait_handler {
     TGBM_JSON_PARSE_ERROR;
   }
 
- public:
-  wait_handler(auto& v) : gen(starter(v)) {
-    gen.prepare_to_start();
+  void on_part(std::string_view s) {
+    event.got = sax::event_holder::part;
+    event.str_m = s;
+    if (!part)
+      gen = unite_generate(std::move(gen));
+    resume_generator();
   }
 
-  wait_handler(wait_handler&&) = delete;
+ public:
+  json_tokenizer(auto& v) : gen(starter(v)) {
+  }
 
-  bool on_document_begin(error_code& ec) {
+  json_tokenizer(json_tokenizer&&) = delete;
+
+  bool on_document_begin(io_error_code&) {
     return true;
   }
 
-  bool on_document_end(error_code& ec) {
+  bool on_document_end(io_error_code&) {
     return true;
   }
 
@@ -90,122 +82,104 @@ struct wait_handler {
     ++gen.cur_iterator();
   }
 
-  bool on_array_begin(error_code& ec) {
+  bool on_array_begin(io_error_code&) {
     event.got = wait_e::array_begin;
     resume_generator();
     return true;
   }
 
-  bool on_array_end(std::size_t n, error_code& ec) {
+  bool on_array_end(size_t n, io_error_code&) {
     event.got = wait_e::array_end;
     resume_generator();
     return true;
   }
 
-  bool on_object_begin(error_code& ec) {
+  bool on_object_begin(io_error_code&) {
     event.got = wait_e::object_begin;
     resume_generator();
     return true;
   }
 
-  bool on_object_end(std::size_t n, error_code& ec) {
+  bool on_object_end(size_t n, io_error_code&) {
     event.got = wait_e::object_end;
     resume_generator();
     return true;
   }
 
-  bool on_string(string_view s, std::size_t n, error_code& ec) {
+  bool on_string(std::string_view s, size_t, io_error_code&) {
     event.got = wait_e::string;
     event.str_m = s;
     resume_generator();
     return true;
   }
 
-  bool on_key(string_view s, std::size_t n, error_code& ec) {
+  bool on_key(std::string_view s, size_t, io_error_code&) {
     event.got = wait_e::key;
     event.str_m = s;
     resume_generator();
     return true;
   }
 
-  bool on_int64(int64_t i, string_view s, error_code& ec) {
+  bool on_int64(int64_t i, std::string_view, io_error_code&) {
     event.got = wait_e::int64;
     event.int_m = i;
     resume_generator();
     return true;
   }
 
-  bool on_uint64(uint64_t u, string_view s, error_code& ec) {
+  bool on_uint64(uint64_t u, std::string_view, io_error_code&) {
     event.got = wait_e::uint64;
     event.uint_m = u;
     resume_generator();
     return true;
   }
 
-  bool on_double(double d, string_view s, error_code& ec) {
+  bool on_double(double d, std::string_view, io_error_code&) {
     event.got = wait_e::double_;
     event.double_m = d;
     resume_generator();
     return true;
   }
 
-  bool on_bool(bool b, error_code& ec) {
+  bool on_bool(bool b, io_error_code&) {
     event.got = wait_e::bool_;
     event.bool_m = b;
     resume_generator();
     return true;
   }
 
-  bool on_null(error_code& ec) {
+  bool on_null(io_error_code&) {
     event.got = wait_e::null;
     resume_generator();
     return true;
   }
 
-  void on_part(string_view s) {
-    event.got = sax::event_holder::part;
-    event.str_m = s;
-    if (!part) {
-      gen = unite_generate(std::move(gen));
-      gen.prepare_to_start();
-    }
-    resume_generator();
-  }
-
-  bool on_string_part(string_view s, std::size_t n, error_code& ec) {
+  bool on_string_part(std::string_view s, size_t, io_error_code&) {
     on_part(s);
     return true;
   }
 
-  bool on_comment_part(string_view s, error_code& ec) {
+  bool on_comment_part(std::string_view, io_error_code&) {
     return true;
   }
 
-  bool on_key_part(string_view s, std::size_t n, error_code& ec) {
+  bool on_key_part(std::string_view s, size_t, io_error_code&) {
     on_part(s);
     return true;
   }
 
-  bool on_number_part(string_view s, error_code& ec) {
+  bool on_number_part(std::string_view, io_error_code&) {
     return true;
   }
 
-  bool on_comment(string_view s, error_code& ec) {
+  bool on_comment(std::string_view, io_error_code&) {
     return true;
+  }
+
+  // value parsed already
+  [[nodiscard]] bool is_done() const noexcept {
+    return ended;
   }
 };
 
-}  // namespace details
-
-template <typename T>
-T parse_generator(std::string_view data) {
-  T v;
-  ::boost::json::basic_parser<details::wait_handler> p{::boost::json::parse_options{}, v};
-  ::boost::json::error_code ec;
-  p.write_some(false, data.data(), data.size(), ec);
-  if (ec || !p.handler().ended)
-    TGBM_JSON_PARSE_ERROR;
-  return v;
-}
-
-}  // namespace tgbm::json::boost
+}  // namespace tgbm::sax

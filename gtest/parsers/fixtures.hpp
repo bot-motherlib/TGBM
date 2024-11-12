@@ -43,7 +43,10 @@ struct HandlerBoost : testing::Test {
 struct GeneratorBoost : testing::Test {
   template <typename T>
   static T parse_json(std::string_view json) {
-    return tgbm::json::boost::parse_generator<T>(json);
+    T v;
+    tgbm::json::stream_parser s(v);
+    s.feed(json, true);
+    return v;
   }
 };
 

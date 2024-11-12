@@ -47,6 +47,14 @@ struct event_holder {
   }
 };
 
+struct alignas(dd::coroframe_align()) memory_and_resource {
+  byte_t bytes[8096] = {};
+  stack_resource res;
+
+  constexpr memory_and_resource() : bytes(), res(bytes) {
+  }
+};
+
 using parser_t = dd::generator<dd::nothing_t>;
 
 template <typename>
