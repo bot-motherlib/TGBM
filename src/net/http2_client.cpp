@@ -825,7 +825,7 @@ static http2::frame_header form_headers_header(const prepared_http_request& requ
   };
 }
 
-[[nodiscard]] static http2::frame_header form_data_header(uint32_t streamid, uint32_t frame_sz,
+[[nodiscard]] static http2::frame_header form_data_header(http2::stream_id_t streamid, uint32_t frame_sz,
                                                           bool is_last) noexcept {
   using enum http2::frame_e;
   using namespace http2::flags;

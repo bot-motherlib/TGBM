@@ -7,7 +7,7 @@
 
 #include "tgbm/api/telegram.hpp"
 #include "tgbm/net/http_client.hpp"
-#include "tgbm/net/long_poll.hpp"
+#include "tgbm/long_poll.hpp"
 
 namespace tgbm {
 

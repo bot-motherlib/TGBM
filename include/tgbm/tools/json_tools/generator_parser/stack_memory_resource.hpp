@@ -1,7 +1,6 @@
 #pragma once
 
 #include <span>
-#include <atomic>  // used in memory support .hpp
 #include <utility>
 
 #include <kelcoro/memory_support.hpp>

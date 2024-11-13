@@ -13,7 +13,6 @@ namespace tgbm::http2 {
 // only increments during connection
 // when limit reached, connection dropped
 using stream_id_t = uint32_t;
-// TODO? signed int?
 constexpr inline stream_id_t max_stream_id = (stream_id_t(1) << 31) - 1;
 
 enum struct errc_e : uint32_t {
