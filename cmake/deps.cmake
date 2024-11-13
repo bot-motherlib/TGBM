@@ -56,13 +56,15 @@ if (TGBM_ENABLE_TESTS)
   )
 endif()
 
-
 if (TGBM_ENABLE_BENCHS)
   CPMAddPackage(
     NAME benchmark
     GITHUB_REPOSITORY google/benchmark
-    VERSION 1.7.1
+    GIT_TAG v1.9.0
     OPTIONS "BENCHMARK_ENABLE_TESTING Off"
+            "BENCHMARK_ENABLE_WERROR OFF"
+            "BENCHMARK_FORCE_WERROR OFF"
+            "BENCHMARK_INSTALL_DOCS OFF"
   )
 endif()
 
