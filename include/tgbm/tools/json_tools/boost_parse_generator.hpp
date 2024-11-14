@@ -6,7 +6,7 @@
 #include "tgbm/tools/json_tools/generator_parser/basic_parser.hpp"
 #include "tgbm/tools/scope_exit.h"
 
-namespace tgbm::sax {
+namespace tgbm::json::sax {
 
 struct json_tokenizer {
   static constexpr size_t max_array_size = -1;
@@ -182,4 +182,4 @@ struct json_tokenizer {
   }
 };
 
-}  // namespace tgbm::sax
+}  // namespace tgbm::json::sax

@@ -4,7 +4,7 @@
 #include "tgbm/api/optional.hpp"
 #include "tgbm/tools/box.hpp"
 
-namespace tgbm::sax {
+namespace tgbm::json::sax {
 
 template <typename Optional>
 struct basic_optional_parser {
@@ -26,4 +26,4 @@ struct parser<api::optional<T>> : basic_optional_parser<api::optional<T>> {};
 template <typename T>
 struct parser<box<T>> : basic_optional_parser<box<T>> {};
 
-}  // namespace tgbm::sax
+}  // namespace tgbm::json::sax

@@ -7,7 +7,7 @@
 #include "tgbm/tools/pfr_extension.hpp"
 #include "tgbm/tools/traits.hpp"
 
-namespace tgbm::sax {
+namespace tgbm::json::sax {
 
 template <common_api_type T>
 struct parser<T> {
@@ -62,4 +62,4 @@ struct parser<T> {
   }
 };
 
-}  // namespace tgbm::sax
+}  // namespace tgbm::json::sax

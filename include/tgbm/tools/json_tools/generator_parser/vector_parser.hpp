@@ -2,11 +2,11 @@
 
 #include "tgbm/tools/json_tools/generator_parser/basic_parser.hpp"
 
-namespace tgbm::sax {
+namespace tgbm::json::sax {
 
 template <typename T>
 struct parser<std::vector<T>> {
-  static parser_t parse(std::vector<T>& v, tgbm::sax::event_holder& tok) {
+  static parser_t parse(std::vector<T>& v, tgbm::json::sax::event_holder& tok) {
     tok.expect(event_holder::array_begin);
     for (;;) {
       co_yield {};
@@ -17,4 +17,4 @@ struct parser<std::vector<T>> {
   }
 };
 
-}  // namespace tgbm::sax
+}  // namespace tgbm::json::sax

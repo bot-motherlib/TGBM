@@ -25,7 +25,7 @@ struct telegram_answer {
 
 }  // namespace tgbm::api
 
-namespace tgbm::sax {
+namespace tgbm::json::sax {
 
 template <typename T>
 struct parser<api::telegram_answer<T>> {
@@ -94,4 +94,4 @@ struct parser<tgbm::box_union<bool, tgbm::api::Message>> {
   }
 };
 
-}  // namespace tgbm::sax
+}  // namespace tgbm::json::sax

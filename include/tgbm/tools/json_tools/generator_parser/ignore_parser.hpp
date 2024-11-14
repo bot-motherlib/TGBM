@@ -1,7 +1,7 @@
 #pragma once
 #include "tgbm/tools/json_tools/generator_parser/basic_parser.hpp"
 
-namespace tgbm::sax {
+namespace tgbm::json::sax {
 
 struct ignore_parser {
   static bool is_value(event_holder& holder) {
@@ -48,4 +48,4 @@ struct ignore_parser {
     }
   }
 };
-}  // namespace tgbm::sax
+}  // namespace tgbm::json::sax

@@ -15,7 +15,7 @@ struct parse_proxy {
 
 }  // namespace tgbm
 
-namespace tgbm::sax {
+namespace tgbm::json::sax {
 
 template <typename T>
 struct parser<parse_proxy<T>> {
@@ -24,4 +24,4 @@ struct parser<parse_proxy<T>> {
   }
 };
 
-}  // namespace tgbm::sax
+}  // namespace tgbm::json::sax

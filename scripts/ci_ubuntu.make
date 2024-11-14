@@ -58,23 +58,3 @@ install-compiler:
   	else \
       echo "Unknown compiler" >&2; \
   	fi
-
-.PHONY: find-c-compiler
-find-c-compiler:
-	@if [ "$(compiler)" = "clang" ]; then \
-        echo "/usr/bin/clang-$(version)"; \
-      elif [ "$(compiler)" = "gcc" ]; then \
-        echo "/usr/bin/gcc-$(version)"; \
-      else \
-        echo "Unknown compiler" >&2;  \
-      fi
-
-.PHONY: find-cxx-compiler
-find-cxx-compiler:
-	@if [ "$(compiler)" = "clang" ]; then \
-        echo "/usr/bin/clang++-$(version)"; \
-      elif [ "$(compiler)" = "gcc" ]; then \
-        echo "/usr/bin/g++-$(version)"; \
-      else \
-        echo "Unknown compiler" >&2; \
-      fi

@@ -7,7 +7,7 @@
 
 #include <kelcoro/generator.hpp>
 
-namespace tgbm::sax {
+namespace tgbm::json::sax {
 
 struct event_holder {
   union {
@@ -63,4 +63,4 @@ struct parser {
   //   static parser_t parse(T& v, event_holder& tok)
 };
 
-}  // namespace tgbm::sax
+}  // namespace tgbm::json::sax

@@ -3,7 +3,7 @@
 #include "tgbm/tools/json_tools/generator_parser/basic_parser.hpp"
 #include "tgbm/tools/traits.hpp"
 
-namespace tgbm::sax {
+namespace tgbm::json::sax {
 
 template <discriminated_api_type T>
 struct parser<T> {
@@ -34,4 +34,4 @@ struct parser<T> {
   }
 };
 
-}  // namespace tgbm::sax
+}  // namespace tgbm::json::sax

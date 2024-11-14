@@ -6,7 +6,7 @@
 #include "tgbm/api/common.hpp"
 #include "tgbm/tools/math.hpp"
 
-namespace tgbm::sax {
+namespace tgbm::json::sax {
 
 template <>
 struct parser<bool> {
@@ -72,4 +72,4 @@ struct parser<T> {
   }
 };
 
-}  // namespace tgbm::sax
+}  // namespace tgbm::json::sax

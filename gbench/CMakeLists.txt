@@ -12,12 +12,13 @@ target_compile_options(${PROJECT_NAME}_gbenchs
 target_link_libraries(${PROJECT_NAME}_gbenchs
     PUBLIC tgbmlib benchmark::benchmark
 )
+
 target_include_directories(
     ${PROJECT_NAME}_gbenchs PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-set_target_properties(${PROJECT_NAME}_gbenchs  PROPERTIES
+set_target_properties(${PROJECT_NAME}_gbenchs PROPERTIES
     CMAKE_CXX_EXTENSIONS OFF
     LINKER_LANGUAGE CXX
     CMAKE_CXX_STANDARD_REQUIRED ON

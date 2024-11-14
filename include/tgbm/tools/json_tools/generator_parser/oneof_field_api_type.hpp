@@ -10,7 +10,7 @@
 #include "tgbm/tools/api_utils.hpp"
 #include "tgbm/tools/traits.hpp"
 
-namespace tgbm::sax {
+namespace tgbm::json::sax {
 
 template <oneof_field_api_type T>
 struct parser<T> {
@@ -59,4 +59,4 @@ struct parser<T> {
     assert(tok.got == object_end);
   }
 };
-}  // namespace tgbm::sax
+}  // namespace tgbm::json::sax
