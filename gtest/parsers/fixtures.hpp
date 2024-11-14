@@ -4,7 +4,18 @@
 
 #include "boost/json/value.hpp"
 #include "tgbm/api/common.hpp"
-#include "tgbm/tools/json_tools/all.hpp"
+
+#include "tgbm/jsons/boost_parse_dom.hpp"
+#include "tgbm/jsons/sax.hpp"
+#include "tgbm/jsons/boost_parse_handler.hpp"
+#include "tgbm/json.hpp"
+#include "tgbm/jsons/generator_parser/all.hpp"
+#include "tgbm/jsons/handler_parser/all.hpp"
+#include "tgbm/jsons/parse_dom/all.hpp"
+#include "tgbm/jsons/rapid_parse_handler.hpp"
+#include "tgbm/jsons/rapid_parse_dom.hpp"
+#include "tgbm/jsons/exceptions.hpp"
+#include "tgbm/jsons/stream_parser.hpp"
 
 struct DomRapid : testing::Test {
   template <typename T>
@@ -14,7 +25,7 @@ struct DomRapid : testing::Test {
     if (document.HasParseError()) {
       TGBM_JSON_PARSE_ERROR;
     }
-    return tgbm::json::from_json<T, rapidjson::GenericValue<rapidjson::UTF8<>>>(document);
+    return tgbm::from_json<T, rapidjson::GenericValue<rapidjson::UTF8<>>>(document);
   }
 };
 
@@ -22,7 +33,7 @@ struct DomBoost : testing::Test {
   template <typename T>
   static T parse_json(std::string_view json) {
     ::boost::json::value j = boost::json::parse(json);
-    return tgbm::json::from_json<T>(j);
+    return tgbm::from_json<T>(j);
   }
 };
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tgbm/tools/json_tools/generator_parser/basic_parser.hpp"
+#include "tgbm/jsons/generator_parser/basic_parser.hpp"
 
 namespace tgbm {
 

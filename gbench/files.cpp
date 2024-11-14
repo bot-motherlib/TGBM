@@ -2,7 +2,18 @@
 #include "fuzzing.hpp"
 #include "types.hpp"
 #include "tgbm/api/types/all.hpp"
-#include "tgbm/tools/json_tools/all.hpp"
+
+#include "tgbm/jsons/boost_parse_dom.hpp"
+#include "tgbm/jsons/sax.hpp"
+#include "tgbm/jsons/boost_parse_handler.hpp"
+#include "tgbm/json.hpp"
+#include "tgbm/jsons/generator_parser/all.hpp"
+#include "tgbm/jsons/handler_parser/all.hpp"
+#include "tgbm/jsons/parse_dom/all.hpp"
+#include "tgbm/jsons/rapid_parse_handler.hpp"
+#include "tgbm/jsons/rapid_parse_dom.hpp"
+#include "tgbm/jsons/exceptions.hpp"
+#include "tgbm/jsons/stream_parser.hpp"
 
 template <typename T>
 void execute_handler_rapid(std::string_view json) {
@@ -16,7 +27,7 @@ void execute_dom_rapid(std::string_view json) {
   if (document.HasParseError()) {
     TGBM_JSON_PARSE_ERROR;
   }
-  benchmark::DoNotOptimize(tgbm::json::from_json<T, rapidjson::GenericValue<rapidjson::UTF8<>>>(document));
+  benchmark::DoNotOptimize(tgbm::from_json<T, rapidjson::GenericValue<rapidjson::UTF8<>>>(document));
 }
 
 template <typename T>
@@ -32,7 +43,7 @@ void execute_handler_boost(std::string_view json) {
 template <typename T>
 void execute_dom_boost(std::string_view json) {
   ::boost::json::value j = boost::json::parse(json);
-  benchmark::DoNotOptimize(tgbm::json::from_json<T>(j));
+  benchmark::DoNotOptimize(tgbm::from_json<T>(j));
 }
 
 template <typename T>

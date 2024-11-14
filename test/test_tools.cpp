@@ -7,7 +7,7 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
-#include "tgbm/tools/json_tools/generator_parser/stack_memory_resource.hpp"
+#include "tgbm/jsons/generator_parser/stack_memory_resource.hpp"
 
 consteval int sstest1() {
   std::string_view str = "hello";

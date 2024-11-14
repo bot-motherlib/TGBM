@@ -12,7 +12,7 @@
 #include "tgbm/tools/pfr_extension.hpp"
 #include "tgbm/tools/traits.hpp"
 #include "tgbm/logger.hpp"
-#include "tgbm/tools/json_tools/boost_serialize_dom.hpp"
+#include "tgbm/jsons/boost_serialize_dom.hpp"
 
 namespace fuzzing {
 

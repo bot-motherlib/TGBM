@@ -11,7 +11,7 @@
 #include "tgbm/tools/deadline.hpp"
 #include "tgbm/tools/memory.hpp"
 #include "tgbm/api/telegram_answer.hpp"
-#include "tgbm/tools/json_tools/stream_parser.hpp"
+#include "tgbm/jsons/stream_parser.hpp"
 
 namespace tgbm::api {
 

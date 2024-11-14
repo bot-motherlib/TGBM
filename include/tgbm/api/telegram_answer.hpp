@@ -5,7 +5,7 @@
 
 #include "tgbm/tools/box_union.hpp"
 
-#include "tgbm/tools/json_tools/generator_parser/all.hpp"
+#include "tgbm/jsons/generator_parser/all.hpp"
 
 namespace tgbm::api {
 
