@@ -8,9 +8,9 @@
 #include <unordered_map>
 #include <fstream>
 
-#include "tgbm/tools/box.hpp"
-#include "tgbm/tools/pfr_extension.hpp"
-#include "tgbm/tools/traits.hpp"
+#include "tgbm/utils/box.hpp"
+#include "tgbm/utils/pfr_extension.hpp"
+#include "tgbm/utils/traits.hpp"
 #include "tgbm/logger.hpp"
 #include "tgbm/jsons/boost_serialize_dom.hpp"
 

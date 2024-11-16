@@ -10,7 +10,7 @@ struct PaidMediaPhoto {
   arrayof<PhotoSize> photo;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name).case_("photo", true).or_default(false);
+    return string_switch<bool>(name).case_("photo", true).or_default(false);
   }
 };
 

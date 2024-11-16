@@ -184,7 +184,7 @@ struct InlineQueryResult {
     return data.get_if<InlineQueryResultVoice>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("audio", type_e::k_cachedaudio)
         .case_("document", type_e::k_cacheddocument)
         .case_("gif", type_e::k_cachedgif)

@@ -8,7 +8,7 @@
 
 #include "tgbm/net/http2/hpack.hpp"
 #include "tgbm/net/http2/errors.hpp"
-#include "tgbm/tools/memory.hpp"
+#include "tgbm/utils/memory.hpp"
 
 #include <fmt/core.h>
 

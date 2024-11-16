@@ -2,8 +2,6 @@
 
 namespace test_oneof {
 
-namespace utils = tgbm::utils;
-
 struct User {
   tgbm::api::Integer id;
   std::string name;
@@ -100,7 +98,7 @@ struct MessageOrigin {
   static constexpr auto variant_size = size_t(type_e::nothing);
 
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return tgbm::string_switch<type_e>(val)
         .case_("user", type_e::k_user)
         .case_("hidden_user", type_e::k_hidden_user)
         .case_("chat", type_e::k_chat)

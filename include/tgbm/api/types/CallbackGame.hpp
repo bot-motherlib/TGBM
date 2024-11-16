@@ -22,7 +22,7 @@ struct CallbackGame {
   optional<bool> disable_edit_message;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name).case_("user_id", true).case_("score", true).or_default(false);
+    return string_switch<bool>(name).case_("user_id", true).case_("score", true).or_default(false);
   }
 };
 

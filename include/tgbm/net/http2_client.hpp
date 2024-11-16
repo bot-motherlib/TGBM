@@ -11,7 +11,7 @@
 #include <boost/asio/io_context.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
-#include "tgbm/tools/boost_intrusive.hpp"
+#include "tgbm/utils/boost_intrusive.hpp"
 
 namespace tgbm {
 

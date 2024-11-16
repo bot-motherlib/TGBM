@@ -60,7 +60,7 @@ struct TransactionPartner {
     return data.get_if<TransactionPartnerOther>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("user", type_e::k_user)
         .case_("fragment", type_e::k_fragment)
         .case_("telegram_ads", type_e::k_telegramads)

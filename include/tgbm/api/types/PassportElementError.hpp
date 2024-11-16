@@ -94,7 +94,7 @@ struct PassportElementError {
     return data.get_if<PassportElementErrorUnspecified>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("data", type_e::k_datafield)
         .case_("front_side", type_e::k_frontside)
         .case_("reverse_side", type_e::k_reverseside)

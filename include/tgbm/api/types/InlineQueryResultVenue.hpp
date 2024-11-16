@@ -38,7 +38,7 @@ struct InlineQueryResultVenue {
   optional<Integer> thumbnail_height;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("id", true)
         .case_("latitude", true)
         .case_("longitude", true)

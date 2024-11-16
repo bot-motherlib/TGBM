@@ -6,7 +6,7 @@
 #include <anyany/noexport/type_descriptor_details.hpp>
 
 #include "tgbm/api/common.hpp"
-#include "tgbm/tools/formatters.hpp"
+#include "tgbm/utils/formatters.hpp"
 
 namespace tgbm {
 

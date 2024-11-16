@@ -7,8 +7,9 @@
 
 #include "basic_parser.hpp"
 #include "ignore.hpp"
-#include "tgbm/tools/StringTools.h"
-#include "tgbm/tools/traits.hpp"
+#include "tgbm/utils/pfr_extension.hpp"
+#include "tgbm/utils/url_encoded.hpp"
+#include "tgbm/utils/traits.hpp"
 
 namespace tgbm::json::handler_parser {
 
@@ -95,7 +96,7 @@ struct parser<T> : basic_parser<T> {
 
   template <size_t... I>
   static constexpr size_t count_index_impl(std::string_view key, std::integer_sequence<size_t, I...>) {
-    using switcher = utils::string_switch<size_t>;
+    using switcher = string_switch<size_t>;
     return (switcher{key} | ... | switcher::case_t(pfr_extension::get_name<I, T>(), I)).or_default(unknown);
   }
 

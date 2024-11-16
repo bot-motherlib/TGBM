@@ -5,9 +5,9 @@
 #include <vector>
 #include <iterator>
 
-#include "tgbm/tools/macro.hpp"
-#include "tgbm/tools/StringTools.h"
-#include "tgbm/tools/rapidjson_to_json.h"
+#include "tgbm/utils/macro.hpp"
+#include "tgbm/utils/url_encoded.hpp"
+#include "tgbm/jsons/rapidjson_serialize_sax.hpp"
 #include "tgbm/api/input_file.hpp"
 
 #include <fmt/format.h>
@@ -39,7 +39,7 @@ struct rj_urlencoded_refbuffer_t {
   using Ch = char;
 
   void Put(char c) {
-    utils::url_encode(c, std::back_inserter(buf));
+    url_encode(c, std::back_inserter(buf));
   }
   static void Flush() noexcept {
   }
@@ -106,7 +106,7 @@ struct application_x_www_form_urlencoded {
   }
 
   void arg(std::string_view k, const auto& value) {
-    fmt::format_to(std::back_inserter(body), "{}", utils::url_encoded(k));
+    fmt::format_to(std::back_inserter(body), "{}", url_encoded(k));
     body.push_back('=');
     rj_urlencoded_refbuffer_t b(body);
     using namespace rapidjson;
@@ -128,14 +128,14 @@ struct application_multipart_form_data {
 
  public:
   explicit application_multipart_form_data(size_t reserve = 0) {
-    boundary = utils::generate_multipart_boundary(16);
+    boundary = generate_multipart_boundary(16);
     body.reserve(reserve);
   }
   explicit application_multipart_form_data(std::string boudary, size_t reserve = 0) {
     if (boundary.size() > 69)
       throw std::invalid_argument("HTTP boundary should be [1-69] symbols");
     if (boudary.empty())
-      boudary = utils::generate_multipart_boundary(16);
+      boudary = generate_multipart_boundary(16);
     body.reserve(reserve);
   }
 
@@ -163,7 +163,7 @@ struct application_multipart_form_data {
                    "Content-Disposition: form-data; name=\"{}\"; filename=\"{}\"\r\n"
                    "Content-Type: {}\r\n\r\n"
                    "{}\r\n",
-                   boundary, k, utils::url_encoded(filename), mime_type, data);
+                   boundary, k, url_encoded(filename), mime_type, data);
   }
 
   void arg(std::string_view k, const auto& value) {

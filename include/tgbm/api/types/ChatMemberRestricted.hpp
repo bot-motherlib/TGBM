@@ -45,7 +45,7 @@ struct ChatMemberRestricted {
   Integer until_date;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("user", true)
         .case_("is_member", true)
         .case_("can_send_messages", true)

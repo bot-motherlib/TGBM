@@ -6,7 +6,7 @@
 #include <utility>
 #include <cassert>
 
-#include "tgbm/tools/macro.hpp"
+#include "tgbm/utils/macro.hpp"
 
 namespace tgbm {
 

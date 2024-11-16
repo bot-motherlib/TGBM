@@ -6,8 +6,8 @@
 
 #include "tgbm/jsons/sax.hpp"
 
-#include "tgbm/tools/api_utils.hpp"
-#include "tgbm/tools/traits.hpp"
+#include "tgbm/utils/api_utils.hpp"
+#include "tgbm/utils/traits.hpp"
 
 namespace tgbm::json {
 

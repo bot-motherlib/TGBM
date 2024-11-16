@@ -2,7 +2,7 @@
 
 #include "tgbm/jsons/sax.hpp"
 #include "tgbm/api/optional.hpp"
-#include "tgbm/tools/box.hpp"
+#include "tgbm/utils/box.hpp"
 
 namespace tgbm::json {
 

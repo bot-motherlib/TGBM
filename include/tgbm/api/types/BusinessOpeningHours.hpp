@@ -12,7 +12,7 @@ struct BusinessOpeningHours {
   arrayof<BusinessOpeningHoursInterval> opening_hours;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("time_zone_name", true)
         .case_("opening_hours", true)
         .or_default(false);

@@ -59,7 +59,7 @@ struct ExternalReplyInfo {
   optional<True> has_media_spoiler;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name).case_("origin", true).or_default(false);
+    return string_switch<bool>(name).case_("origin", true).or_default(false);
   }
 };
 

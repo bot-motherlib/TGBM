@@ -41,7 +41,7 @@ struct RevenueWithdrawalState {
     return data.get_if<RevenueWithdrawalStateFailed>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("pending", type_e::k_pending)
         .case_("succeeded", type_e::k_succeeded)
         .case_("failed", type_e::k_failed)

@@ -15,7 +15,7 @@ struct ProximityAlertTriggered {
   Integer distance;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("traveler", true)
         .case_("watcher", true)
         .case_("distance", true)

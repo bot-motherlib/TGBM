@@ -14,7 +14,7 @@ struct LabeledPrice {
   Integer amount;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name).case_("label", true).case_("amount", true).or_default(false);
+    return string_switch<bool>(name).case_("label", true).case_("amount", true).or_default(false);
   }
 };
 

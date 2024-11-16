@@ -41,7 +41,7 @@ struct PaidMedia {
     return data.get_if<PaidMediaVideo>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("preview", type_e::k_preview)
         .case_("photo", type_e::k_photo)
         .case_("video", type_e::k_video)

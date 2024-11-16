@@ -23,7 +23,7 @@ struct Venue {
   optional<String> google_place_type;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("location", true)
         .case_("title", true)
         .case_("address", true)

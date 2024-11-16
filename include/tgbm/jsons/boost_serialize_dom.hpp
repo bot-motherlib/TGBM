@@ -3,12 +3,12 @@
 #include <boost/json.hpp>
 #include <boost/json/serialize_options.hpp>
 
-#include "tgbm/tools/box.hpp"
-#include "tgbm/tools/pfr_extension.hpp"
-#include "tgbm/tools/traits.hpp"
+#include "tgbm/utils/box.hpp"
+#include "tgbm/utils/pfr_extension.hpp"
+#include "tgbm/utils/traits.hpp"
 #include "tgbm/api/common.hpp"
 #include "tgbm/jsons/errors.hpp"
-#include "tgbm/tools/api_utils.hpp"
+#include "tgbm/utils/api_utils.hpp"
 
 namespace boost::json {
 

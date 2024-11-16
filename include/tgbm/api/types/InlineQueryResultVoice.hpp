@@ -29,7 +29,7 @@ struct InlineQueryResultVoice {
   box<InputMessageContent> input_message_content;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("id", true)
         .case_("voice_url", true)
         .case_("title", true)

@@ -65,7 +65,7 @@ struct InputInvoiceMessageContent {
   optional<bool> is_flexible;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("description", true)
         .case_("payload", true)
         .case_("currency", true)

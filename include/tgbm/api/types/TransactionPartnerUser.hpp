@@ -17,7 +17,7 @@ struct TransactionPartnerUser {
   optional<String> paid_media_payload;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name).case_("user", true).or_default(false);
+    return string_switch<bool>(name).case_("user", true).or_default(false);
   }
 };
 

@@ -29,7 +29,7 @@ struct Animation {
   optional<Integer> file_size;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("file_id", true)
         .case_("file_unique_id", true)
         .case_("width", true)

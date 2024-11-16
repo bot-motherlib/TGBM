@@ -1,53 +1,10 @@
 #pragma once
 
-#include <algorithm>
-#include <cstddef>
-#include <string>
+#include <string_view>
 #include <optional>
 #include <cassert>
 
-#include <fmt/format.h>
-
-namespace tgbm::utils {
-
-template <typename O>
-O url_encode(char c, O out) {
-  static constexpr auto is_legit = [](char c) {
-    switch (c) {
-      case 'A' ... 'Z':
-      case 'a' ... 'z':
-      case '0' ... '9':
-      case '_':
-      case '.':
-      case '-':
-      case '~':
-      case ':':
-        return true;
-      default:
-        return false;
-    }
-  };
-  if (is_legit(c)) {
-    *out = c;
-    ++out;
-  } else
-    out = fmt::format_to(out, "%{:02X}", (unsigned)(unsigned char)c);
-  return out;
-}
-
-std::string generate_multipart_boundary(size_t length);
-
-// used for fmt formatting
-struct url_encoded {
-  std::string_view str;
-};
-
-/**
- * Performs url decode.
- * @param value Encoded url string
- * @return Decoded url string
- */
-std::string urlDecode(const std::string& value);
+namespace tgbm {
 
 template <typename T, typename R = T>
 struct string_switch {
@@ -167,31 +124,4 @@ struct string_switch {
 #undef $$move
 };
 
-}  // namespace tgbm::utils
-
-namespace tgbm {
-
-[[nodiscard]] static constexpr bool is_lowercase(std::string_view s) noexcept {
-  auto is_uppercase_char = [](char c) { return c >= 'A' && c <= 'Z'; };
-  return std::none_of(s.begin(), s.end(), is_uppercase_char);
-}
-
 }  // namespace tgbm
-
-namespace fmt {
-
-template <>
-struct formatter<::tgbm::utils::url_encoded> {
-  static constexpr auto parse(fmt::format_parse_context& ctx) -> decltype(ctx.begin()) {
-    return ctx.end();
-  }
-
-  static auto format(::tgbm::utils::url_encoded s, auto& ctx) -> decltype(ctx.out()) {
-    auto it = ctx.out();
-    for (const char& c : s.str)
-      it = ::tgbm::utils::url_encode(c, it);
-    return it;
-  }
-};
-
-}  // namespace fmt

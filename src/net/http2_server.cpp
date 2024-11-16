@@ -10,9 +10,9 @@ TODO docs about this file
 #include "tgbm/net/asio_awaiters.hpp"
 #include "tgbm/net/ssl_context.hpp"
 #include "tgbm/net/http2/protocol.hpp"
-#include "tgbm/tools/memory.hpp"
-#include "tgbm/tools/reusable_buffer.hpp"
-#include "tgbm/tools/scope_exit.h"
+#include "tgbm/utils/memory.hpp"
+#include "tgbm/utils/reusable_buffer.hpp"
+#include "tgbm/utils/scope_exit.hpp"
 
 #include <anyany/anyany.hpp>
 

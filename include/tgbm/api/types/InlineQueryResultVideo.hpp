@@ -41,7 +41,7 @@ struct InlineQueryResultVideo {
   optional<bool> show_caption_above_media;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("id", true)
         .case_("video_url", true)
         .case_("mime_type", true)

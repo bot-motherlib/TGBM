@@ -5,12 +5,12 @@
 #include <utility>
 #include <string_view>
 
-#include "tgbm/tools/pfr_extension.hpp"
+#include "tgbm/utils/pfr_extension.hpp"
 #include "basic_parser.hpp"
 #include "ignore.hpp"
-#include "tgbm/tools/api_utils.hpp"
-#include "tgbm/tools/pfr_extension.hpp"
-#include "tgbm/tools/traits.hpp"
+#include "tgbm/utils/api_utils.hpp"
+#include "tgbm/utils/pfr_extension.hpp"
+#include "tgbm/utils/traits.hpp"
 
 namespace tgbm::json::handler_parser {
 

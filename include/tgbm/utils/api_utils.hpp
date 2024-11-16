@@ -1,8 +1,8 @@
 #pragma once
 
-#include "tgbm/tools/pfr_extension.hpp"
-#include "tgbm/tools/box_union.hpp"
-#include "tgbm/tools/traits.hpp"
+#include "tgbm/utils/pfr_extension.hpp"
+#include "tgbm/utils/box_union.hpp"
+#include "tgbm/utils/traits.hpp"
 
 namespace tgbm {
 namespace oneof_field_utils {
@@ -12,8 +12,8 @@ constexpr size_t N = pfr_extension::tuple_size_v<T> - 1;
 template <typename T>
 constexpr bool is_required(std::string_view key) {
   return tgbm::call_on_indexes<N<T>>([&]<size_t... I> {
-    auto ss = tgbm::utils::string_switch<bool>(key);
-    using case_t = tgbm::utils::string_switch<bool>::case_t;
+    auto ss = tgbm::string_switch<bool>(key);
+    using case_t = tgbm::string_switch<bool>::case_t;
     return (ss | ... | case_t(pfr_extension::element_name_v<I, T>, true)).or_default(false);
   });
 }

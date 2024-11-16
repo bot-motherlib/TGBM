@@ -11,9 +11,9 @@
   #pragma clang diagnostic pop
 #endif
 
-#include "tgbm/tools/constexpr_string.h"
-#include "tgbm/tools/StringTools.h"
-#include "tgbm/tools/meta.hpp"
+#include "tgbm/utils/constexpr_string.h"
+#include "tgbm/utils/string_switch.hpp"
+#include "tgbm/utils/meta.hpp"
 
 #define FWD(X) std::forward<decltype(X)>(X)
 
@@ -126,9 +126,8 @@ template <typename T, typename R, size_t Size = boost::pfr::tuple_size_v<T>>
 constexpr R visit_struct_field(std::string_view field_name, auto&& known, auto&& unknown) {
   constexpr size_t kUnknown = size_t(-1);
   size_t index = [&]<size_t... I>(std::index_sequence<I...>) {
-    tgbm::utils::string_switch<size_t> s(field_name);
-    return (s | ... | tgbm::utils::string_switch<size_t>::case_t(element_name_v<I, T>, I))
-        .or_default(kUnknown);
+    tgbm::string_switch<size_t> s(field_name);
+    return (s | ... | tgbm::string_switch<size_t>::case_t(element_name_v<I, T>, I)).or_default(kUnknown);
   }(std::make_index_sequence<Size>{});
   if (index != kUnknown) [[likely]] {
     return tgbm::visit_index<Size - 1>(known, index);

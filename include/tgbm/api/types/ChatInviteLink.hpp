@@ -33,7 +33,7 @@ struct ChatInviteLink {
   optional<Integer> subscription_price;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("invite_link", true)
         .case_("creator", true)
         .case_("creates_join_request", true)

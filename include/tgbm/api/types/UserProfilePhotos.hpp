@@ -12,10 +12,7 @@ struct UserProfilePhotos {
   arrayof<PhotoSize> photos;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
-        .case_("total_count", true)
-        .case_("photos", true)
-        .or_default(false);
+    return string_switch<bool>(name).case_("total_count", true).case_("photos", true).or_default(false);
   }
 };
 

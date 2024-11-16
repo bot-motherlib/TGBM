@@ -8,11 +8,12 @@
 #include <cstdint>
 #include <cstring>
 #include <cstddef>
+#include <bit>
 
 #include "anyany/noexport/file_begin.hpp"
 
-#include "tgbm/tools/meta.hpp"
-#include "tgbm/tools/box.hpp"
+#include "tgbm/utils/meta.hpp"
+#include "tgbm/utils/box.hpp"
 
 namespace tgbm {
 

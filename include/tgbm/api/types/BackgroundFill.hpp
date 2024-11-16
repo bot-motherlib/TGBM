@@ -42,7 +42,7 @@ struct BackgroundFill {
     return data.get_if<BackgroundFillFreeformGradient>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("solid", type_e::k_solid)
         .case_("gradient", type_e::k_gradient)
         .case_("freeform_gradient", type_e::k_freeformgradient)

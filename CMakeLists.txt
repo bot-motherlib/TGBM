@@ -50,7 +50,7 @@ set(TGBM_SRC_LIST
     src/net/http11_client.cpp
     src/net/http_client.cpp
     src/net/ssl_context.cpp
-    src/tools/StringTools.cpp
+    src/utils/url_encoded.cpp
     )
 
 add_library(tgbmlib ${TGBM_SRC_LIST})

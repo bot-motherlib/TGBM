@@ -3,7 +3,7 @@
 #include <string>
 
 #include "tgbm/api/common.hpp"
-#include "tgbm/tools/pfr_extension.hpp"
+#include "tgbm/utils/pfr_extension.hpp"
 
 namespace types {
 using namespace tgbm::api;
@@ -14,10 +14,7 @@ struct Address {
   optional<std::string> zipCode;  // optional<String>
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return tgbm::utils::string_switch<bool>(name)
-        .case_("street", true)
-        .case_("houseNumber", true)
-        .or_default(false);
+    return tgbm::string_switch<bool>(name).case_("street", true).case_("houseNumber", true).or_default(false);
   }
 };
 

@@ -38,7 +38,7 @@ struct User {
   optional<bool> has_main_web_app;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("id", true)
         .case_("is_bot", true)
         .case_("first_name", true)

@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <variant>
+#include <cassert>
 
 #include <rapidjson/writer.h>
 
@@ -9,12 +10,12 @@
 #include "tgbm/api/arrayof.hpp"
 #include "tgbm/api/const_string.hpp"
 #include "tgbm/api/true.hpp"
-#include "tgbm/tools/traits.hpp"
+#include "tgbm/utils/traits.hpp"
 #include "tgbm/api/oneof.hpp"
-#include "tgbm/tools/pfr_extension.hpp"
+#include "tgbm/utils/pfr_extension.hpp"
 #include "tgbm/api/optional.hpp"
 #include "tgbm/api/floating.hpp"
-#include "tgbm/tools/box.hpp"
+#include "tgbm/utils/box.hpp"
 #include "tgbm/api/file_or_str.hpp"
 
 namespace tgbm {

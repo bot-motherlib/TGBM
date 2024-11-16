@@ -24,7 +24,7 @@ struct Chat {
   optional<True> is_forum;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name).case_("id", true).case_("type", true).or_default(false);
+    return string_switch<bool>(name).case_("id", true).case_("type", true).or_default(false);
   }
 };
 

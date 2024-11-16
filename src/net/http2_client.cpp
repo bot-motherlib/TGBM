@@ -44,11 +44,11 @@ resources:
 #include "tgbm/net/http2_client.hpp"
 #include "tgbm/net/asio_awaiters.hpp"
 #include "tgbm/logger.hpp"
-#include "tgbm/tools/scope_exit.h"
-#include "tgbm/tools/macro.hpp"
+#include "tgbm/utils/scope_exit.hpp"
+#include "tgbm/utils/macro.hpp"
 #include "tgbm/net/errors.hpp"
-#include "tgbm/tools/reusable_buffer.hpp"
-#include "tgbm/tools/deadline.hpp"
+#include "tgbm/utils/reusable_buffer.hpp"
+#include "tgbm/utils/deadline.hpp"
 
 #include <kelcoro/channel.hpp>
 

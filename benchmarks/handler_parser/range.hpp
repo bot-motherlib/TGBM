@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "tgbm/tools/traits.hpp"
+#include "tgbm/utils/traits.hpp"
 #include "basic_parser.hpp"
 
 namespace tgbm::json::handler_parser {

@@ -14,7 +14,7 @@ struct GameHighScore {
   Integer score;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("position", true)
         .case_("user", true)
         .case_("score", true)

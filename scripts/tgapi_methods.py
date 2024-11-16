@@ -459,7 +459,7 @@ def generate_api_impl_file(methods: list[method_info_t], out):
     print('#include "tgbm/api/telegram.hpp"\n', file=out)
     print('#include "tgbm/api/types/all.hpp"\n#include "tgbm/api/methods/all.hpp"\n#include "tgbm/api/const_string.hpp"', file=out)
     print('#include "tgbm/api/requests.hpp"\n', file=out)
-    print('#include "tgbm/tools/deadline.hpp"\n', file=out)
+    print('#include "tgbm/utils/deadline.hpp"\n', file=out)
     print('namespace tgbm::api {\n', file=out)
     for m in methods:
         if len(m.parameters) == 0:

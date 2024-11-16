@@ -77,7 +77,7 @@ struct BotCommandScope {
     return data.get_if<BotCommandScopeChatMember>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("default", type_e::k_default)
         .case_("all_private_chats", type_e::k_allprivatechats)
         .case_("all_group_chats", type_e::k_allgroupchats)

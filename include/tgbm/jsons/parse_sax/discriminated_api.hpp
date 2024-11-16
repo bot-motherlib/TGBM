@@ -1,7 +1,7 @@
 #pragma once
 
 #include "tgbm/jsons/sax.hpp"
-#include "tgbm/tools/traits.hpp"
+#include "tgbm/utils/traits.hpp"
 
 namespace tgbm::json {
 

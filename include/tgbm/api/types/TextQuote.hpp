@@ -19,7 +19,7 @@ struct TextQuote {
   optional<True> is_manual;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name).case_("text", true).case_("position", true).or_default(false);
+    return string_switch<bool>(name).case_("text", true).case_("position", true).or_default(false);
   }
 };
 

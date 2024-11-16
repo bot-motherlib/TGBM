@@ -1,7 +1,7 @@
 #include "tgbm/api/Integer.hpp"
 #include "tgbm/api/common.hpp"
 #include "tgbm/api/optional.hpp"
-#include "tgbm/tools/box_union.hpp"
+#include "tgbm/utils/box_union.hpp"
 #include "tgbm/api/const_string.hpp"
 
 #include <vector>

@@ -6,7 +6,7 @@
 #include "tgbm/jsons/parse_dom/basic.hpp"
 #include "tgbm/jsons/dom_traits.hpp"
 #include "tgbm/api/common.hpp"
-#include "tgbm/tools/math.hpp"
+#include "tgbm/utils/math.hpp"
 
 namespace tgbm::json::parse_dom {
 

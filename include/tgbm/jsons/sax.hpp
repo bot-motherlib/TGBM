@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tgbm/tools/pfr_extension.hpp"
+#include "tgbm/utils/pfr_extension.hpp"
 #include "tgbm/jsons/errors.hpp"
 
 #include <kelcoro/generator.hpp>
@@ -51,6 +51,7 @@ template <typename>
 struct sax_parser {
   // required interface:
   //   static sax_consumer_t parse(T& v, sax_token& tok)
+  // Note: 'tok' never will be 'part', its handled by token producer
 };
 
 inline sax_consumer_t sax_ignore_value(sax_token& tok) {

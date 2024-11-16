@@ -10,7 +10,7 @@ struct ChatBoostSourceGiftCode {
   box<User> user;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name).case_("user", true).or_default(false);
+    return string_switch<bool>(name).case_("user", true).or_default(false);
   }
 };
 

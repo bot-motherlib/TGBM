@@ -39,7 +39,7 @@ struct Poll {
   optional<Integer> close_date;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("id", true)
         .case_("question", true)
         .case_("options", true)

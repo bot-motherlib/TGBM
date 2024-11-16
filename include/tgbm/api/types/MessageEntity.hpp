@@ -30,7 +30,7 @@ struct MessageEntity {
   optional<String> custom_emoji_id;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("type", true)
         .case_("offset", true)
         .case_("length", true)

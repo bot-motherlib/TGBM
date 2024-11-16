@@ -4,7 +4,7 @@
 
 #include "tgbm/jsons/sax.hpp"
 #include "tgbm/api/common.hpp"
-#include "tgbm/tools/math.hpp"
+#include "tgbm/utils/math.hpp"
 
 namespace tgbm::json {
 

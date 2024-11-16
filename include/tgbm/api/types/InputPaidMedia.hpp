@@ -33,7 +33,7 @@ struct InputPaidMedia {
     return data.get_if<InputPaidMediaVideo>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("photo", type_e::k_photo)
         .case_("video", type_e::k_video)
         .or_default(type_e::nothing);

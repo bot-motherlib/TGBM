@@ -3,7 +3,7 @@
 #include "tgbm/api/const_string.hpp"
 #include "tgbm/api/types/all.hpp"
 
-#include "tgbm/tools/box_union.hpp"
+#include "tgbm/utils/box_union.hpp"
 
 #include "tgbm/jsons/sax_parser.hpp"
 
@@ -47,7 +47,7 @@ struct sax_parser<api::telegram_answer<T>> {
       if (tok.got == object_end) [[unlikely]]
         break;
       tok.expect(key);
-      int8_t curkey = utils::string_switch<key_e>(tok.str_m)
+      int8_t curkey = string_switch<key_e>(tok.str_m)
                           .case_("ok", ok_key)
                           .case_("result", result_key)
                           .case_("description", description_key)

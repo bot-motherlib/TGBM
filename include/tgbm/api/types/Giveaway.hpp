@@ -30,7 +30,7 @@ struct Giveaway {
   optional<True> has_public_winners;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("chats", true)
         .case_("winners_selection_date", true)
         .case_("winner_count", true)

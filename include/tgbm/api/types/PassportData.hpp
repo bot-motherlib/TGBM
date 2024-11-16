@@ -13,7 +13,7 @@ struct PassportData {
   box<EncryptedCredentials> credentials;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name).case_("data", true).case_("credentials", true).or_default(false);
+    return string_switch<bool>(name).case_("data", true).case_("credentials", true).or_default(false);
   }
 };
 

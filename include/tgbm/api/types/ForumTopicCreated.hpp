@@ -14,7 +14,7 @@ struct ForumTopicCreated {
   optional<String> icon_custom_emoji_id;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name).case_("name", true).case_("icon_color", true).or_default(false);
+    return string_switch<bool>(name).case_("name", true).case_("icon_color", true).or_default(false);
   }
 };
 

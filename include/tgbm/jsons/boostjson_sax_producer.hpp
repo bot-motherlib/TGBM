@@ -3,7 +3,7 @@
 #include <boost/json/basic_parser_impl.hpp>
 
 #include "tgbm/jsons/sax.hpp"
-#include "tgbm/tools/scope_exit.h"
+#include "tgbm/utils/scope_exit.hpp"
 
 namespace tgbm {
 using io_error_code = boost::system::error_code;

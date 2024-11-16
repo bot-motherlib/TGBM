@@ -18,7 +18,7 @@ struct PassportFile {
   Integer file_date;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("file_id", true)
         .case_("file_unique_id", true)
         .case_("file_size", true)

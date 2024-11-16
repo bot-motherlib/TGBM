@@ -15,8 +15,8 @@
 #include "boost/smart_ptr/intrusive_ptr.hpp"
 #include "tgbm/net/http_base.hpp"
 #include "tgbm/net/tcp_connection.hpp"
-#include "tgbm/tools/deadline.hpp"
-#include "tgbm/tools/memory.hpp"
+#include "tgbm/utils/deadline.hpp"
+#include "tgbm/utils/memory.hpp"
 
 namespace tgbm {
 

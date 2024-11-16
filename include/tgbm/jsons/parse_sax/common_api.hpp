@@ -3,8 +3,8 @@
 #include <bitset>
 
 #include "tgbm/jsons/sax.hpp"
-#include "tgbm/tools/pfr_extension.hpp"
-#include "tgbm/tools/traits.hpp"
+#include "tgbm/utils/pfr_extension.hpp"
+#include "tgbm/utils/traits.hpp"
 
 namespace tgbm::json {
 

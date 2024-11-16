@@ -41,7 +41,7 @@ struct ReactionType {
     return data.get_if<ReactionTypePaid>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("emoji", type_e::k_emoji)
         .case_("custom_emoji", type_e::k_customemoji)
         .case_("paid", type_e::k_paid)

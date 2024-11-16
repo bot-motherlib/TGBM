@@ -1,25 +1,26 @@
 
-#include "tgbm/tools/StringTools.h"
-#include "tgbm/tools/box.hpp"
+#include "tgbm/utils/string_switch.hpp"
+#include "tgbm/utils/box.hpp"
+#include "tgbm/utils/url_encoded.hpp"
 
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
 consteval int sstest1() {
   std::string_view str = "hello";
-  return tgbm::utils::string_switch<int>(str).case_("hi", 1).cases("hello", "world", 15);
+  return tgbm::string_switch<int>(str).case_("hi", 1).cases("hello", "world", 15);
 }
 static_assert(sstest1() == 15);
 
 consteval int sstest2() {
   std::string_view str = "hello";
-  return tgbm::utils::string_switch<int>(str).case_("hi", 1).cases("hello", 15);
+  return tgbm::string_switch<int>(str).case_("hi", 1).cases("hello", 15);
 }
 static_assert(sstest2() == 15);
 
 consteval int sstest3() {
   std::string_view str = "hello";
-  return tgbm::utils::string_switch<int>(str).case_("hi", 1).cases("world", 15).or_default(15);
+  return tgbm::string_switch<int>(str).case_("hi", 1).cases("world", 15).or_default(15);
 }
 static_assert(sstest3() == 15);
 

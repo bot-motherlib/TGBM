@@ -49,7 +49,7 @@ struct MessageOrigin {
     return data.get_if<MessageOriginChannel>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("user", type_e::k_user)
         .case_("hidden_user", type_e::k_hiddenuser)
         .case_("chat", type_e::k_chat)

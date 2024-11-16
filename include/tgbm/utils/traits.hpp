@@ -47,6 +47,7 @@ concept oneof_field_api_type = aggregate<T> && requires(const T& t) {
   { t.discriminator_now() } -> std::same_as<std::string_view>;
   { t.data };
 };
+
 }  // namespace details
 
 template <typename T>

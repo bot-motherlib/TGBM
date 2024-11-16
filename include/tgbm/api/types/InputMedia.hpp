@@ -57,7 +57,7 @@ struct InputMedia {
     return data.get_if<InputMediaVideo>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("animation", type_e::k_animation)
         .case_("document", type_e::k_document)
         .case_("audio", type_e::k_audio)

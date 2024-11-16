@@ -16,7 +16,7 @@ struct ChatBoostRemoved {
   box<ChatBoostSource> source;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("chat", true)
         .case_("boost_id", true)
         .case_("remove_date", true)

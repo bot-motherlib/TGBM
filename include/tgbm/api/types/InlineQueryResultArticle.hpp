@@ -29,7 +29,7 @@ struct InlineQueryResultArticle {
   optional<bool> hide_url;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("id", true)
         .case_("title", true)
         .case_("input_message_content", true)

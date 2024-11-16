@@ -68,7 +68,7 @@ struct ChatMember {
     return data.get_if<ChatMemberBanned>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("creator", type_e::k_owner)
         .case_("administrator", type_e::k_administrator)
         .case_("member", type_e::k_member)

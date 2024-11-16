@@ -14,7 +14,7 @@ struct PaidMediaPreview {
   optional<Integer> duration;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name).or_default(false);
+    return string_switch<bool>(name).or_default(false);
   }
 };
 

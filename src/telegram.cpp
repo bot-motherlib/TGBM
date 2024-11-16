@@ -5,7 +5,7 @@
 #include "tgbm/api/const_string.hpp"
 #include "tgbm/api/requests.hpp"
 
-#include "tgbm/tools/deadline.hpp"
+#include "tgbm/utils/deadline.hpp"
 
 namespace tgbm::api {
 

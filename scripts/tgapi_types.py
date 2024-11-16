@@ -340,7 +340,7 @@ def generate_api_struct(t: type_info_t) -> str:
     # consteval static bool is_mandatory_field(std::string_view name)
 
     s += '\n  consteval static bool is_mandatory_field(std::string_view name) {\n'
-    s += '    return utils::string_switch<bool>(name)\n'
+    s += '    return string_switch<bool>(name)\n'
     for f in t.mandatory_fields():
         s += f'    .case_("{f.name}", true)\n'
     s += '    .or_default(false);\n'
@@ -391,7 +391,7 @@ def generate_api_struct_oneof(t: oneof_info_t) -> str:
     # static constexpr type_e discriminate(std::string_view val)
     
     s += '  static constexpr type_e discriminate(std::string_view val) {\n'
-    s += '    return utils::string_switch<type_e>(val)\n'
+    s += '    return string_switch<type_e>(val)\n'
     for alt in t.alternatives:
         s += f'    .case_("{alt.discriminator_value}", type_e::k_{cut_oneofname(alt.name, t.name)})\n'
     s += '    .or_default(type_e::nothing);\n}\n\n'

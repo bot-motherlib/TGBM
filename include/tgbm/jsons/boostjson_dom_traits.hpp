@@ -3,7 +3,7 @@
 #include <boost/json.hpp>
 
 #include "tgbm/jsons/dom_traits.hpp"
-#include "tgbm/tools/macro.hpp"
+#include "tgbm/utils/macro.hpp"
 
 namespace tgbm::json {
 

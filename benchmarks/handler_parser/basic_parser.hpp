@@ -11,7 +11,7 @@
 
 #include "tgbm/api/const_string.hpp"
 #include "tgbm/jsons/errors.hpp"
-#include "tgbm/tools/macro.hpp"
+#include "tgbm/utils/macro.hpp"
 
 namespace tgbm::json::handler_parser {
 
