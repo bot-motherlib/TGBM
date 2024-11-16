@@ -2,7 +2,7 @@ make_r ?= make -f scripts/ci_ubuntu.make
 
 .PHONY: format
 format:
-	find gbench -name '*pp' -type f | xargs clang-format-17 -i
+	find benchmarks -name '*pp' -type f | xargs clang-format-17 -i
 	find gtest -name '*pp' -type f | xargs clang-format-17 -i
 	find include -name '*pp' -type f | xargs clang-format-17 -i
 	find samples -name '*pp' -type f | xargs clang-format-17 -i
@@ -10,7 +10,7 @@ format:
 	find test -name '*pp' -type f | xargs clang-format-17 -i
 	$(make_r) add-eol P=.github
 	$(make_r) add-eol P=cmake
-	$(make_r) add-eol P=gbench
+	$(make_r) add-eol P=benchmarks
 	$(make_r) add-eol P=gtest
 	$(make_r) add-eol P=include
 	$(make_r) add-eol P=scripts

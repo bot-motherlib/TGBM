@@ -3,13 +3,13 @@
 #include <vector>
 
 #include "tgbm/jsons/parse_dom/basic.hpp"
-#include "tgbm/jsons/json_traits.hpp"
+#include "tgbm/jsons/dom_traits.hpp"
 
 namespace tgbm::json::parse_dom {
 
 template <typename T>
 struct parser<std::vector<T>> {
-  template <typename Json, json::json_traits Traits>
+  template <typename Json, json::dom_traits Traits>
   static void parse(const Json& json, std::vector<T>& out) {
     if (!Traits::is_array(json)) {
       Traits::on_error();
@@ -22,4 +22,5 @@ struct parser<std::vector<T>> {
     }
   }
 };
+
 }  // namespace tgbm::json::parse_dom

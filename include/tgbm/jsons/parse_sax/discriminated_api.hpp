@@ -1,24 +1,24 @@
 #pragma once
 
-#include "tgbm/jsons/generator_parser/basic_parser.hpp"
+#include "tgbm/jsons/sax.hpp"
 #include "tgbm/tools/traits.hpp"
 
-namespace tgbm::json::sax {
+namespace tgbm::json {
 
 template <discriminated_api_type T>
-struct parser<T> {
-  static parser_t get_generator_suboneof(std::string_view key, T& v, event_holder& tok) {
-    auto emplacer = [&]<typename Suboneof>() -> parser_t {
+struct sax_parser<T> {
+  static sax_consumer_t get_generator_suboneof(std::string_view key, T& v, sax_token& tok) {
+    auto emplacer = [&]<typename Suboneof>() -> sax_consumer_t {
       if constexpr (!std::same_as<Suboneof, void>)
-        return parser<Suboneof>::parse(v.data.template emplace<Suboneof>(), tok);
+        return sax_parser<Suboneof>::parse(v.data.template emplace<Suboneof>(), tok);
       else
         TGBM_JSON_PARSE_ERROR;
     };
     return v.discriminate(key, emplacer);
   }
 
-  static parser_t parse(T& v, event_holder& tok) {
-    using enum event_holder::wait_e;
+  static sax_consumer_t parse(T& v, sax_token& tok) {
+    using enum sax_token::kind_e;
     tok.expect(object_begin);
     co_yield {};
     if (tok.got == object_end)
@@ -34,4 +34,4 @@ struct parser<T> {
   }
 };
 
-}  // namespace tgbm::json::sax
+}  // namespace tgbm::json

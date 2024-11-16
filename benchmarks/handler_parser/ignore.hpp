@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tgbm/jsons/handler_parser/basic_parser.hpp"
+#include "basic_parser.hpp"
 
 namespace tgbm::json::handler_parser {
 

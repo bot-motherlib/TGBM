@@ -6,8 +6,9 @@
 #include <ranges>
 
 namespace tgbm::json {
+
 template <typename Traits, typename Json = typename Traits::type>
-concept json_traits = requires(const Json& json, std::string_view str, std::size_t sz) {
+concept dom_traits = requires(const Json& json) {
   requires std::same_as<typename Traits::type, Json>;
 
   { Traits::is_bool(json) } -> std::same_as<bool>;
@@ -40,9 +41,9 @@ concept json_traits = requires(const Json& json, std::string_view str, std::size
 
   { Traits::get_floating(json) } -> std::same_as<double>;
 
-  { Traits::find_field(json, str) };
+  { Traits::find_field(json, std::string_view{}) };
 
-  { Traits::element_by_index(json, sz) } -> std::same_as<const Json&>;
+  { Traits::element_by_index(json, size_t{}) } -> std::same_as<const Json&>;
 
   { Traits::size(json) } -> std::same_as<std::size_t>;
 
@@ -51,9 +52,9 @@ concept json_traits = requires(const Json& json, std::string_view str, std::size
 };
 
 template <typename Json>
-struct default_traits {};
+struct dom_traits_for {};
 
 template <typename Json>
-concept json_dom = json_traits<default_traits<std::remove_cvref_t<Json>>>;
+concept dom = dom_traits<dom_traits_for<std::remove_cvref_t<Json>>>;
 
 }  // namespace tgbm::json

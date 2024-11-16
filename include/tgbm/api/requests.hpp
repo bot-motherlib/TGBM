@@ -12,6 +12,7 @@
 #include "tgbm/tools/memory.hpp"
 #include "tgbm/api/telegram_answer.hpp"
 #include "tgbm/jsons/stream_parser.hpp"
+#include "tgbm/logger.hpp"
 
 namespace tgbm::api {
 

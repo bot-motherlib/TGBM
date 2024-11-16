@@ -1,7 +1,7 @@
 #pragma once
 
 #include "tgbm/jsons/parse_dom/basic.hpp"
-#include "tgbm/jsons/json_traits.hpp"
+#include "tgbm/jsons/dom_traits.hpp"
 #include "tgbm/api/common.hpp"
 #include "tgbm/tools/pfr_extension.hpp"
 #include "tgbm/tools/traits.hpp"
@@ -10,7 +10,7 @@ namespace tgbm::json::parse_dom {
 
 template <common_api_type T>
 struct parser<T> {
-  template <typename Json, json::json_traits Traits>
+  template <typename Json, json::dom_traits Traits>
   static void parse(const Json& json, T& out) {
     if (!Traits::is_object(json)) {
       Traits::on_error();
@@ -30,4 +30,5 @@ struct parser<T> {
     });
   }
 };
+
 }  // namespace tgbm::json::parse_dom

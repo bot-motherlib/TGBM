@@ -1,64 +1,37 @@
 #pragma once
 
-#include <vector>
+#include <cassert>
 
-#include "tgbm/tools/traits.hpp"
-#include "tgbm/jsons/handler_parser/basic_parser.hpp"
+#include "tgbm/tools/box.hpp"
+#include "basic_parser.hpp"
 
 namespace tgbm::json::handler_parser {
-// TODO: string_like
-// TODO: range_like
-template <string_like T>
-struct parser<T> : basic_parser<T> {
-  using basic_parser<T>::basic_parser;
-
-  ResultParse string(std::string_view val) {
-    assert(!this->parsed_);
-    TGBM_ON_DEBUG({ this->parsed_ = true; });
-    *this->t_ = T{val};
-    return ResultParse::kEnd;
-  }
-};
-
-template <>
-struct parser<std::string_view> {};
 
 template <typename T>
-struct parser<std::vector<T>> : basic_parser<std::vector<T>> {
-  using basic_parser<std::vector<T>>::basic_parser;
-  bool started_ = false;
+struct parser<box<T>> : basic_parser<box<T>> {
+  using basic_parser<box<T>>::basic_parser;
 
   parser<T> emplace() {
-    auto& elem = this->t_->emplace_back();
-    return parser<T>(this->parser_stack_, elem);
+    this->t_->emplace();
+    return parser<T>(this->parser_stack_, **this->t_);
+  }
+
+  ResultParse on_next_end_parsing() {
+    assert(this->t_);
+    return ResultParse::kEnd;
   }
 
   ResultParse handle_result(auto&& callable) {
-    if (!started_) {
-      return ResultParse::kError;
-    }
     this->parser_stack_.push(emplace());
     return callable(this->parser_stack_.last());
-  }
-
-  ResultParse start_array() {
-    using Parser = parser<T>;
-    if (started_) {
-      return handle_result([](auto& parser) { return parser.start_array(); });
-    } else {
-      started_ = true;
-      return ResultParse::kContinue;
-    }
-  }
-
-  ResultParse end_array() {
-    return ResultParse::kEnd;
   }
 
   ResultParse start_object() {
     return handle_result([](auto& parser) { return parser.start_object(); });
   }
-
+  ResultParse start_array() {
+    return handle_result([](auto& parser) { return parser.start_array(); });
+  }
   ResultParse key(std::string_view val) {
     return handle_result([val](auto& parser) { return parser.key(val); });
   }
@@ -79,7 +52,8 @@ struct parser<std::vector<T>> : basic_parser<std::vector<T>> {
   }
 
   ResultParse null() {
-    return handle_result([](auto& parser) { return parser.null(); });
+    return ResultParse::kEnd;
   }
 };
+
 }  // namespace tgbm::json::handler_parser

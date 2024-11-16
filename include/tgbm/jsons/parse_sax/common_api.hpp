@@ -2,15 +2,14 @@
 
 #include <bitset>
 
-#include "tgbm/jsons/generator_parser/basic_parser.hpp"
-#include "tgbm/jsons/generator_parser/ignore_parser.hpp"
+#include "tgbm/jsons/sax.hpp"
 #include "tgbm/tools/pfr_extension.hpp"
 #include "tgbm/tools/traits.hpp"
 
-namespace tgbm::json::sax {
+namespace tgbm::json {
 
 template <common_api_type T>
-struct parser<T> {
+struct sax_parser<T> {
   static constexpr auto N = ::pfr_extension::tuple_size_v<T>;
 
   static bool all_parsed(const std::bitset<N>& parsed_) {
@@ -26,25 +25,25 @@ struct parser<T> {
     return (parsed_ & required_mask) == required_mask;
   }
 
-  static parser_t generator_field(T& v, std::string_view key, event_holder& tok, std::bitset<N>& parsed_) {
+  static sax_consumer_t generator_field(T& v, std::string_view key, sax_token& tok, std::bitset<N>& parsed_) {
     if constexpr (N > 0) {
-      return pfr_extension::visit_struct_field<T, parser_t>(
+      return pfr_extension::visit_struct_field<T, sax_consumer_t>(
           key,
           [&]<std::size_t I>() {
             auto& field = pfr_extension::get<I>(v);
             if (parsed_.test(I))
               TGBM_JSON_PARSE_ERROR;
             parsed_.set(I);
-            return parser<pfr_extension::tuple_element_t<I, T>>::parse(field, tok);
+            return sax_parser<pfr_extension::tuple_element_t<I, T>>::parse(field, tok);
           },
-          [&]() { return ignore_parser::parse(tok); });
+          [&]() { return sax_ignore_value(tok); });
     } else {
-      return ignore_parser::parse(tok);
+      return sax_ignore_value(tok);
     }
   }
 
-  static parser_t parse(T& v, event_holder& tok) {
-    using enum event_holder::wait_e;
+  static sax_consumer_t parse(T& v, sax_token& tok) {
+    using enum sax_token::kind_e;
     std::bitset<N> parsed_;
     tok.expect(object_begin);
 
@@ -62,4 +61,4 @@ struct parser<T> {
   }
 };
 
-}  // namespace tgbm::json::sax
+}  // namespace tgbm::json

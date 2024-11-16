@@ -7,7 +7,7 @@
 #include "tgbm/tools/pfr_extension.hpp"
 #include "tgbm/tools/traits.hpp"
 #include "tgbm/api/common.hpp"
-#include "tgbm/jsons/exceptions.hpp"
+#include "tgbm/jsons/errors.hpp"
 #include "tgbm/tools/api_utils.hpp"
 
 namespace boost::json {
@@ -119,9 +119,11 @@ inline void tag_invoke(value_from_tag, value& jv, const T& t) {
 }  // namespace boost::json
 
 namespace tgbm::json::boost {
+
 template <aggregate T>
 std::string serialize_dom(const T& t) {
   ::boost::json::object j = ::boost::json::value_from(t);
   return ::boost::json::serialize(j);
 }
+
 }  // namespace tgbm::json::boost

@@ -9,4 +9,5 @@ struct parser {
     static_assert(sizeof(Json) == 0, "Write your specialization");
   }
 };
+
 }  // namespace tgbm::json::parse_dom

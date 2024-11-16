@@ -1,23 +1,14 @@
 #pragma once
 
 #include <boost/json.hpp>
-#include <boost/json/visit.hpp>
-#include <boost/container/string.hpp>
 
-#include "tgbm/tools/box.hpp"
-#include "tgbm/tools/pfr_extension.hpp"
-#include "tgbm/tools/traits.hpp"
-#include "tgbm/tools/meta.hpp"
-#include "tgbm/api/common.hpp"
-#include "tgbm/tools/api_utils.hpp"
-#include "tgbm/jsons/exceptions.hpp"
-#include "tgbm/jsons/json_traits.hpp"
-#include "tgbm/jsons/parse_dom/basic.hpp"
+#include "tgbm/jsons/dom_traits.hpp"
+#include "tgbm/tools/macro.hpp"
 
 namespace tgbm::json {
 
 template <>
-struct default_traits<::boost::json::value> {
+struct dom_traits_for<::boost::json::value> {
   using type = ::boost::json::value;
 
   static bool is_bool(const type& json) {
@@ -52,7 +43,6 @@ struct default_traits<::boost::json::value> {
     return json.is_null();
   }
 
-  // Получение значений
   static bool get_bool(const type& json) {
     return json.as_bool();
   }
@@ -73,12 +63,10 @@ struct default_traits<::boost::json::value> {
     return std::string_view{json.as_string().data(), json.as_string().size()};
   }
 
-  // Обработка ошибок
   static void on_error() {
     throw std::runtime_error("JSON Error");
   }
 
-  // Поиск поля в объекте
   static const type* find_field(const type& json, std::string_view key) {
     assert(json.is_object());
     auto& obj = json.as_object();
@@ -89,7 +77,6 @@ struct default_traits<::boost::json::value> {
     return nullptr;
   }
 
-  // Доступ к элементу по индексу
   static const type& element_by_index(const type& json, std::size_t index) {
     assert(json.is_array());
     auto& arr = json.as_array();
@@ -99,7 +86,6 @@ struct default_traits<::boost::json::value> {
     return arr[index];
   }
 
-  // Размер объекта или массива
   static std::size_t size(const type& json) {
     assert(json.is_object() || json.is_array());
     if (json.is_object()) {
@@ -110,7 +96,6 @@ struct default_traits<::boost::json::value> {
     unreachable();
   }
 
-  // Диапазон членов объекта
   static auto& member_range(const type& json) {
     if (!json.is_object()) {
       on_error();
@@ -119,6 +104,6 @@ struct default_traits<::boost::json::value> {
   }
 };
 
-static_assert(json_traits<default_traits<::boost::json::value>, ::boost::json::value>);
+static_assert(dom_traits<dom_traits_for<::boost::json::value>, ::boost::json::value>);
 
 }  // namespace tgbm::json

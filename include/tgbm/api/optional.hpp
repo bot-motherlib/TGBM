@@ -4,6 +4,7 @@
 #include <bit>
 #include <cassert>
 #include <compare>
+#include <memory>
 
 #include "tgbm/tools/meta.hpp"
 

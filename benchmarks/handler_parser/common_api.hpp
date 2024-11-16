@@ -5,8 +5,8 @@
 
 #include <utility>
 
-#include "tgbm/jsons/handler_parser/basic_parser.hpp"
-#include "tgbm/jsons/handler_parser/ignore.hpp"
+#include "basic_parser.hpp"
+#include "ignore.hpp"
 #include "tgbm/tools/StringTools.h"
 #include "tgbm/tools/traits.hpp"
 

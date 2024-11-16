@@ -164,22 +164,18 @@ t"}
 }
 
 TEST(StreamParser, NestedObjectsInArray) {
-  // clang-format off
-  std::vector<TestObject> expected{
-    TestObject{
-        .int_field = {1},
-        .double_field = {1.1},
-        .bool_field = {true},
-        .string_field = {"string1"},
-        .array_field = {{1, 2, 3}},
-        .nested_objects = {{}}},
-    TestObject{.int_field = {2},
-        .double_field = {2.2},
-        .bool_field = {false},
-        .string_field = {"string2"},
-        .array_field = {{4, 5, 6}},
-        .nested_objects = {{}}}};
-  // clang-format on
+  std::vector<TestObject> expected{TestObject{.int_field = {1},
+                                              .double_field = {1.1},
+                                              .bool_field = {true},
+                                              .string_field = {"string1"},
+                                              .array_field = {{1, 2, 3}},
+                                              .nested_objects = {{}}},
+                                   TestObject{.int_field = {2},
+                                              .double_field = {2.2},
+                                              .bool_field = {false},
+                                              .string_field = {"string2"},
+                                              .array_field = {{4, 5, 6}},
+                                              .nested_objects = {{}}}};
 
   auto json = std::string_view(R"(
    [

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tgbm/jsons/generator_parser/basic_parser.hpp"
+#include "tgbm/jsons/sax.hpp"
 
 namespace tgbm {
 
@@ -15,13 +15,13 @@ struct parse_proxy {
 
 }  // namespace tgbm
 
-namespace tgbm::json::sax {
+namespace tgbm::json {
 
 template <typename T>
-struct parser<parse_proxy<T>> {
-  static parser_t parse(parse_proxy<T>& out, event_holder& tok) {
-    return parser<T>::parse(out.out, tok);
+struct sax_parser<parse_proxy<T>> {
+  static sax_consumer_t parse(parse_proxy<T>& out, sax_token& tok) {
+    return sax_parser<T>::parse(out.out, tok);
   }
 };
 
-}  // namespace tgbm::json::sax
+}  // namespace tgbm::json

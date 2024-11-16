@@ -1,18 +1,20 @@
-#include "benchmark/benchmark.h"
+#include <benchmark/benchmark.h>
+
 #include "fuzzing.hpp"
 #include "types.hpp"
 #include "tgbm/api/types/all.hpp"
 
-#include "tgbm/jsons/boost_parse_dom.hpp"
-#include "tgbm/jsons/sax.hpp"
-#include "tgbm/jsons/boost_parse_handler.hpp"
+#include "tgbm/jsons/boostjson_dom_traits.hpp"
+#include "tgbm/jsons/boostjson_sax_producer.hpp"
+#include "boost_parse_handler.hpp"
+#include "rapid_parse_handler.hpp"
 #include "tgbm/json.hpp"
-#include "tgbm/jsons/generator_parser/all.hpp"
-#include "tgbm/jsons/handler_parser/all.hpp"
-#include "tgbm/jsons/parse_dom/all.hpp"
-#include "tgbm/jsons/rapid_parse_handler.hpp"
-#include "tgbm/jsons/rapid_parse_dom.hpp"
-#include "tgbm/jsons/exceptions.hpp"
+#include "tgbm/jsons/sax_parser.hpp"
+#include "handler_parser/all.hpp"
+#include "tgbm/jsons/dom_parser.hpp"
+
+#include "tgbm/jsons/rapidjson_dom_traits.hpp"
+#include "tgbm/jsons/errors.hpp"
 #include "tgbm/jsons/stream_parser.hpp"
 
 template <typename T>
@@ -54,7 +56,7 @@ void execute_ignore_handler_boost(std::string_view json) {
 template <typename T>
 T parse_generator(std::string_view data) {
   T v;
-  ::boost::json::basic_parser<tgbm::json::sax::json_tokenizer> p{::boost::json::parse_options{}, v};
+  ::boost::json::basic_parser<tgbm::json::boostjson_sax_producer> p{::boost::json::parse_options{}, v};
   ::boost::json::error_code ec;
   p.write_some(false, data.data(), data.size(), ec);
   if (ec || !p.handler().is_done())

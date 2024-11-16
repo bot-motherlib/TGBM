@@ -7,7 +7,7 @@
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/error/en.h>
 
-#include "tgbm/jsons/handler_parser/basic_parser.hpp"
+#include "handler_parser/basic_parser.hpp"
 #include "tgbm/api/common.hpp"
 
 namespace tgbm::json::rapid {

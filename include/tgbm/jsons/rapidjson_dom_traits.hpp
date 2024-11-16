@@ -2,23 +2,18 @@
 
 #include <cassert>
 #include <ranges>
+#include <stdexcept>
 
 #include <rapidjson/reader.h>
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/tools/api_utils.hpp"
-#include "tgbm/jsons/stream_parser.hpp"
-#include "tgbm/tools/traits.hpp"
-#include "tgbm/jsons/exceptions.hpp"
-#include "tgbm/jsons/json_traits.hpp"
-#include "tgbm/jsons/parse_dom/basic.hpp"
+#include "tgbm/jsons/dom_traits.hpp"
 
 namespace tgbm::json {
 
 template <>
-struct default_traits<rapidjson::GenericValue<rapidjson::UTF8<>>> {
+struct dom_traits_for<rapidjson::GenericValue<rapidjson::UTF8<>>> {
   using type = rapidjson::GenericValue<rapidjson::UTF8<>>;
   static bool is_bool(const type& json) {
     return json.IsBool();
@@ -52,7 +47,6 @@ struct default_traits<rapidjson::GenericValue<rapidjson::UTF8<>>> {
     return json.IsNull();
   }
 
-  // Получение значений
   static bool get_bool(const type& json) {
     if (!json.IsBool()) {
       on_error();
@@ -80,12 +74,10 @@ struct default_traits<rapidjson::GenericValue<rapidjson::UTF8<>>> {
     return std::string_view(json.GetString(), json.GetStringLength());
   }
 
-  // Обработка ошибок
   static void on_error() {
     throw std::runtime_error("JSON Error");
   }
 
-  // Поиск поля в объекте
   static const type* find_field(const type& json, std::string_view key) {
     assert(json.IsObject());
     auto it = json.FindMember(key.data());
@@ -95,14 +87,12 @@ struct default_traits<rapidjson::GenericValue<rapidjson::UTF8<>>> {
     return nullptr;
   }
 
-  // Доступ к элементу по индексу
   static const type& element_by_index(const type& json, std::size_t index) {
     assert(json.IsArray());
     assert(index < json.Size());
     return json[index];
   }
 
-  // Размер объекта или массива
   static std::size_t size(const type& json) {
     assert(json.IsObject() || json.IsArray());
     if (json.IsObject()) {
@@ -116,7 +106,6 @@ struct default_traits<rapidjson::GenericValue<rapidjson::UTF8<>>> {
     const type& value;
   };
 
-  // Диапазон членов объекта
   static auto member_range(const type& json) {
     if (!json.IsObject()) {
       on_error();
@@ -129,5 +118,6 @@ struct default_traits<rapidjson::GenericValue<rapidjson::UTF8<>>> {
   }
 };
 
-static_assert(tgbm::json::json_traits<default_traits<rapidjson::GenericValue<rapidjson::UTF8<>>>>);
+static_assert(dom_traits<dom_traits_for<rapidjson::GenericValue<rapidjson::UTF8<>>>>);
+
 }  // namespace tgbm::json

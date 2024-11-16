@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tgbm/jsons/handler_parser/basic_parser.hpp"
+#include "basic_parser.hpp"
 #include "tgbm/api/Integer.hpp"
 #include "tgbm/api/floating.hpp"
 #include "tgbm/api/common.hpp"

@@ -6,8 +6,8 @@
 #include <string_view>
 
 #include "tgbm/tools/pfr_extension.hpp"
-#include "tgbm/jsons/handler_parser/basic_parser.hpp"
-#include "tgbm/jsons/handler_parser/ignore.hpp"
+#include "basic_parser.hpp"
+#include "ignore.hpp"
 #include "tgbm/tools/api_utils.hpp"
 #include "tgbm/tools/pfr_extension.hpp"
 #include "tgbm/tools/traits.hpp"

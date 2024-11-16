@@ -2,13 +2,13 @@
 /*
   simplest replacable logger
   To replace logger user should create tgbm_replace/logger.hpp file
-  and add tgbm_replace into include dirs
+  and add ../tgbm_replace into include dirs
 */
 
-#if __has_include("tgbm_replace/logger.hpp")
-  #include "tgbm_replace/logger.hpp"
+#if __has_include(<tgbm_replace/logger.hpp>)
+  #include <tgbm_replace/logger.hpp>
   #ifndef TGBM_LOG
-    #error "tgbm_replace/logger.hpp" must define TGBM_LOG(FMT_STR, ...ARGS)
+    #error <tgbm_replace/logger.hpp> must define TGBM_LOG(FMT_STR, ...ARGS)
   #endif
 #else
 

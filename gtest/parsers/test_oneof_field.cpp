@@ -178,10 +178,8 @@ JSON_PARSE_TEST(TestOneOfFieldObject1, {
   expected.mandatory_string = "TestString";
   expected.mandatory_int = 123;
 
-  // Заполняем опциональное поле optional_object1
   expected.data = CustomStruct::optional_object1{object1{"John Doe", 30}};
 
-  // JSON строка
   auto json = R"(
     {
       "mandatory_string": "TestString",
@@ -193,10 +191,8 @@ JSON_PARSE_TEST(TestOneOfFieldObject1, {
     }
   )";
 
-  // Парсинг JSON
   auto got = parse_json<CustomStruct>(json);
 
-  // Проверка на равенство
   EXPECT_EQ(expected, got);
 })
 

@@ -5,16 +5,17 @@
 #include "boost/json/value.hpp"
 #include "tgbm/api/common.hpp"
 
-#include "tgbm/jsons/boost_parse_dom.hpp"
-#include "tgbm/jsons/sax.hpp"
-#include "tgbm/jsons/boost_parse_handler.hpp"
+#include "tgbm/jsons/boostjson_dom_traits.hpp"
+#include "tgbm/jsons/boostjson_sax_producer.hpp"
+#include "../../benchmarks/boost_parse_handler.hpp"
+#include "../../benchmarks/handler_parser/all.hpp"
+#include "../../benchmarks/rapid_parse_handler.hpp"
 #include "tgbm/json.hpp"
-#include "tgbm/jsons/generator_parser/all.hpp"
-#include "tgbm/jsons/handler_parser/all.hpp"
-#include "tgbm/jsons/parse_dom/all.hpp"
-#include "tgbm/jsons/rapid_parse_handler.hpp"
-#include "tgbm/jsons/rapid_parse_dom.hpp"
-#include "tgbm/jsons/exceptions.hpp"
+#include "tgbm/jsons/sax_parser.hpp"
+#include "tgbm/jsons/dom_parser.hpp"
+
+#include "tgbm/jsons/rapidjson_dom_traits.hpp"
+#include "tgbm/jsons/errors.hpp"
 #include "tgbm/jsons/stream_parser.hpp"
 
 struct DomRapid : testing::Test {

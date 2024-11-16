@@ -2,10 +2,12 @@
 
 #include <boost/json/basic_parser_impl.hpp>
 
-#include "tgbm/net/errors.hpp"
-#include "tgbm/jsons/handler_parser/basic_parser.hpp"
-#include "tgbm/jsons/exceptions.hpp"
+#include "handler_parser/basic_parser.hpp"
+#include "tgbm/jsons/errors.hpp"
 
+namespace tgbm {
+using io_error_code = boost::system::error_code;
+}
 namespace tgbm::json::boost {
 
 namespace details {

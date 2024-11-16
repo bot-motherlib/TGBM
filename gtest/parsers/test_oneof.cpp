@@ -4,7 +4,6 @@ namespace test_oneof {
 
 namespace utils = tgbm::utils;
 
-// Minimal definitions for required structs
 struct User {
   tgbm::api::Integer id;
   std::string name;
@@ -84,7 +83,6 @@ struct MessageOriginChannel {
   bool operator==(const MessageOriginChannel& other) const = default;
 };
 
-// Variant type for MessageOrigin
 using MessageOriginData = tgbm::api::oneof<std::monostate, MessageOriginUser, MessageOriginHiddenUser,
                                            MessageOriginChat, MessageOriginChannel>;
 
@@ -141,9 +139,7 @@ struct MessageOrigin {
   }
 };
 
-// Test for "user" type
 JSON_PARSE_TEST(OneOfUserType, {
-  // Expected object
   MessageOrigin expected{
       .data =
           MessageOriginUser{
@@ -158,7 +154,6 @@ JSON_PARSE_TEST(OneOfUserType, {
           },
   };
 
-  // JSON string
   auto json = R"(
     {
       "type": "user",
@@ -170,14 +165,11 @@ JSON_PARSE_TEST(OneOfUserType, {
     }
   )";
 
-  // Parse the JSON
   MessageOrigin parsed = parse_json<MessageOrigin>(json);
   EXPECT_EQ(parsed, expected);
 })
 
-// Test for "hidden_user" type
 JSON_PARSE_TEST(OneOfHiddenUserType, {
-  // Expected object
   MessageOrigin expected{
       .data =
           MessageOriginHiddenUser{
@@ -186,7 +178,6 @@ JSON_PARSE_TEST(OneOfHiddenUserType, {
           },
   };
 
-  // JSON string
   auto json = R"(
     {
       "type": "hidden_user",
@@ -195,14 +186,11 @@ JSON_PARSE_TEST(OneOfHiddenUserType, {
     }
   )";
 
-  // Parse the JSON
   MessageOrigin parsed = parse_json<MessageOrigin>(json);
   EXPECT_EQ(parsed, expected);
 })
 
-// Test for "chat" type
 JSON_PARSE_TEST(OneOfChatType, {
-  // Expected object
   MessageOrigin expected{
       .data =
           MessageOriginChat{
@@ -217,7 +205,6 @@ JSON_PARSE_TEST(OneOfChatType, {
           },
   };
 
-  // JSON string
   auto json = R"(
     {
       "type": "chat",
@@ -229,14 +216,11 @@ JSON_PARSE_TEST(OneOfChatType, {
     }
   )";
 
-  // Parse the JSON
   MessageOrigin parsed = parse_json<MessageOrigin>(json);
   EXPECT_EQ(parsed, expected);
 })
 
-// Test for "channel" type
 JSON_PARSE_TEST(OneOfChannelType, {
-  // Expected object
   MessageOrigin expected{
       .data =
           MessageOriginChannel{
@@ -251,7 +235,6 @@ JSON_PARSE_TEST(OneOfChannelType, {
           },
   };
 
-  // JSON string
   auto json = R"(
     {
       "type": "channel",
@@ -263,12 +246,10 @@ JSON_PARSE_TEST(OneOfChannelType, {
     }
   )";
 
-  // Parse the JSON
   MessageOrigin parsed = parse_json<MessageOrigin>(json);
   EXPECT_EQ(parsed, expected);
 })
 
-// Test for invalid "type"
 JSON_PARSE_TEST(OneOfInvalidType, {
   auto json = R"(
         {
