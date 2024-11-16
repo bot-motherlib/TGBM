@@ -41,7 +41,7 @@ resources:
 #include "boost/smart_ptr/intrusive_ptr.hpp"
 #include "tgbm/net/http2/hpack.hpp"
 #include "tgbm/net/http2/protocol.hpp"
-#include "tgbm/net/http2_client.hpp"
+#include "tgbm/net/http2/client.hpp"
 #include "tgbm/net/asio_awaiters.hpp"
 #include "tgbm/logger.hpp"
 #include "tgbm/utils/scope_exit.hpp"

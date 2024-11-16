@@ -38,16 +38,16 @@ if (TGBM_ENABLE_GEN)
 endif()
 
 set(TGBM_SRC_LIST
-    src/net/http2_client.cpp
+    src/net/http2/client.cpp
     # src/api_types_cmp.cpp
     src/bot.cpp
     src/long_poll.cpp
     src/api/input_file.cpp
     src/telegram.cpp
     src/net/http2/protocol.cpp
-    src/net/http2_server.cpp
+    src/net/http2/server.cpp
     src/net/tcp_connection.cpp
-    src/net/http11_client.cpp
+    src/net/http11/client.cpp
     src/net/http_client.cpp
     src/net/ssl_context.cpp
     src/utils/url_encoded.cpp

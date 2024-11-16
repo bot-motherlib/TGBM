@@ -5,7 +5,7 @@ TODO docs about this file
 
 #include <charconv>
 
-#include "tgbm/net/http2_server.hpp"
+#include "tgbm/net/http2/server.hpp"
 #include "tgbm/logger.hpp"
 #include "tgbm/net/asio_awaiters.hpp"
 #include "tgbm/net/ssl_context.hpp"
