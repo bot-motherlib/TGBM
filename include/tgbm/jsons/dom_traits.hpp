@@ -45,7 +45,7 @@ concept dom_traits = requires(const Json& json) {
 
   { Traits::element_by_index(json, size_t{}) } -> std::same_as<const Json&>;
 
-  { Traits::size(json) } -> std::same_as<std::size_t>;
+  { Traits::size(json) } -> std::same_as<size_t>;
 
   // for (auto&& [key, value] : Traits::member_range(json)) {}
   { Traits::member_range(json) } -> std::ranges::range;

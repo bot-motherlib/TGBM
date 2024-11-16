@@ -65,7 +65,7 @@ inline sax_consumer_t sax_ignore_value(sax_token& tok) {
     default:
       break;
   }
-  std::size_t depth = 0;
+  size_t depth = 0;
   for (;;) {
     switch (tok.got) {
       case sax_token::array_begin:

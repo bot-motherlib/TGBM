@@ -7,11 +7,11 @@
 namespace tgbm {
 namespace oneof_field_utils {
 template <typename T>
-constexpr std::size_t N = pfr_extension::tuple_size_v<T> - 1;
+constexpr size_t N = pfr_extension::tuple_size_v<T> - 1;
 
 template <typename T>
 constexpr bool is_required(std::string_view key) {
-  return tgbm::call_on_indexes<N<T>>([&]<std::size_t... I> {
+  return tgbm::call_on_indexes<N<T>>([&]<size_t... I> {
     auto ss = tgbm::utils::string_switch<bool>(key);
     using case_t = tgbm::utils::string_switch<bool>::case_t;
     return (ss | ... | case_t(pfr_extension::element_name_v<I, T>, true)).or_default(false);

@@ -16,16 +16,16 @@
 
 namespace fuzzing {
 
-constexpr std::size_t max = std::size_t(-1);
+constexpr size_t max = size_t(-1);
 
 struct Config {
   std::string path;
-  std::size_t min_fields_total = 0;
-  std::size_t min_fields_per_object = 0;
-  std::size_t max_fields_total = max;
-  std::size_t max_fields_per_object = max;
-  std::size_t max_nesting = 16;
-  std::size_t max_size_array = 16;
+  size_t min_fields_total = 0;
+  size_t min_fields_per_object = 0;
+  size_t max_fields_total = max;
+  size_t max_fields_per_object = max;
+  size_t max_nesting = 16;
+  size_t max_size_array = 16;
   double expand_chance = 0.5;
   double nesting_chance = 0.5;
   int64_t min_int = -200000;
@@ -37,12 +37,12 @@ struct Config {
 };
 
 struct LocalInfo {
-  std::size_t cur_nesting = 0;
-  std::size_t cur_fields_in_object = 0;
+  size_t cur_nesting = 0;
+  size_t cur_fields_in_object = 0;
 };
 
 struct GlobalInfo {
-  std::size_t cur_fields_total = 0;
+  size_t cur_fields_total = 0;
 };
 
 struct Context {
@@ -148,7 +148,7 @@ inline std::string make_json(const Config& config, auto&& generator) {
   return result;
 }
 
-template <typename T, std::size_t N>
+template <typename T, size_t N>
 inline std::string make_json_array(const Config& config, auto&& generator) {
   GlobalInfo info;
   Context context{.config = config, .global = info};
@@ -215,7 +215,7 @@ struct Storage {
     jsons_[std::move(name)] = std::move(json.value());
   }
 
-  template <typename T, std::size_t N>
+  template <typename T, size_t N>
   void AddArray(std::string name, Config config) {
     std::filesystem::path path(config.path);
     TGBM_LOG_INFO("AddArray: {}", path.generic_string());
@@ -509,7 +509,7 @@ struct randomizer<T> {
     context.global.cur_fields_total += 1;
     std::uniform_int_distribution<int> sub_one_of_dist(0, T::variant_size - 1);
     tgbm::visit_index<T::variant_size - 1>(
-        [&]<std::size_t I>() {
+        [&]<size_t I>() {
           using SubOneOf = tgbm::box_union_element_t<Data, I>;
           t.data = randomizer<SubOneOf>::generate(
               Context{.config = context.config, .global = context.global, .local = local}, generator);
@@ -540,7 +540,7 @@ struct randomizer<T> {
     std::uniform_int_distribution<int> sub_one_of_dist(0, T::variant_size - 1);
     using Data = decltype(T::data);
     tgbm::visit_index<T::variant_size - 1>(
-        [&]<std::size_t I>() {
+        [&]<size_t I>() {
           using SubOneOf = tgbm::box_union_element_t<Data, I>;
           using raw = decltype(SubOneOf::value);
           t.data = SubOneOf{randomizer<raw>::generate(

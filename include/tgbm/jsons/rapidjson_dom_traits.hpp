@@ -87,13 +87,13 @@ struct dom_traits_for<rapidjson::GenericValue<rapidjson::UTF8<>>> {
     return nullptr;
   }
 
-  static const type& element_by_index(const type& json, std::size_t index) {
+  static const type& element_by_index(const type& json, size_t index) {
     assert(json.IsArray());
     assert(index < json.Size());
     return json[index];
   }
 
-  static std::size_t size(const type& json) {
+  static size_t size(const type& json) {
     assert(json.IsObject() || json.IsArray());
     if (json.IsObject()) {
       return json.MemberCount();

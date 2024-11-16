@@ -13,9 +13,9 @@ struct sax_parser<T> {
   static constexpr auto N = ::pfr_extension::tuple_size_v<T>;
 
   static bool all_parsed(const std::bitset<N>& parsed_) {
-    static std::bitset<N> required_mask = []<std::size_t... I>(std::index_sequence<I...>) {
+    static std::bitset<N> required_mask = []<size_t... I>(std::index_sequence<I...>) {
       std::bitset<N> res;
-      auto store_required = [&]<std::size_t J>(std::index_sequence<J>) {
+      auto store_required = [&]<size_t J>(std::index_sequence<J>) {
         constexpr std::string_view name = pfr_extension::element_name_v<J, T>;
         res[J] = T::is_mandatory_field(name);
       };
@@ -29,7 +29,7 @@ struct sax_parser<T> {
     if constexpr (N > 0) {
       return pfr_extension::visit_struct_field<T, sax_consumer_t>(
           key,
-          [&]<std::size_t I>() {
+          [&]<size_t I>() {
             auto& field = pfr_extension::get<I>(v);
             if (parsed_.test(I))
               TGBM_JSON_PARSE_ERROR;

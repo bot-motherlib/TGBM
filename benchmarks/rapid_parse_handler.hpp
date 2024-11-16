@@ -144,14 +144,14 @@ struct rapid_sv_stream {
   }
 
   std::string_view sv_;
-  std::size_t index = 0;
+  size_t index = 0;
 };
 
 template <typename T>
 struct parsed {
   api::optional<T> value;
   rapidjson::ParseErrorCode code = rapidjson::ParseErrorCode::kParseErrorNone;
-  std::size_t offset = 0;
+  size_t offset = 0;
   bool ok() {
     return code == rapidjson::ParseErrorCode::kParseErrorNone;
   }

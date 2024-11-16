@@ -492,15 +492,15 @@ template <size_t I, typename... Ts>
   return u ? u->template get_if<I>() : nullptr;
 }
 
-template <typename T, std::size_t I>
+template <typename T, size_t I>
 struct box_union_element {};
 
-template <typename... Ts, std::size_t I>
+template <typename... Ts, size_t I>
 struct box_union_element<box_union<Ts...>, I> {
   using type = element_at_t<I, Ts...>;
 };
 
-template <typename T, std::size_t I>
+template <typename T, size_t I>
 using box_union_element_t = typename box_union_element<T, I>::type;
 
 template <typename T>
@@ -508,11 +508,11 @@ struct box_union_size {};
 
 template <typename... Ts>
 struct box_union_size<box_union<Ts...>> {
-  static constexpr std::size_t value = sizeof...(Ts);
+  static constexpr size_t value = sizeof...(Ts);
 };
 
 template <typename T>
-constexpr std::size_t box_union_size_v = box_union_size<T>::value;
+constexpr size_t box_union_size_v = box_union_size<T>::value;
 
 }  // namespace tgbm
 

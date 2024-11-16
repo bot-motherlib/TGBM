@@ -19,7 +19,7 @@
 
 namespace pfr_extension {
 
-template <std::size_t Index, tgbm::ce::string Name>
+template <size_t Index, tgbm::ce::string Name>
 struct field_info {
   static constexpr auto index = Index;
   static constexpr auto name = Name;
@@ -28,9 +28,9 @@ struct field_info {
 namespace details {
 
 template <tgbm::ce::string Name, typename T>
-std::size_t element_index() {
+size_t element_index() {
   constexpr auto names = boost::pfr::names_as_array<T>();
-  std::size_t index = 0;
+  size_t index = 0;
   for (std::string_view name : names) {
     if (name == Name.AsStringView()) {
       return index;
@@ -48,25 +48,25 @@ template <typename T>
 constexpr auto tuple_size_v = boost::pfr::tuple_size_v<T>;
 
 template <tgbm::ce::string Name, typename T>
-constexpr std::size_t tuple_element_index_v = details::element_index<Name, T>();
+constexpr size_t tuple_element_index_v = details::element_index<Name, T>();
 
 template <tgbm::ce::string Name, typename T>
-constexpr std::size_t has_element_v = details::element_index<Name, T>() <= boost::pfr::tuple_size_v<T>;
+constexpr size_t has_element_v = details::element_index<Name, T>() <= boost::pfr::tuple_size_v<T>;
 
-template <std::size_t I, typename T>
+template <size_t I, typename T>
 using tuple_element_t = boost::pfr::tuple_element_t<I, T>;
 
-template <std::size_t I, typename T>
+template <size_t I, typename T>
 consteval std::string_view get_name() {
   return boost::pfr::get_name<I, T>();
 }
 
-template <std::size_t I, typename T>
+template <size_t I, typename T>
 constexpr decltype(auto) get(T&& t) noexcept {
   return boost::pfr::get<I>(std::forward<T>(t));
 }
 
-template <std::size_t I, typename T>
+template <size_t I, typename T>
 constexpr std::string_view element_name_v = get_name<I, T>();
 
 template <typename T>
@@ -83,19 +83,19 @@ consteval bool has_element(std::string_view name) {
 /////////////////////////////////////////VISITERS//////////////////////////////////////////////
 namespace details {
 
-template <std::size_t... I>
-constexpr void visit_object_helper(auto&& t, auto&& functor, std::integer_sequence<std::size_t, I...>) {
+template <size_t... I>
+constexpr void visit_object_helper(auto&& t, auto&& functor, std::integer_sequence<size_t, I...>) {
   using T = std::remove_cvref_t<decltype(t)>;
-  auto one_field = [&]<std::size_t J>(std::index_sequence<J>) {
+  auto one_field = [&]<size_t J>(std::index_sequence<J>) {
     using Info = field_info<J, boost::pfr::get_name<J, T>()>;
     functor.template operator()<Info>(boost::pfr::get<J>(FWD(t)));
   };
   (one_field(std::index_sequence<I>{}), ...);
 }
 
-template <typename T, std::size_t... I>
-constexpr void visit_struct_helper(auto&& functor, std::integer_sequence<std::size_t, I...>) {
-  auto one_field = [&]<std::size_t J>(std::index_sequence<J>) {
+template <typename T, size_t... I>
+constexpr void visit_struct_helper(auto&& functor, std::integer_sequence<size_t, I...>) {
+  auto one_field = [&]<size_t J>(std::index_sequence<J>) {
     using Info = field_info<J, boost::pfr::get_name<J, T>()>;
     using Field = boost::pfr::tuple_element_t<J, T>;
     functor.template operator()<Info, Field>();
@@ -106,7 +106,7 @@ constexpr void visit_struct_helper(auto&& functor, std::integer_sequence<std::si
 }  // namespace details
 
 // typename Info, typename F
-template <std::size_t N = std::size_t(-1)>
+template <size_t N = size_t(-1)>
 constexpr void visit_object(auto&& t, auto&& functor) {
   using T = std::remove_cvref_t<decltype(t)>;
   constexpr auto default_size = boost::pfr::tuple_size_v<T>;
@@ -114,7 +114,7 @@ constexpr void visit_object(auto&& t, auto&& functor) {
   details::visit_object_helper(FWD(t), FWD(functor), seq);
 }
 
-template <typename T, std::size_t N = boost::pfr::tuple_size_v<std::remove_cvref_t<T>>>
+template <typename T, size_t N = boost::pfr::tuple_size_v<std::remove_cvref_t<T>>>
 constexpr void visit_struct(auto&& functor) {
   using U = std::remove_cvref_t<T>;
 
@@ -122,12 +122,12 @@ constexpr void visit_struct(auto&& functor) {
   details::visit_struct_helper<U>(FWD(functor), seq);
 }
 
-template <typename T, typename R, std::size_t Size = boost::pfr::tuple_size_v<T>>
+template <typename T, typename R, size_t Size = boost::pfr::tuple_size_v<T>>
 constexpr R visit_struct_field(std::string_view field_name, auto&& known, auto&& unknown) {
-  constexpr std::size_t kUnknown = std::size_t(-1);
-  std::size_t index = [&]<std::size_t... I>(std::index_sequence<I...>) {
-    tgbm::utils::string_switch<std::size_t> s(field_name);
-    return (s | ... | tgbm::utils::string_switch<std::size_t>::case_t(element_name_v<I, T>, I))
+  constexpr size_t kUnknown = size_t(-1);
+  size_t index = [&]<size_t... I>(std::index_sequence<I...>) {
+    tgbm::utils::string_switch<size_t> s(field_name);
+    return (s | ... | tgbm::utils::string_switch<size_t>::case_t(element_name_v<I, T>, I))
         .or_default(kUnknown);
   }(std::make_index_sequence<Size>{});
   if (index != kUnknown) [[likely]] {

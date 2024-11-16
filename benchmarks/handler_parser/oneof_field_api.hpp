@@ -47,7 +47,7 @@ struct parser<T> : basic_parser<T> {
   ResultParse emplace_parser(std::string_view key) {
     return pfr_extension::visit_struct_field<T, ResultParse, N>(
         key,
-        [&]<std::size_t I> {
+        [&]<size_t I> {
           using Field = pfr_extension::tuple_element_t<I, T>;
           using Parser = parser<Field>;
           auto& field = pfr_extension::get<I>(*this->t_);

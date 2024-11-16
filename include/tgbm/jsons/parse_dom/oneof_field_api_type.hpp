@@ -15,7 +15,7 @@ struct parser<T> {
     if (!Traits::is_object(json)) [[unlikely]] {
       Traits::on_error();
     }
-    constexpr std::size_t N = tgbm::oneof_field_utils::N<T>;
+    constexpr size_t N = tgbm::oneof_field_utils::N<T>;
 
     using Data = decltype(T::data);
 

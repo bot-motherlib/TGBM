@@ -219,12 +219,12 @@ struct NameType {
   };
 };
 
-template <std::size_t Size>
+template <size_t Size>
 using ErasedParser = aa::basic_any_with<aa::unreachable_allocator, Size, NameType, aa::move, StartObject,
                                         EndObject, StartArray, EndArray, Key, String, Integral,
                                         UnsignedIntegral, Floating, Boolean, Null, OnNextEndParsing>;
 #else
-template <std::size_t Size>
+template <size_t Size>
 using ErasedParser = aa::basic_any_with<aa::unreachable_allocator, Size, aa::move, StartObject, EndObject,
                                         StartArray, EndArray, Key, String, Integral, UnsignedIntegral,
                                         Floating, Boolean, Null, OnNextEndParsing>;

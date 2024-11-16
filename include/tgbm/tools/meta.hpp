@@ -13,8 +13,8 @@ enum { VISIT_INDEX_MAX = 128 - 1 };
 // switch 'i' up to 64 for better code generatrion
 // 'F' should be like [] <size_t I> {}
 // Max - index until 'f' will be instanciated, assumes i <= MAX
-template <std::size_t Max>
-constexpr decltype(auto) visit_index(auto&& f, std::size_t i) {
+template <size_t Max>
+constexpr decltype(auto) visit_index(auto&& f, size_t i) {
   static_assert(Max <= VISIT_INDEX_MAX);
   assert(i <= VISIT_INDEX_MAX);
   switch (i) {
@@ -65,17 +65,17 @@ constexpr auto matcher_r(Foos&&... foos) noexcept(
   };
 }
 
-consteval std::size_t log2_constexpr(std::size_t n) {
+consteval size_t log2_constexpr(size_t n) {
   return n == 1 ? 0 : log2_constexpr(n / 2) + 1;
 }
 
 template <typename T, typename... Ts>
-consteval std::size_t find_first() {
+consteval size_t find_first() {
   bool same[]{std::same_as<T, Ts>...};
   for (bool& t : same)
     if (t)
       return &t - &same[0];
-  return std::size_t(-1);
+  return size_t(-1);
 }
 
 template <typename T, typename... Ts>
@@ -99,15 +99,15 @@ template <typename... Ts>
 using first_type_t = typename first_type<Ts...>::type;
 
 // no support to void types and I > sizeof...(Types)
-template <std::size_t I, typename... Types>
+template <size_t I, typename... Types>
 using element_at_t = std::tuple_element_t<I, std::tuple<Types...>>;
 
 template <typename... Ts>
 consteval bool is_unique_types() {
-  std::size_t is[] = {find_first<Ts, Ts...>()..., std::size_t(-1) /* avoid empty array */};
-  auto count = [&is](std::size_t val) {
-    std::size_t c = 0;
-    for (std::size_t x : is)
+  size_t is[] = {find_first<Ts, Ts...>()..., size_t(-1) /* avoid empty array */};
+  auto count = [&is](size_t val) {
+    size_t c = 0;
+    for (size_t x : is)
       c += val == x;
     return c;
   };
@@ -123,16 +123,16 @@ constexpr auto to_underlying(Enum e) noexcept {
   return static_cast<std::underlying_type_t<Enum>>(e);
 }
 
-template <std::size_t N>
+template <size_t N>
 constexpr void for_each_index(auto&& cb) {
-  [&]<std::size_t... I>(std::index_sequence<I>...) {
+  [&]<size_t... I>(std::index_sequence<I>...) {
     (cb.template operator()<I>(), ...);
   }(std::make_index_sequence<N>{});
 }
 
-template <std::size_t N>
+template <size_t N>
 constexpr decltype(auto) call_on_indexes(auto&& cb) {
-  return [&]<std::size_t... I>(std::index_sequence<I...>) {
+  return [&]<size_t... I>(std::index_sequence<I...>) {
     return cb.template operator()<I...>();
   }(std::make_index_sequence<N>{});
 }

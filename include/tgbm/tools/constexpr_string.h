@@ -11,7 +11,7 @@ namespace tgbm::ce {
   #define TGBM_FIXED_STRING_SIZE 64
 #endif
 
-constexpr std::size_t k_len_fixed_string = TGBM_FIXED_STRING_SIZE;
+constexpr size_t k_len_fixed_string = TGBM_FIXED_STRING_SIZE;
 
 struct string {
   constexpr string() noexcept = default;
@@ -19,7 +19,7 @@ struct string {
   constexpr string(const char* c_str) : string(std::string_view{c_str}) {
   }
 
-  template <std::size_t Size>
+  template <size_t Size>
   constexpr string(const char (&str)[Size]) noexcept : len(Size - 1) {
     static_assert(Size <= capacity);
     std::copy_n(str, Size, data_.begin());
@@ -49,7 +49,7 @@ struct string {
     return string == lhs;
   }
 
-  constexpr std::size_t size() const {
+  constexpr size_t size() const {
     return len;
   }
 
@@ -62,8 +62,8 @@ struct string {
   }
 
  public:
-  std::size_t len = 0;
-  static constexpr std::size_t capacity = k_len_fixed_string;
+  size_t len = 0;
+  static constexpr size_t capacity = k_len_fixed_string;
   std::array<char, capacity> data_{};
 };
 

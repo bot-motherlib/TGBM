@@ -97,7 +97,7 @@ struct MessageOrigin {
 
   enum struct type_e { k_user, k_hidden_user, k_chat, k_channel, nothing };
 
-  static constexpr auto variant_size = std::size_t(type_e::nothing);
+  static constexpr auto variant_size = size_t(type_e::nothing);
 
   static constexpr type_e discriminate(std::string_view val) {
     return utils::string_switch<type_e>(val)

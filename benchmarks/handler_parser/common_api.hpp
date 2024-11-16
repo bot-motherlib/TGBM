@@ -17,7 +17,7 @@ struct parser<T> : basic_parser<T> {
   using basic_parser<T>::basic_parser;
   static constexpr auto N = pfr_extension::tuple_size_v<T>;
 
-  enum indexes : std::size_t { unknown = N, empty = N + 1 };
+  enum indexes : size_t { unknown = N, empty = N + 1 };
 
   std::bitset<N> parsed_fields_{};
   bool started_{};
@@ -33,8 +33,8 @@ struct parser<T> : basic_parser<T> {
     TGBM_JSON_HANDLER_PARSE_ERROR;
   }
 
-  static constexpr std::array<bool, N> is_mandatory = []<std::size_t... I>(std::index_sequence<I...>) {
-    auto helper = []<std::size_t J>(std::index_sequence<J>) {
+  static constexpr std::array<bool, N> is_mandatory = []<size_t... I>(std::index_sequence<I...>) {
+    auto helper = []<size_t J>(std::index_sequence<J>) {
       constexpr std::string_view name = pfr_extension::get_name<J, T>();
       return T::is_mandatory_field(name);
     };
@@ -42,7 +42,7 @@ struct parser<T> : basic_parser<T> {
   }(seq{});
 
   bool all_parsed() {
-    for (std::size_t i = 0; i < N; i++) {
+    for (size_t i = 0; i < N; i++) {
       if (is_mandatory[i] && !parsed_fields_[i]) {
         return false;
       }
@@ -59,8 +59,8 @@ struct parser<T> : basic_parser<T> {
       TGBM_JSON_HANDLER_PARSE_ERROR;
   }
 
-  void emplace_parser(std::size_t index) {
-    auto helper = [&]<std::size_t I>() {
+  void emplace_parser(size_t index) {
+    auto helper = [&]<size_t I>() {
       if constexpr (I == unknown) {
         this->parser_stack_.push(ignore_parser{});
         return true;
@@ -79,7 +79,7 @@ struct parser<T> : basic_parser<T> {
       }
       return false;
     };
-    auto val = [&]<std::size_t... I>(std::index_sequence<I...>) {
+    auto val = [&]<size_t... I>(std::index_sequence<I...>) {
       return (helper.template operator()<I>() || ...);
     }(std::make_index_sequence<N + 1>{});
     assert(val);
@@ -93,14 +93,13 @@ struct parser<T> : basic_parser<T> {
     return ResultParse::kContinue;
   }
 
-  template <std::size_t... I>
-  static constexpr std::size_t count_index_impl(std::string_view key,
-                                                std::integer_sequence<std::size_t, I...>) {
-    using switcher = utils::string_switch<std::size_t>;
+  template <size_t... I>
+  static constexpr size_t count_index_impl(std::string_view key, std::integer_sequence<size_t, I...>) {
+    using switcher = utils::string_switch<size_t>;
     return (switcher{key} | ... | switcher::case_t(pfr_extension::get_name<I, T>(), I)).or_default(unknown);
   }
 
-  static constexpr std::size_t count_index(std::string_view key) {
+  static constexpr size_t count_index(std::string_view key) {
     return count_index_impl(key, seq{});
   }
 };

@@ -13,10 +13,10 @@ namespace tgbm::json::boost {
 namespace details {
 
 struct ignore_handler {
-  static constexpr std::size_t max_array_size = -1;
-  static constexpr std::size_t max_object_size = -1;
-  static constexpr std::size_t max_string_size = -1;
-  static constexpr std::size_t max_key_size = -1;
+  static constexpr size_t max_array_size = -1;
+  static constexpr size_t max_object_size = -1;
+  static constexpr size_t max_string_size = -1;
+  static constexpr size_t max_key_size = -1;
 
   bool on_document_begin(io_error_code& ec) {
     return true;
@@ -30,7 +30,7 @@ struct ignore_handler {
     return true;
   }
 
-  bool on_array_end(std::size_t n, io_error_code& ec) {
+  bool on_array_end(size_t n, io_error_code& ec) {
     return true;
   }
 
@@ -38,25 +38,25 @@ struct ignore_handler {
     return true;
   }
 
-  bool on_object_end(std::size_t n, io_error_code& ec) {
+  bool on_object_end(size_t n, io_error_code& ec) {
     return true;
   }
 
-  bool on_string_part(std::string_view s, std::size_t n, io_error_code& ec) {
+  bool on_string_part(std::string_view s, size_t n, io_error_code& ec) {
     ec = ::boost::json::error::incomplete;
     return false;
   }
 
-  bool on_string(std::string_view s, std::size_t n, io_error_code& ec) {
+  bool on_string(std::string_view s, size_t n, io_error_code& ec) {
     return true;
   }
 
-  bool on_key_part(std::string_view s, std::size_t n, io_error_code& ec) {
+  bool on_key_part(std::string_view s, size_t n, io_error_code& ec) {
     ec = ::boost::json::error::incomplete;
     return false;
   }
 
-  bool on_key(std::string_view s, std::size_t n, io_error_code& ec) {
+  bool on_key(std::string_view s, size_t n, io_error_code& ec) {
     return true;
   }
 
@@ -98,10 +98,10 @@ struct ignore_handler {
 template <typename T>
 struct parser_handler {
   using string_view = ::boost::json::string_view;
-  static constexpr std::size_t max_array_size = -1;
-  static constexpr std::size_t max_object_size = -1;
-  static constexpr std::size_t max_string_size = -1;
-  static constexpr std::size_t max_key_size = -1;
+  static constexpr size_t max_array_size = -1;
+  static constexpr size_t max_object_size = -1;
+  static constexpr size_t max_string_size = -1;
+  static constexpr size_t max_key_size = -1;
 
   parser_handler(T& t) {
     stack_.push(handler_parser::parser<T>{stack_, t});
@@ -119,7 +119,7 @@ struct parser_handler {
     return stack_.start_array();
   }
 
-  bool on_array_end(std::size_t n, io_error_code& ec) {
+  bool on_array_end(size_t n, io_error_code& ec) {
     return stack_.end_array();
   }
 
@@ -127,25 +127,25 @@ struct parser_handler {
     return stack_.start_object();
   }
 
-  bool on_object_end(std::size_t n, io_error_code& ec) {
+  bool on_object_end(size_t n, io_error_code& ec) {
     return stack_.end_object();
   }
 
-  bool on_string_part(string_view s, std::size_t n, io_error_code& ec) {
+  bool on_string_part(string_view s, size_t n, io_error_code& ec) {
     ec = ::boost::json::error::incomplete;
     return false;
   }
 
-  bool on_string(string_view s, std::size_t n, io_error_code& ec) {
+  bool on_string(string_view s, size_t n, io_error_code& ec) {
     return stack_.string(s);
   }
 
-  bool on_key_part(string_view s, std::size_t n, io_error_code& ec) {
+  bool on_key_part(string_view s, size_t n, io_error_code& ec) {
     ec = ::boost::json::error::incomplete;
     return false;
   }
 
-  bool on_key(string_view s, std::size_t n, io_error_code& ec) {
+  bool on_key(string_view s, size_t n, io_error_code& ec) {
     return stack_.key(s);
   }
 

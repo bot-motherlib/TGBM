@@ -197,7 +197,7 @@ TEST(StreamParser, NestedObjectsInArray) {
         }
     ])");
 
-  for (std::size_t i = 24; i < 25; i++) {
+  for (size_t i = 24; i < 25; i++) {
     std::vector<TestObject> got;
 
     parser parser(got);

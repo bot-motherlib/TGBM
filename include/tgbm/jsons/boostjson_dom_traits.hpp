@@ -77,7 +77,7 @@ struct dom_traits_for<::boost::json::value> {
     return nullptr;
   }
 
-  static const type& element_by_index(const type& json, std::size_t index) {
+  static const type& element_by_index(const type& json, size_t index) {
     assert(json.is_array());
     auto& arr = json.as_array();
     if (index >= arr.size()) {
@@ -86,7 +86,7 @@ struct dom_traits_for<::boost::json::value> {
     return arr[index];
   }
 
-  static std::size_t size(const type& json) {
+  static size_t size(const type& json) {
     assert(json.is_object() || json.is_array());
     if (json.is_object()) {
       return json.as_object().size();

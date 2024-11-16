@@ -35,7 +35,7 @@ O url_encode(char c, O out) {
   return out;
 }
 
-std::string generate_multipart_boundary(std::size_t length);
+std::string generate_multipart_boundary(size_t length);
 
 // used for fmt formatting
 struct url_encoded {

@@ -14,9 +14,9 @@ struct parser<std::vector<T>> {
     if (!Traits::is_array(json)) {
       Traits::on_error();
     }
-    std::size_t size = Traits::size(json);
+    size_t size = Traits::size(json);
     out.reserve(size);
-    for (std::size_t i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
       auto& element_node = Traits::element_by_index(json, i);
       parser<T>::template parse<Json, Traits>(element_node, out.emplace_back());
     }

@@ -21,7 +21,7 @@ struct sax_parser<T> {
                                             std::bitset<N>& parsed_) {
     return pfr_extension::visit_struct_field<T, sax_consumer_t, N>(
         key,
-        [&]<std::size_t I>() {
+        [&]<size_t I>() {
           using Field = pfr_extension::tuple_element_t<I, T>;
           auto& field = pfr_extension::get<I>(t_);
           if (parsed_.test(I))
