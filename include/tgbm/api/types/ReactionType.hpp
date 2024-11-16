@@ -1,9 +1,9 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "ReactionTypeEmoji.hpp"
-#include "ReactionTypeCustomEmoji.hpp"
-#include "ReactionTypePaid.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/ReactionTypeEmoji.hpp>
+#include <tgbm/api/types/ReactionTypeCustomEmoji.hpp>
+#include <tgbm/api/types/ReactionTypePaid.hpp>
 
 namespace tgbm::api {
 
@@ -41,7 +41,7 @@ struct ReactionType {
     return data.get_if<ReactionTypePaid>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("emoji", type_e::k_emoji)
         .case_("custom_emoji", type_e::k_customemoji)
         .case_("paid", type_e::k_paid)

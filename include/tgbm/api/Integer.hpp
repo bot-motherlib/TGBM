@@ -5,7 +5,7 @@
 #include <concepts>
 #include <limits>
 
-#include "tgbm/api/optional.hpp"
+#include <tgbm/api/optional.hpp>
 
 namespace tgbm::api {
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "all_fwd.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 
@@ -217,7 +217,7 @@ struct Message {
   optional<True> channel_chat_created;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("message_id", true)
         .case_("date", true)
         .case_("chat", true)

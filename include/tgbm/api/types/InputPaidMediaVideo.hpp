@@ -1,6 +1,6 @@
 #pragma once
 
-#include "all_fwd.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 
@@ -27,7 +27,7 @@ struct InputPaidMediaVideo {
   optional<bool> supports_streaming;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name).case_("media", true).or_default(false);
+    return string_switch<bool>(name).case_("media", true).or_default(false);
   }
 };
 

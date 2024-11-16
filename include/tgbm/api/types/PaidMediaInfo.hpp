@@ -1,6 +1,6 @@
 #pragma once
 
-#include "all_fwd.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 
@@ -12,10 +12,7 @@ struct PaidMediaInfo {
   arrayof<PaidMedia> paid_media;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
-        .case_("star_count", true)
-        .case_("paid_media", true)
-        .or_default(false);
+    return string_switch<bool>(name).case_("star_count", true).case_("paid_media", true).or_default(false);
   }
 };
 

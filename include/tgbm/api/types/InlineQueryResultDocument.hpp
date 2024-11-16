@@ -1,6 +1,6 @@
 #pragma once
 
-#include "all_fwd.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 
@@ -36,7 +36,7 @@ struct InlineQueryResultDocument {
   optional<Integer> thumbnail_height;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("id", true)
         .case_("title", true)
         .case_("document_url", true)

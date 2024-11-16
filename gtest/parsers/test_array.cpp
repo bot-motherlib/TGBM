@@ -15,7 +15,7 @@ struct SimpleObject {
   std::strong_ordering operator<=>(const SimpleObject&) const = default;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return tgbm::utils::string_switch<bool>(name)
+    return tgbm::string_switch<bool>(name)
         .case_("int_field", true)
         .case_("double_field", true)
         .case_("bool_field", true)
@@ -97,13 +97,11 @@ JSON_PARSE_TEST(EmptyArray, {
 })
 
 JSON_PARSE_TEST(MultidimensionalArray, {
-  // clang-format off
-    std::vector<std::vector<int>> expected{
-        {1, 2, 3},
-        {4, 5, 6},
-        {7, 8, 9}
-    };
-  // clang-format on
+  std::vector<std::vector<int>> expected{
+      {1, 2, 3},
+      {4, 5, 6},
+      {7, 8, 9},
+  };
 
   auto json = R"(
     [
@@ -177,7 +175,7 @@ JSON_PARSE_TEST(ArrayWithNull, {
 
 JSON_PARSE_TEST(LargeArray, {
   std::vector<int> expected(10);
-  std::iota(expected.begin(), expected.end(), 0);  // заполняем значениями от 0 до 999
+  std::iota(expected.begin(), expected.end(), 0);
   auto json = fmt::format("[{}]", fmt::join(expected, ","));
   auto got = parse_json<std::vector<int>>(json);
   EXPECT_EQ(expected, got);
@@ -196,4 +194,5 @@ JSON_PARSE_TEST(MissingArrayElement, {
   auto try_parse = [&]() { parse_json<std::vector<int>>(json); };
   EXPECT_ANY_THROW(try_parse());
 })
+
 }  // namespace json_parser::test_array

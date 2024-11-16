@@ -1,6 +1,6 @@
 #pragma once
 
-#include "all_fwd.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 
@@ -16,7 +16,7 @@ struct ForumTopic {
   optional<String> icon_custom_emoji_id;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("message_thread_id", true)
         .case_("name", true)
         .case_("icon_color", true)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "all_fwd.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 
@@ -19,7 +19,7 @@ struct BackgroundTypePattern {
   optional<True> is_moving;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("document", true)
         .case_("fill", true)
         .case_("intensity", true)

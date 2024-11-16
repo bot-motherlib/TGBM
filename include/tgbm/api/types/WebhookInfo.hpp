@@ -1,6 +1,6 @@
 #pragma once
 
-#include "all_fwd.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 
@@ -31,7 +31,7 @@ struct WebhookInfo {
   optional<arrayof<String>> allowed_updates;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("url", true)
         .case_("has_custom_certificate", true)
         .case_("pending_update_count", true)

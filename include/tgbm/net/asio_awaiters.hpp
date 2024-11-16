@@ -2,7 +2,7 @@
 
 #include <span>
 #include <type_traits>
-#include "tgbm/tools/memory.hpp"
+#include <tgbm/utils/memory.hpp>
 // TODO wrap asio/detail/config.hpp (using include_next)
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ssl/context.hpp>

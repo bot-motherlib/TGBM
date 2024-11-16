@@ -1,7 +1,6 @@
-#include "tgbm/bot.hpp"
+#include <tgbm/bot.hpp>
 
-#include "tgbm/net/http2_client.hpp"
-#include "tgbm/net/long_poll.hpp"
+#include <tgbm/net/http2/client.hpp>
 
 namespace tgbm {
 

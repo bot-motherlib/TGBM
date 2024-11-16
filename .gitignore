@@ -35,4 +35,4 @@ vcpkg_installed
 compile_commands.json
 CMakePresets.json
 
-gbench/data
+benchmarks/data

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "all_fwd.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 
@@ -15,7 +15,7 @@ struct BackgroundFillGradient {
   Integer rotation_angle;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("top_color", true)
         .case_("bottom_color", true)
         .case_("rotation_angle", true)

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "BackgroundFillSolid.hpp"
-#include "BackgroundFillGradient.hpp"
-#include "BackgroundFillFreeformGradient.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/BackgroundFillSolid.hpp>
+#include <tgbm/api/types/BackgroundFillGradient.hpp>
+#include <tgbm/api/types/BackgroundFillFreeformGradient.hpp>
 
 namespace tgbm::api {
 
@@ -42,7 +42,7 @@ struct BackgroundFill {
     return data.get_if<BackgroundFillFreeformGradient>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("solid", type_e::k_solid)
         .case_("gradient", type_e::k_gradient)
         .case_("freeform_gradient", type_e::k_freeformgradient)

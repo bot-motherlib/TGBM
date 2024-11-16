@@ -1,6 +1,6 @@
 #pragma once
 
-#include "all_fwd.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 
@@ -14,7 +14,7 @@ struct BusinessOpeningHoursInterval {
   Integer closing_minute;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("opening_minute", true)
         .case_("closing_minute", true)
         .or_default(false);

@@ -6,9 +6,9 @@
 #include <string_view>
 #include <cassert>
 
-#include "tgbm/net/http2/hpack.hpp"
-#include "tgbm/net/http2/errors.hpp"
-#include "tgbm/tools/memory.hpp"
+#include <tgbm/net/http2/hpack.hpp>
+#include <tgbm/net/http2/errors.hpp>
+#include <tgbm/utils/memory.hpp>
 
 #include <fmt/core.h>
 
@@ -103,18 +103,6 @@ struct data_frame {
     Data (..),
     Padding (..2040),
   */
-  // TODO нормально
-  template <std::output_iterator<byte_t> O>
-  static O form(stream_id_t streamid, flags_t flags, std::span<byte_t> data, O out) {
-    frame_header h{
-        .length = uint32_t(data.size()),
-        .type = frame_e::DATA,
-        .flags = flags,
-        .stream_id = streamid,
-    };
-    out = h.send_to(out);
-    return std::copy_n(data.data(), data.size(), out);
-  }
 };
 
 // opens new stream
@@ -130,22 +118,6 @@ struct headers_frame {
   */
 
   // do not have 'parse', its in http2_client (because requires decoder, padding remove etc)
-
-  // always not padded, not priority, END HEADERS frame
-  template <std::output_iterator<byte_t> O>
-  constexpr static O form(stream_id_t id, bool end_stream, std::span<const byte_t> headers, O out) {
-    frame_header h{
-        .length = static_cast<uint32_t>(headers.size()),
-        .type = frame_e::HEADERS,
-        .flags = flags::END_HEADERS,
-        .stream_id = id,
-    };
-    if (end_stream)
-      h.flags |= flags::END_STREAM;
-    out = h.send_to(out);
-    out = std::copy_n(headers.data(), headers.size(), out);
-    return out;
-  }
 };
 
 // DEPRECATED

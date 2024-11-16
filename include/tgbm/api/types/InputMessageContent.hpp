@@ -1,11 +1,11 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "InputTextMessageContent.hpp"
-#include "InputLocationMessageContent.hpp"
-#include "InputVenueMessageContent.hpp"
-#include "InputContactMessageContent.hpp"
-#include "InputInvoiceMessageContent.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/InputTextMessageContent.hpp>
+#include <tgbm/api/types/InputLocationMessageContent.hpp>
+#include <tgbm/api/types/InputVenueMessageContent.hpp>
+#include <tgbm/api/types/InputContactMessageContent.hpp>
+#include <tgbm/api/types/InputInvoiceMessageContent.hpp>
 
 namespace tgbm::api {
 

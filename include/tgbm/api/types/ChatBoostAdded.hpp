@@ -1,6 +1,6 @@
 #pragma once
 
-#include "all_fwd.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 
@@ -10,7 +10,7 @@ struct ChatBoostAdded {
   Integer boost_count;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name).case_("boost_count", true).or_default(false);
+    return string_switch<bool>(name).case_("boost_count", true).or_default(false);
   }
 };
 

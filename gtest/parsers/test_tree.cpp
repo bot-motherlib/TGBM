@@ -20,19 +20,10 @@ bool TreeNode::operator==(const TreeNode&) const = default;
 JSON_PARSE_TEST(SimpleTree, {
   TreeNode expected;
   expected.tree_value = "root";
-  // clang-format off
   expected.children = std::vector<tgbm::box<TreeNode>>{
       tgbm::box<TreeNode>{TreeNode{"child1", std::nullopt}},
-      tgbm::box<TreeNode>{TreeNode{"child2", 
-                            std::vector<tgbm::box<TreeNode>>{
-                                tgbm::box<TreeNode>{
-                                        TreeNode{"grandchild1", std::nullopt}
-                                }
-                            }
-                          }
-                         }
-  };
-  // clang-format on
+      tgbm::box<TreeNode>{TreeNode{"child2", std::vector<tgbm::box<TreeNode>>{tgbm::box<TreeNode>{
+                                                 TreeNode{"grandchild1", std::nullopt}}}}}};
 
   auto json = R"(
             {
@@ -70,4 +61,5 @@ JSON_PARSE_TEST(LeafOnly, {
   auto got = parse_json<TreeNode>(json);
   EXPECT_EQ(expected, got);
 })
+
 }  // namespace json_parser::test_tree

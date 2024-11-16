@@ -1,9 +1,9 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "ChatBoostSourcePremium.hpp"
-#include "ChatBoostSourceGiftCode.hpp"
-#include "ChatBoostSourceGiveaway.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/ChatBoostSourcePremium.hpp>
+#include <tgbm/api/types/ChatBoostSourceGiftCode.hpp>
+#include <tgbm/api/types/ChatBoostSourceGiveaway.hpp>
 
 namespace tgbm::api {
 
@@ -41,7 +41,7 @@ struct ChatBoostSource {
     return data.get_if<ChatBoostSourceGiveaway>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("premium", type_e::k_premium)
         .case_("gift_code", type_e::k_giftcode)
         .case_("giveaway", type_e::k_giveaway)

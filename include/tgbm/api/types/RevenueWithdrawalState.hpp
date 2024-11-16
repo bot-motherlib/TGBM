@@ -1,9 +1,9 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "RevenueWithdrawalStatePending.hpp"
-#include "RevenueWithdrawalStateSucceeded.hpp"
-#include "RevenueWithdrawalStateFailed.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/RevenueWithdrawalStatePending.hpp>
+#include <tgbm/api/types/RevenueWithdrawalStateSucceeded.hpp>
+#include <tgbm/api/types/RevenueWithdrawalStateFailed.hpp>
 
 namespace tgbm::api {
 
@@ -41,7 +41,7 @@ struct RevenueWithdrawalState {
     return data.get_if<RevenueWithdrawalStateFailed>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("pending", type_e::k_pending)
         .case_("succeeded", type_e::k_succeeded)
         .case_("failed", type_e::k_failed)

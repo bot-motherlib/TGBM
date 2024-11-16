@@ -1,8 +1,8 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/InlineQueryResult.hpp"
-#include "tgbm/api/types/SentWebAppMessage.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/InlineQueryResult.hpp>
+#include <tgbm/api/types/SentWebAppMessage.hpp>
 
 namespace tgbm::api {
 

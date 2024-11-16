@@ -1,4 +1,4 @@
-include(cmake/CPM.cmake)
+include(cmake/get_cpm.cmake)
 
 CPMAddPackage(
   NAME OpenSSL
@@ -25,12 +25,14 @@ CPMAddPackage(
   NAME kelcoro
   GIT_REPOSITORY https://github.com/kelbon/kelcoro
   GIT_TAG origin/main
+  OPTIONS "KELCORO_ENABLE_TESTING ${TGBM_ENABLE_TESTING}"
 )
 
 CPMAddPackage(
   NAME AnyAny
   GIT_REPOSITORY https://github.com/kelbon/AnyAny
   GIT_TAG origin/main
+  OPTIONS "AA_ENABLE_TESTING ${TGBM_ENABLE_TESTING}"
 )
 
 CPMAddPackage(
@@ -42,11 +44,11 @@ CPMAddPackage(
 CPMAddPackage(
   NAME HPACK
   GIT_REPOSITORY https://github.com/kelbon/HPACK
-  GIT_TAG        v1.0.0
-  OPTIONS "HPACK_ENABLE_TESTING ON"
+  GIT_TAG        origin/master
+  OPTIONS "HPACK_ENABLE_TESTING ${TGBM_ENABLE_TESTING}"
 )
 
-if (TGBM_ENABLE_TESTS)
+if (TGBM_ENABLE_TESTING)
   CPMAddPackage(
     NAME googletest
     GITHUB_REPOSITORY google/googletest
@@ -56,13 +58,15 @@ if (TGBM_ENABLE_TESTS)
   )
 endif()
 
-
 if (TGBM_ENABLE_BENCHS)
   CPMAddPackage(
     NAME benchmark
     GITHUB_REPOSITORY google/benchmark
-    VERSION 1.7.1
+    GIT_TAG v1.9.0
     OPTIONS "BENCHMARK_ENABLE_TESTING Off"
+            "BENCHMARK_ENABLE_WERROR OFF"
+            "BENCHMARK_FORCE_WERROR OFF"
+            "BENCHMARK_INSTALL_DOCS OFF"
   )
 endif()
 

@@ -1,23 +1,23 @@
 #pragma once
 
-#include "BusinessConnection.hpp"
-#include "BusinessMessagesDeleted.hpp"
-#include "CallbackQuery.hpp"
-#include "ChatBoostRemoved.hpp"
-#include "ChatBoostUpdated.hpp"
-#include "ChatJoinRequest.hpp"
-#include "ChatMemberUpdated.hpp"
-#include "ChosenInlineResult.hpp"
-#include "InlineQuery.hpp"
-#include "Message.hpp"
-#include "MessageReactionCountUpdated.hpp"
-#include "MessageReactionUpdated.hpp"
-#include "PaidMediaPurchased.hpp"
-#include "Poll.hpp"
-#include "PollAnswer.hpp"
-#include "PreCheckoutQuery.hpp"
-#include "ShippingQuery.hpp"
-#include "all_fwd.hpp"
+#include <tgbm/api/types/BusinessConnection.hpp>
+#include <tgbm/api/types/BusinessMessagesDeleted.hpp>
+#include <tgbm/api/types/CallbackQuery.hpp>
+#include <tgbm/api/types/ChatBoostRemoved.hpp>
+#include <tgbm/api/types/ChatBoostUpdated.hpp>
+#include <tgbm/api/types/ChatJoinRequest.hpp>
+#include <tgbm/api/types/ChatMemberUpdated.hpp>
+#include <tgbm/api/types/ChosenInlineResult.hpp>
+#include <tgbm/api/types/InlineQuery.hpp>
+#include <tgbm/api/types/Message.hpp>
+#include <tgbm/api/types/MessageReactionCountUpdated.hpp>
+#include <tgbm/api/types/MessageReactionUpdated.hpp>
+#include <tgbm/api/types/PaidMediaPurchased.hpp>
+#include <tgbm/api/types/Poll.hpp>
+#include <tgbm/api/types/PollAnswer.hpp>
+#include <tgbm/api/types/PreCheckoutQuery.hpp>
+#include <tgbm/api/types/ShippingQuery.hpp>
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 

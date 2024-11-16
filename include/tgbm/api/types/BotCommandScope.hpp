@@ -1,13 +1,13 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "BotCommandScopeDefault.hpp"
-#include "BotCommandScopeAllPrivateChats.hpp"
-#include "BotCommandScopeAllGroupChats.hpp"
-#include "BotCommandScopeAllChatAdministrators.hpp"
-#include "BotCommandScopeChat.hpp"
-#include "BotCommandScopeChatAdministrators.hpp"
-#include "BotCommandScopeChatMember.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/BotCommandScopeDefault.hpp>
+#include <tgbm/api/types/BotCommandScopeAllPrivateChats.hpp>
+#include <tgbm/api/types/BotCommandScopeAllGroupChats.hpp>
+#include <tgbm/api/types/BotCommandScopeAllChatAdministrators.hpp>
+#include <tgbm/api/types/BotCommandScopeChat.hpp>
+#include <tgbm/api/types/BotCommandScopeChatAdministrators.hpp>
+#include <tgbm/api/types/BotCommandScopeChatMember.hpp>
 
 namespace tgbm::api {
 
@@ -77,7 +77,7 @@ struct BotCommandScope {
     return data.get_if<BotCommandScopeChatMember>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("default", type_e::k_default)
         .case_("all_private_chats", type_e::k_allprivatechats)
         .case_("all_group_chats", type_e::k_allgroupchats)

@@ -411,9 +411,9 @@ def collect_required_includes(method_desc: method_info_t) -> list[str]:
 def generate_into_file(method_desc: method_info_t, filepath: str):
     with open(filepath, 'w', encoding='utf-8') as out:
         print(f'#pragma once\n', file=out)
-        print('#include "tgbm/api/common.hpp"', file=out)
+        print('#include <tgbm/api/common.hpp>', file=out)
         for inc in collect_required_includes(method_desc):
-            print(f'#include "tgbm/api/types/{inc}.hpp"', file=out)
+            print(f'#include <tgbm/api/types/{inc}.hpp>', file=out)
         print('\nnamespace tgbm::api {\n', file=out)
         print(f'{generate_api_struct(method_desc)}', file=out)
         print('\n} // namespace tgbm::api', file=out)
@@ -435,15 +435,15 @@ def generate_all_methods(methods: list[method_info_t], outdir: str):
     with open(f'{outdir}/all.hpp', 'w', encoding='utf-8') as out:
         print('#pragma once\n', file=out)
         for m in methods:
-            print(f'#include "{m.name}.hpp"', file=out)
+            print(f'#include <tgbm/api/methods/{m.name}.hpp>', file=out)
 
 ################################## API generation #################################
 
 # out - file
 def generate_api_fwd_header(methods: list[method_info_t], out):
     print(f'#pragma once\n', file=out)
-    print('#include <kelcoro/task.hpp>\n\n#include "tgbm/net/http_client.hpp"\n#include "tgbm/api/methods/all.hpp"\n', file=out)
-    print('#include "tgbm/api/types/all.hpp"\n', file=out)
+    print('#include <kelcoro/task.hpp>\n\n#include <tgbm/net/http_client.hpp>\n#include <tgbm/api/methods/all.hpp>\n', file=out)
+    print('#include <tgbm/api/types/all.hpp>\n', file=out)
     print('namespace tgbm::api {\n', file=out)
     print('struct telegram {', file=out)
     # fields and ctor
@@ -456,10 +456,10 @@ def generate_api_fwd_header(methods: list[method_info_t], out):
 
 # out - file
 def generate_api_impl_file(methods: list[method_info_t], out):
-    print('#include "tgbm/api/telegram.hpp"\n', file=out)
-    print('#include "tgbm/api/types/all.hpp"\n#include "tgbm/api/methods/all.hpp"\n#include "tgbm/api/const_string.hpp"', file=out)
-    print('#include "tgbm/api/requests.hpp"\n', file=out)
-    print('#include "tgbm/tools/deadline.hpp"\n', file=out)
+    print('#include <tgbm/api/telegram.hpp>\n', file=out)
+    print('#include <tgbm/api/types/all.hpp>\n#include <tgbm/api/methods/all.hpp>\n#include <tgbm/api/const_string.hpp>', file=out)
+    print('#include <tgbm/api/requests.hpp>\n', file=out)
+    print('#include <tgbm/utils/deadline.hpp>\n', file=out)
     print('namespace tgbm::api {\n', file=out)
     for m in methods:
         if len(m.parameters) == 0:

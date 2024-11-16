@@ -1,6 +1,6 @@
 #pragma once
 
-#include "all_fwd.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 
@@ -8,7 +8,7 @@ namespace tgbm::api {
  * can be one of*/
 struct TransactionPartnerTelegramAds {
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name).or_default(false);
+    return string_switch<bool>(name).or_default(false);
   }
 };
 

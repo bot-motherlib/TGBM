@@ -3,9 +3,7 @@ project(tgbm) # telegram bot mother library
 
 option(TGBM_ENABLE_BENCHS   "Set to ON to enable building of benchs" OFF)
 option(TGBM_ENABLE_GEN      "Set to ON to generate api"              OFF)
-option(TGBM_ENABLE_TESTS    "Set to ON to enable building of tests"  OFF)
-option(TGBM_SANITIZE        ""  OFF)
-option(TGBM_SANITIZE_THREAD ""  OFF)
+option(TGBM_ENABLE_TESTING  "Set to ON to enable building of tests"  OFF)
 
 set (TGBM_CLANG        "clang"        CACHE STRING "Used only by api generator")
 set (TGBM_CLANG_FORMAT "clang-format" CACHE STRING "Used only by api generator")
@@ -13,9 +11,7 @@ set (TGBM_PYTHON       "python"       CACHE STRING "Used only by api generator")
 
 message (STATUS "[TGBM] TGBM_ENABLE_BENCHS: ${TGBM_ENABLE_BENCHS}")
 message (STATUS "[TGBM] TGBM_ENABLE_GEN: ${TGBM_ENABLE_GEN}")
-message (STATUS "[TGBM] TGBM_ENABLE_TESTS: ${TGBM_ENABLE_TESTS}")
-message (STATUS "[TGBM] TGBM_SANITIZE: ${TGBM_SANITIZE}")
-message (STATUS "[TGBM] TGBM_SANITIZE_THREAD: ${TGBM_SANITIZE_THREAD}")
+message (STATUS "[TGBM] TGBM_ENABLE_TESTING: ${TGBM_ENABLE_TESTING}")
 
 message (STATUS "[TGBM] TGBM_CLANG: ${TGBM_CLANG}")
 message (STATUS "[TGBM] TGBM_CLANG_FORMAT: ${TGBM_CLANG_FORMAT}")
@@ -28,12 +24,6 @@ message (STATUS "[TGBM] TGBM_PYTHON: ${TGBM_PYTHON}")
 # - TGBM_WINDOWS_VERSION
 #     define to set minimal supported windows version in boost asio
 #     0x0A00 (windows 10) by default if windows
-
-if (TGBM_SANITIZE_THREAD)
-  if (TGBM_SANITIZE)
-    message(FATAL "TGBM_SANITIZE and TGBM_SANITIZE_THREAD incompatible, use only one of them")
-  endif()
-endif()
 
 # disable warnings for third party libs
 if (WIN32)
@@ -48,19 +38,19 @@ if (TGBM_ENABLE_GEN)
 endif()
 
 set(TGBM_SRC_LIST
-    src/net/http2_client.cpp
+    src/net/http2/client.cpp
     # src/api_types_cmp.cpp
     src/bot.cpp
+    src/long_poll.cpp
     src/api/input_file.cpp
     src/telegram.cpp
     src/net/http2/protocol.cpp
-    src/net/http2_server.cpp
+    src/net/http2/server.cpp
     src/net/tcp_connection.cpp
-    src/net/http11_client.cpp
+    src/net/http11/client.cpp
     src/net/http_client.cpp
-    src/net/long_poll.cpp
     src/net/ssl_context.cpp
-    src/tools/StringTools.cpp
+    src/utils/url_encoded.cpp
     )
 
 add_library(tgbmlib ${TGBM_SRC_LIST})
@@ -90,20 +80,6 @@ endif()
 
 target_compile_definitions(tgbmlib PUBLIC OPENSSL_NO_HEARTBEATS)
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  if (TGBM_SANITIZE_THREAD)
-    set(TGBM_SANITIZER_FLAGS "-fsanitize=thread")
-  endif()
-  if (TGBM_SANITIZE)
-    set(TGBM_SANITIZER_FLAGS "-fsanitize=address,undefined")
-    if (NOT WIN32)
-      set(TGBM_SANITIZER_FLAGS "${TGBM_SANITIZER_FLAGS},memory")
-    endif()
-  endif()
-  add_compile_options(${TGBM_SANITIZER_FLAGS})
-  add_link_options(${TGBM_SANITIZER_FLAGS})
-endif()
-
 set_target_properties(tgbmlib PROPERTIES
 	CMAKE_CXX_EXTENSIONS OFF
 	LINKER_LANGUAGE CXX
@@ -112,14 +88,14 @@ set_target_properties(tgbmlib PROPERTIES
 
 # tests
 
-if (TGBM_ENABLE_TESTS)
+if (TGBM_ENABLE_TESTING)
     include(CTest)
     add_subdirectory(test)
     add_subdirectory(gtest)
 endif()
 
 if (TGBM_ENABLE_BENCHS)
-    add_subdirectory(gbench)
+    add_subdirectory(benchmarks)
 endif()
 
 if (DEFINED TGBM_SSL_KEYS_FILE)

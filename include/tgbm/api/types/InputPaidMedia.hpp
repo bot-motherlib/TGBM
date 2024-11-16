@@ -1,8 +1,8 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "InputPaidMediaPhoto.hpp"
-#include "InputPaidMediaVideo.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/InputPaidMediaPhoto.hpp>
+#include <tgbm/api/types/InputPaidMediaVideo.hpp>
 
 namespace tgbm::api {
 
@@ -33,7 +33,7 @@ struct InputPaidMedia {
     return data.get_if<InputPaidMediaVideo>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("photo", type_e::k_photo)
         .case_("video", type_e::k_video)
         .or_default(type_e::nothing);

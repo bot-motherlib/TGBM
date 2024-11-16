@@ -1,6 +1,6 @@
 #pragma once
 
-#include "all_fwd.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 
@@ -26,7 +26,7 @@ struct ChatMemberUpdated {
   optional<bool> via_chat_folder_invite_link;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("chat", true)
         .case_("from", true)
         .case_("date", true)

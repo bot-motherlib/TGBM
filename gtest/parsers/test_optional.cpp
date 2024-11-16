@@ -2,7 +2,6 @@
 
 namespace json_parser::test_optional {
 
-// Пример простого объекта для тестирования
 struct SimpleType {
   std::strong_ordering operator<=>(const SimpleType&) const = default;
   bool operator==(const SimpleType&) const = default;
@@ -10,13 +9,11 @@ struct SimpleType {
   std::string name;
   int value;
 
-  // Здесь ни одно поле не является optional или tgbm::box
   consteval static bool is_mandatory_field(std::string_view name) {
     return true;
   }
 };
 
-// Пример объекта с optional
 struct ComplexOptionalType {
   std::strong_ordering operator<=>(const ComplexOptionalType&) const = default;
   bool operator==(const ComplexOptionalType&) const = default;
@@ -26,13 +23,11 @@ struct ComplexOptionalType {
   tgbm::api::optional<SimpleType> optional_object;
   tgbm::api::optional<std::vector<int>> optional_array;
 
-  // Указываем, что только optional-поля отмечаются как optional
   consteval static bool is_mandatory_field(std::string_view name) {
     return name == "name";
   }
 };
 
-// Проверка парсинга optional-поля с присутствующим значением
 JSON_PARSE_TEST(OptionalPresentValue, {
   ComplexOptionalType expected;
   expected.name = "TestObject";
@@ -49,7 +44,6 @@ JSON_PARSE_TEST(OptionalPresentValue, {
   EXPECT_EQ(expected, got);
 })
 
-// Проверка парсинга optional-поля при отсутствии значения
 JSON_PARSE_TEST(OptionalAbsentValue, {
   ComplexOptionalType expected;
   expected.name = "TestObject";
@@ -65,7 +59,6 @@ JSON_PARSE_TEST(OptionalAbsentValue, {
   EXPECT_EQ(expected, got);
 })
 
-// Проверка обработки невалидного значения в optional (например, строка вместо числа)
 JSON_PARSE_TEST(InvalidOptionalValue, {
   auto json = R"(
             {
@@ -77,7 +70,6 @@ JSON_PARSE_TEST(InvalidOptionalValue, {
   EXPECT_ANY_THROW(parse_json<ComplexOptionalType>(json));
 })
 
-// Проверка парсинга optional, содержащего сложный объект
 JSON_PARSE_TEST(OptionalComplexObject, {
   ComplexOptionalType expected;
   expected.name = "TestObject";
@@ -97,7 +89,6 @@ JSON_PARSE_TEST(OptionalComplexObject, {
   EXPECT_EQ(expected, got);
 })
 
-// Проверка обработки optional, содержащего массив
 JSON_PARSE_TEST(OptionalArray, {
   ComplexOptionalType expected;
   expected.name = "TestObject";

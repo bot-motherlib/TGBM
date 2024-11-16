@@ -1,10 +1,10 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "MessageOriginUser.hpp"
-#include "MessageOriginHiddenUser.hpp"
-#include "MessageOriginChat.hpp"
-#include "MessageOriginChannel.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/MessageOriginUser.hpp>
+#include <tgbm/api/types/MessageOriginHiddenUser.hpp>
+#include <tgbm/api/types/MessageOriginChat.hpp>
+#include <tgbm/api/types/MessageOriginChannel.hpp>
 
 namespace tgbm::api {
 
@@ -49,7 +49,7 @@ struct MessageOrigin {
     return data.get_if<MessageOriginChannel>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("user", type_e::k_user)
         .case_("hidden_user", type_e::k_hiddenuser)
         .case_("chat", type_e::k_chat)

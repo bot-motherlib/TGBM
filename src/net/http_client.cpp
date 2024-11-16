@@ -1,5 +1,5 @@
-#include "tgbm/net/http_client.hpp"
-#include "tgbm/net/errors.hpp"
+#include <tgbm/net/http_client.hpp>
+#include <tgbm/net/errors.hpp>
 
 namespace tgbm {
 
@@ -111,7 +111,7 @@ std::string_view e2str(http_method_e e) noexcept {
 
 void enum_from_string(std::string_view str, http_method_e& e) noexcept {
   using enum http_method_e;
-  e = utils::string_switch<http_method_e>(str)
+  e = string_switch<http_method_e>(str)
           .case_("GET", GET)
           .case_("POST", POST)
           .case_("PUT", PUT)
@@ -137,7 +137,7 @@ std::string_view e2str(scheme_e e) noexcept {
 
 void enum_from_string(std::string_view str, scheme_e& s) noexcept {
   using enum scheme_e;
-  s = utils::string_switch<scheme_e>(str).case_("HTTP", HTTP).case_("HTTPS", HTTPS).or_default(UNKNOWN);
+  s = string_switch<scheme_e>(str).case_("HTTP", HTTP).case_("HTTPS", HTTPS).or_default(UNKNOWN);
 }
 
 }  // namespace tgbm

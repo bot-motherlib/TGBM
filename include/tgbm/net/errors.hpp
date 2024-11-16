@@ -6,7 +6,7 @@
 
 #include <fmt/core.h>
 
-#include "tgbm/tools/macro.hpp"
+#include <tgbm/utils/macro.hpp>
 
 namespace tgbm {
 

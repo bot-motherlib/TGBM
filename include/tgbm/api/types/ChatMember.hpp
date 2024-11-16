@@ -1,12 +1,12 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "ChatMemberOwner.hpp"
-#include "ChatMemberAdministrator.hpp"
-#include "ChatMemberMember.hpp"
-#include "ChatMemberRestricted.hpp"
-#include "ChatMemberLeft.hpp"
-#include "ChatMemberBanned.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/ChatMemberOwner.hpp>
+#include <tgbm/api/types/ChatMemberAdministrator.hpp>
+#include <tgbm/api/types/ChatMemberMember.hpp>
+#include <tgbm/api/types/ChatMemberRestricted.hpp>
+#include <tgbm/api/types/ChatMemberLeft.hpp>
+#include <tgbm/api/types/ChatMemberBanned.hpp>
 
 namespace tgbm::api {
 
@@ -68,7 +68,7 @@ struct ChatMember {
     return data.get_if<ChatMemberBanned>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("creator", type_e::k_owner)
         .case_("administrator", type_e::k_administrator)
         .case_("member", type_e::k_member)

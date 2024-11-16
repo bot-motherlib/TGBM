@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/ReactionType.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/ReactionType.hpp>
 
 namespace tgbm::api {
 

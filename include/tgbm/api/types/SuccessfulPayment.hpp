@@ -1,6 +1,6 @@
 #pragma once
 
-#include "all_fwd.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 
@@ -24,7 +24,7 @@ struct SuccessfulPayment {
   box<OrderInfo> order_info;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return utils::string_switch<bool>(name)
+    return string_switch<bool>(name)
         .case_("currency", true)
         .case_("total_amount", true)
         .case_("invoice_payload", true)

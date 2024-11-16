@@ -1,9 +1,9 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "MenuButtonCommands.hpp"
-#include "MenuButtonWebApp.hpp"
-#include "MenuButtonDefault.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/MenuButtonCommands.hpp>
+#include <tgbm/api/types/MenuButtonWebApp.hpp>
+#include <tgbm/api/types/MenuButtonDefault.hpp>
 
 namespace tgbm::api {
 
@@ -41,7 +41,7 @@ struct MenuButton {
     return data.get_if<MenuButtonDefault>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("commands", type_e::k_commands)
         .case_("web_app", type_e::k_webapp)
         .case_("default", type_e::k_default)

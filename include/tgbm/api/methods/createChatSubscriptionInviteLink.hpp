@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/ChatInviteLink.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/ChatInviteLink.hpp>
 
 namespace tgbm::api {
 

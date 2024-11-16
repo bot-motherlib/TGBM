@@ -10,10 +10,10 @@
 #undef min
 #undef max
 
-#include "tgbm/net/errors.hpp"
-#include "tgbm/tools/macro.hpp"
-#include "tgbm/net/ssl_context.hpp"
-#include "tgbm/logger.hpp"
+#include <tgbm/net/errors.hpp>
+#include <tgbm/utils/macro.hpp>
+#include <tgbm/net/ssl_context.hpp>
+#include <tgbm/logger.hpp>
 
 #include <kelcoro/task.hpp>
 

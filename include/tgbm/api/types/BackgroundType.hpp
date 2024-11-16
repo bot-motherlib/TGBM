@@ -1,10 +1,10 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "BackgroundTypeFill.hpp"
-#include "BackgroundTypeWallpaper.hpp"
-#include "BackgroundTypePattern.hpp"
-#include "BackgroundTypeChatTheme.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/BackgroundTypeFill.hpp>
+#include <tgbm/api/types/BackgroundTypeWallpaper.hpp>
+#include <tgbm/api/types/BackgroundTypePattern.hpp>
+#include <tgbm/api/types/BackgroundTypeChatTheme.hpp>
 
 namespace tgbm::api {
 
@@ -49,7 +49,7 @@ struct BackgroundType {
     return data.get_if<BackgroundTypeChatTheme>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("fill", type_e::k_fill)
         .case_("wallpaper", type_e::k_wallpaper)
         .case_("pattern", type_e::k_pattern)

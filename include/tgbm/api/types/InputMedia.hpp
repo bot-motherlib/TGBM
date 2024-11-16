@@ -1,11 +1,11 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "InputMediaAnimation.hpp"
-#include "InputMediaDocument.hpp"
-#include "InputMediaAudio.hpp"
-#include "InputMediaPhoto.hpp"
-#include "InputMediaVideo.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/InputMediaAnimation.hpp>
+#include <tgbm/api/types/InputMediaDocument.hpp>
+#include <tgbm/api/types/InputMediaAudio.hpp>
+#include <tgbm/api/types/InputMediaPhoto.hpp>
+#include <tgbm/api/types/InputMediaVideo.hpp>
 
 namespace tgbm::api {
 
@@ -57,7 +57,7 @@ struct InputMedia {
     return data.get_if<InputMediaVideo>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("animation", type_e::k_animation)
         .case_("document", type_e::k_document)
         .case_("audio", type_e::k_audio)

@@ -1,11 +1,11 @@
-#include "tgbm/api/telegram.hpp"
+#include <tgbm/api/telegram.hpp>
 
-#include "tgbm/api/types/all.hpp"
-#include "tgbm/api/methods/all.hpp"
-#include "tgbm/api/const_string.hpp"
-#include "tgbm/api/requests.hpp"
+#include <tgbm/api/types/all.hpp>
+#include <tgbm/api/methods/all.hpp>
+#include <tgbm/api/const_string.hpp>
+#include <tgbm/api/requests.hpp>
 
-#include "tgbm/tools/deadline.hpp"
+#include <tgbm/utils/deadline.hpp>
 
 namespace tgbm::api {
 

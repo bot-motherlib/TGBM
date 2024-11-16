@@ -1,15 +1,15 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "PassportElementErrorDataField.hpp"
-#include "PassportElementErrorFrontSide.hpp"
-#include "PassportElementErrorReverseSide.hpp"
-#include "PassportElementErrorSelfie.hpp"
-#include "PassportElementErrorFile.hpp"
-#include "PassportElementErrorFiles.hpp"
-#include "PassportElementErrorTranslationFile.hpp"
-#include "PassportElementErrorTranslationFiles.hpp"
-#include "PassportElementErrorUnspecified.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/PassportElementErrorDataField.hpp>
+#include <tgbm/api/types/PassportElementErrorFrontSide.hpp>
+#include <tgbm/api/types/PassportElementErrorReverseSide.hpp>
+#include <tgbm/api/types/PassportElementErrorSelfie.hpp>
+#include <tgbm/api/types/PassportElementErrorFile.hpp>
+#include <tgbm/api/types/PassportElementErrorFiles.hpp>
+#include <tgbm/api/types/PassportElementErrorTranslationFile.hpp>
+#include <tgbm/api/types/PassportElementErrorTranslationFiles.hpp>
+#include <tgbm/api/types/PassportElementErrorUnspecified.hpp>
 
 namespace tgbm::api {
 
@@ -94,7 +94,7 @@ struct PassportElementError {
     return data.get_if<PassportElementErrorUnspecified>();
   }
   static constexpr type_e discriminate(std::string_view val) {
-    return utils::string_switch<type_e>(val)
+    return string_switch<type_e>(val)
         .case_("data", type_e::k_datafield)
         .case_("front_side", type_e::k_frontside)
         .case_("reverse_side", type_e::k_reverseside)

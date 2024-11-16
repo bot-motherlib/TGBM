@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/UserProfilePhotos.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/UserProfilePhotos.hpp>
 
 namespace tgbm::api {
 
