@@ -1,9 +1,9 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "ChatBoostSourcePremium.hpp"
-#include "ChatBoostSourceGiftCode.hpp"
-#include "ChatBoostSourceGiveaway.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/ChatBoostSourcePremium.hpp>
+#include <tgbm/api/types/ChatBoostSourceGiftCode.hpp>
+#include <tgbm/api/types/ChatBoostSourceGiveaway.hpp>
 
 namespace tgbm::api {
 

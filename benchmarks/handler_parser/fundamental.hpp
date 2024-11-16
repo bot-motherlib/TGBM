@@ -1,9 +1,9 @@
 #pragma once
 
 #include "basic_parser.hpp"
-#include "tgbm/api/Integer.hpp"
-#include "tgbm/api/floating.hpp"
-#include "tgbm/api/common.hpp"
+#include <tgbm/api/Integer.hpp>
+#include <tgbm/api/floating.hpp>
+#include <tgbm/api/common.hpp>
 
 namespace tgbm::json::handler_parser {
 

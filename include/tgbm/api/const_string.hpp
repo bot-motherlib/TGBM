@@ -7,9 +7,9 @@
 #include <utility>
 #include <compare>
 
-#include "tgbm/utils/macro.hpp"
-#include "tgbm/utils/algorithm.hpp"
-#include "tgbm/api/optional.hpp"
+#include <tgbm/utils/macro.hpp>
+#include <tgbm/utils/algorithm.hpp>
+#include <tgbm/api/optional.hpp>
 
 #include <fmt/core.h>
 

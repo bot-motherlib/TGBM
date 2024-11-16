@@ -1,6 +1,6 @@
 #pragma once
 
-#include "kelcoro/noexport/macro.hpp"
+#include <kelcoro/noexport/macro.hpp>
 
 #ifdef __clang__
   #define TGBM_TRIVIAL_ABI [[clang::trivial_abi]]

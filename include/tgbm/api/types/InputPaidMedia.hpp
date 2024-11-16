@@ -1,8 +1,8 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "InputPaidMediaPhoto.hpp"
-#include "InputPaidMediaVideo.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/InputPaidMediaPhoto.hpp>
+#include <tgbm/api/types/InputPaidMediaVideo.hpp>
 
 namespace tgbm::api {
 

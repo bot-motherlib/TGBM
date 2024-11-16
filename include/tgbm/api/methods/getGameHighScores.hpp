@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/GameHighScore.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/GameHighScore.hpp>
 
 namespace tgbm::api {
 

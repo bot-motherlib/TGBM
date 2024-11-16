@@ -2,11 +2,11 @@
 
   #include <gtest/gtest.h>
 
-  #include "tgbm/utils/to_boost_json.h"
-  #include "tgbm/api/types_all.hpp"
-  #include "tgbm/utils/from_boost_json.h"
-  #include "tgbm/jsons/parser/all.h"
-  #include "tgbm/utils/random.h"
+  #include <tgbm/utils/to_boost_json.h>
+  #include <tgbm/api/types_all.hpp>
+  #include <tgbm/utils/from_boost_json.h>
+  #include <tgbm/jsons/parser/all.h>
+  #include <tgbm/utils/random.h>
   #include "chaotic_test.hpp"
   #include <helper.hpp>
   #include <fmt/ranges.h>

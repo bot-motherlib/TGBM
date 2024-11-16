@@ -4,9 +4,9 @@
 #include <utility>
 #include <string_view>
 
-#include "tgbm/utils/pfr_extension.hpp"
+#include <tgbm/utils/pfr_extension.hpp>
 #include "basic_parser.hpp"
-#include "tgbm/utils/traits.hpp"
+#include <tgbm/utils/traits.hpp>
 
 namespace tgbm::json::handler_parser {
 

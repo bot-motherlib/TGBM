@@ -1,9 +1,9 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "BackgroundFillSolid.hpp"
-#include "BackgroundFillGradient.hpp"
-#include "BackgroundFillFreeformGradient.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/BackgroundFillSolid.hpp>
+#include <tgbm/api/types/BackgroundFillGradient.hpp>
+#include <tgbm/api/types/BackgroundFillFreeformGradient.hpp>
 
 namespace tgbm::api {
 

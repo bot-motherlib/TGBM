@@ -1,11 +1,11 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "InputMediaAnimation.hpp"
-#include "InputMediaDocument.hpp"
-#include "InputMediaAudio.hpp"
-#include "InputMediaPhoto.hpp"
-#include "InputMediaVideo.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/InputMediaAnimation.hpp>
+#include <tgbm/api/types/InputMediaDocument.hpp>
+#include <tgbm/api/types/InputMediaAudio.hpp>
+#include <tgbm/api/types/InputMediaPhoto.hpp>
+#include <tgbm/api/types/InputMediaVideo.hpp>
 
 namespace tgbm::api {
 

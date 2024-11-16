@@ -2,8 +2,8 @@
 
 #include <vector>
 
-#include "tgbm/jsons/parse_dom/basic.hpp"
-#include "tgbm/jsons/dom_traits.hpp"
+#include <tgbm/jsons/parse_dom/basic.hpp>
+#include <tgbm/jsons/dom_traits.hpp>
 
 namespace tgbm::json::parse_dom {
 

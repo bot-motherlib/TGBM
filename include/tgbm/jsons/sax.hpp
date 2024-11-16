@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tgbm/utils/pfr_extension.hpp"
-#include "tgbm/jsons/errors.hpp"
+#include <tgbm/utils/pfr_extension.hpp>
+#include <tgbm/jsons/errors.hpp>
 
 #include <kelcoro/generator.hpp>
 

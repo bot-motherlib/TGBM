@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/WebhookInfo.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/WebhookInfo.hpp>
 
 namespace tgbm::api {
 

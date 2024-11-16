@@ -4,10 +4,10 @@
 
 #include <utility>
 
-#include "tgbm/jsons/sax.hpp"
+#include <tgbm/jsons/sax.hpp>
 
-#include "tgbm/utils/api_utils.hpp"
-#include "tgbm/utils/traits.hpp"
+#include <tgbm/utils/api_utils.hpp>
+#include <tgbm/utils/traits.hpp>
 
 namespace tgbm::json {
 

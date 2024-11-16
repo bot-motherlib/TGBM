@@ -1,8 +1,8 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/InlineQueryResult.hpp"
-#include "tgbm/api/types/InlineQueryResultsButton.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/InlineQueryResult.hpp>
+#include <tgbm/api/types/InlineQueryResultsButton.hpp>
 
 namespace tgbm::api {
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "tgbm/utils/pfr_extension.hpp"
-#include "tgbm/utils/box_union.hpp"
-#include "tgbm/utils/traits.hpp"
+#include <tgbm/utils/pfr_extension.hpp>
+#include <tgbm/utils/box_union.hpp>
+#include <tgbm/utils/traits.hpp>
 
 namespace tgbm::oneof_field_utils {
 

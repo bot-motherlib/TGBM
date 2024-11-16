@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/MaskPosition.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/MaskPosition.hpp>
 
 namespace tgbm::api {
 

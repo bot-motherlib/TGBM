@@ -1,11 +1,11 @@
 #pragma once
 
-#include "CallbackGame.hpp"
-#include "CopyTextButton.hpp"
-#include "LoginUrl.hpp"
-#include "SwitchInlineQueryChosenChat.hpp"
-#include "WebAppInfo.hpp"
-#include "all_fwd.hpp"
+#include <tgbm/api/types/CallbackGame.hpp>
+#include <tgbm/api/types/CopyTextButton.hpp>
+#include <tgbm/api/types/LoginUrl.hpp>
+#include <tgbm/api/types/SwitchInlineQueryChosenChat.hpp>
+#include <tgbm/api/types/WebAppInfo.hpp>
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 

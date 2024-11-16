@@ -431,10 +431,10 @@ def generate_into_file(generated_struct: str, filepath: str, required_includes: 
 
 def collect_required_includes(t) -> list[str]:
     # relative dir /all_fwd.hpp
-    incs = ['"all_fwd.hpp"']
+    incs = ['<tgbm/api/types/all_fwd.hpp>']
     if isinstance(t, oneof_info_t):
         for alt in t.alternatives:
-            incs.append(f'"{alt.tgtype.name}.hpp"')
+            incs.append(f'<tgbm/api/types/{alt.tgtype.name}.hpp>')
         return incs
     if not isinstance(t, type_info_t) or not t.is_merged_optional_fields:
         return incs
@@ -442,7 +442,7 @@ def collect_required_includes(t) -> list[str]:
         # relative to current dir
         t = get_compound_type(f.cpptype)
         if t:
-            incs.append(f'"{t}.hpp"')
+            incs.append(f'<tgbm/api/types/{t}.hpp>')
     return sorted(list(set(incs)))
 
 # accepts array of oneofs or simple types
@@ -458,20 +458,20 @@ def generate_all_types(types: list[type_info_t], outdir: str):
         assert t in PARSED_TYPES
     # InputFile
     with open(f'{outdir}/InputFile.hpp', 'w', encoding='utf-8') as out:
-        print('#include "tgbm/api/input_file.hpp"', file=out)
+        print('#include <tgbm/api/input_file.hpp>', file=out)
 
     # MaybeInaccessibleMessage
 
     with open(f'{outdir}/MaybeInaccessibleMessage.hpp', 'w', encoding='utf-8') as out:
         print('#pragma once\n', file=out)
-        print('#include "Message.hpp"\n\nnamespace tgbm::api {\n\nusing MaybeInaccessibleMessage = Message;\n\n}', file=out)
+        print('#include <tgbm/api/types/Message.hpp>\n\nnamespace tgbm::api {\n\nusing MaybeInaccessibleMessage = Message;\n\n}', file=out)
 
 def generate_all_fwd_and_all_types_hdrs(outdir: str):
     # all_fwd.hpp
 
     print(f'[TGBM] generating "{outdir}/all_fwd.hpp"')
     with open(f'{outdir}/all_fwd.hpp', 'w', encoding='utf-8') as out:
-        print('#pragma once \n\n#include "tgbm/api/common.hpp"\n\nnamespace tgbm::api {\n', file=out)
+        print('#pragma once \n\n#include <tgbm/api/common.hpp>\n\nnamespace tgbm::api {\n', file=out)
         for t in PARSED_TYPES.keys():
             if t != 'MaybeInaccessibleMessage' and t not in TYPES_WITHOUT_DISCRIMINATOR:
                 print(f'struct {t};', file=out)
@@ -485,7 +485,7 @@ def generate_all_fwd_and_all_types_hdrs(outdir: str):
     with open(f'{outdir}/all.hpp', 'w', encoding='utf-8') as out:
         print('#pragma once \n\n', file=out)
         for t in PARSED_TYPES.keys():
-            print(f'#include "{t}.hpp"', file=out)
+            print(f'#include <tgbm/api/types/{t}.hpp>', file=out)
 
 def generate_all_oneofs(types: list[oneof_info_t], outdir: str):
     # fill directory with generated files

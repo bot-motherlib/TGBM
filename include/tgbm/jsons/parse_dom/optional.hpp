@@ -1,8 +1,8 @@
 #pragma once
 
-#include "tgbm/jsons/parse_dom/basic.hpp"
-#include "tgbm/jsons/dom_traits.hpp"
-#include "tgbm/api/common.hpp"
+#include <tgbm/jsons/parse_dom/basic.hpp>
+#include <tgbm/jsons/dom_traits.hpp>
+#include <tgbm/api/common.hpp>
 
 namespace tgbm::json::parse_dom {
 

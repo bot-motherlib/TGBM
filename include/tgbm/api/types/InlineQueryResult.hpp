@@ -1,26 +1,26 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "InlineQueryResultCachedAudio.hpp"
-#include "InlineQueryResultCachedDocument.hpp"
-#include "InlineQueryResultCachedGif.hpp"
-#include "InlineQueryResultCachedMpeg4Gif.hpp"
-#include "InlineQueryResultCachedPhoto.hpp"
-#include "InlineQueryResultCachedSticker.hpp"
-#include "InlineQueryResultCachedVideo.hpp"
-#include "InlineQueryResultCachedVoice.hpp"
-#include "InlineQueryResultArticle.hpp"
-#include "InlineQueryResultAudio.hpp"
-#include "InlineQueryResultContact.hpp"
-#include "InlineQueryResultGame.hpp"
-#include "InlineQueryResultDocument.hpp"
-#include "InlineQueryResultGif.hpp"
-#include "InlineQueryResultLocation.hpp"
-#include "InlineQueryResultMpeg4Gif.hpp"
-#include "InlineQueryResultPhoto.hpp"
-#include "InlineQueryResultVenue.hpp"
-#include "InlineQueryResultVideo.hpp"
-#include "InlineQueryResultVoice.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/InlineQueryResultCachedAudio.hpp>
+#include <tgbm/api/types/InlineQueryResultCachedDocument.hpp>
+#include <tgbm/api/types/InlineQueryResultCachedGif.hpp>
+#include <tgbm/api/types/InlineQueryResultCachedMpeg4Gif.hpp>
+#include <tgbm/api/types/InlineQueryResultCachedPhoto.hpp>
+#include <tgbm/api/types/InlineQueryResultCachedSticker.hpp>
+#include <tgbm/api/types/InlineQueryResultCachedVideo.hpp>
+#include <tgbm/api/types/InlineQueryResultCachedVoice.hpp>
+#include <tgbm/api/types/InlineQueryResultArticle.hpp>
+#include <tgbm/api/types/InlineQueryResultAudio.hpp>
+#include <tgbm/api/types/InlineQueryResultContact.hpp>
+#include <tgbm/api/types/InlineQueryResultGame.hpp>
+#include <tgbm/api/types/InlineQueryResultDocument.hpp>
+#include <tgbm/api/types/InlineQueryResultGif.hpp>
+#include <tgbm/api/types/InlineQueryResultLocation.hpp>
+#include <tgbm/api/types/InlineQueryResultMpeg4Gif.hpp>
+#include <tgbm/api/types/InlineQueryResultPhoto.hpp>
+#include <tgbm/api/types/InlineQueryResultVenue.hpp>
+#include <tgbm/api/types/InlineQueryResultVideo.hpp>
+#include <tgbm/api/types/InlineQueryResultVoice.hpp>
 
 namespace tgbm::api {
 

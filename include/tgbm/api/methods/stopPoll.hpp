@@ -1,8 +1,8 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/InlineKeyboardMarkup.hpp"
-#include "tgbm/api/types/Poll.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/InlineKeyboardMarkup.hpp>
+#include <tgbm/api/types/Poll.hpp>
 
 namespace tgbm::api {
 

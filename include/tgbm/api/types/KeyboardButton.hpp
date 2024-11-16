@@ -1,10 +1,10 @@
 #pragma once
 
-#include "KeyboardButtonPollType.hpp"
-#include "KeyboardButtonRequestChat.hpp"
-#include "KeyboardButtonRequestUsers.hpp"
-#include "WebAppInfo.hpp"
-#include "all_fwd.hpp"
+#include <tgbm/api/types/KeyboardButtonPollType.hpp>
+#include <tgbm/api/types/KeyboardButtonRequestChat.hpp>
+#include <tgbm/api/types/KeyboardButtonRequestUsers.hpp>
+#include <tgbm/api/types/WebAppInfo.hpp>
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 

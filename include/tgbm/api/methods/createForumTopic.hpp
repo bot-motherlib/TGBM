@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/ForumTopic.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/ForumTopic.hpp>
 
 namespace tgbm::api {
 

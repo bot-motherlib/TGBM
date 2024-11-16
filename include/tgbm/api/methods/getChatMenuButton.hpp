@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/MenuButton.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/MenuButton.hpp>
 
 namespace tgbm::api {
 

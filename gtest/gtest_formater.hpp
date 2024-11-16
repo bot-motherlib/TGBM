@@ -4,7 +4,7 @@
 
 #include <fmt/ranges.h>
 
-#include "tgbm/utils/formatters.hpp"
+#include <tgbm/utils/formatters.hpp>
 
 template <typename T>
 concept formattable = fmt::is_formattable<T>::value;

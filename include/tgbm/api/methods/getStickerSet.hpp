@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/StickerSet.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/StickerSet.hpp>
 
 namespace tgbm::api {
 

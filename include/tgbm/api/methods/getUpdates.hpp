@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/Update.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/Update.hpp>
 
 namespace tgbm::api {
 

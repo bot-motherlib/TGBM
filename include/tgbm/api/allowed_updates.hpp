@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-#include "tgbm/api/common.hpp"
+#include <tgbm/api/common.hpp>
 
 namespace tgbm::api::allowed_updates {
 

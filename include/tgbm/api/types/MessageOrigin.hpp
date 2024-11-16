@@ -1,10 +1,10 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "MessageOriginUser.hpp"
-#include "MessageOriginHiddenUser.hpp"
-#include "MessageOriginChat.hpp"
-#include "MessageOriginChannel.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/MessageOriginUser.hpp>
+#include <tgbm/api/types/MessageOriginHiddenUser.hpp>
+#include <tgbm/api/types/MessageOriginChat.hpp>
+#include <tgbm/api/types/MessageOriginChannel.hpp>
 
 namespace tgbm::api {
 

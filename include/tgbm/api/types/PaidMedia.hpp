@@ -1,9 +1,9 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "PaidMediaPreview.hpp"
-#include "PaidMediaPhoto.hpp"
-#include "PaidMediaVideo.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/PaidMediaPreview.hpp>
+#include <tgbm/api/types/PaidMediaPhoto.hpp>
+#include <tgbm/api/types/PaidMediaVideo.hpp>
 
 namespace tgbm::api {
 

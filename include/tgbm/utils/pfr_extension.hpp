@@ -11,9 +11,9 @@
   #pragma clang diagnostic pop
 #endif
 
-#include "tgbm/utils/constexpr_string.hpp"
-#include "tgbm/utils/string_switch.hpp"
-#include "tgbm/utils/meta.hpp"
+#include <tgbm/utils/constexpr_string.hpp>
+#include <tgbm/utils/string_switch.hpp>
+#include <tgbm/utils/meta.hpp>
 
 #define FWD(X) std::forward<decltype(X)>(X)
 

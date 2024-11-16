@@ -1,11 +1,11 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "TransactionPartnerUser.hpp"
-#include "TransactionPartnerFragment.hpp"
-#include "TransactionPartnerTelegramAds.hpp"
-#include "TransactionPartnerTelegramApi.hpp"
-#include "TransactionPartnerOther.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/TransactionPartnerUser.hpp>
+#include <tgbm/api/types/TransactionPartnerFragment.hpp>
+#include <tgbm/api/types/TransactionPartnerTelegramAds.hpp>
+#include <tgbm/api/types/TransactionPartnerTelegramApi.hpp>
+#include <tgbm/api/types/TransactionPartnerOther.hpp>
 
 namespace tgbm::api {
 

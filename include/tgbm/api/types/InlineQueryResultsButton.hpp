@@ -1,7 +1,7 @@
 #pragma once
 
-#include "WebAppInfo.hpp"
-#include "all_fwd.hpp"
+#include <tgbm/api/types/WebAppInfo.hpp>
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 

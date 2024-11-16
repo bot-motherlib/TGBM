@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tgbm/utils/box_union.hpp"
+#include <tgbm/utils/box_union.hpp>
 
 namespace tgbm::api {
 

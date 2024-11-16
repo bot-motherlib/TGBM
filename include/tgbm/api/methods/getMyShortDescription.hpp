@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/BotShortDescription.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/BotShortDescription.hpp>
 
 namespace tgbm::api {
 

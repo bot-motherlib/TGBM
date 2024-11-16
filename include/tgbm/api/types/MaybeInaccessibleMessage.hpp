@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Message.hpp"
+#include <tgbm/api/types/Message.hpp>
 
 namespace tgbm::api {
 

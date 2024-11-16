@@ -1,11 +1,11 @@
 #pragma once
 
-#include "tgbm/api/const_string.hpp"
-#include "tgbm/api/types/all.hpp"
+#include <tgbm/api/const_string.hpp>
+#include <tgbm/api/types/all.hpp>
 
-#include "tgbm/utils/box_union.hpp"
+#include <tgbm/utils/box_union.hpp>
 
-#include "tgbm/jsons/sax_parser.hpp"
+#include <tgbm/jsons/sax_parser.hpp>
 
 namespace tgbm::api {
 

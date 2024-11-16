@@ -1,10 +1,10 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/InputPollOption.hpp"
-#include "tgbm/api/types/Message.hpp"
-#include "tgbm/api/types/MessageEntity.hpp"
-#include "tgbm/api/types/ReplyParameters.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/InputPollOption.hpp>
+#include <tgbm/api/types/Message.hpp>
+#include <tgbm/api/types/MessageEntity.hpp>
+#include <tgbm/api/types/ReplyParameters.hpp>
 
 namespace tgbm::api {
 

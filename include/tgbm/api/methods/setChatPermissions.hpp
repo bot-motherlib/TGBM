@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/ChatPermissions.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/ChatPermissions.hpp>
 
 namespace tgbm::api {
 

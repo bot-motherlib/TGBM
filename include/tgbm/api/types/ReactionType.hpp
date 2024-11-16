@@ -1,9 +1,9 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "ReactionTypeEmoji.hpp"
-#include "ReactionTypeCustomEmoji.hpp"
-#include "ReactionTypePaid.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/ReactionTypeEmoji.hpp>
+#include <tgbm/api/types/ReactionTypeCustomEmoji.hpp>
+#include <tgbm/api/types/ReactionTypePaid.hpp>
 
 namespace tgbm::api {
 

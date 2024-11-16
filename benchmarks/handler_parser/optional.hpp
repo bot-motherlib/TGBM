@@ -2,7 +2,7 @@
 
 #include <cassert>
 
-#include "tgbm/api/optional.hpp"
+#include <tgbm/api/optional.hpp>
 #include "basic_parser.hpp"
 
 namespace tgbm::json::handler_parser {

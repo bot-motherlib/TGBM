@@ -13,9 +13,9 @@
 #include <boost/intrusive/slist.hpp>
 #include <boost/intrusive/slist_hook.hpp>
 
-#include "tgbm/utils/scope_exit.hpp"
-#include "tgbm/utils/boost_intrusive.hpp"
-#include "tgbm/utils/macro.hpp"
+#include <tgbm/utils/scope_exit.hpp>
+#include <tgbm/utils/boost_intrusive.hpp>
+#include <tgbm/utils/macro.hpp>
 
 namespace tgbm {
 

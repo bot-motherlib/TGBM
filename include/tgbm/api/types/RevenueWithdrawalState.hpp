@@ -1,9 +1,9 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "RevenueWithdrawalStatePending.hpp"
-#include "RevenueWithdrawalStateSucceeded.hpp"
-#include "RevenueWithdrawalStateFailed.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/RevenueWithdrawalStatePending.hpp>
+#include <tgbm/api/types/RevenueWithdrawalStateSucceeded.hpp>
+#include <tgbm/api/types/RevenueWithdrawalStateFailed.hpp>
 
 namespace tgbm::api {
 

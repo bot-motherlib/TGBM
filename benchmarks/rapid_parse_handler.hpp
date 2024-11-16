@@ -8,7 +8,7 @@
 #include <rapidjson/error/en.h>
 
 #include "handler_parser/basic_parser.hpp"
-#include "tgbm/api/common.hpp"
+#include <tgbm/api/common.hpp>
 
 namespace tgbm::json::rapid {
 

@@ -2,9 +2,9 @@
 
 #include <bitset>
 
-#include "tgbm/jsons/sax.hpp"
-#include "tgbm/utils/pfr_extension.hpp"
-#include "tgbm/utils/traits.hpp"
+#include <tgbm/jsons/sax.hpp>
+#include <tgbm/utils/pfr_extension.hpp>
+#include <tgbm/utils/traits.hpp>
 
 namespace tgbm::json {
 

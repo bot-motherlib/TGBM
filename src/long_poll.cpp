@@ -1,7 +1,7 @@
-#include "tgbm/long_poll.hpp"
+#include <tgbm/long_poll.hpp>
 
-#include "tgbm/net/errors.hpp"
-#include "tgbm/api/allowed_updates.hpp"
+#include <tgbm/net/errors.hpp>
+#include <tgbm/api/allowed_updates.hpp>
 
 namespace tgbm {
 

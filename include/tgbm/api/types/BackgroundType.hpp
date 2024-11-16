@@ -1,10 +1,10 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "BackgroundTypeFill.hpp"
-#include "BackgroundTypeWallpaper.hpp"
-#include "BackgroundTypePattern.hpp"
-#include "BackgroundTypeChatTheme.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/BackgroundTypeFill.hpp>
+#include <tgbm/api/types/BackgroundTypeWallpaper.hpp>
+#include <tgbm/api/types/BackgroundTypePattern.hpp>
+#include <tgbm/api/types/BackgroundTypeChatTheme.hpp>
 
 namespace tgbm::api {
 

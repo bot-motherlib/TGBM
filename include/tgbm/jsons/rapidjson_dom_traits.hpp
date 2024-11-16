@@ -8,7 +8,7 @@
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
 
-#include "tgbm/jsons/dom_traits.hpp"
+#include <tgbm/jsons/dom_traits.hpp>
 
 namespace tgbm::json {
 

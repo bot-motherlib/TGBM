@@ -1,7 +1,7 @@
 #pragma once
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/api/types/ShippingOption.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/api/types/ShippingOption.hpp>
 
 namespace tgbm::api {
 

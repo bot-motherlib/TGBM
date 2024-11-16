@@ -1,6 +1,6 @@
 #pragma once
 
-#include "all_fwd.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
 
 namespace tgbm::api {
 

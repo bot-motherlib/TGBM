@@ -1,9 +1,9 @@
 #pragma once
 
-#include "all_fwd.hpp"
-#include "MenuButtonCommands.hpp"
-#include "MenuButtonWebApp.hpp"
-#include "MenuButtonDefault.hpp"
+#include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/MenuButtonCommands.hpp>
+#include <tgbm/api/types/MenuButtonWebApp.hpp>
+#include <tgbm/api/types/MenuButtonDefault.hpp>
 
 namespace tgbm::api {
 

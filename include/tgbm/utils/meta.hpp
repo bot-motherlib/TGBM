@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tgbm/utils/macro.hpp"
+#include <tgbm/utils/macro.hpp>
 
 #include <utility>
 

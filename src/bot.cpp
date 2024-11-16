@@ -1,6 +1,6 @@
-#include "tgbm/bot.hpp"
+#include <tgbm/bot.hpp>
 
-#include "tgbm/net/http2/client.hpp"
+#include <tgbm/net/http2/client.hpp>
 
 namespace tgbm {
 

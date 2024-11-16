@@ -1,6 +1,6 @@
 #pragma once
 
-#include "tgbm/utils/memory.hpp"
+#include <tgbm/utils/memory.hpp>
 
 #include <memory_resource>
 

@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "tgbm/api/common.hpp"
-#include "tgbm/utils/pfr_extension.hpp"
+#include <tgbm/api/common.hpp>
+#include <tgbm/utils/pfr_extension.hpp>
 
 namespace types {
 using namespace tgbm::api;
