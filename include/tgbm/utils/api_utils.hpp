@@ -4,8 +4,8 @@
 #include "tgbm/utils/box_union.hpp"
 #include "tgbm/utils/traits.hpp"
 
-namespace tgbm {
-namespace oneof_field_utils {
+namespace tgbm::oneof_field_utils {
+
 template <typename T>
 constexpr size_t N = pfr_extension::tuple_size_v<T> - 1;
 
@@ -38,5 +38,5 @@ template <oneof_field_api_type T>
 constexpr void visit(T& t, auto&& visiter, auto&& empty) {
   t.data.visit(tgbm::matcher{[&](nothing_t) { empty(); }, [&](auto& field) { visiter(field.value); }});
 }
-}  // namespace oneof_field_utils
-}  // namespace tgbm
+
+}  // namespace tgbm::oneof_field_utils
