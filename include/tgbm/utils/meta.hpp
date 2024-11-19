@@ -115,7 +115,7 @@ consteval bool is_unique_types() {
 }
 
 template <typename T, typename... Types>
-concept oneof = (std::same_as<T, Types> || ...);
+concept oneof_types = (std::same_as<T, Types> || ...);
 
 template <typename Enum>
 constexpr auto to_underlying(Enum e) noexcept {

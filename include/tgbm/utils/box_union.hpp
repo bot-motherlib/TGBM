@@ -249,7 +249,7 @@ struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data
     return static_cast<const data_t&>(*this);
   }
 
-  template <oneof<Types...> T>
+  template <oneof_types<Types...> T>
   void set_ptr(T* ptr) noexcept {
     assert(((uintptr_t)ptr % __STDCPP_DEFAULT_NEW_ALIGNMENT__) == 0);
     get_data().set_ptr_and_int(ptr, find_first<T, Types...>());
@@ -271,7 +271,7 @@ struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data
     return u;
   }
   // precondition: 'ptr' may be released with 'delete', correctly aligned
-  template <oneof<Types...> T>
+  template <oneof_types<Types...> T>
   static box_union from_ptr(T* ptr) noexcept {
     box_union u = nullptr;
     if (!ptr)
@@ -358,16 +358,16 @@ struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data
 
   // from boxes
 
-  template <oneof<Types...> T>
+  template <oneof_types<Types...> T>
   box_union(box<T>&& b) noexcept {
     // detect cases when Types... contain box<int>, int, ambigious
     static_assert(!contains_type<box<T>, Types...>());
     set_ptr(b.release());
   }
-  template <oneof<Types...> T>
+  template <oneof_types<Types...> T>
   box_union(const box<T>& b) : box_union(box<T>(b)) {
   }
-  template <oneof<Types...> T>
+  template <oneof_types<Types...> T>
   box_union& operator=(box<T>&& b) noexcept {
     // detect cases when Types... contain box<int>, int, ambigious
     static_assert(!contains_type<box<T>, Types...>());
@@ -375,7 +375,7 @@ struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data
     set_ptr(b.release());
     return *this;
   }
-  template <oneof<Types...> T>
+  template <oneof_types<Types...> T>
   box_union& operator=(const box<T>& b) noexcept {
     return *this = box<T>(b);
   }

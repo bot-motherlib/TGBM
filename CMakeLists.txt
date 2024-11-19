@@ -1,19 +1,19 @@
 cmake_minimum_required(VERSION 3.20)
 project(tgbm) # telegram bot mother library
 
-option(TGBM_ENABLE_BENCHS   "Set to ON to enable building of benchs" OFF)
-option(TGBM_ENABLE_GEN      "Set to ON to generate api"              OFF)
-option(TGBM_ENABLE_TESTING  "Set to ON to enable building of tests"  OFF)
+option(TGBM_ENABLE_BENCHS   "Set to ON to enable benchmarks" OFF)
+option(TGBM_ENABLE_GEN      "Set to ON to generate api"      OFF)
+option(TGBM_ENABLE_TESTING  "Set to ON to enable tests"      OFF)
+option(TGBM_ENABLE_EXAMPLES "Set to ON to enable examples"   OFF)
 
-set (TGBM_CLANG        "clang"        CACHE STRING "Used only by api generator")
 set (TGBM_CLANG_FORMAT "clang-format" CACHE STRING "Used only by api generator")
 set (TGBM_PYTHON       "python"       CACHE STRING "Used only by api generator")
 
 message (STATUS "[TGBM] TGBM_ENABLE_BENCHS: ${TGBM_ENABLE_BENCHS}")
 message (STATUS "[TGBM] TGBM_ENABLE_GEN: ${TGBM_ENABLE_GEN}")
 message (STATUS "[TGBM] TGBM_ENABLE_TESTING: ${TGBM_ENABLE_TESTING}")
+message (STATUS "[TGBM] TGBM_ENABLE_EXAMPLES: ${TGBM_ENABLE_EXAMPLES}")
 
-message (STATUS "[TGBM] TGBM_CLANG: ${TGBM_CLANG}")
 message (STATUS "[TGBM] TGBM_CLANG_FORMAT: ${TGBM_CLANG_FORMAT}")
 message (STATUS "[TGBM] TGBM_PYTHON: ${TGBM_PYTHON}")
 
@@ -89,13 +89,17 @@ set_target_properties(tgbmlib PROPERTIES
 # tests
 
 if (TGBM_ENABLE_TESTING)
-    include(CTest)
-    add_subdirectory(test)
-    add_subdirectory(gtest)
+  include(CTest)
+  add_subdirectory(test)
+  add_subdirectory(gtest)
+endif()
+
+if (TGBM_ENABLE_EXAMPLES)
+  add_subdirectory(examples)
 endif()
 
 if (TGBM_ENABLE_BENCHS)
-    add_subdirectory(benchmarks)
+  add_subdirectory(benchmarks)
 endif()
 
 if (DEFINED TGBM_SSL_KEYS_FILE)

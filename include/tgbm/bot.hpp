@@ -50,11 +50,11 @@ struct bot {
   const_string token;
 
   // uses default http client
-  explicit bot(const_string bottoken, std::string_view host = "api.telegram.org")
+  explicit bot(std::string_view bottoken, std::string_view host = "api.telegram.org")
       : client(default_http_client(host)), api(*client, bottoken), commands(), token(bottoken) {
   }
 
-  explicit bot(const_string bottoken, std::unique_ptr<http_client> c)
+  explicit bot(std::string_view bottoken, std::unique_ptr<http_client> c)
       : client(c ? std::move(c) : default_http_client("api.telegram.org")),
         api(*client, bottoken),
         commands(),
@@ -95,6 +95,7 @@ struct bot {
 };
 
 // returns http status
+// 'file_path' must be from getFile response in telegram
 dd::task<int> download_file(api::telegram, api::String file_path, on_data_part_fn_ref,
                             deadline_t = deadline_t::never());
 
