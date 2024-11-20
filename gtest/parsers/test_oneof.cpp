@@ -81,8 +81,8 @@ struct MessageOriginChannel {
   bool operator==(const MessageOriginChannel& other) const = default;
 };
 
-using MessageOriginData = tgbm::api::oneof<std::monostate, MessageOriginUser, MessageOriginHiddenUser,
-                                           MessageOriginChat, MessageOriginChannel>;
+using MessageOriginData =
+    tgbm::api::oneof<MessageOriginUser, MessageOriginHiddenUser, MessageOriginChat, MessageOriginChannel>;
 
 struct MessageOrigin {
   MessageOriginData data;

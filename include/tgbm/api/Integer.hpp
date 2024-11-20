@@ -5,6 +5,8 @@
 #include <concepts>
 #include <limits>
 
+#include <fmt/format.h>
+
 #include <tgbm/api/optional.hpp>
 
 namespace tgbm::api {
@@ -67,3 +69,14 @@ struct optional_traits<api::Integer> {
 };
 
 }  // namespace tgbm
+
+namespace fmt {
+
+template <>
+struct formatter<tgbm::api::Integer> : formatter<int64_t> {
+  auto format(const tgbm::api::Integer& t, auto& ctx) const -> decltype(ctx.out()) {
+    return formatter<int64_t>::format(t.value, ctx);
+  }
+};
+
+}  // namespace fmt

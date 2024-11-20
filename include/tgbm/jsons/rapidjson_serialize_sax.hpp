@@ -17,6 +17,7 @@
 #include <tgbm/api/floating.hpp>
 #include <tgbm/utils/box.hpp>
 #include <tgbm/api/file_or_str.hpp>
+#include "tgbm/api/int_or_str.hpp"
 
 namespace tgbm {
 
@@ -43,58 +44,77 @@ concept rjson_writer = requires(T& w) {
 static_assert(!rjson_writer<int>);
 static_assert(rjson_writer<rapidjson::Writer<int>>);
 
-static void rj_assume(bool b) {
-  assert(b);
-  (void)b;
-}
+// required interface: static void serialize(W&, const T&);
+template <rjson_writer W, typename T>
+struct rj_tojson;
 
-void rj_tojson(rjson_writer auto& writer, const array_like auto& rng) {
-  rj_assume(writer.StartArray());
-  for (auto&& item : rng)
-    rj_tojson(writer, item);
-  rj_assume(writer.EndArray());
-}
+template <rjson_writer W, array_like A>
+struct rj_tojson<W, A> {
+  static void serialize(W& writer, const A& rng) {
+    (void)writer.StartArray();
+    for (auto&& item : rng)
+      rj_tojson<W, std::ranges::range_value_t<A>>::serialize(writer, item);
+    (void)writer.EndArray();
+  }
+};
 
-void rj_tojson(rjson_writer auto& writer, bool b) {
-  rj_assume(writer.Bool(b));
-}
+template <rjson_writer W>
+struct rj_tojson<W, bool> {
+  static void serialize(W& writer, bool b) {
+    (void)writer.Bool(b);
+  }
+};
 
-void rj_tojson(rjson_writer auto& writer, string_like auto&& v) {
-  std::string_view str = v;
-  rj_assume(writer.String(str.data(), str.size()));
-}
+template <rjson_writer W, string_like S>
+struct rj_tojson<W, S> {
+  static void serialize(W& writer, const S& v) {
+    std::string_view str(v);
+    (void)writer.String(str.data(), str.size());
+  }
+};
 
-void rj_tojson(rjson_writer auto& writer, numeric auto numb) {
-  using T = std::remove_cvref_t<decltype(numb)>;
-  if constexpr (std::is_unsigned_v<T>) {
-    if constexpr (sizeof(T) > sizeof(int32_t)) {
-      rj_assume(writer.Uint64(numb));
+template <rjson_writer W, numeric Num>
+struct rj_tojson<W, Num> {
+  static void serialize(W& writer, Num numb) {
+    using T = std::remove_cvref_t<decltype(numb)>;
+    if constexpr (std::is_unsigned_v<T>) {
+      if constexpr (sizeof(T) > sizeof(int32_t)) {
+        (void)writer.Uint64(numb);
+      } else {
+        (void)writer.Uint(numb);
+      }
     } else {
-      rj_assume(writer.Uint(numb));
-    }
-  } else {
-    if constexpr (sizeof(T) > sizeof(int32_t)) {
-      rj_assume(writer.Int64(numb));
-    } else {
-      rj_assume(writer.Int(numb));
+      if constexpr (sizeof(T) > sizeof(int32_t)) {
+        (void)writer.Int64(numb);
+      } else {
+        (void)writer.Int(numb);
+      }
     }
   }
-}
+};
 
-void rj_tojson(rjson_writer auto& writer, std::floating_point auto f) {
-  // rapid json very bad handle doubles, but ok
-  rj_assume(writer.Double(f));
-}
+template <rjson_writer W, std::floating_point Num>
+struct rj_tojson<W, Num> {
+  static void serialize(W& writer, Num f) {
+    // rapid json very bad handle doubles, but ok
+    (void)writer.Double(f);
+  }
+};
 
-template <typename... Args>
-void rj_tojson(rjson_writer auto& writer, const std::variant<Args...>& v) {
-  std::visit([&](const auto& x) { rj_tojson(writer, x); }, v);
-}
+template <rjson_writer W>
+struct rj_tojson<W, api::int_or_str> {
+  static void serialize(W& writer, const api::int_or_str& v) {
+    std::visit([&]<typename T>(const T& x) { rj_tojson<W, T>::serialize(writer, x); }, v);
+  }
+};
 
-template <typename... Args>
-void rj_tojson(rjson_writer auto& writer, const box_union<Args...>& v) {
-  v.visit(matcher{[](tgbm::nothing_t) {}, [&](auto& x) { rj_tojson(writer, x); }});
-}
+template <rjson_writer W, typename... Args>
+struct rj_tojson<W, box_union<Args...>> {
+  static void serialize(W& writer, const box_union<Args...>& v) {
+    v.visit(matcher{[](tgbm::nothing_t) {},
+                    [&]<typename T>(const T& x) { rj_tojson<W, T>::serialize(writer, x); }});
+  }
+};
 
 namespace noexport {
 
@@ -117,78 +137,121 @@ template <typename T>
 
 }  // namespace noexport
 
-template <common_api_type A>
-void rj_tojson(rjson_writer auto& writer, const A& v) {
-  pfr_extension::visit_object(v, [&]<typename Info>(auto& field) {
-    constexpr std::string_view name = Info::name.AsStringView();
-    if constexpr (!A::is_mandatory_field(name)) {
-      auto* f = noexport::optional_field_get_value(field);
-      if (!f)
-        return;
-      rj_assume(writer.Key(name.data(), name.size()));
-      rj_tojson(writer, *f);
-    } else {
-      rj_assume(writer.Key(name.data(), name.size()));
-      rj_tojson(writer, field);
-    }
-  });
-}
-
-template <oneof_field_api_type A>
-void rj_tojson(rjson_writer auto& writer, const A& v) {
-  static_assert(boost::pfr::tuple_size_v<A> == 2, "now only first mandatory field + oneof .data supported");
-  constexpr std::string_view name = boost::pfr::get_name<0, A>();
-
-  rj_assume(writer.Key(name.data(), name.size()));
-  rj_tojson(writer, boost::pfr::get<0>(v));
-  if (!v.data)
-    return;
-  std::string_view d = v.discriminator_now();
-  rj_assume(writer.Key(d.data(), d.size()));
-  v.data.visit(matcher{[](tgbm::nothing_t) { unreachable(); }, [&](auto& x) { rj_tojson(writer, x.value); }});
-}
-
-template <discriminated_api_type A>
-void rj_tojson(rjson_writer auto& writer, const A& v) {
-  if (!v.data)
-    return;
-  std::string_view d = v.discriminator_now();
-  rj_assume(writer.Key(d.data(), d.size()));
-  v.data.visit(matcher{[](tgbm::nothing_t) { unreachable(); }, [&](auto& x) { rj_tojson(writer, x); }});
-}
-
-void rj_tojson(rjson_writer auto& writer, const const_string& v) {
-  rj_tojson(writer, v.str());
-}
-
-void rj_tojson(rjson_writer auto& writer, const api::Integer& v) {
-  rj_tojson(writer, v.value);
-}
-
-void rj_tojson(rjson_writer auto& writer, const api::Double& v) {
-  rj_tojson(writer, v.value);
-}
-
-void rj_tojson(rjson_writer auto& writer, api::True) {
-  rj_tojson(writer, true);
-}
-
-void rj_tojson(rjson_writer auto& writer, const api::file_or_str& f) {
-  assert(!f.is_file());
-  if (auto* s = f.get_str())
-    rj_tojson(writer, *s);
-}
-
-template <typename T>
-void rj_tojson(rjson_writer auto& writer, const box<T>& v) {
-  if (!v) [[unlikely]] {
-    rj_assume(writer.Null());
-    return;
+template <rjson_writer W>
+struct rj_tojson<W, const_string> {
+  static void serialize(W& writer, const const_string& v) {
+    rj_tojson<W, std::string_view>(writer, v.str());
   }
-  rj_tojson(writer, *v);
-}
+};
+// TODO fn serialize + remove cv ref
 
-// require explicit cast to int
-void rj_tojson(rjson_writer auto& writer, char_type_like auto) = delete;
+template <rjson_writer W>
+struct rj_tojson<W, api::Integer> {
+  static void serialize(W& writer, const api::Integer& v) {
+    rj_tojson<W, decltype(v.value)>::serialize(writer, v.value);
+  }
+};
+
+template <rjson_writer W>
+struct rj_tojson<W, api::Double> {
+  static void serialize(W& writer, const api::Double& v) {
+    rj_tojson<W, double>::serialize(writer, v.value);
+  }
+};
+
+template <rjson_writer W>
+struct rj_tojson<W, api::True> {
+  static void serialize(W& writer, api::True) {
+    rj_tojson<W, bool>::serialize(writer, true);
+  }
+};
+
+template <rjson_writer W>
+struct rj_tojson<W, api::file_or_str> {
+  static void serialize(W& writer, const api::file_or_str& v) {
+    // must not be valueless since no there are throwing move ctors
+    assert(!v.data.valueless_by_exception());
+    if (std::holds_alternative<std::monostate>(v.data)) [[unlikely]]
+      writer.Null();
+    else if (auto* f = v.get_file()) {
+      writer.String(f->filename.data(), f->filename.size());
+      return;
+    } else {
+      assert(v.is_str());
+      rj_tojson<W, std::string_view>::serialize(writer, *v.get_str());
+    }
+  }
+};
+
+template <rjson_writer W, typename T>
+struct rj_tojson<W, box<T>> {
+  static void serialize(W& writer, const box<T>& v) {
+    if (!v) [[unlikely]] {
+      (void)writer.Null();
+      return;
+    }
+    rj_tojson<W, T>::serialize(writer, *v);
+  }
+};
+
+template <rjson_writer W, common_api_type A>
+struct rj_tojson<W, A> {
+  static void serialize(W& writer, const A& v) {
+    writer.StartObject();
+    pfr_extension::visit_object(v, [&]<typename Info, typename T>(const T& field) {
+      constexpr std::string_view name = Info::name.AsStringView();
+      if constexpr (!A::is_mandatory_field(name)) {
+        auto* f = noexport::optional_field_get_value(field);
+        if (!f)
+          return;
+        (void)writer.Key(name.data(), name.size());
+        rj_tojson<W, std::remove_cvref_t<decltype(*f)>>::serialize(writer, *f);
+      } else {
+        (void)writer.Key(name.data(), name.size());
+        rj_tojson<W, T>::serialize(writer, field);
+      }
+    });
+    writer.EndObject();
+  }
+};
+
+template <rjson_writer W, oneof_field_api_type A>
+struct rj_tojson<W, A> {
+  static void serialize(W& writer, const A& v) {
+    namespace pfr = boost::pfr;
+    static_assert(std::is_same_v<pfr::tuple_element_t<pfr::tuple_size_v<A> - 1, A>, decltype(A::data)>);
+
+    writer.StartObject();
+    pfr_extension::visit_object<boost::pfr::tuple_size_v<A> - 1>(
+        v, [&]<typename Info, typename T>(const T& field) {
+          std::string_view name = Info::name.AsStringView();
+          writer.Key(name.data(), name.size());
+          rj_tojson<W, T>::serialize(writer, field);
+        });
+    if (v.data) {
+      std::string_view d = v.discriminator_now();
+      (void)writer.Key(d.data(), d.size());
+      v.data.visit(matcher{
+          [](tgbm::nothing_t) { unreachable(); },
+          [&]<typename T>(const T& x) { rj_tojson<W, decltype(x.value)>::serialize(writer, x.value); }});
+    }
+    writer.EndObject();
+  }
+};
+
+template <rjson_writer W, discriminated_api_type A>
+struct rj_tojson<W, A> {
+  static void serialize(W& writer, const A& v) {
+    static_assert(boost::pfr::tuple_size_v<A> == 1);
+    if (!v.data)
+      return;
+    writer.StartObject();
+    std::string_view d = v.discriminator_now();
+    (void)writer.Key(d.data(), d.size());
+    v.data.visit(matcher{[](tgbm::nothing_t) { unreachable(); },
+                         [&]<typename T>(const T& x) { rj_tojson<W, T>::serialize(writer, x); }});
+    writer.EndObject();
+  }
+};
 
 }  // namespace tgbm
