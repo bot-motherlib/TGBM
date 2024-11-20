@@ -21,7 +21,7 @@ template <typename T>
 concept array_like = std::ranges::range<T> && !string_like<T>;
 
 template <typename T>
-concept aggregate = std::is_aggregate_v<T>;
+concept aggregate = std::is_aggregate_v<std::remove_cvref_t<T>>;
 
 namespace details {
 
@@ -30,20 +30,27 @@ concept common_api_type = aggregate<T> && requires {
   { T::is_mandatory_field(std::string_view{}) } -> std::same_as<bool>;
 };
 
+namespace noexport {
+
+// [] <typename T> {}, but avoids clang-19 ICE
+struct type_lambda {
+  template <typename T>
+  void operator()() {
+  }
+};
+
+}  // namespace noexport
+
 template <typename T>
 concept discriminated_api_type = aggregate<T> && requires(const T& t) {
-  {
-    T::discriminate(std::string_view{}, []<typename>() {})
-  };
+  { T::discriminate(std::string_view{}, noexport::type_lambda{}) };
   { t.discriminator_now() } -> std::same_as<std::string_view>;
   { t.data };
 };
 
 template <typename T>
 concept oneof_field_api_type = aggregate<T> && requires(const T& t) {
-  {
-    T::discriminate_field(std::string_view{}, []<typename>() {})
-  };
+  { T::discriminate_field(std::string_view{}, noexport::type_lambda{}) };
   { t.discriminator_now() } -> std::same_as<std::string_view>;
   { t.data };
 };

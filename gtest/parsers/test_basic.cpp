@@ -3,9 +3,9 @@
 namespace json_parser::test_basic {
 
 struct SomeStruct {
-  int a;
-  tgbm::api::Double b;
-  std::string c;
+  tgbm::api::optional<int> a;
+  tgbm::api::optional<tgbm::api::Double> b;
+  tgbm::api::optional<std::string> c;
 
   static consteval bool is_mandatory_field(std::string_view name) {
     return false;

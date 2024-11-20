@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cassert>
-#include <cmath>
-#include <cstdint>
 #include <compare>
+
+#include <fmt/format.h>
 
 namespace tgbm::api {
 // TODO rename (Float or smth)
@@ -29,3 +29,14 @@ struct Double {
 };
 
 }  // namespace tgbm::api
+
+namespace fmt {
+
+template <>
+struct formatter<tgbm::api::Double> : formatter<double> {
+  auto format(tgbm::api::Double val, auto& ctx) const -> decltype(ctx.out()) {
+    return formatter<double>::format(val.value, ctx);
+  }
+};
+
+}  // namespace fmt

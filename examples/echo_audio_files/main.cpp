@@ -30,12 +30,17 @@ dd::task<void> echo_audio(tgbm::bot& bot, int64_t chatid, std::string fileid) {
     }
   }
 
+  // Note:
+  //   its just example of sending file, its better to use file id to refer file instead of
+  //   uploading full file every time:
+  // tgbm::api::Message msg = co_await bot.api.sendVoice({.chat_id = chatid, .voice = fileid});
+
   // send it back
 
   tgbm::api::Message msg = co_await bot.api.sendVoice(
       {.chat_id = chatid, .voice = tgbm::api::InputFile::from_file(temppath, "audio/ogg")});
 
-  fmt::println("echo audio message: {}", msg);
+  fmt::println("echo audio message: {:p}", msg);
 }
 
 dd::task<void> start_main_task(tgbm::bot& bot) {

@@ -3,6 +3,8 @@
 #include <tgbm/jsons/stream_parser.hpp>
 #include <tgbm/jsons/dom_traits.hpp>
 #include <tgbm/jsons/boostjson_dom_traits.hpp>
+#include <tgbm/jsons/rapidjson_serialize_sax.hpp>
+#include <tgbm/jsons/boostjson_serialize_dom.hpp>
 
 #include <tgbm/jsons/parse_dom/basic.hpp>
 
@@ -31,6 +33,19 @@ template <typename T>
   T out;
   from_json(json, out);
   return out;
+}
+
+// TODO more overloads with output iterator/buffer + good bytes_t (for rapidjson PutUnsafe PutReserve etc)
+template <typename T>
+void to_json(const T& t, bytes_t& out) {
+  rj_refbuffer_t buf(out);
+  rapidjson::Writer w(buf);
+  rj_tojson<decltype(w), T>::serialize(w, t);
+}
+
+template <typename T>
+void to_json(const T& v, boost::json::value& out) {
+  boost::json::value_from(v, out);
 }
 
 }  // namespace tgbm

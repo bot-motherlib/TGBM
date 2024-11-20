@@ -44,44 +44,41 @@ struct rj_urlencoded_refbuffer_t {
   static void Flush() noexcept {
   }
 };
+// TODO PutReserve etc
+struct rj_byvalue_buffer_t {
+  bytes_t buf;
+
+  using Ch = char;
+
+  void Put(char c) {
+    buf.push_back(c);
+  }
+  static void Flush() noexcept {
+  }
+};
 
 struct application_json_body {
  private:
-  struct buffer_type {
-    bytes_t buf;
-
-    using Ch = char;
-
-    void Put(char c) {
-      buf.push_back(c);
-    }
-    static void Flush() noexcept {
-    }
-  };
-
-  buffer_type body;
-  rapidjson::Writer<buffer_type> writer;
+  rj_byvalue_buffer_t body;
+  rapidjson::Writer<rj_byvalue_buffer_t> writer;
 
  public:
   explicit application_json_body(size_t reserve = 0) : writer(body) {
     body.buf.reserve(reserve);
-    rj_assume(writer.StartObject());
+    (void)writer.StartObject();
   }
   http_body take() noexcept {
-    if (body.buf.size() == 1) {
-      assert(body.buf.front() == '{');
-      body.buf.clear();
-    } else
-      rj_assume(writer.EndObject());
+    (void)writer.EndObject();
     return http_body{
         .content_type = "application/json",
         .data = std::move(body.buf),
     };
   }
 
-  void arg(std::string_view k, const auto& value) {
+  template <typename T>
+  void arg(std::string_view k, const T& value) {
     writer.Key(k.data(), k.size());
-    rj_tojson(writer, value);
+    rj_tojson<decltype(writer), T>::serialize(writer, value);
   }
 };
 // TODO test with complex objects and arrays
@@ -105,7 +102,8 @@ struct application_x_www_form_urlencoded {
     };
   }
 
-  void arg(std::string_view k, const auto& value) {
+  template <typename T>
+  void arg(std::string_view k, const T& value) {
     fmt::format_to(std::back_inserter(body), "{}", url_encoded(k));
     body.push_back('=');
     rj_urlencoded_refbuffer_t b(body);
@@ -114,7 +112,7 @@ struct application_x_www_form_urlencoded {
                               ? WriteFlag::kWriteUnquotedString
                               : WriteFlag::kWriteDefaultFlags;
     Writer<rj_urlencoded_refbuffer_t, UTF8<>, UTF8<>, CrtAllocator, flag> writer(b);
-    rj_tojson(writer, value);
+    rj_tojson<decltype(writer), T>::serialize(writer, value);
     body.push_back('&');
   }
 };
@@ -166,7 +164,8 @@ struct application_multipart_form_data {
                    boundary, k, url_encoded(filename), mime_type, data);
   }
 
-  void arg(std::string_view k, const auto& value) {
+  template <typename T>
+  void arg(std::string_view k, const T& value) {
     constexpr std::string_view content_type =
         std::is_convertible_v<decltype(value), std::string_view> ? "text/plain" : "application/json";
     fmt::format_to(std::back_inserter(body),
@@ -179,7 +178,7 @@ struct application_multipart_form_data {
     constexpr auto flag =
         content_type == "text/plain" ? WriteFlag::kWriteUnquotedString : WriteFlag::kWriteDefaultFlags;
     Writer<rj_refbuffer_t, UTF8<>, UTF8<>, CrtAllocator, flag> writer(b);
-    rj_tojson(writer, value);
+    rj_tojson<decltype(writer), T>::serialize(writer, value);
     body.push_back('\r');
     body.push_back('\n');
   }

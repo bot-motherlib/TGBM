@@ -105,7 +105,7 @@ constexpr void visit_struct_helper(auto&& functor, std::integer_sequence<size_t,
 
 }  // namespace details
 
-// typename Info, typename F
+// []<typename Info> Info::index Info::name
 template <size_t N = size_t(-1)>
 constexpr void visit_object(auto&& t, auto&& functor) {
   using T = std::remove_cvref_t<decltype(t)>;
