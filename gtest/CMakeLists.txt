@@ -11,6 +11,7 @@ add_executable(${PROJECT_NAME}_gtests
     parsers/test_oneof_field.cpp
     parsers/test_stream.cpp
     api/test_message.cpp
+    http/test_body.cpp
 )
 
 target_compile_options(${PROJECT_NAME}_gtests
