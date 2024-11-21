@@ -497,7 +497,12 @@ struct randomizer<T> {
         return;
       }
       field = randomizer<Field>::generate(
-          Context{.config = context.config, .global = context.global, .local = local}, generator);
+          Context{
+              .config = context.config,
+              .local = local,
+              .global = context.global,
+          },
+          generator);
       local.cur_fields_in_object += 1;
       context.global.cur_fields_total += 1;
     });
@@ -519,7 +524,12 @@ struct randomizer<T> {
         [&]<size_t I>() {
           using SubOneOf = tgbm::box_union_element_t<Data, I>;
           t.data = randomizer<SubOneOf>::generate(
-              Context{.config = context.config, .global = context.global, .local = local}, generator);
+              Context{
+                  .config = context.config,
+                  .local = local,
+                  .global = context.global,
+              },
+              generator);
         },
         sub_one_of_dist(generator));
 
@@ -540,7 +550,12 @@ struct randomizer<T> {
         t, [&]<typename Info, typename Field>(Field& field) {
           constexpr std::string_view name = Info::name.AsStringView();
           field = randomizer<Field>::generate(
-              Context{.config = context.config, .global = context.global, .local = local}, generator);
+              Context{
+                  .config = context.config,
+                  .local = local,
+                  .global = context.global,
+              },
+              generator);
           local.cur_fields_in_object += 1;
           context.global.cur_fields_total += 1;
         });
@@ -551,7 +566,12 @@ struct randomizer<T> {
           using SubOneOf = tgbm::box_union_element_t<Data, I>;
           using raw = decltype(SubOneOf::value);
           t.data = SubOneOf{randomizer<raw>::generate(
-              Context{.config = context.config, .global = context.global, .local = local}, generator)};
+              Context{
+                  .config = context.config,
+                  .local = local,
+                  .global = context.global,
+              },
+              generator)};
         },
         sub_one_of_dist(generator));
     assert(t.data);
