@@ -8,7 +8,7 @@ namespace tgbm::api {
  * examples). Not supported in channels and for messages sent on behalf of a Telegram Business account.*/
 struct ReplyKeyboardMarkup {
   /* Array of button rows, each represented by an Array of KeyboardButton objects */
-  arrayof<KeyboardButton> keyboard;
+  arrayof<arrayof<KeyboardButton>> keyboard;
   /* Optional. The placeholder to be shown in the input field when the keyboard is active; 1-64 characters */
   optional<String> input_field_placeholder;
   /* Optional. Requests clients to always show the keyboard when the regular keyboard is hidden. Defaults to

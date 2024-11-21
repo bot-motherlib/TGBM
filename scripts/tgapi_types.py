@@ -33,15 +33,19 @@ def map_tgtype_to_cpptype(tgtype: str):
     typeunified = unify(tgtype)
     if typeunified in G_TYPE_MAPPING:
         return G_TYPE_MAPPING[typeunified]
-    if typeunified.startswith('arrayof'):
+    array_depth = 0
+    while typeunified.startswith('arrayof'):
+        typeunified = typeunified[len('arrayof'):]
+        array_depth = array_depth + 1
+    if array_depth > 0:
         # Array of X / Array of Array of X
         s = tgtype.strip().replace('\n', ' ').split()[-1]
         su = s.replace(' ', '').lower()
         if su in G_TYPE_MAPPING:
-            return f'arrayof<{G_TYPE_MAPPING[su]}>'
+            return 'arrayof<' * array_depth + f'{G_TYPE_MAPPING[su]}' + '>' * array_depth
         else:
             # not remove UpperLatters
-            return f'arrayof<{s}>'
+            return 'arrayof<' * array_depth + f'{s}' + '>' * array_depth
     return tgtype # unmodified, just complex type
 
 class field_info_t:
