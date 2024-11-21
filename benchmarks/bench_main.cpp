@@ -34,9 +34,9 @@ int main(int argc, char** argv) {
     "HardMessage",
     fuzzing::Config{
     .path = "data/message_hard.json",
-    .max_nesting = 3,
-    .nesting_chance = 0.8,
     .expand_chance = 0.9,
+    .nesting_chance = 0.8,
+    .max_nesting = 3,
   });
 
   storage.Add<types::Organization>(
@@ -52,8 +52,8 @@ int main(int argc, char** argv) {
     "Tree",
     fuzzing::Config{
       .path = "data/tree.json",
-      .nesting_chance = 1.0,
       .expand_chance = 1.0,
+      .nesting_chance = 1.0,
       .max_nesting = 16,
     }
   );
@@ -104,10 +104,10 @@ int main(int argc, char** argv) {
     "RawTree",
     fuzzing::Config{
       .path = "data/raw_tree.json",
-      .nesting_chance = 1.0,
-      .expand_chance = 1.0,
-      .max_nesting = 16,
       .pretty = false,
+      .expand_chance = 1.0,
+      .nesting_chance = 1.0,
+      .max_nesting = 16,
     }
   );
 
@@ -115,36 +115,36 @@ int main(int argc, char** argv) {
     "RawUpdates_1",
     fuzzing::Config{
       .path = "data/raw_updates_1.json",
+      .pretty = false,
       .expand_chance = 0.8,
       .max_nesting = 5,
-      .pretty = false,
     }
   );
   storage.AddArray<types::Update, 5>(
     "RawUpdates_5",
     fuzzing::Config{
       .path = "data/raw_updates_5.json",
+      .pretty = false,
       .expand_chance = 0.8,
       .max_nesting = 5,
-      .pretty = false,
     }
   );
   storage.AddArray<types::Update, 10>(
     "RawUpdates_10",
     fuzzing::Config{
       .path = "data/raw_updates_10.json",
+      .pretty = false,
       .expand_chance = 0.8,
       .max_nesting = 5,
-      .pretty = false,
     }
   );
   storage.AddArray<types::Update, 50>(
     "RawUpdates_50",
     fuzzing::Config{
       .path = "data/raw_updates_50.json",
+      .pretty = false,
       .expand_chance = 0.8,
       .max_nesting = 5,
-      .pretty = false,
     }
   );
 
@@ -152,9 +152,9 @@ int main(int argc, char** argv) {
     "RawUpdates_100",
     fuzzing::Config{
       .path = "data/raw_updates_100.json",
+      .pretty = false,
       .expand_chance = 0.8,
       .max_nesting = 5,
-      .pretty = false,
     }
   );
   // clang-format on

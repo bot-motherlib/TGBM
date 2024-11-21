@@ -20,20 +20,27 @@ constexpr size_t max = size_t(-1);
 
 struct Config {
   std::string path;
-  size_t min_fields_total = 0;
-  size_t min_fields_per_object = 0;
-  size_t max_fields_total = max;
-  size_t max_fields_per_object = max;
-  size_t max_nesting = 16;
-  size_t max_size_array = 16;
+  bool pretty = true;
+
+  double eps = 0.01;
+
   double expand_chance = 0.5;
   double nesting_chance = 0.5;
+
+  size_t min_fields_total = 0;
+  size_t max_fields_total = max;
+
+  size_t min_fields_per_object = 0;
+  size_t max_fields_per_object = max;
+
+  size_t max_nesting = 16;
+  size_t max_size_array = 16;
+
   int64_t min_int = -200000;
   int64_t max_int = 200000;
+
   double min_double = -200000;
   double max_double = 200000;
-  double eps = 0.01;
-  bool pretty = true;
 };
 
 struct LocalInfo {

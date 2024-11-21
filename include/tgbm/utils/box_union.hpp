@@ -329,7 +329,9 @@ struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data
   // postcondition: is_null()
   void reset() noexcept {
     static_assert((sizeof(Types) && ...));
-    visit(matcher{[](nothing_t) {}, [](auto& p) { delete std::addressof(p); }});
+    auto default_deleter = [](auto& p) { delete std::addressof(p); };
+    auto nothing_deleter = [](nothing_t) {};
+    visit(matcher{default_deleter, nothing_deleter});
     get_data() = empty_state();
     assert(is_null());
   }
