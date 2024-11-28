@@ -1,7 +1,7 @@
 include(GoogleTest)
 
 add_executable(${PROJECT_NAME}_gtests 
-    test_parser.cpp
+    api/basic_types.cpp
     parsers/test_basic.cpp
     parsers/test_tree.cpp
     parsers/test_optional.cpp
@@ -10,8 +10,9 @@ add_executable(${PROJECT_NAME}_gtests
     parsers/test_oneof.cpp
     parsers/test_oneof_field.cpp
     parsers/test_stream.cpp
-    api/test_message.cpp
     http/test_body.cpp
+    http/connection_pool.cpp
+    utils.cpp
 )
 
 target_compile_options(${PROJECT_NAME}_gtests

@@ -9,8 +9,8 @@ struct SimpleObject {
   bool bool_field;
   std::string string_field;
   tgbm::api::optional<std::string> optional_field;
-  std::vector<std::int64_t> array_field;
-  std::vector<tgbm::box<SimpleObject>> nested_objects;
+  tgbm::api::optional<tgbm::api::arrayof<int64_t>> array_field;
+  tgbm::api::optional<tgbm::api::arrayof<tgbm::box<SimpleObject>>> nested_objects;
 
   std::strong_ordering operator<=>(const SimpleObject&) const = default;
 
@@ -53,7 +53,7 @@ JSON_PARSE_TEST(ObjectArray, {
             .bool_field = false,
             .string_field = "object2",
             .optional_field = std::string("optional"),
-            .array_field = {1, 2},
+            .array_field = tgbm::api::arrayof<int64_t>{1, 2},
             .nested_objects = {}
         }
     };
@@ -78,10 +78,8 @@ JSON_PARSE_TEST(ObjectArray, {
     ]
   )";
 
-  // auto got = tgbm::json::handler_parser::from_json<std::vector<SimpleObject>>(json);
   auto got_fast_parse = parse_json<std::vector<SimpleObject>>(json);
-  // ASSERT_TRUE(got.ok());
-  // EXPECT_EQ(expected, *got.value);
+
   EXPECT_EQ(expected, got_fast_parse);
 })
 
@@ -133,7 +131,7 @@ JSON_PARSE_TEST(ObjectArrayWithOptionalFields, {
             .bool_field = false,
             .string_field = "object2",
             .optional_field = std::nullopt,
-            .array_field = {1},
+            .array_field = tgbm::api::arrayof<int64_t>{1},
             .nested_objects = {}
         }
   };

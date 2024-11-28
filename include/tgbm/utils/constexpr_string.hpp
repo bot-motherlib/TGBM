@@ -67,6 +67,4 @@ struct string {
   std::array<char, capacity> data_{};
 };
 
-constexpr string k_empty_fixed_string{};
-
 }  // namespace tgbm::ce

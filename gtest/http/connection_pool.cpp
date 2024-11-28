@@ -1,3 +1,4 @@
+#include <gtest/gtest.h>
 
 #include <tgbm/net/connection_pool.hpp>
 
@@ -12,20 +13,14 @@ static void log_err(std::source_location loc = std::source_location::current()) 
                  loc.file_name(), loc.line(), loc.column());
   std::cerr.flush();
 }
-#define error_if(Cond)             \
-  if (static_cast<bool>((Cond))) { \
-    log_err();                     \
-    std::exit(1);                  \
-  }
-#define TEST(NAME) static void test_connection_pool_##NAME()
-#define RUN(NAME) test_connection_pool_##NAME()
+#define error_if(...) EXPECT_FALSE((__VA_ARGS__))
 
 inline std::atomic_int i = 0;
 dd::task<int> test_factory() {
   co_return i.fetch_add(1);
 }
 
-TEST(base) {
+TEST(connection_pool, base) {
   using namespace tgbm;
   enum { MAX_POOL_SIZE = 10 };
   pool_t<int> pool(MAX_POOL_SIZE, [] { return test_factory(); });
@@ -39,9 +34,4 @@ TEST(base) {
   handles.pop_back();  // return one (and not inserted waiteer goes into borrowed)
   handles.clear();     // return all borrowed handles
   pool.shutdown();
-}
-
-int main() {
-  RUN(base);
-  return 0;
 }
