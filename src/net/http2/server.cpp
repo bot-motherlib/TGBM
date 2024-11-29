@@ -22,6 +22,7 @@ struct client_session;
 using client_session_ptr = boost::intrusive_ptr<client_session>;
 
 struct client_session_ctx {
+  // TODO checkout move ctor / assign
   asio::strand<asio::io_context::executor_type> exe;
   asio::ssl::stream<asio::ip::tcp::socket> socket;
 };
@@ -283,6 +284,7 @@ static bytes_t encode_response_headers(client_session& ses, const http_response&
 
     if (encoder.dyntab.max_size() - dec)
       throw protocol_error{};
+    // TODO change dyntab too
     encoder.encode_dynamic_table_size_update(encoder.dyntab.max_size() - dec, out);
   }
 
@@ -578,6 +580,8 @@ network_error:
 
 // simple minimal connection establishment
 dd::job establish_client_session(http2_server_ptr server, client_session_ctx session_ctx) try {
+  // TODO use APLN for http2. Now uses prior knowledge even if client uses APLN
+
   io_error_code ec;
   using namespace http2;
   constexpr size_t preface_sz = std::size(http2::connection_preface);
@@ -593,6 +597,7 @@ dd::job establish_client_session(http2_server_ptr server, client_session_ctx ses
       co_return;
     }
     if (!std::ranges::equal(preface, std::span(http2::connection_preface))) {
+      // TODO send http11 required / goaway
       TGBM_LOG_ERROR("[HTTP2]: incorrect client connection for http2, cannot establish session");
       co_return;
     }
@@ -677,6 +682,7 @@ dd::job http2_server::start_accept(asio::ip::tcp::endpoint ep) {
   tcp::acceptor acceptor(io_ctx, ep);
   io_error_code ec;
   for (;;) {
+    // TODO checkout move (socket refer to .exe which is different from moved out .exe)
     client_session_ctx session_ctx{
         .exe = asio::make_strand(io_ctx),
         .socket = asio::ssl::stream<tcp::socket>(tcp::socket(session_ctx.exe), sslctx->ctx),
@@ -702,7 +708,7 @@ dd::job http2_server::start_accept(asio::ip::tcp::endpoint ep) {
       co_return;
 
     TGBM_LOG_DEBUG("[HTTP2]: establishing client session");
-
+    // TODO checkout and fix move
     establish_client_session(this, std::move(session_ctx));
   }
 }
@@ -721,8 +727,8 @@ bool http2_server::start() {
       io_ctx.run_one();
   }
   work_guard = std::shared_ptr<work_guard_t>(new auto(asio::make_work_guard(io_ctx)));
-  for (dd::worker& w : tp.workers_range())
-    dd::schedule_to(w, [&ctx = this->io_ctx, g = work_guard] { ctx.run(); });
+  for (dd::task_queue& q : tp.queues_range())
+    dd::schedule_to(q, [&ctx = this->io_ctx, g = work_guard] { ctx.run(); });
   return true;
 }
 

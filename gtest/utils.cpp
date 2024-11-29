@@ -1,3 +1,4 @@
+#include <gtest/gtest.h>
 
 #include <tgbm/utils/string_switch.hpp>
 #include <tgbm/utils/box.hpp>
@@ -24,34 +25,23 @@ consteval int sstest3() {
 }
 static_assert(sstest3() == 15);
 
-bool boxtest1() {
+TEST(utils, box) {
   tgbm::box b(5);
   static_assert(std::is_same_v<decltype(b), tgbm::box<int>>);
   b.emplace(15);
-  if (!b || *b != 15)
-    throw 42;
+  EXPECT_FALSE(!b || *b != 15);
   b.reset();
-  if (b)
-    throw 42;
+  EXPECT_FALSE(b);
   tgbm::box b2 = std::string("hello world");
-  if (!b2 || *b2 != "hello world")
-    throw 42;
+  EXPECT_FALSE(!b2 || *b2 != "hello world");
   b2.reset();
-  if (b2)
-    throw 42;
-  return true;
-}
+  EXPECT_FALSE(b2);
 
-using tgbm::is_lowercase;
-static_assert(is_lowercase("hello"));
-static_assert(is_lowercase(""));
-static_assert(!is_lowercase("A"));
-static_assert(!is_lowercase("aaAbb"));
-static_assert(is_lowercase("f__rew../wwr44"));
-static_assert(!is_lowercase("rttr___trertg;..;A"));
-
-int main() {
-  if (!boxtest1())
-    return -1;
-  return 0;
+  using tgbm::is_lowercase;
+  static_assert(is_lowercase("hello"));
+  static_assert(is_lowercase(""));
+  static_assert(!is_lowercase("A"));
+  static_assert(!is_lowercase("aaAbb"));
+  static_assert(is_lowercase("f__rew../wwr44"));
+  static_assert(!is_lowercase("rttr___trertg;..;A"));
 }

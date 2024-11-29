@@ -334,6 +334,17 @@ struct TGBM_TRIVIAL_ABI AA_MSVC_EBO box_union : private noexport::box_union_data
     assert(is_null());
   }
 
+  // efficiently resets *this and returns value as box, if 'T' stored
+  // postcondition: *this == nullptr
+  template <typename T>
+  [[nodiscard]] box<T> moveout_as_box() noexcept {
+    T* ptr = get_if<T>();
+    if (!ptr)
+      return nullptr;
+    get_data() = empty_state();
+    return box<T>::from_raw(ptr);
+  }
+
   void swap(box_union& other) noexcept {
     std::swap(get_data(), other.get_data());
   }

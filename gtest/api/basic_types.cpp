@@ -1,3 +1,5 @@
+#include <gtest/gtest.h>
+
 #include <tgbm/api/Integer.hpp>
 #include <tgbm/api/common.hpp>
 #include <tgbm/api/optional.hpp>
@@ -7,10 +9,7 @@
 #include <vector>
 #include <memory>
 
-#define TEST(name) static void test_##name()
-#define error_if(...)  \
-  if (!!(__VA_ARGS__)) \
-  exit(__LINE__)
+#define error_if(...) EXPECT_FALSE((__VA_ARGS__))
 
 struct empty_test_type {
   bool operator==(const empty_test_type&) const = default;
@@ -69,7 +68,10 @@ constexpr bool opttest(T v1, T v2) {
   return true;
 }
 
-TEST(optional) {
+TEST(basic_api, optional) {
+  tgbm::api::optional<std::vector<int>> v;
+  v.emplace({3});
+  error_if(!v || v->size() != 1 || v->front() != 3);
   static_assert(opttest<empty_test_type>({}, {}));
   static_assert(opttest<tgbm::api::Integer>(10, -10));
   static_assert(std::is_trivially_copyable_v<tgbm::api::optional<tgbm::api::Integer>>);
@@ -158,7 +160,7 @@ void box_union_test(Types... vars) {
   (test_var(std::move(vars)), ...);
 }
 
-TEST(box_union_all) {
+TEST(basic_api, box_union_all) {
   //  3
   box_union_test(int(4), float(4.f), std::string("hello world"));
   // 17 (big)
@@ -172,7 +174,7 @@ TEST(box_union_all) {
                  std::vector<int*>{&i});
 }
 
-TEST(box_union_basic) {
+TEST(basic_api, box_union_basic) {
   tgbm::box_union<int, float, std::string> u;
   u = "hello world";
   error_if(u.is_null());
@@ -180,7 +182,7 @@ TEST(box_union_basic) {
   error_if(u != std::string("hello world"));
 }
 
-TEST(box_union_from_box) {
+TEST(basic_api, box_union_from_box) {
   tgbm::box_union<int, std::string, tgbm::box<int>> u;
   tgbm::box b(std::string("hello world"));
   u = std::move(b);
@@ -193,9 +195,12 @@ TEST(box_union_from_box) {
   tgbm::box_union<int, std::string, tgbm::box<int>> u2(tgbm::box(std::string("hello")));
   error_if(!u2);
   error_if("hello" != u2);
+
+  tgbm::box<std::string> mo = u2.moveout_as_box<std::string>();
+  error_if(!mo || u2 || *mo != "hello");
 }
 
-TEST(box_union_release) {
+TEST(basic_api, box_union_release) {
   tgbm::box_union<E<1>, int, E<0>> u3(42);
   error_if(u3 != 42);
   delete (int*)u3.release().get_ptr();  // check release
@@ -205,7 +210,8 @@ TEST(box_union_release) {
   error_if(u4);
   delete (int*)u4_copy.release().get_ptr();
 }
-TEST(box_union_compare) {
+
+TEST(basic_api, box_union_compare) {
   tgbm::box_union<int, std::string> us;
   tgbm::box_union<int, std::string> us2;
   tgbm::box_union<E<1>, int, E<0>> u3 = 42;
@@ -225,7 +231,7 @@ TEST(box_union_compare) {
   error_if(us != us2);
 }
 
-TEST(boolean) {
+TEST(basic_api, boolean) {
   tgbm::api::optional<bool> b;
   bool& y = b.emplace();
   error_if(y);
@@ -238,7 +244,7 @@ TEST(boolean) {
   error_if(!b || !*b);
 }
 
-TEST(const_string) {
+TEST(basic_api, const_string) {
   using tgbm::const_string;
 
   // empty
@@ -403,7 +409,7 @@ TEST(const_string) {
   error_if(s29 != "1234567");
 }
 
-TEST(optional_const_string) {
+TEST(basic_api, optional_const_string) {
   using opt_t = tgbm::api::optional<tgbm::const_string>;
   opt_t opt;
   error_if(opt);
@@ -427,18 +433,6 @@ TEST(optional_const_string) {
   opt.reset();
   error_if(opt != std::nullopt);
   error_if(opt.value_or("hello") != "hello");
-}
-
-int main() {
-  test_optional_const_string();
-  test_const_string();
-  test_optional();
-  test_box_union_release();
-  test_box_union_compare();
-  test_box_union_from_box();
-  test_box_union_basic();
-  test_box_union_all();
-  test_boolean();
 
   static_assert(sizeof(tgbm::box_union<int, float, std::string>) <= sizeof(void*));
   static_assert(sizeof(tgbm::box_union<E<0>, E<1>, E<2>, E<3>, E<4>, E<5>, E<6>, E<7>, E<8>, E<9>, E<10>,

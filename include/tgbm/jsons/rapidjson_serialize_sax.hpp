@@ -130,10 +130,6 @@ template <typename... Args>
 [[nodiscard]] const auto* optional_field_get_value(const api::oneof<Args...>& f) noexcept {
   return f ? &f : nullptr;
 }
-template <typename T>
-[[nodiscard]] const auto* optional_field_get_value(const api::arrayof<T>& f) noexcept {
-  return !f.empty() ? &f : nullptr;
-}
 
 }  // namespace noexport
 

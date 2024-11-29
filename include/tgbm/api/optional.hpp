@@ -252,6 +252,11 @@ struct TGBM_TRIVIAL_ABI optional {
   constexpr optional(std::nullopt_t) noexcept : optional() {
   }
 
+  template <typename U, typename... Args>
+  constexpr value_type& emplace(std::initializer_list<U> list, Args&&... args) {
+    // avoid recursion
+    return emplace<std::initializer_list<U>, Args&&...>(std::move(list), std::forward<Args>(args)...);
+  }
   template <typename... Args>
   constexpr value_type& emplace(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args&&...>) {
     reset();
@@ -292,8 +297,9 @@ struct TGBM_TRIVIAL_ABI optional {
     Traits::reset(state);
   }
 
-  constexpr T value_or(value_type v) const {
-    return has_value() ? **this : std::move(v);
+  template <typename U>
+  constexpr T value_or(U&& v) const {
+    return has_value() ? **this : std::forward<U>(v);
   }
 
   constexpr value_type& value() {
