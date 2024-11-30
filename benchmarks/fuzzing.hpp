@@ -20,20 +20,27 @@ constexpr size_t max = size_t(-1);
 
 struct Config {
   std::string path;
-  size_t min_fields_total = 0;
-  size_t min_fields_per_object = 0;
-  size_t max_fields_total = max;
-  size_t max_fields_per_object = max;
-  size_t max_nesting = 16;
-  size_t max_size_array = 16;
+  bool pretty = true;
+
+  double eps = 0.01;
+
   double expand_chance = 0.5;
   double nesting_chance = 0.5;
+
+  size_t min_fields_total = 0;
+  size_t max_fields_total = max;
+
+  size_t min_fields_per_object = 0;
+  size_t max_fields_per_object = max;
+
+  size_t max_nesting = 16;
+  size_t max_size_array = 16;
+
   int64_t min_int = -200000;
   int64_t max_int = 200000;
+
   double min_double = -200000;
   double max_double = 200000;
-  double eps = 0.01;
-  bool pretty = true;
 };
 
 struct LocalInfo {
@@ -490,7 +497,12 @@ struct randomizer<T> {
         return;
       }
       field = randomizer<Field>::generate(
-          Context{.config = context.config, .global = context.global, .local = local}, generator);
+          Context{
+              .config = context.config,
+              .local = local,
+              .global = context.global,
+          },
+          generator);
       local.cur_fields_in_object += 1;
       context.global.cur_fields_total += 1;
     });
@@ -512,7 +524,12 @@ struct randomizer<T> {
         [&]<size_t I>() {
           using SubOneOf = tgbm::box_union_element_t<Data, I>;
           t.data = randomizer<SubOneOf>::generate(
-              Context{.config = context.config, .global = context.global, .local = local}, generator);
+              Context{
+                  .config = context.config,
+                  .local = local,
+                  .global = context.global,
+              },
+              generator);
         },
         sub_one_of_dist(generator));
 
@@ -533,7 +550,12 @@ struct randomizer<T> {
         t, [&]<typename Info, typename Field>(Field& field) {
           constexpr std::string_view name = Info::name.AsStringView();
           field = randomizer<Field>::generate(
-              Context{.config = context.config, .global = context.global, .local = local}, generator);
+              Context{
+                  .config = context.config,
+                  .local = local,
+                  .global = context.global,
+              },
+              generator);
           local.cur_fields_in_object += 1;
           context.global.cur_fields_total += 1;
         });
@@ -544,7 +566,12 @@ struct randomizer<T> {
           using SubOneOf = tgbm::box_union_element_t<Data, I>;
           using raw = decltype(SubOneOf::value);
           t.data = SubOneOf{randomizer<raw>::generate(
-              Context{.config = context.config, .global = context.global, .local = local}, generator)};
+              Context{
+                  .config = context.config,
+                  .local = local,
+                  .global = context.global,
+              },
+              generator)};
         },
         sub_one_of_dist(generator));
     assert(t.data);
