@@ -159,7 +159,7 @@ struct optional_traits {
 
 template <>
 struct optional_traits<bool> {
-  struct state_type {
+  struct TGBM_TRIVIAL_ABI state_type {
     union {
       char val;
       bool bval;
@@ -191,7 +191,7 @@ struct optional_traits<bool> {
 template <typename T>
   requires(std::is_empty_v<T> && std::is_trivial_v<T> && std::is_trivially_destructible_v<T>)
 struct optional_traits<T> {
-  struct state_type {
+  struct TGBM_TRIVIAL_ABI state_type {
     KELCORO_NO_UNIQUE_ADDRESS std::remove_const_t<T> val;
     bool has_val = false;
   };
@@ -243,46 +243,32 @@ struct TGBM_TRIVIAL_ABI optional {
   constexpr optional() noexcept {
     reset();
   }
-  template <typename U = T>
-  constexpr optional(U&& v) noexcept(std::is_nothrow_constructible_v<T, U&&>)
-    requires(std::is_constructible_v<T, U &&>)
-  {
-    emplace(std::forward<U>(v));
-  }
+
   constexpr optional(std::nullopt_t) noexcept : optional() {
   }
 
-  template <typename U, typename... Args>
-  constexpr value_type& emplace(std::initializer_list<U> list, Args&&... args) {
-    // avoid recursion
-    return emplace<std::initializer_list<U>, Args&&...>(std::move(list), std::forward<Args>(args)...);
-  }
-  template <typename... Args>
-  constexpr value_type& emplace(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args&&...>) {
-    reset();
-    T* p = std::construct_at(value_ptr(), std::forward<Args>(args)...);
-    Traits::mark_as_filled(state);
-    return *p;
-  }
+  // for basic methods hopes 'state_t' has suitable ctors/assigns
+  // this allows optional to be trivial constructible for trivial types
+
+  ~optional() = default;
+
+  optional(const optional&) = default;
+  optional(optional&&) = default;
+
+  optional& operator=(optional&&) = default;
+  optional& operator=(const optional&) = default;
 
   constexpr optional& operator=(std::nullopt_t) noexcept {
     reset();
     return *this;
   }
+
   template <typename U = T>
-  constexpr optional& operator=(U&& v) noexcept(std::is_nothrow_constructible_v<T, U&&>) {
+  constexpr optional& operator=(U&& v) noexcept(std::is_nothrow_constructible_v<T, U&&>)
+    requires(!std::is_same_v<optional, std::decay_t<U>> && std::is_constructible_v<T, U &&>)
+  {
     emplace(std::forward<U>(v));
     return *this;
-  }
-
-  constexpr bool has_value() const noexcept {
-    return !Traits::is_nullopt_state(state);
-  }
-  constexpr explicit operator bool() const noexcept {
-    return has_value();
-  }
-  constexpr bool operator==(std::nullopt_t) const noexcept {
-    return !has_value();
   }
 
   constexpr void swap(optional& o) noexcept {
@@ -293,22 +279,68 @@ struct TGBM_TRIVIAL_ABI optional {
     l.swap(r);
   }
 
+  template <typename U = T>
+  constexpr explicit(!std::is_convertible_v<U&&, T>)
+      optional(U&& v) noexcept(std::is_nothrow_constructible_v<T, U&&>)
+    requires(std::is_constructible_v<T, U &&> && !std::is_same_v<optional, std::decay_t<U>>)
+  {
+    emplace(std::forward<U>(v));
+  }
+
+  template <typename U, typename... Args>
+  constexpr value_type& emplace(std::initializer_list<U> list, Args&&... args) {
+    // avoid recursion
+    return emplace<std::initializer_list<U>, Args&&...>(std::move(list), std::forward<Args>(args)...);
+  }
+  // if exception thrown has_value() == false
+  template <typename... Args>
+  constexpr value_type& emplace(Args&&... args) noexcept(std::is_nothrow_constructible_v<T, Args&&...>) {
+    reset();
+    T* p = std::construct_at(value_ptr(), std::forward<Args>(args)...);
+    Traits::mark_as_filled(state);
+    return *p;
+  }
+
+  constexpr bool has_value() const noexcept {
+    return !Traits::is_nullopt_state(state);
+  }
+
+  constexpr explicit operator bool() const noexcept {
+    return has_value();
+  }
+
   constexpr void reset() noexcept {
     Traits::reset(state);
   }
 
   template <typename U>
-  constexpr T value_or(U&& v) const {
-    return has_value() ? **this : std::forward<U>(v);
+  constexpr T value_or(U&& v) const& {
+    return has_value() ? T(**this) : static_cast<T>(std::forward<U>(v));
+  }
+  template <typename U>
+  constexpr T value_or(U&& v) && {
+    return has_value() ? T(std::move(**this)) : static_cast<T>(std::forward<U>(v));
   }
 
-  constexpr value_type& value() {
+  constexpr value_type& value() & {
     if (!has_value())
       throw std::bad_optional_access{};
     return **this;
   }
-  constexpr const value_type& value() const {
-    return const_cast<optional&>(*this).value();
+  constexpr const value_type& value() const& {
+    if (!has_value())
+      throw std::bad_optional_access{};
+    return **this;
+  }
+  constexpr value_type&& value() && {
+    if (!has_value())
+      throw std::bad_optional_access{};
+    return std::move(**this);
+  }
+  constexpr const value_type&& value() const&& {
+    if (!has_value())
+      throw std::bad_optional_access{};
+    return std::move(**this);
   }
 
   constexpr value_type* operator->() noexcept {
@@ -317,28 +349,38 @@ struct TGBM_TRIVIAL_ABI optional {
   constexpr const value_type* operator->() const noexcept {
     return const_cast<optional&>(*this).operator->();
   }
-  constexpr value_type& operator*() noexcept {
+
+  constexpr value_type& operator*() & noexcept {
     assert(has_value());
     return *operator->();
   }
-  constexpr const value_type& operator*() const noexcept {
-    return const_cast<optional&>(*this).operator*();
+  constexpr const value_type& operator*() const& noexcept {
+    assert(has_value());
+    return *operator->();
+  }
+  constexpr value_type&& operator*() && noexcept {
+    assert(has_value());
+    return std::move(*operator->());
+  }
+  constexpr const value_type&& operator*() const&& noexcept {
+    assert(has_value());
+    return std::move(*operator->());
   }
 
+  bool operator==(std::nullopt_t) const noexcept {
+    return !has_value();
+  }
   constexpr bool operator==(const optional& r) const noexcept {
     const optional& l = *this;
-    if (l && r)
-      return *l == *r;
-    return !l && !r;
+    return l && r ? *l == *r : !l && !r;
   }
   constexpr std::strong_ordering operator<=>(const optional& r) const noexcept {
     const optional& l = *this;
-    if (l && r)
-      return *l <=> *r;
-    if (!l && !r)
-      return std::strong_ordering::equal;
-    return !!l <=> !!r;
+    return l && r ? *l <=> *r : bool(l) <=> bool(r);
   }
 };
+
+template <typename T>
+optional(T&&) -> optional<std::decay_t<T>>;
 
 }  // namespace tgbm::api

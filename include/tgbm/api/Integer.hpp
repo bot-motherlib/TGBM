@@ -41,7 +41,7 @@ namespace tgbm {
 
 template <>
 struct optional_traits<api::Integer> {
-  struct state_type {
+  struct TGBM_TRIVIAL_ABI state_type {
     api::Integer i;
   };
   // TG requirements for Integer type is to be less then 53 bits long
