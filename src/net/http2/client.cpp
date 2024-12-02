@@ -547,9 +547,8 @@ void intrusive_ptr_add_ref(request_node* p) {
 
 void intrusive_ptr_release(request_node* p) noexcept {
   --p->refcount;
-  if (p->refcount == 0) {
+  if (p->refcount == 0)
     p->connection->return_node(p);
-  }
 }
 
 // any finish request with cancelled

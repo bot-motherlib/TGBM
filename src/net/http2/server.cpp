@@ -129,7 +129,7 @@ struct client_session {
   }
   friend void intrusive_ptr_release(client_session* p) noexcept {
     --p->refcount;
-    if (p == 0)
+    if (p->refcount == 0)
       delete p;
   }
 

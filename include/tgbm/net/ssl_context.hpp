@@ -35,7 +35,7 @@ struct ssl_context {
   }
   friend void intrusive_ptr_release(ssl_context* p) noexcept {
     --p->refcount;
-    if (p == 0)
+    if (p->refcount == 0)
       delete p;
   }
 };
