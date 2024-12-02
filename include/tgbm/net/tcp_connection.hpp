@@ -99,7 +99,7 @@ struct tcp_connection {
   }
   friend void intrusive_ptr_release(tcp_connection* p) noexcept {
     --p->refcount;
-    if (p == 0)
+    if (p->refcount == 0)
       delete p;
   }
 
