@@ -11,7 +11,7 @@ dd::task<void> start_main_task(tgbm::bot& bot) {
   };
   fmt::println("launching echobot, info: {}", co_await bot.api.getMe());
 
-  co_foreach(tgbm::api::Update && u, bot.updates()) {
+  co_foreach(tgbm::api::Update && u, bot.updates({.drop_pending_updates = true})) {
     tgbm::api::Message* m = u.get_message();
     if (!m || !m->text)
       continue;
@@ -29,6 +29,7 @@ int main() {
   }
   tgbm::bot bot{token};
 
+  bot.commands.add("stop", [&bot](tgbm::api::Message&&) { bot.stop(); });
   start_main_task(bot).start_and_detach();
   bot.run();
 
