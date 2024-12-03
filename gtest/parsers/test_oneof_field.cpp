@@ -116,6 +116,7 @@ struct CustomStruct {
       case From::nothing:
         return "nothing";
     }
+    tgbm::unreachable();
   }
 };
 
