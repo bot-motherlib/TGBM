@@ -14,7 +14,8 @@ namespace tgbm {
 struct http_client;
 
 // postcondition: client != nullptr
-std::unique_ptr<http_client> default_http_client(std::string_view host);
+std::unique_ptr<http_client> default_http_client(std::string_view host,
+                                                 std::filesystem::path additional_ssl_cert = {});
 
 struct bot_commands {
   using on_command_handler_t = move_only_fn<void(api::Message&& text) const>;
@@ -50,8 +51,16 @@ struct bot {
   const_string token;
 
   // uses default http client
-  explicit bot(std::string_view bottoken, std::string_view host = "api.telegram.org")
-      : client(default_http_client(host)), api(*client, bottoken), commands(), token(bottoken) {
+  //
+  // Note:
+  //   by default ssl verification disabled (see reason in struct tcp_connection_options)
+  //   if 'additional_ssl_cert' is not empty, then verification enabled
+  explicit bot(std::string_view bottoken, std::string_view host = "api.telegram.org",
+               std::filesystem::path additional_ssl_cert = {})
+      : client(default_http_client(host, std::move(additional_ssl_cert))),
+        api(*client, bottoken),
+        commands(),
+        token(bottoken) {
   }
 
   explicit bot(std::string_view bottoken, std::unique_ptr<http_client> c)

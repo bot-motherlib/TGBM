@@ -23,7 +23,8 @@ int main() {
     fmt::println("launching telegram bot requires bot token from @BotFather");
     return -1;
   }
-  tgbm::bot bot{token};
+  tgbm::bot bot{token /*"api.telegram.org", "some_ssl_certificate"*/};
+
   bot.commands.add("send_cat", [&bot](tgbm::api::Message&& msg) {
     bot.api
         .sendPhoto({
@@ -32,6 +33,7 @@ int main() {
         })
         .start_and_detach();
   });
+
   start_main_task(bot).start_and_detach();
   bot.run();
 

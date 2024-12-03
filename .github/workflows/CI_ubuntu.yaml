@@ -90,4 +90,4 @@ jobs:
 
       - name: Run tests
         run: | 
-          cd cmake_build && ctest --output-on-failure
+          cd cmake_build && sudo ctest --output-on-failure

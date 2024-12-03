@@ -64,7 +64,7 @@ int main() {
     fmt::println("launching telegram bot requires bot token from @BotFather");
     return -1;
   }
-  tgbm::bot bot{token};
+  tgbm::bot bot{token /*"api.telegram.org", "some_ssl_certificate"*/};
 
   start_main_task(bot).start_and_detach();
   bot.run();

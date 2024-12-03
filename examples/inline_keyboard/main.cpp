@@ -59,7 +59,7 @@ int main() {
     return -1;
   }
 
-  tgbm::bot bot{token};
+  tgbm::bot bot{token /*"api.telegram.org", "some_ssl_certificate"*/};
 
   bot.commands.add("get_keyboard", [&bot](tgbm::api::Message&& m) {
     dd::task sendmsg = bot.api.sendMessage({
