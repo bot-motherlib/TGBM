@@ -404,7 +404,8 @@ struct http2_connection {
     // assume only i have access to it
     auto reqs = std::move(requests);
     auto rsps = std::move(responses);
-    assert(reqs.size() + rsps.size() == timers.size());
+    // >= because request may not be inserted in 'timers' if deadline == never
+    assert(reqs.size() + rsps.size() >= timers.size());
     // nodes in reqs or in rsps, timers do not own them
     timers.clear();
     TGBM_LOG_DEBUG("finish {} requests and {} responses, reason code: {}", reqs.size(), rsps.size(),
@@ -1278,6 +1279,8 @@ http2_client::http2_client(std::string_view host, http2_client_options opts, tcp
   options.max_send_frame_size =
       // 8 KB now, because of strange TG behavior when sending big files with big frames, it do not respond
       std::min<size_t>(8 * 1024 /*http2::frame_len_max*/, options.max_send_frame_size);
+  if (tcp_options.disable_ssl_certificate_verify)
+    TGBM_LOG_WARN("SSL veriication for http2 client disabled");
 }
 
 noexport::waiter_of_connection::~waiter_of_connection() {

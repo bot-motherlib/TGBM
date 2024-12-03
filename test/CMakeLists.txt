@@ -6,3 +6,14 @@ set_target_properties(tgbm_fake_server PROPERTIES
   LINKER_LANGUAGE CXX
   CMAKE_CXX_STANDARD_REQUIRED ON
   CXX_STANDARD 20)
+
+add_executable(tgbm_client_server_http2_smoke ${CMAKE_CURRENT_SOURCE_DIR}/server_client_smoke.cpp)
+target_link_libraries(tgbm_client_server_http2_smoke PUBLIC tgbmlib)
+
+set_target_properties(tgbm_client_server_http2_smoke PROPERTIES
+  CMAKE_CXX_EXTENSIONS OFF
+  LINKER_LANGUAGE CXX
+  CMAKE_CXX_STANDARD_REQUIRED ON
+  CXX_STANDARD 20)
+
+add_test(tgbm_http2_client_server tgbm_client_server_http2_smoke)

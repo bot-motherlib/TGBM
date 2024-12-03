@@ -198,15 +198,14 @@ protocol_err:
 
 http11_client::http11_client(size_t connections_max_count, std::string_view host,
                              tcp_connection_options tcp_opts)
-    : http_client(host),
-      io_ctx(1),
-      tcp_options(std::move(tcp_opts)),
-      connections(connections_max_count, [this]() {
+    : http_client(host), io_ctx(1), tcp_options(tcp_opts), connections(connections_max_count, [this]() {
         // Do not reuses ssl ctx because... just because + multithread no one knows how to work
         return tcp_connection::create(io_ctx, std::string(get_host()),
                                       make_ssl_context_for_http11(tcp_options.additional_ssl_certificates),
                                       tcp_options);
       }) {
+  if (tcp_options.disable_ssl_certificate_verify)
+    TGBM_LOG_WARN("SSL veriication for http11 client disabled");
 }
 
 dd::task<int> http11_client::send_request(on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part,

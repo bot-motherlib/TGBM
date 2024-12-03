@@ -453,6 +453,8 @@ http2_server::http2_server(http2_server_options opts, tcp_connection_options tcp
   options.max_receive_frame_size =
       std::clamp<uint32_t>(options.max_receive_frame_size, 1, http2::frame_len_max);
   options.max_send_frame_size = std::clamp<uint32_t>(options.max_send_frame_size, 1, http2::frame_len_max);
+  if (tcp_options.disable_ssl_certificate_verify)
+    TGBM_LOG_WARN("SSL veriication for http2 server disabled");
 }
 
 dd::job reader_for(client_session_ptr session) try {

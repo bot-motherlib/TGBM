@@ -4,8 +4,14 @@
 
 namespace tgbm {
 
-std::unique_ptr<http_client> default_http_client(std::string_view host) {
-  return std::unique_ptr<http_client>(new http2_client(host));
+std::unique_ptr<http_client> default_http_client(std::string_view host,
+                                                 std::filesystem::path additional_ssl_cert) {
+  tcp_connection_options opts;
+  if (!additional_ssl_cert.empty()) {
+    opts.additional_ssl_certificates.push_back(std::move(additional_ssl_cert));
+    opts.disable_ssl_certificate_verify = false;
+  }
+  return std::unique_ptr<http_client>(new http2_client(host, {}, std::move(opts)));
 }
 
 [[nodiscard]] bool bot_commands::is_valid_name(std::string_view name) noexcept {
