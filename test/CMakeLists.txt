@@ -17,3 +17,8 @@ set_target_properties(tgbm_client_server_http2_smoke PROPERTIES
   CXX_STANDARD 20)
 
 add_test(tgbm_http2_client_server tgbm_client_server_http2_smoke)
+
+target_compile_definitions(tgbm_client_server_http2_smoke PRIVATE
+  TEST_SERVER_CERT_PATH="${CMAKE_CURRENT_SOURCE_DIR}/test_server.crt"
+  TEST_SERVER_KEY_PATH="${CMAKE_CURRENT_SOURCE_DIR}/test_server.key"
+)

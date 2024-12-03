@@ -56,7 +56,7 @@ dd::task<void> get_bot_info(tgbm::bot& b) {
   }
 }
 
-int main() {
+int main() try {
   std::thread([] {
     std::this_thread::sleep_for(std::chrono::seconds(5));
     TGBM_LOG_ERROR("timeout!");
@@ -76,8 +76,8 @@ int main() {
   tgbm::bot bot("123456789:ABCDefghIJKlmnoPQRstuvWXyz1234567890", std::move(client));
 
   tgbm::http2_server_ptr server = new print_server(tgbm::http2_server_options{
-      .ssl_cert_path = "E:/dev/ssl_test_crt/server.crt",
-      .private_key_path = "E:/dev/ssl_test_crt/server.key",
+      .ssl_cert_path = TEST_SERVER_CERT_PATH,
+      .private_key_path = TEST_SERVER_KEY_PATH,
   });
   namespace asio = boost::asio;
   asio::ip::tcp::endpoint ipv4_endpoint(asio::ip::address_v4::loopback(), 443);
@@ -102,4 +102,7 @@ int main() {
     return 1;
   }
   return 0;
+} catch (...) {
+  TGBM_LOG_ERROR("unhandled exception!");
+  return -1;
 }
