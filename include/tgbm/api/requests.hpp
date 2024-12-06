@@ -13,6 +13,7 @@
 #include <tgbm/api/telegram_answer.hpp>
 #include <tgbm/jsons/stream_parser.hpp>
 #include <tgbm/logger.hpp>
+#include <tgbm/net/http_body_builders.hpp>
 
 namespace tgbm::api {
 

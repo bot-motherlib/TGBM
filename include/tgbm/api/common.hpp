@@ -19,6 +19,7 @@
 #include <tgbm/api/arrayof.hpp>
 #include <tgbm/api/oneof.hpp>
 #include <tgbm/api/true.hpp>
+#include <tgbm/net/http_body_builders.hpp>
 
 namespace tgbm::api {
 

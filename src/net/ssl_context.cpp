@@ -80,13 +80,14 @@ ssl_context_ptr make_ssl_context_for_server(std::filesystem::path certificate,
   io_error_code ec;
   ec = ctx->ctx.use_certificate_chain_file(std::filesystem::absolute(certificate).string(), ec);
   if (ec) {
-    TGBM_LOG_ERROR("cannot load certificate, path {}, err: {}", certificate.string(), ec.what());
+    TGBM_LOG_ERROR("cannot load server certificate, path {}, err: {}", certificate.string(), ec.what());
     return nullptr;
   }
   ec = ctx->ctx.use_private_key_file(std::filesystem::absolute(server_private_key).string(),
                                      asio::ssl::context::pem, ec);
   if (ec) {
-    TGBM_LOG_ERROR("cannot load private file, path {}, err: {}", server_private_key.string(), ec.what());
+    TGBM_LOG_ERROR("cannot load server private key file, path {}, err: {}", server_private_key.string(),
+                   ec.what());
     return nullptr;
   }
   return ctx;
