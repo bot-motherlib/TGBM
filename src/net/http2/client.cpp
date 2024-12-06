@@ -1118,6 +1118,18 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
   try {
     switch (frame.header.type) {
       case HEADERS:
+        if (frame.header.flags & http2::flags::PRIORITY) [[unlikely]] {
+          // options to disable priority is extension for protocol, it may not be supported
+          // so i can receive it
+          // ignores
+          //  [Exclusive (1)],
+          //  [Stream Dependency (31)],
+          //  [Weight (8)]
+          static_assert(CHAR_BIT == 8);
+          if (frame.data.size() < 5)
+            throw protocol_error{};
+          remove_prefix(frame.data, 5);
+        }
         node->receive_headers(con.decoder, std::move(frame));
         if ((frame.header.flags & http2::flags::END_HEADERS) && !node->on_data_part)
           con.finish_request(*node, node->status);

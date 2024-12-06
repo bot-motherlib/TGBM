@@ -1,5 +1,7 @@
+
 #include <tgbm/net/http_client.hpp>
 #include <tgbm/net/errors.hpp>
+#include <tgbm/utils/string_switch.hpp>
 
 namespace tgbm {
 

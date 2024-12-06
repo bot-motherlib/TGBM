@@ -32,7 +32,7 @@ struct pin {
   void operator=(pin&&) = delete;
 };
 
-[[noreturn]] static void unreachable() noexcept {
+[[noreturn]] inline void unreachable() noexcept {
   assert(false);
   KELCORO_UNREACHABLE;
 }
