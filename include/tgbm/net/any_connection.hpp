@@ -11,29 +11,32 @@
 
 namespace tgbm {
 
-struct async_read_m {
-  static dd::task<void> do_invoke(auto& self, std::span<byte_t> buf, io_error_code& ec) {
-    return self.read(buf, ec);
+struct start_read_m {
+  static void do_invoke(auto& self, std::coroutine_handle<> callback, std::span<byte_t> buf,
+                        io_error_code& ec) {
+    return self.start_read(callback, buf, ec);
   }
 
   template <typename CRTP>
   struct plugin {
-    // TODO нужно изменить интерфейс на read_some ? Или... Нет?
-    dd::task<void> read(std::span<byte_t> buf, io_error_code& ec) {
-      return aa::invoke<async_read_m>(static_cast<CRTP&>(*this), buf, ec);
+    void start_read(std::coroutine_handle<> callback, std::span<byte_t> buf, io_error_code& ec) {
+      return aa::invoke<start_read_m>(static_cast<CRTP&>(*this), callback, buf, ec);
     }
   };
 };
 
-struct async_write_m {
-  static dd::task<size_t> do_invoke(auto& self, std::span<const byte_t> buf, io_error_code& ec) {
-    return self.write(buf, ec);
+// must send 'buf', set 'ec' if needed, set 'written' to count of bytes written
+struct start_write_m {
+  static void do_invoke(auto& self, std::coroutine_handle<> callback, std::span<const byte_t> buf,
+                        io_error_code& ec, size_t& written) {
+    return self.start_write(callback, buf, ec, written);
   }
 
   template <typename CRTP>
   struct plugin {
-    dd::task<size_t> write(std::span<const byte_t> buf, io_error_code& ec) {
-      return aa::invoke<async_write_m>(static_cast<CRTP&>(*this), buf, ec);
+    void start_write(std::coroutine_handle<> callback, std::span<const byte_t> buf, io_error_code& ec,
+                     size_t& written) {
+      return aa::invoke<start_write_m>(static_cast<CRTP&>(*this), callback, buf, ec, written);
     }
   };
 };
@@ -74,6 +77,6 @@ struct yield_m {
 
 */
 using any_connection =
-    aa::basic_any_with<aa::default_allocator, 0, async_read_m, async_write_m, shutdown_m, yield_m>;
+    aa::basic_any_with<aa::default_allocator, 0, start_read_m, start_write_m, shutdown_m, yield_m>;
 
 }  // namespace tgbm

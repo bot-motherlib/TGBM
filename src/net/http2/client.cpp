@@ -260,6 +260,40 @@ struct request_node {
   };
 };
 
+struct read_awaiter {
+  any_connection& con;
+  io_error_code& ec;
+  std::span<byte_t> buf;
+
+  static bool await_ready() noexcept {
+    return false;
+  }
+
+  void await_suspend(std::coroutine_handle<> h) const {
+    con.start_read(h, buf, ec);
+  }
+  static void await_resume() noexcept {
+  }
+};
+
+struct write_awaiter {
+  any_connection& con;
+  io_error_code& ec;
+  std::span<const byte_t> buf;
+  size_t written;
+
+  static bool await_ready() noexcept {
+    return false;
+  }
+
+  void await_suspend(std::coroutine_handle<> h) {
+    con.start_write(h, buf, ec, written);
+  }
+  size_t await_resume() noexcept {
+    return written;
+  }
+};
+
 dd::task<void> send_rst_stream(http2_connection_ptr con, http2::stream_id_t streamid, http2::errc_e errc);
 
 struct http2_connection {
@@ -279,7 +313,7 @@ struct http2_connection {
                                       bi::compare<request_node::compare_by_deadline>>;
   http2::settings_t server_settings;
   http2::settings_t client_settings;
-  any_connection asio_con;
+  any_connection tcp_con;
   hpack::encoder encoder;
   hpack::decoder decoder;
   // odd for client, even for server
@@ -299,7 +333,7 @@ struct http2_connection {
 
   bi::slist<request_node, requests_member_hook, bi::constant_time_size<true>> free_nodes;
 
-  explicit http2_connection(any_connection&& c) : asio_con(std::move(c)), responses({buckets, 128}) {
+  explicit http2_connection(any_connection&& c) : tcp_con(std::move(c)), responses({buckets, 128}) {
   }
 
   http2_connection(http2_connection&&) = delete;
@@ -344,13 +378,14 @@ struct http2_connection {
 
   [[nodiscard]] auto idle_yield() noexcept KELCORO_LIFETIMEBOUND {
     io_error_code ec;
-    return asio_con.yield();
+    return tcp_con.yield();
   }
-  dd::task<size_t> write(std::span<const byte_t> bytes, io_error_code& ec) {
-    return asio_con.write(bytes, ec);
+
+  write_awaiter write(std::span<const byte_t> bytes, io_error_code& ec) {
+    return write_awaiter{tcp_con, ec, bytes};
   }
-  dd::task<void> read(std::span<byte_t> buf, io_error_code& ec) {
-    return asio_con.read(buf, ec);
+  read_awaiter read(std::span<byte_t> buf, io_error_code& ec) {
+    return read_awaiter{tcp_con, ec, buf};
   }
 
   [[nodiscard]] size_t concurrent_streams_now() noexcept {
@@ -473,7 +508,7 @@ struct http2_connection {
       // then writer must be canceled by socket.cancel() or shutdown
     }
     finish_all_with_exception(reason);
-    asio_con.shutdown();
+    tcp_con.shutdown();
   }
 
   // interface for send_request
@@ -623,13 +658,13 @@ static dd::task<void> handle_ping(http2::ping_frame ping, http2_connection_ptr c
   if (!co_await send_ping(std::move(con), ping.get_data(), false))
     TGBM_LOG_ERROR("[HTTP2]: cannot handle ping");
 }
-// TODO rename 'asio_con'
-static dd::task<http2_connection_ptr> establish_http2_session(any_connection&& asio_con,
+
+static dd::task<http2_connection_ptr> establish_http2_session(any_connection&& tcp_con,
                                                               http2_client_options options) {
   using namespace http2;
   using enum http2::frame_e;
 
-  http2_connection_ptr con = new http2_connection(std::move(asio_con));
+  http2_connection_ptr con = new http2_connection(std::move(tcp_con));
   con->client_settings = http2::settings_t{
       .header_table_size = options.hpack_dyntab_size,
       .enable_push = false,
@@ -793,8 +828,8 @@ dd::job http2_client::start_connecting() {
         lock.release();
         notify_connection_waiters(new_connection);
       };
-      any_connection asio_con = co_await factory.create_connection(get_host());
-      new_connection = co_await establish_http2_session(std::move(asio_con), options);
+      any_connection tcp_con = co_await factory.create_connection(get_host());
+      new_connection = co_await establish_http2_session(std::move(tcp_con), options);
     }
     assert(!connection);
     assert(new_connection);

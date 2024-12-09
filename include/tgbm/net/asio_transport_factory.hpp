@@ -16,13 +16,23 @@ namespace tgbm {
 struct asio_connection {
   tcp_connection_ptr connection = nullptr;
 
-  dd::task<void> read(std::span<byte_t> buf, io_error_code& ec) {
+  void start_read(std::coroutine_handle<> h, std::span<byte_t> buf, io_error_code& ec) {
     assert(connection);
-    co_await net.read(connection->socket, buf, ec);
+    asio::async_read(connection->socket, asio::buffer(buf.data(), buf.size()),
+                     [&, h](const io_error_code& e, size_t) {
+                       ec = e;
+                       h.resume();
+                     });
   }
-  dd::task<size_t> write(std::span<const byte_t> buf, io_error_code& ec) {
+  void start_write(std::coroutine_handle<> h, std::span<const byte_t> buf, io_error_code& ec,
+                   size_t& written) {
     assert(connection);
-    co_return co_await net.write(connection->socket, buf, ec);
+    asio::async_write(connection->socket, asio::buffer(buf.data(), buf.size()),
+                      [&, h](const io_error_code& e, size_t w) {
+                        written = w;
+                        ec = e;
+                        h.resume();
+                      });
   }
   void shutdown() noexcept {
     connection->shutdown();

@@ -21,7 +21,7 @@ namespace tgbm {
 TODO:
 
 * https / https в подключении (псевдометод?)
-* start_write / start_read (в seastar future.then(resume))
++ * start_write / start_read (в seastar future.then(resume))
 * выделить yield из соединения, использовать вместо этого то что в контексте
 * отвязать start_pinger / timeout_warden от .run, привязать к коннекшнену (осторожно чтобы не посадить уб)
 * сделать специальный макрос для http2 логов, чтобы потом заменить реализацию
