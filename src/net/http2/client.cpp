@@ -58,6 +58,8 @@ resources:
 #include <boost/intrusive/list.hpp>
 #include <boost/intrusive/slist.hpp>
 
+#include <tgbm/net/any_connection.hpp>
+
 namespace tgbm {
 
 constexpr inline auto h2fhl = http2::frame_header_len;
@@ -277,7 +279,7 @@ struct http2_connection {
                                       bi::compare<request_node::compare_by_deadline>>;
   http2::settings_t server_settings;
   http2::settings_t client_settings;
-  tcp_connection asio_con;
+  any_connection asio_con;
   hpack::encoder encoder;
   hpack::decoder decoder;
   // odd for client, even for server
@@ -297,7 +299,7 @@ struct http2_connection {
 
   bi::slist<request_node, requests_member_hook, bi::constant_time_size<true>> free_nodes;
 
-  explicit http2_connection(tcp_connection&& c) : asio_con(std::move(c)), responses({buckets, 128}) {
+  explicit http2_connection(any_connection&& c) : asio_con(std::move(c)), responses({buckets, 128}) {
   }
 
   http2_connection(http2_connection&&) = delete;
@@ -341,9 +343,16 @@ struct http2_connection {
   }
 
   [[nodiscard]] auto idle_yield() noexcept KELCORO_LIFETIMEBOUND {
-    return dd::this_coro::suspend_and(
-        [s = &socket()](std::coroutine_handle<> me) -> void { asio::post(s->get_executor(), me); });
+    io_error_code ec;
+    return asio_con.yield();
   }
+  dd::task<size_t> write(std::span<const byte_t> bytes, io_error_code& ec) {
+    return asio_con.write(bytes, ec);
+  }
+  dd::task<void> read(std::span<byte_t> buf, io_error_code& ec) {
+    return asio_con.read(buf, ec);
+  }
+
   [[nodiscard]] size_t concurrent_streams_now() noexcept {
     return responses.size();
   }
@@ -442,10 +451,6 @@ struct http2_connection {
     if (!node)
       return;
     http2::increment_window_size(node->streamlevel_window_size, frame.window_size_increment);
-  }
-
-  asio::ssl::stream<asio::ip::tcp::socket>& socket() noexcept {
-    return asio_con.socket;
   }
 
   // terminates on exception (must not throw)
@@ -559,7 +564,7 @@ dd::task<void> send_rst_stream(http2_connection_ptr con, http2::stream_id_t stre
   byte_t bytes[http2::rst_stream::len];
   http2::rst_stream::form(streamid, errc, bytes);
   io_error_code ec;
-  co_await net.write(con->socket(), bytes, ec);
+  (void)co_await con->write(bytes, ec);
   if (ec)
     TGBM_LOG_DEBUG("[HTTP2]: cannot rst stream, ec: {}", ec.what());
 }
@@ -570,7 +575,7 @@ dd::task<bool> send_ping(http2_connection_ptr con, uint64_t data, bool request_p
   io_error_code ec;
   byte_t buf[http2::ping_frame::len];
   http2::ping_frame::form(data, request_pong, buf);
-  co_await net.write(con->socket(), buf, ec);
+  (void)co_await con->write(buf, ec);
   co_return !ec;
 }
 
@@ -618,8 +623,8 @@ static dd::task<void> handle_ping(http2::ping_frame ping, http2_connection_ptr c
   if (!co_await send_ping(std::move(con), ping.get_data(), false))
     TGBM_LOG_ERROR("[HTTP2]: cannot handle ping");
 }
-
-static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& asio_con,
+// TODO rename 'asio_con'
+static dd::task<http2_connection_ptr> establish_http2_session(any_connection&& asio_con,
                                                               http2_client_options options) {
   using namespace http2;
   using enum http2::frame_e;
@@ -644,22 +649,21 @@ static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& a
   bytes_t connection_request;
 
   form_connection_initiation(con->client_settings, std::back_inserter(connection_request));
-  auto& socket = con->socket();
-  size_t written = co_await net.write(socket, connection_request, ec);
+  size_t written = co_await con->write(connection_request, ec);
   if (ec)
     throw network_exception("cannot write HTTP/2 client connection preface, err: {}", ec.what());
 
   // read server connection preface (settings frame)
 
   byte_t buf[h2fhl];
-  (void)co_await net.read(socket, std::span(buf, h2fhl), ec);
+  co_await con->read(std::span(buf, h2fhl), ec);
   if (ec)
     throw network_exception("cannot read HTTP/2 server preface, {}", ec.what());
   frame_header header = frame_header::parse(buf);
   if (header.type != SETTINGS || header.length > frame_len_max)
     throw connection_error{};  // TODO send GOAWAY frame
   bytes_t bytes(header.length);
-  (void)co_await net.read(socket, bytes, ec);
+  co_await con->read(bytes, ec);
   if (ec)
     throw network_exception(ec);
   if (accepted_settings_frame() != header)
@@ -667,7 +671,7 @@ static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& a
   // answer settings ACK as soon as possible
 
   accepted_settings_frame().send_to(buf);
-  co_await net.write(socket, std::span(buf, h2fhl), ec);
+  (void)co_await con->write(std::span(buf, h2fhl), ec);
   if (ec)
     throw network_exception("cannot send accepted settings frame to server, {}", ec.what());
 
@@ -681,12 +685,12 @@ static dd::task<http2_connection_ptr> establish_http2_session(tcp_connection&& a
   // read server settings ACK and all other frames it sends now
 
   for (;;) {
-    co_await net.read(socket, std::span(buf, h2fhl), ec);
+    co_await con->read(std::span(buf, h2fhl), ec);
     if (ec)
       throw network_exception(ec);
     header = frame_header::parse(buf);
     bytes.resize(header.length);
-    co_await net.read(socket, bytes, ec);
+    co_await con->read(bytes, ec);
     if (ec)
       throw network_exception(ec);
     switch (header.type) {
@@ -743,18 +747,17 @@ void http2_client::notify_connection_waiters(http2_connection_ptr result) noexce
   });
 }
 
-dd::job start_pinger_for(http2_connection_ptr con, duration_t interval) {
+dd::job start_pinger_for(http2_connection_ptr con, any_transport_factory& f, duration_t interval) {
   if (!con || con->is_dropped())
     co_return;
   TGBM_LOG_DEBUG("[HTTP2]: pinger started for {}", (void*)con.get());
   on_scope_exit {
     TGBM_LOG_DEBUG("[HTTP2]: pinger for {} completed", (void*)con.get());
   };
-  asio::steady_timer timer(con->socket().get_executor());
   io_error_code ec;
   http2::stream_id_t lastid = con->stream_id;
   for (;;) {
-    co_await net.sleep(timer, interval, ec);
+    co_await f.sleep(interval, ec);
     if (con->is_dropped() || ec)
       co_return;
     if (lastid == con->stream_id)
@@ -790,10 +793,8 @@ dd::job http2_client::start_connecting() {
         lock.release();
         notify_connection_waiters(new_connection);
       };
-      tcp_connection_ptr asio_con = co_await tcp_connection::create(
-          io_ctx, std::string(get_host()),
-          make_ssl_context_for_http2(tcp_options.additional_ssl_certificates), tcp_options);
-      new_connection = co_await establish_http2_session(std::move(*asio_con), options);
+      any_connection asio_con = co_await factory.create_connection(get_host());
+      new_connection = co_await establish_http2_session(std::move(asio_con), options);
     }
     assert(!connection);
     assert(new_connection);
@@ -803,7 +804,7 @@ dd::job http2_client::start_connecting() {
     // writer itself sets writer->handle
     start_writer_for(new_connection);
     if (options.ping_interval != duration_t::max())
-      start_pinger_for(new_connection, options.ping_interval);
+      start_pinger_for(new_connection, factory, options.ping_interval);
   } catch (std::exception& e) {
     TGBM_LOG_ERROR("exception while trying to connect: {}", e.what());
   }
@@ -900,7 +901,7 @@ dd::task<void> write_pending_data_frames(node_ptr work, size_t handled_bytes, ht
 
     // send frame
 
-    co_await net.write(con->socket(), std::span(in - h2fhl, frame_len + h2fhl), ec);
+    (void)co_await con->write(std::span(in - h2fhl, frame_len + h2fhl), ec);
 
     if (ec) {
       if (ec != asio::error::operation_aborted) {
@@ -1020,7 +1021,7 @@ dd::job http2_client::start_writer_for(http2_connection_ptr con) {
     // ignores con->concurrent_streams_now()
     // TODO if headers > con->settings.max_frame_size
 
-    co_await net.write(con->socket(), bytes, ec);
+    (void)co_await con->write(bytes, ec);
 
     con->receiver_window_size -= data_sended;
 
@@ -1177,7 +1178,7 @@ dd::task<bool> send_window_update(http2_connection_ptr con, http2::stream_id_t i
   TGBM_LOG_DEBUG("[HTTP2]: update window, stream: {}, inc: {}, mywindowsiz: {}", id, inc,
                  con->my_window_size);
   io_error_code ec;
-  co_await net.write(con->socket(), std::span(buf), ec);
+  (void)co_await con->write(std::span(buf), ec);
   co_return !ec;
 }
 
@@ -1207,7 +1208,7 @@ dd::job http2_client::start_reader_for(http2_connection_ptr _con) {
 
       frame.data = buffer.get_exactly(h2fhl);
 
-      co_await net.read(con.socket(), frame.data, ec);
+      co_await con.read(frame.data, ec);
 
       if (ec)
         goto network_error;
@@ -1223,7 +1224,7 @@ dd::job http2_client::start_reader_for(http2_connection_ptr _con) {
       // read frame data
 
       frame.data = buffer.get_exactly(frame.header.length);
-      co_await net.read(con.socket(), frame.data, ec);
+      co_await con.read(frame.data, ec);
       if (ec)
         goto network_error;
       if (con.is_dropped())
@@ -1285,14 +1286,12 @@ http2_client::~http2_client() {
   drop_connection(reqerr_e::cancelled);
 }
 
-http2_client::http2_client(std::string_view host, http2_client_options opts, tcp_connection_options tcp_opts)
-    : http_client(host), options(opts), io_ctx(1), tcp_options(tcp_opts) {
+http2_client::http2_client(std::string_view host, http2_client_options opts, any_transport_factory tf)
+    : http_client(host), options(opts), factory(tf ? std::move(tf) : default_transport_factory()) {
   options.max_receive_frame_size = std::min<size_t>(http2::frame_len_max, options.max_receive_frame_size);
   options.max_send_frame_size =
       // 8 KB now, because of strange TG behavior when sending big files with big frames, it do not respond
       std::min<size_t>(8 * 1024 /*http2::frame_len_max*/, options.max_send_frame_size);
-  if (tcp_options.disable_ssl_certificate_verify)
-    TGBM_LOG_WARN("SSL veriication for http2 client disabled");
 }
 
 noexport::waiter_of_connection::~waiter_of_connection() {
@@ -1358,14 +1357,11 @@ dd::task<int> http2_client::send_request(on_header_fn_ptr on_header, on_data_par
 
 // runs until 'timer' is lockable && timer not cancelled,
 // 'todo' must return duration_t (interval until next call)
-dd::job periodic_task(std::weak_ptr<asio::steady_timer> timer, auto todo) {
+dd::job periodic_task(std::stop_token t, any_transport_factory& f, auto todo) {
   io_error_code ec;
-  for (;;) {
-    std::shared_ptr tmr = timer.lock();
-    if (!tmr)
-      co_return;
+  while (t.stop_possible() && !t.stop_requested()) {
     duration_t interval = todo();
-    co_await net.sleep(*tmr, interval, ec);
+    co_await f.sleep(interval, ec);
     if (ec) {
       if (ec != asio::error::operation_aborted)
         TGBM_LOG_ERROR("timer ended with error: {}", ec.what());
@@ -1380,21 +1376,16 @@ void http2_client::run() {
   on_scope_exit {
     stop_requested = false;
   };
-  if (io_ctx.stopped())
-    io_ctx.restart();
-  std::shared_ptr<asio::steady_timer> timer = nullptr;
+  std::stop_source stopper(std::nostopstate);
   if (options.timeout_check_interval != duration_t::max()) {
-    timer = std::make_shared<asio::steady_timer>(io_ctx);
-    periodic_task(timer, [client = this] {
+    stopper = std::stop_source{};
+    periodic_task(stopper.get_token(), factory, [client = this] {
       if (client->connection)
         client->connection->drop_timeouted();
       return client->options.timeout_check_interval;
     });
   }
-  on_scope_exit {
-    timer->cancel_one();
-  };
-  io_ctx.run();
+  factory.run();
 }
 
 bool http2_client::run_one(duration_t timeout) {
@@ -1402,9 +1393,7 @@ bool http2_client::run_one(duration_t timeout) {
   on_scope_exit {
     stop_requested = false;
   };
-  if (io_ctx.stopped())
-    io_ctx.restart();
-  auto count = io_ctx.run_one_for(timeout);
+  auto count = factory.run_one(timeout);
   if (connection)
     connection->drop_timeouted();
   return count > 0;
@@ -1418,11 +1407,11 @@ void http2_client::stop() {
   stop_requested = true;
   drop_connection(reqerr_e::cancelled);
   while (requests_in_progress != 0)
-    io_ctx.run_one();
+    factory.run_one(std::chrono::nanoseconds(10));
   auto lock = lock_connections();
   notify_connection_waiters(nullptr);
   drop_connection(reqerr_e::cancelled);
-  io_ctx.stop();
+  factory.stop();
   lock.release();
   assert(!connection);
   assert(!is_connecting);

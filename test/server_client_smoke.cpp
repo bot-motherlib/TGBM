@@ -7,6 +7,7 @@
 #include <tgbm/net/http2/client.hpp>
 #include <tgbm/net/http2/server.hpp>
 #include <tgbm/utils/formatters.hpp>
+#include <tgbm/net/asio_transport_factory.hpp>
 
 inline int handled_req_count = 0;
 
@@ -72,7 +73,7 @@ int main() try {
                                  // disable timeouts, so client will not check them in run_one(500ms) later
                                  .timeout_check_interval = tgbm::duration_t::max(),
                              },
-                             opts));
+                             tgbm::asio_transport_factory(opts)));
   tgbm::bot bot("123456789:ABCDefghIJKlmnoPQRstuvWXyz1234567890", std::move(client));
 
   tgbm::http2_server_ptr server = new print_server(tgbm::http2_server_options{

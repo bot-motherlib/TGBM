@@ -1,9 +1,14 @@
 #pragma once
 
-#include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/address.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
+#include <boost/asio/io_context.hpp>
+
+#undef NO_ERROR
+#undef Yield
+#undef min
+#undef max
 
 #include <filesystem>
 

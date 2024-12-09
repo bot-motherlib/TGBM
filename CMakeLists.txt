@@ -55,6 +55,7 @@ set(TGBM_SRC_LIST
     src/net/http_client.cpp
     src/net/ssl_context.cpp
     src/utils/url_encoded.cpp
+    src/net/transport_factory.cpp
     )
 
 add_library(tgbmlib ${TGBM_SRC_LIST})

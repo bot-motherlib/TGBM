@@ -1,7 +1,7 @@
 #pragma once
 
 #include <boost/system/error_code.hpp>
-
+#undef Yield
 #include <exception>
 
 #include <fmt/core.h>

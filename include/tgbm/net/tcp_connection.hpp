@@ -102,6 +102,7 @@ struct tcp_connection {
     if (p->refcount == 0)
       delete p;
   }
+  // TODO support without ssl (another type?)
 
   // creates client connection
   static dd::task<tcp_connection_ptr> create(asio::io_context& KELCORO_LIFETIMEBOUND, std::string host,
