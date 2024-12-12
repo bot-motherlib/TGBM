@@ -2,12 +2,12 @@ make_r ?= make -f scripts/ci_ubuntu.make
 
 .PHONY: format
 format:
-	find benchmarks -name '*pp' -type f | xargs clang-format-17 -i
-	find gtest -name '*pp' -type f | xargs clang-format-17 -i
-	find include -name '*pp' -type f | xargs clang-format-17 -i
-	find samples -name '*pp' -type f | xargs clang-format-17 -i
-	find src -name '*pp' -type f | xargs clang-format-17 -i
-	find test -name '*pp' -type f | xargs clang-format-17 -i
+	find benchmarks -name '*pp' -type f | xargs clang-format-19 -i
+	find gtest -name '*pp' -type f | xargs clang-format-19 -i
+	find include -name '*pp' -type f | xargs clang-format-19 -i
+	find samples -name '*pp' -type f | xargs clang-format-19 -i
+	find src -name '*pp' -type f | xargs clang-format-19 -i
+	find test -name '*pp' -type f | xargs clang-format-19 -i
 	$(make_r) add-eol P=.github
 	$(make_r) add-eol P=cmake
 	$(make_r) add-eol P=benchmarks
@@ -50,7 +50,7 @@ install-compiler:
 	@if [ "$(compiler)" = "clang" ]; then \
             wget https://apt.llvm.org/llvm.sh; \
             chmod +x llvm.sh; \
-            sudo ./llvm.sh $(version); \
+            sudo ./llvm.sh $(version) all; \
             rm llvm.sh;\
     elif [ "$(compiler)" = "gcc" ]; then \
       	sudo apt install -y g++-$(version); \
