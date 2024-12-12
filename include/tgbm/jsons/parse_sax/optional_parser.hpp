@@ -1,5 +1,7 @@
 #pragma once
 
+#include <kelcoro/stack_memory_resource.hpp>
+
 #include <tgbm/jsons/sax.hpp>
 #include <tgbm/api/optional.hpp>
 #include <tgbm/utils/box.hpp>
@@ -10,10 +12,10 @@ template <typename Optional>
 struct basic_optional_parser {
   using T = typename Optional::value_type;
 
-  static sax_consumer_t parse(Optional& v, sax_token& tok) {
+  static sax_consumer_t parse(Optional& v, sax_token& tok, dd::with_stack_resource r) {
     if (tok.got == sax_token::null) [[unlikely]]
       return {};
-    return sax_parser<T>::parse(v.emplace(), tok);
+    return sax_parser<T>::parse(v.emplace(), tok, r);
   }
 };
 

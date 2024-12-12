@@ -29,7 +29,7 @@ namespace tgbm::json {
 
 template <typename T>
 struct sax_parser<api::telegram_answer<T>> {
-  static sax_consumer_t parse(api::telegram_answer<T>& out, sax_token& tok) {
+  static sax_consumer_t parse(api::telegram_answer<T>& out, sax_token& tok, dd::with_stack_resource r) {
     using enum sax_token::kind_e;
     tok.expect(object_begin);
 
@@ -40,6 +40,7 @@ struct sax_parser<api::telegram_answer<T>> {
       result_key = 1 << 2,
       unknown_key = 1 << 3,
     };
+
     int8_t parsed = 0;
     for (;;) {
       co_yield {};
@@ -64,7 +65,7 @@ struct sax_parser<api::telegram_answer<T>> {
           out.ok = tok.bool_m;
           continue;
         case result_key:
-          co_yield dd::elements_of(sax_parser<T>::parse(out.result, tok));
+          co_yield dd::elements_of(sax_parser<T>::parse(out.result, tok, r));
           continue;
         case description_key:
           tok.expect(string);
@@ -84,13 +85,14 @@ struct sax_parser<api::telegram_answer<T>> {
 // for parsing return type of some operations
 template <>
 struct sax_parser<tgbm::box_union<bool, tgbm::api::Message>> {
-  static sax_consumer_t parse(tgbm::box_union<bool, tgbm::api::Message>& out, sax_token& tok) {
+  static sax_consumer_t parse(tgbm::box_union<bool, tgbm::api::Message>& out, sax_token& tok,
+                              dd::with_stack_resource r) {
     using enum sax_token::kind_e;
     if (tok.got == bool_) {
       out = tok.bool_m;
       return {};
     }
-    return sax_parser<api::Message>::parse(out.emplace<tgbm::api::Message>(), tok);
+    return sax_parser<api::Message>::parse(out.emplace<tgbm::api::Message>(), tok, r);
   }
 };
 

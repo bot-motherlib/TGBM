@@ -4,6 +4,8 @@
 
 #include <utility>
 
+#include <kelcoro/stack_memory_resource.hpp>
+
 #include <tgbm/jsons/sax.hpp>
 
 #include <tgbm/utils/api_utils.hpp>
@@ -18,7 +20,7 @@ struct sax_parser<T> {
   static_assert(std::same_as<pfr_extension::tuple_element_t<N, T>, decltype(T::data)>);
 
   static sax_consumer_t get_generator_field(T& t_, std::string_view key, sax_token& tok,
-                                            std::bitset<N>& parsed_) {
+                                            std::bitset<N>& parsed_, dd::with_stack_resource r) {
     return pfr_extension::visit_struct_field<T, sax_consumer_t, N>(
         key,
         [&]<size_t I>() {
@@ -27,19 +29,19 @@ struct sax_parser<T> {
           if (parsed_.test(I))
             TGBM_JSON_PARSE_ERROR;
           parsed_.set(I);
-          return sax_parser<Field>::parse(field, tok);
+          return sax_parser<Field>::parse(field, tok, r);
         },
         // unknown field (discriminated 'data' or unknown field which must be ignored)
         [&]() {
           return oneof_field_utils::emplace_field<T, sax_consumer_t>(
               t_.data, key,
-              [&]<typename Field>(Field& field) { return sax_parser<Field>::parse(field, tok); },
+              [&]<typename Field>(Field& field) { return sax_parser<Field>::parse(field, tok, r); },
               []() -> sax_consumer_t { TGBM_JSON_PARSE_ERROR; },
               [&]() -> sax_consumer_t { return sax_ignore_value(tok); });
         });
   }
 
-  static sax_consumer_t parse(T& v, sax_token& tok) {
+  static sax_consumer_t parse(T& v, sax_token& tok, dd::with_stack_resource r) {
     using enum sax_token::kind_e;
     std::bitset<N> parsed_;
 
@@ -52,11 +54,12 @@ struct sax_parser<T> {
       tok.expect(key);
       std::string_view key = tok.str_m;
       co_yield {};
-      co_yield dd::elements_of(get_generator_field(v, key, tok, parsed_));
+      co_yield dd::elements_of(get_generator_field(v, key, tok, parsed_, r));
     }
     if (!parsed_.all())
       TGBM_JSON_PARSE_ERROR;
     assert(tok.got == object_end);
   }
 };
+
 }  // namespace tgbm::json
