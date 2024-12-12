@@ -8,7 +8,7 @@ struct test_server : tgbm::http2_server {
   using tgbm::http2_server::http2_server;
 
   dd::task<tgbm::http_response> handle_request(tgbm::http_request req) {
-    tgbm::http_response& rsp = co_await dd::this_coro::return_place;
+    tgbm::http_response rsp;
     if (req.path == "/abc" && req.method == tgbm::http_method_e::GET) {
       rsp.status = 200;
       rsp.headers.push_back(tgbm::http_header_t{.name = "content-type", .value = "text/plain"});
@@ -17,10 +17,11 @@ struct test_server : tgbm::http2_server {
         TGBM_LOG_ERROR("incorrect body, size: {}", req.body.data.size());
         std::exit(1);
       }
-      co_return dd::rvo;
+      co_return rsp;
     } else {
       TGBM_LOG_ERROR("incorrect path! Path is: {}", req.path);
       std::exit(2);
+      co_return rsp;
     }
   };
 };
