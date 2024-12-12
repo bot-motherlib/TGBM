@@ -32,6 +32,18 @@ jobs:
           - type: debug
             compiler: gcc
             version: 14
+          - type: release
+            compiler: clang
+            version: 17
+          - type: release
+            compiler: clang
+            version: 19
+          - type: release
+            compiler: gcc
+            version: 12
+          - type: release
+            compiler: gcc
+            version: 14
 
     name: ubuntu-24.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}
     runs-on: ubuntu-24.04
