@@ -129,7 +129,16 @@ static bytes_t generate_http2_headers(const http_request& request, hpack::encode
   auto out = std::back_inserter(headers);
 
   // required scheme, method, authority, path
-  encoder.encode_header_fully_indexed(hdrs::scheme_https, out);
+  switch (request.scheme) {
+    case scheme_e::HTTPS:
+      encoder.encode_header_fully_indexed(hdrs::scheme_https, out);
+      break;
+    case scheme_e::HTTP:
+      encoder.encode_header_fully_indexed(hdrs::scheme_http, out);
+      break;
+    default:
+      unreachable();
+  }
   switch (request.method) {
     case http_method_e::GET:
       encoder.encode_header_fully_indexed(hdrs::method_get, out);
@@ -258,40 +267,6 @@ struct request_node {
       return l.deadline < r.deadline;  // less means higher priority
     }
   };
-};
-
-struct read_awaiter {
-  any_connection& con;
-  io_error_code& ec;
-  std::span<byte_t> buf;
-
-  static bool await_ready() noexcept {
-    return false;
-  }
-
-  void await_suspend(std::coroutine_handle<> h) const {
-    con.start_read(h, buf, ec);
-  }
-  static void await_resume() noexcept {
-  }
-};
-
-struct write_awaiter {
-  any_connection& con;
-  io_error_code& ec;
-  std::span<const byte_t> buf;
-  size_t written;
-
-  static bool await_ready() noexcept {
-    return false;
-  }
-
-  void await_suspend(std::coroutine_handle<> h) {
-    con.start_write(h, buf, ec, written);
-  }
-  size_t await_resume() noexcept {
-    return written;
-  }
 };
 
 dd::task<void> send_rst_stream(http2_connection_ptr con, http2::stream_id_t streamid, http2::errc_e errc);
@@ -710,6 +685,7 @@ static dd::task<http2_connection_ptr> establish_http2_session(any_connection&& t
   if (ec)
     throw network_exception("cannot send accepted settings frame to server, {}", ec.what());
 
+  // TODO ? if ACK flag?
   if (std::ranges::equal(buf, bytes)) {  // server ACK already received
     TGBM_LOG_INFO("[HTTP2] connection successfully established without server settings frame");
     // con.decoder is default with 4096 bytes
@@ -717,6 +693,7 @@ static dd::task<http2_connection_ptr> establish_http2_session(any_connection&& t
         std::min(con->server_settings.max_frame_size, options.max_send_frame_size);
     co_return con;
   }
+
   // read server settings ACK and all other frames it sends now
 
   for (;;) {
@@ -1384,6 +1361,7 @@ dd::task<int> http2_client::send_request(on_header_fn_ptr on_header, on_data_par
     co_return reqerr_e::network_err;
   if (request.authority.empty())  // default host
     request.authority = get_host();
+  request.scheme = con->tcp_con.is_https() ? scheme_e::HTTPS : scheme_e::HTTP;
   node_ptr node = con->new_request_node(std::move(request), deadline, on_header, on_data_part);
 
   TGBM_LOG_DEBUG("send_request, path: {}, streamid: {}", request.path, node->req.streamid);

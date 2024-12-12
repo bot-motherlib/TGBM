@@ -36,8 +36,8 @@ struct Config {
   size_t max_nesting = 16;
   size_t max_size_array = 16;
 
-  int64_t min_int = -200000;
-  int64_t max_int = 200000;
+  int64_t min_int = 0;
+  int64_t max_int = 10'000;
 
   double min_double = -200000;
   double max_double = 200000;
@@ -53,7 +53,7 @@ struct GlobalInfo {
 };
 
 struct Context {
-  const Config& config;
+  Config config;
   LocalInfo local;
   GlobalInfo& global;
 
@@ -194,7 +194,7 @@ struct Storage {
   template <typename T>
   void Add(std::string name, Config config) {
     std::filesystem::path path(config.path);
-    TGBM_LOG_INFO("Add: {}", path.generic_string());
+    TGBM_LOG_INFO("Add: {}", std::filesystem::absolute(path).generic_string());
     std::optional<std::string> json;
     if (std::filesystem::exists(path)) {
       std::fstream file(path);
@@ -225,7 +225,7 @@ struct Storage {
   template <typename T, size_t N>
   void AddArray(std::string name, Config config) {
     std::filesystem::path path(config.path);
-    TGBM_LOG_INFO("AddArray: {}", path.generic_string());
+    TGBM_LOG_INFO("AddArray: {}", std::filesystem::absolute(path).generic_string());
     std::optional<std::string> json;
     if (std::filesystem::exists(path)) {
       std::fstream file(path);
@@ -279,24 +279,16 @@ template <std::integral T>
 struct randomizer<T> {
   static constexpr bool is_nesting = false;
   static T generate(Context context, auto&& generator) {
-    T min = std::max(T{context.config.min_int}, std::numeric_limits<T>::min());
-    T max = std::min(T{context.config.max_int}, std::numeric_limits<T>::max());
+    T min = 0;
+    T max = 10'000;
 
-    // Вычисляем среднее и стандартное отклонение для нормального распределения
-    double mean = (static_cast<double>(min) + static_cast<double>(max)) / 2.0;
-    double stddev =
-        (static_cast<double>(max) - static_cast<double>(min)) / 6.0;  // Для охвата ~99.7% значений
-
-    std::normal_distribution<double> distr(mean, stddev);
+    std::uniform_real_distribution<> dist(0, 1);
+    double n = dist(generator);
+    T number = min + (max - min) * n * n * n;
 
     context.global.cur_fields_total += 1;
 
-    T result;
-    do {
-      double val = distr(generator);
-      result = static_cast<T>(std::round(val));
-    } while (result < min || result > max);
-    return result;
+    return number;
   }
 };
 
@@ -304,24 +296,8 @@ template <>
 struct randomizer<tgbm::api::Integer> {
   static constexpr bool is_nesting = false;
   static tgbm::api::Integer generate(Context context, auto&& generator) {
-    std::int64_t min = context.config.min_int;
-    std::int64_t max = std::min(context.config.max_int, tgbm::api::Integer::max);
-
-    // Вычисляем среднее и стандартное отклонение для нормального распределения
-    double mean = (static_cast<double>(min) + static_cast<double>(max)) / 2.0;
-    double stddev =
-        (static_cast<double>(max) - static_cast<double>(min)) / 6.0;  // Для охвата ~99.7% значений
-
-    std::normal_distribution<double> distr(mean, stddev);
-
-    context.global.cur_fields_total += 1;
-
-    tgbm::api::Integer result;
-    do {
-      double val = distr(generator);
-      result = static_cast<std::int64_t>(std::round(val));
-    } while (result < min || result > max);
-    return result;
+    context.config.max_int = tgbm::api::Integer::max;
+    return tgbm::api::Integer(randomizer<decltype(tgbm::api::Integer::value)>::generate(context, generator));
   }
 };
 

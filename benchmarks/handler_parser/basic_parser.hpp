@@ -13,6 +13,9 @@
 #include <tgbm/jsons/errors.hpp>
 #include <tgbm/utils/macro.hpp>
 
+#include <tgbm/utils/anyany_utils.hpp>
+#include <boost/container/small_vector.hpp>
+
 namespace tgbm::json::handler_parser {
 
 template <typename T>
@@ -22,232 +25,45 @@ struct Parser {};
   #define TGBM_STATIC_PARSER_SIZE 64
 #endif
 
-#ifndef TGBM_PARSER_STACK_SIZE
-  #define TGBM_PARSER_STACK_SIZE 16
-#endif
-
 enum struct ResultParse { kContinue, kError, kEnd };
 
-inline ResultParse err() {
-  return ResultParse::kError;
-}
-#define TGBM_JSON_HANDLER_PARSE_ERROR return err()
+#define TGBM_JSON_HANDLER_PARSE_ERROR return ResultParse::kError
 // TGBM_JSON_HANDLER_PARSE_ERROR
 
 namespace details {
-struct StartObject {
-  static ResultParse do_invoke(auto& self) {
-    return self.start_object();
-  }
 
-  template <typename CRTP>
-  struct plugin {
-    ResultParse start_object() {
-      auto& self = *static_cast<CRTP*>(this);
-      return aa::invoke<StartObject>(self);
-    }
-  };
-};
-struct EndObject {
-  static ResultParse do_invoke(auto& self) {
-    return self.end_object();
-  }
-
-  template <typename CRTP>
-  struct plugin {
-    ResultParse end_object() {
-      auto& self = *static_cast<CRTP*>(this);
-      return aa::invoke<EndObject>(self);
-    }
-  };
-};
-
-struct StartArray {
-  static ResultParse do_invoke(auto& self) {
-    return self.start_array();
-  }
-
-  template <typename CRTP>
-  struct plugin {
-    ResultParse start_array() {
-      auto& self = *static_cast<CRTP*>(this);
-      return aa::invoke<StartArray>(self);
-    }
-  };
-};
-
-struct EndArray {
-  static ResultParse do_invoke(auto& self) {
-    return self.end_array();
-  }
-
-  template <typename CRTP>
-  struct plugin {
-    ResultParse end_array() {
-      auto& self = *static_cast<CRTP*>(this);
-      return aa::invoke<EndArray>(self);
-    }
-  };
-};
-
-struct Key {
-  static ResultParse do_invoke(auto& self, std::string_view val) {
-    return self.key(val);
-  }
-
-  template <typename CRTP>
-  struct plugin {
-    ResultParse key(std::string_view val) {
-      auto& self = *static_cast<CRTP*>(this);
-      return aa::invoke<Key>(self, val);
-    }
-  };
-};
-
-struct String {
-  static ResultParse do_invoke(auto& self, std::string_view val) {
-    return self.string(val);
-  }
-
-  template <typename CRTP>
-  struct plugin {
-    ResultParse string(std::string_view val) {
-      auto& self = *static_cast<CRTP*>(this);
-      return aa::invoke<String>(self, val);
-    }
-  };
-};
-
-struct Integral {
-  static ResultParse do_invoke(auto& self, std::int64_t val) {
-    return self.integral(val);
-  }
-
-  template <typename CRTP>
-  struct plugin {
-    ResultParse integral(std::int64_t val) {
-      auto& self = *static_cast<CRTP*>(this);
-      return aa::invoke<Integral>(self, val);
-    }
-  };
-};
-
-struct UnsignedIntegral {
-  static ResultParse do_invoke(auto& self, std::uint64_t val) {
-    return self.unsigned_integral(val);
-  }
-
-  template <typename CRTP>
-  struct plugin {
-    ResultParse unsigned_integral(std::uint64_t val) {
-      auto& self = *static_cast<CRTP*>(this);
-      return aa::invoke<UnsignedIntegral>(self, val);
-    }
-  };
-};
-
-struct Floating {
-  static ResultParse do_invoke(auto& self, double val) {
-    return self.floating(val);
-  }
-
-  template <typename CRTP>
-  struct plugin {
-    ResultParse floating(double val) {
-      auto& self = *static_cast<CRTP*>(this);
-      return aa::invoke<Floating>(self, val);
-    }
-  };
-};
-
-struct Boolean {
-  static ResultParse do_invoke(auto& self, bool val) {
-    return self.boolean(val);
-  }
-
-  template <typename CRTP>
-  struct plugin {
-    ResultParse boolean(bool val) {
-      auto& self = *static_cast<CRTP*>(this);
-      return aa::invoke<Boolean>(self, val);
-    }
-  };
-};
-
-struct Null {
-  static ResultParse do_invoke(auto& self) {
-    return self.null();
-  }
-
-  template <typename CRTP>
-  struct plugin {
-    ResultParse null() {
-      auto& self = *static_cast<CRTP*>(this);
-      return aa::invoke<Null>(self);
-    }
-  };
-};
-
-struct OnNextEndParsing {
-  static ResultParse do_invoke(auto& self) {
-    return self.on_next_end_parsing();
-  }
-
-  template <typename CRTP>
-  struct plugin {
-    ResultParse on_next_parsing() {
-      auto& self = *static_cast<CRTP*>(this);
-      return aa::invoke<OnNextEndParsing>(self);
-    }
-  };
-};
-
-#ifdef TGBM_ENABLE_DEBUG
-
-struct NameType {
-  template <typename T>
-  static std::string_view do_invoke(const T& self) {
-    return aa::noexport::n<T>();
-  }
-
-  template <typename CRTP>
-  struct plugin {
-    std::string_view name_type() {
-      auto& self = *static_cast<CRTP*>(this);
-      return aa::invoke<NameType>(self);
-    }
-  };
-};
+ANYANY_METHOD(start_object, ResultParse());
+ANYANY_METHOD(end_object, ResultParse());
+ANYANY_METHOD(start_array, ResultParse());
+ANYANY_METHOD(end_array, ResultParse());
+ANYANY_METHOD(key, ResultParse(std::string_view));
+ANYANY_METHOD(string, ResultParse(std::string_view));
+ANYANY_METHOD(integral, ResultParse(int64_t));
+ANYANY_METHOD(unsigned_integral, ResultParse(uint64_t));
+ANYANY_METHOD(floating, ResultParse(double));
+ANYANY_METHOD(boolean, ResultParse(bool));
+ANYANY_METHOD(null, ResultParse());
+ANYANY_METHOD(on_next_end_parsing, ResultParse());
 
 template <size_t Size>
-using ErasedParser = aa::basic_any_with<aa::unreachable_allocator, Size, NameType, aa::move, StartObject,
-                                        EndObject, StartArray, EndArray, Key, String, Integral,
-                                        UnsignedIntegral, Floating, Boolean, Null, OnNextEndParsing>;
-#else
-template <size_t Size>
-using ErasedParser = aa::basic_any_with<aa::unreachable_allocator, Size, aa::move, StartObject, EndObject,
-                                        StartArray, EndArray, Key, String, Integral, UnsignedIntegral,
-                                        Floating, Boolean, Null, OnNextEndParsing>;
-#endif
+using ErasedParser =
+    aa::basic_any_with<aa::unreachable_allocator, Size, aa::move, start_object_m, end_object_m, start_array_m,
+                       end_array_m, key_m, string_m, integral_m, unsigned_integral_m, floating_m, boolean_m,
+                       null_m, on_next_end_parsing_m>;
+
 }  // namespace details
 
 using ErasedParser = details::ErasedParser<TGBM_STATIC_PARSER_SIZE>;
 
 struct ParserStack {
-  ::boost::container::static_vector<ErasedParser, TGBM_STATIC_PARSER_SIZE> stack_;
-  TGBM_DEBUG_FIELD(stack_types_, std::vector<std::string_view>);
+  ::boost::container::static_vector<ErasedParser, 64> stack_;
 
  public:
   void push(ErasedParser parser) {
-    if (stack_types_.size() == stack_types_.max_size()) {
-      TGBM_JSON_PARSE_ERROR;
-    }
-    TGBM_ON_DEBUG({ stack_types_.push_back(parser.name_type()); });
     stack_.push_back(std::move(parser));
   }
 
   void pop() {
-    TGBM_ON_DEBUG({ stack_types_.pop_back(); });
     assert(!stack_.empty());
     stack_.pop_back();
   }
@@ -263,17 +79,16 @@ struct ParserStack {
   }
 
   ResultParse handle_result(ResultParse res) {
-    while (res == ResultParse::kEnd && !stack_.empty()) [[unlikely]] {
+    while (res == ResultParse::kEnd && !stack_.empty()) {
       pop();
-      if (!stack_.empty()) {
+      if (!stack_.empty())
         res = on_next_end_parsing();
-      }
     }
     return res;
   }
 
   ResultParse on_next_end_parsing() {
-    return last().on_next_parsing();
+    return last().on_next_end_parsing();
   }
 
   bool start_object() {
@@ -341,14 +156,10 @@ struct basic_parser {
   ParserStack& parser_stack_;
   T* t_ = nullptr;
 
-  TGBM_DEBUG_FIELD(parsed_, bool);
-
   basic_parser(ParserStack& stack, T& t) : parser_stack_(stack), t_(std::addressof(t)) {
-    parsed_ = false;
   }
 
   basic_parser(ParserStack& stack, T* t = nullptr) : parser_stack_(stack), t_(t) {
-    parsed_ = false;
   }
 
   ResultParse on_next_end_parsing() {

@@ -8,11 +8,7 @@
   #define TGBM_TRIVIAL_ABI
 #endif
 
-#ifndef TGBM_ENABLE_DEBUG
-  #define TGBM_ENABLE_DEBUG NDEBUG
-#endif
-
-#ifdef TGBM_ENABLE_DEBUG
+#ifndef NDEBUG
 // clang-format off
 #define TGBM_ON_DEBUG(...) __VA_ARGS__
 #define TGBM_DEBUG_FIELD(name, ...) __VA_ARGS__ name

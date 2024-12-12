@@ -21,11 +21,7 @@ namespace tgbm {
 struct client_session;
 using client_session_ptr = boost::intrusive_ptr<client_session>;
 
-struct client_session_ctx {
-  // TODO checkout move ctor / assign
-  asio::strand<asio::io_context::executor_type> exe;
-  asio::ssl::stream<asio::ip::tcp::socket> socket;
-};
+using client_session_ctx = any_connection;
 
 struct http2_stream_ctx {
   uint32_t streamlevel_window_size = 0;
@@ -104,7 +100,6 @@ struct client_session {
  private:
   ~client_session() {
     shutdown();
-    server->opened_sessions.fetch_sub(1, std::memory_order_acq_rel);
   }
 
   dd::job start_writer();
@@ -120,7 +115,6 @@ struct client_session {
         encoder(server_opts.header_table_size),
         framebuf(*this) {
     assert(server);
-    server->opened_sessions.fetch_add(1, std::memory_order_acq_rel);
     start_writer();
   }
 
@@ -133,8 +127,11 @@ struct client_session {
       delete p;
   }
 
-  asio::ssl::stream<asio::ip::tcp::socket>& socket() noexcept {
-    return session_ctx.socket;
+  write_awaiter write(std::span<const byte_t> bytes, io_error_code& ec) {
+    return write_awaiter{session_ctx, ec, bytes};
+  }
+  read_awaiter read(std::span<byte_t> buf, io_error_code& ec) {
+    return read_awaiter{session_ctx, ec, buf};
   }
 
   [[nodiscard]] bool stop_requested() const noexcept {
@@ -163,7 +160,7 @@ struct client_session {
     // ignore possible bad alloc
     http2::goaway_frame::form(last_opened_stream, err, std::move(debuginfo), std::back_inserter(bytes));
     io_error_code ec;
-    co_await net.write(socket(), bytes, ec);
+    co_await write(bytes, ec);
     if (ec)
       TGBM_LOG_ERROR("cannot send goaway for {}", (void*)this);
   } catch (std::bad_alloc&) {
@@ -193,14 +190,13 @@ dd::job client_session::start_writer() {
   client_session_ptr self = this;
   io_error_code ec;
   for (;;) {
-    assert(self->session_ctx.exe.running_in_this_thread());
     co_await framebuf.next_work();
     if (self->stop_requested()) {
       TGBM_LOG_DEBUG("[HTTP2]: writer for session {} ended after stop request", (void*)this);
       co_return;
     }
     bytes_t bytes = std::move(framebuf.bytes_to_send);
-    co_await net.write(self->socket(), bytes, ec);
+    co_await write(bytes, ec);
     if (ec && ec != asio::error::operation_aborted) {
       TGBM_LOG_ERROR("[HTTP2]: writer for session {} ended after network err: {}", (void*)this, ec.what());
       co_return;
@@ -321,16 +317,7 @@ void frames_buffer::push_response(http2::stream_id_t streamid, http_response&& r
 }
 
 void client_session::shutdown() noexcept {
-  shutted_down = true;
-  if (shutted_down || !socket().lowest_layer().is_open())
-    return;
-  io_error_code ec;
-  ec = socket().lowest_layer().shutdown(asio::ip::tcp::socket::shutdown_both, ec);
-  if (ec)
-    TGBM_LOG_ERROR("error while shutting down session (tcp part) {}", (void*)this);
-  ec = socket().shutdown(ec);
-  if (ec)
-    TGBM_LOG_ERROR("error while shutting down session {}", (void*)this);
+  session_ctx.shutdown();
 }
 
 void client_session::receive_window_update(http2::window_update_frame frame) {
@@ -438,14 +425,10 @@ dd::job start_handle_request(client_session_ptr session, http2::stream_id_t stre
   session->end_stream(streamid);
 }
 
-http2_server::http2_server(http2_server_options opts, tcp_connection_options tcpopts,
-                           size_t listen_thread_count)
-    : options(std::move(opts)),
-      tcp_options(tcpopts),
-      sslctx(make_ssl_context_for_server(options.ssl_cert_path, options.private_key_path)),
-      tp(listen_thread_count) {
-  if (!sslctx)
-    throw std::runtime_error("[HTTP2] server cannot initialize sslctx! Set path to both files in options!");
+http2_server::http2_server(any_server_transport_factory tf, http2_server_options opts)
+    : options(std::move(opts)), transport(std::move(tf)) {
+  if (!transport)
+    throw std::logic_error("transport must be initialized!");
   // TODO таймер на коннекшн и таймер на получение следующего запроса (фрейм хедер + данные)
   options.initial_stream_window_size = std::min(options.initial_stream_window_size, http2::max_window_size);
   options.max_concurrent_stream_per_connection = std::clamp<uint32_t>(
@@ -453,8 +436,6 @@ http2_server::http2_server(http2_server_options opts, tcp_connection_options tcp
   options.max_receive_frame_size =
       std::clamp<uint32_t>(options.max_receive_frame_size, 1, http2::frame_len_max);
   options.max_send_frame_size = std::clamp<uint32_t>(options.max_send_frame_size, 1, http2::frame_len_max);
-  if (tcp_options.disable_ssl_certificate_verify)
-    TGBM_LOG_WARN("SSL veriication for http2 server disabled");
 }
 
 dd::job reader_for(client_session_ptr session) try {
@@ -480,7 +461,7 @@ dd::job reader_for(client_session_ptr session) try {
 
     std::span buf = buffer.get_exactly(h2fhl);
 
-    co_await net.read(session->socket(), buf, ec);
+    co_await session->read(buf, ec);
 
     if (ec)
       goto network_error;
@@ -498,7 +479,7 @@ dd::job reader_for(client_session_ptr session) try {
     // read frame data
 
     buf = buffer.get_exactly(framehdr.length);
-    co_await net.read(session->socket(), buf, ec);
+    co_await session->read(buf, ec);
     if (ec)
       goto network_error;
     if (session->stop_requested())
@@ -557,7 +538,7 @@ dd::job reader_for(client_session_ptr session) try {
       uint32_t inc = http2::max_window_size - session->my_window_size;
       byte_t bytes[window_update_frame::len];
       window_update_frame::form(0, inc, bytes);
-      co_await net.write(session->socket(), bytes, ec);
+      co_await session->write(bytes, ec);
       if (ec)
         goto network_error;
       session->my_window_size += inc;
@@ -593,7 +574,7 @@ dd::job establish_client_session(http2_server_ptr server, client_session_ctx ses
   // TODO timeout for connection here
   {  // read preface
     std::span preface = buf.get_exactly(preface_sz);
-    co_await net.read(session_ctx.socket, preface, ec);
+    co_await read_awaiter(session_ctx, ec, preface);
     if (ec) {
       TGBM_LOG_ERROR("[HTTP2]: client session establishment failed, err: {}", ec.what());
       co_return;
@@ -611,7 +592,7 @@ dd::job establish_client_session(http2_server_ptr server, client_session_ctx ses
   frame_header settings_header;
   {  // read settings frame
     std::span settings_frame = buf.get_exactly(http2::frame_header_len);
-    co_await net.read(session_ctx.socket, settings_frame, ec);
+    co_await read_awaiter(session_ctx, ec, settings_frame);
     if (ec) {
       TGBM_LOG_ERROR("[HTTP2]: client session establishment failed, err: {}", ec.what());
       co_return;
@@ -630,7 +611,7 @@ dd::job establish_client_session(http2_server_ptr server, client_session_ctx ses
   settings_t client_settings;
   {  // read settings data
     std::span settings_data = buf.get_exactly(settings_header.length);
-    co_await net.read(session_ctx.socket, settings_data, ec);
+    co_await read_awaiter(session_ctx, ec, settings_data);
     if (ec) {
       TGBM_LOG_ERROR("[HTTP2]: client session establishment failed, err: {}", ec.what());
       co_return;
@@ -654,7 +635,7 @@ dd::job establish_client_session(http2_server_ptr server, client_session_ctx ses
     std::vector<byte_t> bytes;
     settings_frame::form(mysettings, std::back_inserter(bytes));
     accepted_settings_frame().send_to(std::back_inserter(bytes));
-    co_await net.write(session_ctx.socket, bytes, ec);
+    co_await write_awaiter(session_ctx, ec, bytes);
     if (ec) {
       TGBM_LOG_ERROR("[HTTP2]: client session establishment failed: cannot send ACK frame to client, err: {}",
                      ec.what());
@@ -681,72 +662,44 @@ dd::job http2_server::start_accept(asio::ip::tcp::endpoint ep) {
   // prevent deleting
   http2_server_ptr self = this;
 
-  tcp::acceptor acceptor(io_ctx, ep);
+  any_acceptor acceptor = transport.make_acceptor(ep);
   io_error_code ec;
   for (;;) {
-    // TODO checkout move (socket refer to .exe which is different from moved out .exe)
-    client_session_ctx session_ctx{
-        .exe = asio::make_strand(io_ctx),
-        .socket = asio::ssl::stream<tcp::socket>(tcp::socket(session_ctx.exe), sslctx->ctx),
-    };
-    TGBM_LOG_DEBUG("[HTTP2] starting accept!");
-    co_await net.accept(acceptor, session_ctx.socket.lowest_layer(), ec);
-
-    if (ec) {
-      if (ec != asio::error::operation_aborted)
-        TGBM_LOG_ERROR("[HTTP2]: server stops accepting after error: {}", ec.what());
-      co_return;
-    }
-    TGBM_LOG_DEBUG("[HTTP2] accepted TCP socket");
-
-    co_await net.handshake(session_ctx.socket, asio::ssl::stream_base::server, ec);
+    client_session_ctx session_ctx(co_await acceptor.accept(ec));
     if (ec) {
       if (ec == asio::error::operation_aborted)
         co_return;
-      TGBM_LOG_ERROR("[HTTP2]: server cannot accept (ssl handshake failure), error: {}", ec.what());
-      // do not stop accepting
+      TGBM_LOG_ERROR("[HTTP2]: server cannot accept on {}", ep.address().to_string());
+      ec.clear();  // do not stop accept anyway
     }
     if (stop_requested())
       co_return;
 
     TGBM_LOG_DEBUG("[HTTP2]: establishing client session");
-    // TODO checkout and fix move
     establish_client_session(this, std::move(session_ctx));
   }
 }
 
 void http2_server::listen(asio::ip::tcp::endpoint ep) {
-  start_accept(ep);  // start accept
-}
-
-bool http2_server::start() {
-  if (work_guard)
-    return false;
-  if (io_ctx.stopped()) {
-    // drop old sessions before starting new ones
-    io_ctx.restart();
-    while (opened_sessions.load(std::memory_order_acquire) != 0)
-      io_ctx.run_one();
-  }
-  work_guard = std::shared_ptr<work_guard_t>(new auto(asio::make_work_guard(io_ctx)));
-  for (dd::task_queue& q : tp.queues_range())
-    dd::schedule_to(q, [&ctx = this->io_ctx, g = work_guard] { ctx.run(); });
-  return true;
+  start_accept(std::move(ep));  // start accept
 }
 
 void http2_server::run() {
-  if (start())
-    io_ctx.run();
+  start();
+  transport.run();
 }
 
 void http2_server::stop() {
-  if (!work_guard)
-    return;
-  _stop_requested.store(true);
   http2_server_ptr self = this;
-  (*work_guard).reset();
-  work_guard = nullptr;
-  io_ctx.stop();
+  _stop_requested.store(true);
+  on_scope_exit {
+    _stop_requested.store(false);
+  };
+  transport.stop();
+}
+
+bool http2_server::start() {
+  return transport.start();
 }
 
 }  // namespace tgbm

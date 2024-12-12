@@ -110,7 +110,7 @@ static std::string generate_http_headers(const http_request& request, std::span<
   return result;
 }
 
-static dd::task<void> send_request(tcp_connection_ptr con, on_header_fn_ptr on_header,
+static dd::task<void> send_request(tcp_tls_connection* con, on_header_fn_ptr on_header,
                                    on_data_part_fn_ptr on_data_part, std::string headers,
                                    http_request& request, int& status) try {
   namespace asio = boost::asio;
@@ -200,9 +200,9 @@ http11_client::http11_client(size_t connections_max_count, std::string_view host
                              tcp_connection_options tcp_opts)
     : http_client(host), io_ctx(1), tcp_options(tcp_opts), connections(connections_max_count, [this]() {
         // Do not reuses ssl ctx because... just because + multithread no one knows how to work
-        return tcp_connection::create(io_ctx, std::string(get_host()),
-                                      make_ssl_context_for_http11(tcp_options.additional_ssl_certificates),
-                                      tcp_options);
+        return tcp_tls_connection::create(
+            io_ctx, std::string(get_host()),
+            make_ssl_context_for_http11(tcp_options.additional_ssl_certificates), tcp_options);
       }) {
   if (tcp_options.disable_ssl_certificate_verify)
     TGBM_LOG_WARN("SSL veriication for http11 client disabled");
@@ -226,11 +226,11 @@ dd::task<int> http11_client::send_request(on_header_fn_ptr on_header, on_data_pa
     request.authority = get_host();
   std::string headers = generate_http_headers(request, request.body.data, request.body.content_type);
   int status = reqerr_e::unknown_err;
-  co_await ::tgbm::send_request(*handle.get(), on_header, on_data_part, std::move(headers), request, status);
+  co_await ::tgbm::send_request(handle.get(), on_header, on_data_part, std::move(headers), request, status);
   // send request throws on user exception
   assert(status != reqerr_e::user_exception);
   if (status < 0 && status != reqerr_e::timeout) {
-    handle.get()->get()->shutdown();
+    handle.get()->shutdown();
     handle.drop();
   }
   co_return status;

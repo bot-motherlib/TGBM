@@ -22,3 +22,11 @@ target_compile_definitions(tgbm_client_server_http2_smoke PRIVATE
   TEST_SERVER_CERT_PATH="${CMAKE_CURRENT_SOURCE_DIR}/test_server.crt"
   TEST_SERVER_KEY_PATH="${CMAKE_CURRENT_SOURCE_DIR}/test_server.key"
 )
+
+add_executable(tgbm_http2_notls_client ${CMAKE_CURRENT_SOURCE_DIR}/client_smoke_no_tls.cpp)
+target_link_libraries(tgbm_http2_notls_client PUBLIC tgbmlib)
+
+set_target_properties(tgbm_http2_notls_client PROPERTIES
+  CXX_STANDARD 20)
+
+add_test(tgbm_http2_notls_client tgbm_http2_notls_client)

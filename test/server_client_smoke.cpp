@@ -7,7 +7,7 @@
 #include <tgbm/net/http2/client.hpp>
 #include <tgbm/net/http2/server.hpp>
 #include <tgbm/utils/formatters.hpp>
-#include <tgbm/net/asio_transport_factory.hpp>
+#include <tgbm/net/asio_tls_transport.hpp>
 
 inline int handled_req_count = 0;
 
@@ -73,13 +73,13 @@ int main() try {
                                  // disable timeouts, so client will not check them in run_one(500ms) later
                                  .timeout_check_interval = tgbm::duration_t::max(),
                              },
-                             tgbm::asio_transport_factory(opts)));
+                             tgbm::make_any_transport_factory<tgbm::asio_tls_transport>(std::move(opts))));
   tgbm::bot bot("123456789:ABCDefghIJKlmnoPQRstuvWXyz1234567890", std::move(client));
 
-  tgbm::http2_server_ptr server = new print_server(tgbm::http2_server_options{
-      .ssl_cert_path = TEST_SERVER_CERT_PATH,
-      .private_key_path = TEST_SERVER_KEY_PATH,
-  });
+  auto tf = tgbm::make_any_server_transport_factory<tgbm::asio_server_tls_transport>(TEST_SERVER_CERT_PATH,
+                                                                                     TEST_SERVER_KEY_PATH);
+  tgbm::http2_server_ptr server = new print_server(std::move(tf));
+
   namespace asio = boost::asio;
   asio::ip::tcp::endpoint ipv4_endpoint(asio::ip::address_v4::loopback(), 443);
   server->listen(ipv4_endpoint);

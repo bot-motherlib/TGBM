@@ -12,9 +12,7 @@ struct parser<T> : basic_parser<T> {
   using basic_parser<T>::basic_parser;
 
   ResultParse floating(double val) {
-    assert(!this->parsed_);
     *this->t_ = val;
-    this->parsed_ = true;
     return ResultParse::kEnd;
   }
 };
@@ -24,15 +22,11 @@ struct parser<T> : basic_parser<T> {
   using basic_parser<T>::basic_parser;
 
   ResultParse integral(std::int64_t val) {
-    assert(!this->parsed_);
     *this->t_ = val;
-    this->parsed_ = true;
     return ResultParse::kEnd;
   }
   ResultParse unsigned_integral(std::uint64_t val) {
-    assert(!this->parsed_);
     *this->t_ = val;
-    this->parsed_ = true;
     return ResultParse::kEnd;
   }
 };
@@ -42,8 +36,6 @@ struct parser<api::Double> : basic_parser<api::Double> {
   using basic_parser<api::Double>::basic_parser;
 
   ResultParse floating(double val) {
-    assert(!this->parsed_);
-    this->parsed_ = true;
     *this->t_ = val;
     return ResultParse::kEnd;
   }
@@ -54,8 +46,6 @@ struct parser<tgbm::const_string> : basic_parser<tgbm::const_string> {
   using basic_parser<tgbm::const_string>::basic_parser;
 
   ResultParse string(std::string_view val) {
-    assert(!this->parsed_);
-    this->parsed_ = true;
     *this->t_ = val;
     return ResultParse::kEnd;
   }
@@ -66,16 +56,13 @@ struct parser<api::Integer> : basic_parser<api::Integer> {
   using basic_parser<api::Integer>::basic_parser;
 
   ResultParse integral(std::int64_t val) {
-    assert(!this->parsed_);
     if (val > api::Integer::max) {
       TGBM_JSON_HANDLER_PARSE_ERROR;
     }
     *this->t_ = val;
-    this->parsed_ = true;
     return ResultParse::kEnd;
   }
   ResultParse unsigned_integral(std::uint64_t val) {
-    assert(!this->parsed_);
     if (val > std::numeric_limits<std::int64_t>::max()) {
       TGBM_JSON_HANDLER_PARSE_ERROR;
     }
@@ -83,7 +70,6 @@ struct parser<api::Integer> : basic_parser<api::Integer> {
       TGBM_JSON_HANDLER_PARSE_ERROR;
     }
     *this->t_ = val;
-    this->parsed_ = true;
     return ResultParse::kEnd;
   }
 };
@@ -93,8 +79,6 @@ struct parser<bool> : basic_parser<bool> {
   using basic_parser<bool>::basic_parser;
 
   ResultParse boolean(bool val) {
-    assert(!parsed_);
-    TGBM_ON_DEBUG({ parsed_ = true; });
     *this->t_ = val;
     return ResultParse::kEnd;
   }

@@ -8,7 +8,7 @@
 #include <tgbm/net/http2/client.hpp>
 #include <tgbm/bot.hpp>
 #include <tgbm/net/http_client_with_retry.hpp>
-#include <tgbm/net/asio_transport_factory.hpp>
+#include <tgbm/net/asio_tls_transport.hpp>
 
 dd::task<void> get_bot_info(tgbm::bot& b) {
   auto info = co_await b.api.getMe();

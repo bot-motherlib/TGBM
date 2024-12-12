@@ -1,79 +1,32 @@
 #pragma once
 
+#include <boost/asio/ip/tcp.hpp>
+
 #include <kelcoro/task.hpp>
 
 #include <tgbm/utils/memory.hpp>
 #include <tgbm/net/errors.hpp>
 #include <tgbm/utils/deadline.hpp>
-
+#include <tgbm/net/any_acceptor.hpp>
 #include <tgbm/net/any_connection.hpp>
+
+#include <tgbm/utils/anyany_utils.hpp>
 
 namespace tgbm {
 
-struct create_connection_m {
-  static dd::task<any_connection> do_invoke(auto& self, std::string_view host) {
-    return self.create_connection(host);
-  }
+// any_transport_factory interface
 
-  template <typename CRTP>
-  struct plugin {
-    dd::task<any_connection> create_connection(std::string_view host) {
-      return aa::invoke<create_connection_m>(static_cast<CRTP&>(*this), host);
-    }
-  };
-};
+// postcondition: .has_value() == true
+ANYANY_METHOD(create_connection, dd::task<any_connection>(std::string_view host));
 
-struct run_m {
-  static void do_invoke(auto& self) {
-    return self.run();
-  }
+// Note: in server 'run' may be called on multiple threads!
+ANYANY_METHOD(run, void());
 
-  template <typename CRTP>
-  struct plugin {
-    void run() {
-      return aa::invoke<run_m>(static_cast<CRTP&>(*this));
-    }
-  };
-};
+ANYANY_METHOD(stop, void());
 
-struct stop_m {
-  static void do_invoke(auto& self) {
-    return self.stop();
-  }
+ANYANY_METHOD(run_one, bool(duration_t timeout));
 
-  template <typename CRTP>
-  struct plugin {
-    void stop() {
-      return aa::invoke<stop_m>(static_cast<CRTP&>(*this));
-    }
-  };
-};
-
-struct run_one_m {
-  static bool do_invoke(auto& self, duration_t timeout) {
-    return self.run_one(timeout);
-  }
-
-  template <typename CRTP>
-  struct plugin {
-    bool run_one(duration_t timeout) {
-      return aa::invoke<run_one_m>(static_cast<CRTP&>(*this), timeout);
-    }
-  };
-};
-
-struct sleep_m {
-  static dd::task<void> do_invoke(auto& self, duration_t d, io_error_code& ec) {
-    return self.sleep(d, ec);
-  }
-
-  template <typename CRTP>
-  struct plugin {
-    dd::task<void> sleep(duration_t d, io_error_code& ec) {
-      return aa::invoke<sleep_m>(static_cast<CRTP&>(*this), d, ec);
-    }
-  };
-};
+ANYANY_METHOD(sleep, dd::task<void>(duration_t d, io_error_code& ec));
 
 /*
 required intereface:
@@ -87,6 +40,44 @@ required intereface:
 using any_transport_factory =
     aa::basic_any_with<aa::default_allocator, 0, create_connection_m, run_m, stop_m, run_one_m, sleep_m>;
 
+template <typename T, typename... Args>
+any_transport_factory make_any_transport_factory(Args&&... args) {
+  return aa::make_any<any_transport_factory, T>(std::forward<Args>(args)...);
+}
+
 [[nodiscard]] any_transport_factory default_transport_factory();
+
+using endpoint_t = boost::asio::ip::tcp::endpoint;
+
+ANYANY_METHOD(make_acceptor, any_acceptor(endpoint_t ep));
+
+// should not block, initiates work
+// returns false if already started
+ANYANY_METHOD(start, bool());
+
+/*
+required intereface:
+
+  // may be called concurrently
+  // should block (and handle tasks) until .stop called
+  void run();
+  void stop();
+
+  // must create acceptor to produce sockets for server
+  any_acceptor make_acceptor(asio::ip::tcp::endpoint);
+
+  // should not block, initiates work
+  // returns false if already started
+  // may be called concurrently
+  bool start();
+
+*/
+using any_server_transport_factory =
+    aa::basic_any_with<aa::default_allocator, 0, run_m, stop_m, make_acceptor_m, start_m>;
+
+template <typename T, typename... Args>
+any_server_transport_factory make_any_server_transport_factory(Args&&... args) {
+  return aa::make_any<any_server_transport_factory, T>(std::forward<Args>(args)...);
+}
 
 }  // namespace tgbm
