@@ -59,7 +59,7 @@ T parse_generator(std::string_view data) {
   tgbm::byte_t bytes[4096];
   ::boost::json::basic_parser<tgbm::json::boostjson_sax_producer> p{::boost::json::parse_options{}, v,
                                                                     std::span(bytes)};
-  ::boost::json::error_code ec;
+  tgbm::io_error_code ec;
   p.write_some(false, data.data(), data.size(), ec);
   if (ec || !p.handler().is_done())
     TGBM_JSON_PARSE_ERROR;

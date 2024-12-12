@@ -19,18 +19,16 @@ dd::task<tcp_tls_connection> tcp_tls_connection::create(asio::io_context& io_ctx
   tcp::resolver resolver(io_ctx);
   tcp_tls_connection connection(io_ctx, std::move(sslctx));
   ssl::stream<tcp::socket>& socket = connection.socket;
-  // TODO перейти на адреса вместо хостов, тут только 1 порт может быть
-  tcp::resolver::query query(host, "https");
 
+  asio::ip::basic_resolver_query<asio::ip::tcp> query(host, "https");
   io_error_code ec;
   auto results = co_await net.resolve(resolver, query, ec);
-  if (ec) {
+  if (results.empty() || ec) {
     TGBM_LOG_ERROR("[TCP] cannot resolve host: {}, err: {}", host, ec.what());
     throw network_exception(ec);
   }
   auto& tcp_sock = socket.lowest_layer();
-  TGBM_LOG_INFO("[TCP] client tries to connect to: {}, port: {}", results->endpoint().address().to_string(),
-                results->endpoint().port());
+
   co_await net.connect(tcp_sock, std::move(results), ec);
 
   if (ec) {
@@ -97,15 +95,13 @@ dd::task<tcp_connection> tcp_connection::create(asio::io_context& io_ctx, std::s
   tcp::resolver resolver(io_ctx);
   tcp_connection connection(io_ctx);
   tcp::socket& tcp_sock = connection.socket;
-  tcp::resolver::query query(host, "http");
+  asio::ip::basic_resolver_query<asio::ip::tcp> query(host, "http");
   io_error_code ec;
   auto results = co_await net.resolve(resolver, query, ec);
   if (ec) {
     TGBM_LOG_ERROR("[TCP] cannot resolve host: {}, err: {}", host, ec.what());
     throw network_exception(ec);
   }
-  TGBM_LOG_INFO("[TCP] client tries to connect to: {}, port: {}", results->endpoint().address().to_string(),
-                results->endpoint().port());
   co_await net.connect(tcp_sock, results, ec);
 
   if (ec) {

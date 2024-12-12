@@ -107,7 +107,7 @@ struct resolve_operation {
 
   template <typename T>
   void operator()(T&& cb) {
-    resolver.async_resolve(std::move(query), std::forward<T>(cb));
+    resolver.async_resolve(query.host_name(), query.service_name(), std::forward<T>(cb));
   }
 };
 

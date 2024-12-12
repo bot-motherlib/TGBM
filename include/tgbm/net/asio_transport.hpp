@@ -57,8 +57,6 @@ struct asio_server_transport {
   dd::thread_pool tp;
   std::atomic_size_t opened_sessions = 0;
 
-  friend struct asio_server_transport;
-
  public:
   explicit asio_server_transport(tcp_connection_options opts = {},
                                  size_t listen_thread_count = std::thread::hardware_concurrency());

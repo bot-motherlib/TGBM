@@ -12,12 +12,12 @@ CPMAddPackage(
 set(BOOST_INCLUDE_LIBRARIES system asio pfr json)
 CPMAddPackage(
   NAME Boost
-  VERSION 1.84.0
-  URL https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.tar.xz
+  VERSION 1.87.0
+  URL https://github.com/boostorg/boost/releases/download/boost-1.87.0/boost-1.87.0-cmake.tar.xz
   OPTIONS "BOOST_ENABLE_CMAKE ON"
 )
 unset(BOOST_INCLUDE_LIBRARIES)
-find_package(Boost 1.84 COMPONENTS system asio pfr json REQUIRED)
+find_package(Boost 1.87 COMPONENTS system asio pfr json boost_container REQUIRED)
 
 CPMAddPackage("gh:fmtlib/fmt#11.0.2")
 
