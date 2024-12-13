@@ -7,7 +7,7 @@
 #include <boost/intrusive/list_hook.hpp>
 #include <boost/intrusive/list.hpp>
 // TODO fix correct order of includes, windows macros(fuck them)
-// #include <tgbm/net/tcp_connection.hpp>
+
 #include <boost/asio/io_context.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
@@ -17,15 +17,7 @@
 #include <tgbm/net/transport_factory.hpp>
 
 namespace tgbm {
-/*
-TODO:
 
-
-* сделать специальный макрос для http2 логов, чтобы потом заменить реализацию
-* сделать тестовое соединение, понять как оно должно выглядеть, с помощью hpack судя по всему
-декодировать то что отправляется и сверять, что хедера (scheme например) верны
-
-*/
 struct http2_client;
 struct http2_connection;
 
