@@ -21,8 +21,6 @@ ANYANY_METHOD(start_write, void(std::coroutine_handle<> callback, std::span<cons
 
 ANYANY_METHOD(shutdown, void());
 
-ANYANY_METHOD(yield, dd::task<void>());
-
 struct is_https_m {
   using value_type = bool;
 
@@ -45,11 +43,10 @@ struct is_https_m {
     dd::task<void> read(std::span<byte_t> buf, io_error_code& ec);
     dd::task<size_t> write(std::span<const byte_t> buf, io_error_code& ec);
     void shutdown() noexcept;
-    dd::task<void> yield();
     static constexpr bool is_https = ...;
 */
-using any_connection = aa::basic_any_with<aa::default_allocator, 0, start_read_m, start_write_m, shutdown_m,
-                                          yield_m, is_https_m>;
+using any_connection =
+    aa::basic_any_with<aa::default_allocator, 0, start_read_m, start_write_m, shutdown_m, is_https_m>;
 
 template <typename T, typename... Args>
 any_connection make_any_connection(Args&&... args) {

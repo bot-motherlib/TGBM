@@ -98,7 +98,6 @@ struct tcp_tls_connection {
   void start_read(std::coroutine_handle<> callback, std::span<byte_t>, io_error_code&);
   void start_write(std::coroutine_handle<> callback, std::span<const byte_t>, io_error_code&,
                    size_t& written);
-  dd::task<void> yield();
   // terminates on unknown errors
   void shutdown() noexcept;
 };
@@ -130,7 +129,6 @@ struct tcp_connection {
   void start_read(std::coroutine_handle<> callback, std::span<byte_t>, io_error_code&);
   void start_write(std::coroutine_handle<> callback, std::span<const byte_t>, io_error_code&,
                    size_t& written);
-  dd::task<void> yield();
   // terminates on unknown errors
   void shutdown() noexcept;
 };

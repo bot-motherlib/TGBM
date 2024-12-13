@@ -5,19 +5,27 @@
 #include <fstream>
 
 #include <tgbm/logger.hpp>
-#include <tgbm/net/http2/client.hpp>
 #include <tgbm/bot.hpp>
+#include <tgbm/net/http2/client.hpp>
 #include <tgbm/net/http_client_with_retry.hpp>
 #include <tgbm/net/asio_tls_transport.hpp>
+#include <tgbm/utils/formatters.hpp>
+
+/*
+
+this file mostly tests some bot features and
+also demonstrates some possibilities like file downloading, client with retries etc
+
+*/
 
 dd::task<void> get_bot_info(tgbm::bot& b) {
   auto info = co_await b.api.getMe();
 
-  TGBM_LOG_INFO("NEW API: user: {} ({})", info.first_name, info.username.value_or("<nousername>"));
+  TGBM_LOG_INFO("bot info: {}", info);
 }
 
 dd::task<void> download_audio(tgbm::bot& bot, int64_t chatid, std::string fileid) {
-  auto p = std::filesystem::temp_directory_path() / "someaudio";
+  auto p = std::filesystem::temp_directory_path() / fileid;
   std::fstream file(p, std::ios_base::out | std::ios_base::binary);
   auto write_into_file = [&](std::span<const tgbm::byte_t> bytes, bool) {
     file.write((const char*)bytes.data(), bytes.size());
@@ -63,8 +71,8 @@ static tgbm::api::InputFile test_big_file() {
   tgbm::api::InputFile f;
   f.filename = "myname";
   f.mimetype = "text/plain";
-  // 15 MB of 'a'
-  f.data = std::string(1024 * 1024 * 15, 'a');
+  // 5 MB of 'a'
+  f.data = std::string(1024 * 1024 * 5, 'a');
   return f;
 }
 
@@ -78,7 +86,6 @@ static tgbm::api::InputFile test_small_file() {
 }
 
 int main() try {
-  fmt::println("{}", __DATE__);
   const char* token = std::getenv("BOT_TOKEN");
   if (!token) {
     fmt::println("launching telegram bot requires bot token from @BotFather");
@@ -109,18 +116,15 @@ retry:
     for (; i < 2; ++i) {
       start_main_task(bot);
       bot.run();
-      TGBM_LOG_INFO("OK!!!");
     }
   } catch (tgbm::timeout_exception& e) {
-    TGBM_LOG_ERROR("{}", e.what());
     ++i;
     goto retry;
   } catch (std::exception& e) {
-    TGBM_LOG_ERROR("main ended with {}", e.what());
     ++i;
     goto retry;
   }
   return 0;
 } catch (...) {
-  TGBM_LOG_INFO("ENDED");
+  TGBM_LOG_INFO("unknown exception happen");
 }

@@ -1,4 +1,4 @@
-#include <tgbm/net/http2/hpack.hpp>
+#include <hpack/hpack.hpp>
 #include <tgbm/net/http_base.hpp>
 #include <tgbm/net/http2/protocol.hpp>
 

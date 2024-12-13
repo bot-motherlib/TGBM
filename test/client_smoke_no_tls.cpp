@@ -4,6 +4,8 @@
 
 constexpr std::string_view expected_response = "hello world";
 
+// all noinlines here is workaround gcc-12 bug (miscompilation)
+
 [[gnu::noinline]] void fail(int i) {
   std::exit(i);
 }

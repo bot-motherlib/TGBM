@@ -38,7 +38,7 @@ resources:
 
 */
 
-#include <tgbm/net/http2/hpack.hpp>
+#include <hpack/hpack.hpp>
 #include <tgbm/net/http2/protocol.hpp>
 #include <tgbm/net/http2/client.hpp>
 #include <tgbm/net/asio_awaiters.hpp>
@@ -349,11 +349,6 @@ struct http2_connection {
   // Note: worker may be still has no right to work (too many streams)
   [[nodiscard]] work_waiter wait_work() noexcept {
     return work_waiter(this);
-  }
-
-  [[nodiscard]] auto idle_yield() noexcept KELCORO_LIFETIMEBOUND {
-    io_error_code ec;
-    return tcp_con.yield();
   }
 
   write_awaiter write(std::span<const byte_t> bytes, io_error_code& ec) {
@@ -759,6 +754,27 @@ void http2_client::notify_connection_waiters(http2_connection_ptr result) noexce
   });
 }
 
+dd::job start_timeout_warden_for(http2_connection_ptr con, any_transport_factory& f, duration_t interval) {
+  if (!con || con->is_dropped())
+    co_return;
+  TGBM_LOG_DEBUG("[HTTP2]: timeout warden started for {}", (void*)con.get());
+  on_scope_exit {
+    TGBM_LOG_DEBUG("[HTTP2]: timeout warden for {} completed", (void*)con.get());
+  };
+  io_error_code ec;
+  for (;;) {
+    co_await f.sleep(interval, ec);
+    if (ec) {
+      if (ec != asio::error::operation_aborted)
+        TGBM_LOG_ERROR("sleep error: {}", ec.what());
+      co_return;
+    }
+    if (con->is_dropped())
+      co_return;
+    con->drop_timeouted();
+  }
+}
+
 dd::job start_pinger_for(http2_connection_ptr con, any_transport_factory& f, duration_t interval) {
   if (!con || con->is_dropped())
     co_return;
@@ -817,6 +833,8 @@ dd::job http2_client::start_connecting() {
     start_writer_for(new_connection);
     if (options.ping_interval != duration_t::max())
       start_pinger_for(new_connection, factory, options.ping_interval);
+    if (options.timeout_check_interval != duration_t::max())
+      start_timeout_warden_for(new_connection, factory, options.timeout_check_interval);
   } catch (std::exception& e) {
     TGBM_LOG_ERROR("exception while trying to connect: {}", e.what());
   }
@@ -876,7 +894,8 @@ static http2::frame_header form_headers_header(const prepared_http_request& requ
   return header.length;
 }
 
-dd::task<void> write_pending_data_frames(node_ptr work, size_t handled_bytes, http2_connection_ptr con) {
+dd::task<void> write_pending_data_frames(node_ptr work, size_t handled_bytes, http2_connection_ptr con,
+                                         any_transport_factory& factory) {
   assert(con && work);
 
   assert(handled_bytes < work->req.data.size());
@@ -907,7 +926,11 @@ dd::task<void> write_pending_data_frames(node_ptr work, size_t handled_bytes, ht
           "[HTTP2] cannot send bytes now! unhandled: {}, max_frame_len: {}, stream wsz {}, con wsz: {}",
           std::distance(in, data_end), con->server_settings.max_frame_size, work->streamlevel_window_size,
           con->receiver_window_size);
-      co_await con->idle_yield();
+      co_await factory.sleep(std::chrono::nanoseconds(500), ec);
+      if (ec) {
+        TGBM_LOG_ERROR("something went wrong while sleeping", ec.what());
+        // anyway continue, ignore sleep errors
+      }
       continue;
     }
 
@@ -1048,7 +1071,7 @@ dd::job http2_client::start_writer_for(http2_connection_ptr con) {
     if (ec || con->is_dropped())
       goto end;
     if (unfinished && !unfinished->finished())
-      write_pending_data_frames(std::move(unfinished), unfinished_handled, con).start_and_detach();
+      write_pending_data_frames(std::move(unfinished), unfinished_handled, con, factory).start_and_detach();
   }  // end loop handling requests
 end:
   if (ec && ec != asio::error::operation_aborted)
@@ -1368,36 +1391,12 @@ dd::task<int> http2_client::send_request(on_header_fn_ptr on_header, on_data_par
   co_return co_await con->request_finished(*node);
 }
 
-// runs until 'timer' is lockable && timer not cancelled,
-// 'todo' must return duration_t (interval until next call)
-dd::job periodic_task(std::stop_token t, any_transport_factory& f, auto todo) {
-  io_error_code ec;
-  while (t.stop_possible() && !t.stop_requested()) {
-    duration_t interval = todo();
-    co_await f.sleep(interval, ec);
-    if (ec) {
-      if (ec != asio::error::operation_aborted)
-        TGBM_LOG_ERROR("timer ended with error: {}", ec.what());
-      co_return;
-    }
-  }
-}
-
 void http2_client::run() {
   TGBM_ON_DEBUG(threadid = std::this_thread::get_id(); on_scope_exit { threadid = std::thread::id{}; });
   stop_requested = false;
   on_scope_exit {
     stop_requested = false;
   };
-  std::stop_source stopper(std::nostopstate);
-  if (options.timeout_check_interval != duration_t::max()) {
-    stopper = std::stop_source{};
-    periodic_task(stopper.get_token(), factory, [client = this] {
-      if (client->connection)
-        client->connection->drop_timeouted();
-      return client->options.timeout_check_interval;
-    });
-  }
   factory.run();
 }
 

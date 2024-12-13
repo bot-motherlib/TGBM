@@ -64,10 +64,6 @@ void tcp_tls_connection::start_write(std::coroutine_handle<> h, std::span<const 
   });
 }
 
-dd::task<void> tcp_tls_connection::yield() {
-  co_await dd::suspend_and_t{[&](std::coroutine_handle<> h) { asio::post(socket.get_executor(), h); }};
-}
-
 void tcp_tls_connection::shutdown() noexcept {
   auto& tcp_sock = socket.lowest_layer();
   if (!tcp_sock.is_open())
@@ -127,10 +123,6 @@ void tcp_connection::start_write(std::coroutine_handle<> h, std::span<const byte
     ec = e;
     h.resume();
   });
-}
-
-dd::task<void> tcp_connection::yield() {
-  co_await dd::suspend_and_t{[&](std::coroutine_handle<> h) { asio::post(socket.get_executor(), h); }};
 }
 
 void tcp_connection::shutdown() noexcept {
