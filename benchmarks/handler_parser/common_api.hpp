@@ -26,7 +26,6 @@ struct parser<T> : basic_parser<T> {
   using seq = std::make_index_sequence<N>;
 
   ResultParse start_object() {
-    assert(!this->parsed_);
     if (!started_) {
       started_ = true;
       return ResultParse::kContinue;
@@ -52,8 +51,6 @@ struct parser<T> : basic_parser<T> {
   }
 
   ResultParse end_object() {
-    assert(!this->parsed_);
-    TGBM_ON_DEBUG({ this->parsed_ = true; });
     if (all_parsed()) {
       return ResultParse::kEnd;
     } else
@@ -87,7 +84,6 @@ struct parser<T> : basic_parser<T> {
   }
 
   ResultParse key(std::string_view val) {
-    assert(!this->parsed_);
     auto index = count_index(val);
     emplace_parser(index);
 

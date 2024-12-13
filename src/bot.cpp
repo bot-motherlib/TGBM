@@ -1,6 +1,8 @@
 #include <tgbm/bot.hpp>
 
 #include <tgbm/net/http2/client.hpp>
+#include <tgbm/net/tcp_connection.hpp>
+#include <tgbm/net/asio_tls_transport.hpp>
 
 namespace tgbm {
 
@@ -11,7 +13,8 @@ std::unique_ptr<http_client> default_http_client(std::string_view host,
     opts.additional_ssl_certificates.push_back(std::move(additional_ssl_cert));
     opts.disable_ssl_certificate_verify = false;
   }
-  return std::unique_ptr<http_client>(new http2_client(host, {}, std::move(opts)));
+  return std::unique_ptr<http_client>(
+      new http2_client(host, {}, $inplace(asio_tls_transport(std::move(opts)))));
 }
 
 [[nodiscard]] bool bot_commands::is_valid_name(std::string_view name) noexcept {

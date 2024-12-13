@@ -16,7 +16,7 @@ struct http11_client : http_client {
   // invariant: .run() invoked on 0 or 1 threads
   asio::io_context io_ctx;
   tcp_connection_options tcp_options;
-  pool_t<tcp_connection_ptr> connections;
+  pool_t<tcp_tls_connection> connections;
   size_t requests_in_progress = 0;
   bool stop_requested = false;
 

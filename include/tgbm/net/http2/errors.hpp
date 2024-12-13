@@ -3,6 +3,8 @@
 #include <exception>
 #include <string_view>
 
+#include <hpack/basic_types.hpp>
+
 #include <tgbm/net/errors.hpp>
 
 namespace tgbm::http2 {
@@ -67,11 +69,7 @@ constexpr std::string_view e2str(errc_e e) noexcept {
   }
 }
 
-struct hpack_error : protocol_error {
-  const char* what() const noexcept override {
-    return "HPACK error";
-  }
-};
+using hpack_error = hpack::protocol_error;
 
 struct connection_error : protocol_error {
   errc_e e = errc_e::NO_ERROR;

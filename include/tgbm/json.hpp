@@ -7,6 +7,7 @@
 #include <tgbm/jsons/boostjson_serialize_dom.hpp>
 
 #include <tgbm/jsons/parse_dom/basic.hpp>
+#include <tgbm/utils/memory.hpp>
 
 namespace tgbm {
 
@@ -24,7 +25,8 @@ template <typename T>
 
 template <typename T>
 void from_json(std::string_view json, T& out) {
-  json::stream_parser p(out);
+  byte_t bytes[512];
+  json::stream_parser p(out, std::span(bytes));
   p.feed(json, true);
 }
 

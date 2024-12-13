@@ -2,6 +2,8 @@
 
 #include <bitset>
 
+#include <kelcoro/stack_memory_resource.hpp>
+
 #include <tgbm/jsons/sax.hpp>
 #include <tgbm/utils/pfr_extension.hpp>
 #include <tgbm/utils/traits.hpp>
@@ -25,7 +27,8 @@ struct sax_parser<T> {
     return (parsed_ & required_mask) == required_mask;
   }
 
-  static sax_consumer_t generator_field(T& v, std::string_view key, sax_token& tok, std::bitset<N>& parsed_) {
+  static sax_consumer_t generator_field(T& v, std::string_view key, sax_token& tok, std::bitset<N>& parsed_,
+                                        dd::with_stack_resource r) {
     if constexpr (N > 0) {
       return pfr_extension::visit_struct_field<T, sax_consumer_t>(
           key,
@@ -34,7 +37,7 @@ struct sax_parser<T> {
             if (parsed_.test(I))
               TGBM_JSON_PARSE_ERROR;
             parsed_.set(I);
-            return sax_parser<pfr_extension::tuple_element_t<I, T>>::parse(field, tok);
+            return sax_parser<pfr_extension::tuple_element_t<I, T>>::parse(field, tok, r);
           },
           [&]() { return sax_ignore_value(tok); });
     } else {
@@ -42,7 +45,7 @@ struct sax_parser<T> {
     }
   }
 
-  static sax_consumer_t parse(T& v, sax_token& tok) {
+  static sax_consumer_t parse(T& v, sax_token& tok, dd::with_stack_resource r) {
     using enum sax_token::kind_e;
     std::bitset<N> parsed_;
     tok.expect(object_begin);
@@ -54,7 +57,7 @@ struct sax_parser<T> {
       tok.expect(key);
       std::string_view cur_key = tok.str_m;
       co_yield {};
-      co_yield dd::elements_of(generator_field(v, cur_key, tok, parsed_));
+      co_yield dd::elements_of(generator_field(v, cur_key, tok, parsed_, r));
     }
     if (!all_parsed(parsed_)) [[unlikely]]
       TGBM_JSON_PARSE_ERROR;

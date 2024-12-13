@@ -22,7 +22,6 @@ struct parser<T> : basic_parser<T> {
   bool started_ = false;
 
   ResultParse start_object() {
-    assert(!this->parsed_);
     if (!started_) {
       started_ = true;
       return ResultParse::kContinue;
@@ -31,8 +30,6 @@ struct parser<T> : basic_parser<T> {
   }
 
   ResultParse end_object() {
-    assert(!this->parsed_);
-    TGBM_ON_DEBUG({ this->parsed_ = true; });
     return ResultParse::kEnd;
   }
 
@@ -55,7 +52,6 @@ struct parser<T> : basic_parser<T> {
   }
 
   ResultParse key(std::string_view val) {
-    assert(!this->parsed_);
     if (val != T::discriminator) {
       TGBM_JSON_HANDLER_PARSE_ERROR;
     }

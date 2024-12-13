@@ -17,7 +17,7 @@ jobs:
   build_and_test:
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'NO_PIPELINE') }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:  
           - type: debug
@@ -30,6 +30,18 @@ jobs:
             compiler: gcc
             version: 12
           - type: debug
+            compiler: gcc
+            version: 14
+          - type: release
+            compiler: clang
+            version: 17
+          - type: release
+            compiler: clang
+            version: 19
+          - type: release
+            compiler: gcc
+            version: 12
+          - type: release
             compiler: gcc
             version: 14
 

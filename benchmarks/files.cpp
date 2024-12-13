@@ -56,8 +56,10 @@ void execute_ignore_handler_boost(std::string_view json) {
 template <typename T>
 T parse_generator(std::string_view data) {
   T v;
-  ::boost::json::basic_parser<tgbm::json::boostjson_sax_producer> p{::boost::json::parse_options{}, v};
-  ::boost::json::error_code ec;
+  tgbm::byte_t bytes[4096];
+  ::boost::json::basic_parser<tgbm::json::boostjson_sax_producer> p{::boost::json::parse_options{}, v,
+                                                                    std::span(bytes)};
+  tgbm::io_error_code ec;
   p.write_some(false, data.data(), data.size(), ec);
   if (ec || !p.handler().is_done())
     TGBM_JSON_PARSE_ERROR;

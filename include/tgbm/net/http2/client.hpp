@@ -7,11 +7,14 @@
 #include <boost/intrusive/list_hook.hpp>
 #include <boost/intrusive/list.hpp>
 // TODO fix correct order of includes, windows macros(fuck them)
-#include <tgbm/net/tcp_connection.hpp>
+
 #include <boost/asio/io_context.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
 #include <tgbm/utils/boost_intrusive.hpp>
+#include <tgbm/utils/macro.hpp>
+
+#include <tgbm/net/transport_factory.hpp>
 
 namespace tgbm {
 
@@ -81,10 +84,10 @@ struct http2_client : http_client {
 
   TGBM_DEBUG_FIELD(threadid, std::thread::id);
   http2_client_options options;
-  // invariant: .run() invoked on 0 or 1 threads
-  asio::io_context io_ctx;
   http2_connection_ptr connection;
-  tcp_connection_options tcp_options;
+  // invariant: .has_value(), unchanged
+  any_transport_factory factory;
+
   // while connection is not ready all new streams wait for it
   bi::list<noexport::waiter_of_connection, bi::cache_last<true>> connection_waiters;
   size_t requests_in_progress = 0;
@@ -118,7 +121,7 @@ struct http2_client : http_client {
 
  public:
   explicit http2_client(std::string_view host = "api.telegram.org", http2_client_options = {},
-                        tcp_connection_options = {});
+                        any_transport_factory = default_transport_factory());
 
   http2_client(http2_client&&) = delete;
   void operator=(http2_client&&) = delete;

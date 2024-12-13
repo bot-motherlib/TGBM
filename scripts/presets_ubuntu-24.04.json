@@ -15,6 +15,57 @@
             }
         },
         {
+            "name": "base_release",
+            "generator": "Ninja",
+            "binaryDir": "cmake_build",
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+                "CMAKE_CXX_STANDARD": "20",
+                "CMAKE_LINKER_TYPE": "LLD",
+                "CMAKE_BUILD_TYPE": "Debug",
+                "TGBM_ENABLE_TESTING": "ON",
+                "TGBM_ENABLE_EXAMPLES": "ON"
+            }
+        },
+        {
+            "name": "clang_17_release",
+            "displayName": "clang 17 release",
+            "inherits": "base_release",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang-17",
+                "CMAKE_CXX_COMPILER": "clang++-17"
+            }
+        },
+        {
+            "name": "clang_19_release",
+            "displayName": "clang 19 release",
+            "inherits": "base_release",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "clang-19",
+                "CMAKE_CXX_COMPILER": "clang++-19",
+                "CMAKE_CXX_FLAGS": "-nostdinc++ -I/usr/include/c++/13 -I/usr/include/x86_64-linux-gnu/c++/13",
+                "CMAKE_EXE_LINKER_FLAGS": "-L/usr/lib/gcc/x86_64-linux-gnu/13"
+            }
+        },
+        {
+            "name": "gcc_12_release",
+            "displayName": "gcc 12 release",
+            "inherits": "base_release",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc-12",
+                "CMAKE_CXX_COMPILER": "g++-12"
+            }
+        },
+        {
+            "name": "gcc_14_release",
+            "displayName": "gcc 14 release",
+            "inherits": "base_release",
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "gcc-14",
+                "CMAKE_CXX_COMPILER": "g++-14"
+            }
+        },
+        {
             "name": "clang_17_debug",
             "displayName": "clang 17 debug",
             "inherits": "base_debug",

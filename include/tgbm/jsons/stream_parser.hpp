@@ -5,6 +5,7 @@
 #include <tgbm/jsons/boostjson_sax_producer.hpp>
 #include <tgbm/jsons/errors.hpp>
 #include <tgbm/jsons/sax_parser.hpp>
+#include <tgbm/utils/memory.hpp>
 
 namespace tgbm::json {
 
@@ -12,7 +13,7 @@ struct stream_parser {
   ::boost::json::basic_parser<boostjson_sax_producer> p;
 
   template <typename T>
-  explicit stream_parser(T& t) : p(::boost::json::parse_options{}, t) {
+  explicit stream_parser(T& t, std::span<byte_t> buf = {}) : p(::boost::json::parse_options{}, t, buf) {
   }
 
   void feed(std::string_view data, bool end) {

@@ -2,8 +2,11 @@
 
 #include <boost/json/basic_parser_impl.hpp>
 
+#include <kelcoro/stack_memory_resource.hpp>
+
 #include <tgbm/jsons/sax.hpp>
 #include <tgbm/utils/scope_exit.hpp>
+#include <tgbm/utils/memory.hpp>
 
 namespace tgbm {
 using io_error_code = boost::system::error_code;
@@ -20,6 +23,7 @@ struct boostjson_sax_producer {
  private:
   using kind_e = sax_token::kind_e;
 
+  dd::stack_resource resource;
   sax_consumer_t gen;
   sax_token event{};
   // must be outside unite generator for string view
@@ -27,7 +31,7 @@ struct boostjson_sax_producer {
   bool ended = false;
   bool part = false;
 
-  sax_consumer_t unite_generate(sax_consumer_t old_gen) {
+  sax_consumer_t unite_generate(sax_consumer_t old_gen, dd::with_stack_resource r) {
     event.expect(event.part);
     part = true;
     partbuf.clear();
@@ -51,8 +55,8 @@ struct boostjson_sax_producer {
   }
 
   template <typename T>
-  sax_consumer_t starter(T& v) {
-    co_yield dd::elements_of(sax_parser<T>::parse(v, event));
+  sax_consumer_t starter(T& v, dd::with_stack_resource r) {
+    co_yield dd::elements_of(sax_parser<T>::parse(v, event, r));
     ended = true;
     co_yield {};
     TGBM_JSON_PARSE_ERROR;
@@ -62,7 +66,7 @@ struct boostjson_sax_producer {
     event.got = sax_token::part;
     event.str_m = s;
     if (!part)
-      gen = unite_generate(std::move(gen));
+      gen = unite_generate(std::move(gen), dd::with_stack_resource(resource));
     consume();
   }
 
@@ -71,7 +75,8 @@ struct boostjson_sax_producer {
   }
 
  public:
-  explicit boostjson_sax_producer(auto& v) : gen(starter(v)) {
+  explicit boostjson_sax_producer(auto& v, std::span<byte_t> buf)
+      : resource(buf), gen(starter(v, dd::with_stack_resource(resource))) {
   }
 
   boostjson_sax_producer(boostjson_sax_producer&&) = delete;

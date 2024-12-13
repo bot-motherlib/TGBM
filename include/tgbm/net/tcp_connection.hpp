@@ -3,6 +3,7 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include "tgbm/utils/memory.hpp"
 // windows is really bad
 
 #undef NO_ERROR
@@ -64,48 +65,72 @@ struct tcp_connection_options {
   }
 };
 
-struct tcp_connection;
-
-using tcp_connection_ptr = boost::intrusive_ptr<tcp_connection>;
-
 // one tcp connection must be used in one thread only
-struct tcp_connection {
- private:
-  size_t refcount = 0;
-
-  // private, must not be created on stack
-  ~tcp_connection() {
-    shutdown();
-  }
-  friend struct http2_connection;
-
- public:
+struct tcp_tls_connection {
   // required all time while socket alive, may be shared between connections
   ssl_context_ptr sslctx;
   asio::ssl::stream<asio::ip::tcp::socket> socket;
 
   // precondition: _ssl_ctx != nullptr
-  explicit tcp_connection(asio::io_context& ctx KELCORO_LIFETIMEBOUND, ssl_context_ptr _ssl_ctx)
+  tcp_tls_connection(asio::io_context& ctx KELCORO_LIFETIMEBOUND, ssl_context_ptr _ssl_ctx)
       : sslctx(std::move(_ssl_ctx)), socket(ctx, sslctx->ctx) {
   }
-  tcp_connection(tcp_connection&&) = default;
-  tcp_connection& operator=(tcp_connection&&) = default;
-
-  // terminates on unknown errors
-  void shutdown() noexcept;
-
-  friend void intrusive_ptr_add_ref(tcp_connection* p) noexcept {
-    ++p->refcount;
+  tcp_tls_connection(asio::ssl::stream<asio::ip::tcp::socket> s, ssl_context_ptr _ssl_ctx)
+      : sslctx(std::move(_ssl_ctx)), socket(std::move(s)) {
   }
-  friend void intrusive_ptr_release(tcp_connection* p) noexcept {
-    --p->refcount;
-    if (p->refcount == 0)
-      delete p;
+
+  tcp_tls_connection(tcp_tls_connection&&) = default;
+  tcp_tls_connection& operator=(tcp_tls_connection&&) = default;
+
+  ~tcp_tls_connection() {
+    shutdown();
   }
 
   // creates client connection
-  static dd::task<tcp_connection_ptr> create(asio::io_context& KELCORO_LIFETIMEBOUND, std::string host,
+  // precondition: 'ctx' != nullptr
+  static dd::task<tcp_tls_connection> create(asio::io_context& KELCORO_LIFETIMEBOUND, std::string host,
                                              ssl_context_ptr ctx, tcp_connection_options = {});
+
+  // any_connection interface:
+
+  static constexpr bool is_https = true;
+
+  void start_read(std::coroutine_handle<> callback, std::span<byte_t>, io_error_code&);
+  void start_write(std::coroutine_handle<> callback, std::span<const byte_t>, io_error_code&,
+                   size_t& written);
+  // terminates on unknown errors
+  void shutdown() noexcept;
+};
+
+// one tcp connection must be used in one thread only
+struct tcp_connection {
+  asio::ip::tcp::socket socket;
+
+  explicit tcp_connection(asio::io_context& ctx KELCORO_LIFETIMEBOUND) : socket(ctx) {
+  }
+  explicit tcp_connection(asio::ip::tcp::socket s) : socket(std::move(s)) {
+  }
+
+  tcp_connection(tcp_connection&&) = default;
+  tcp_connection& operator=(tcp_connection&&) = default;
+
+  ~tcp_connection() {
+    shutdown();
+  }
+
+  // creates client connection
+  static dd::task<tcp_connection> create(asio::io_context& KELCORO_LIFETIMEBOUND, std::string host,
+                                         tcp_connection_options = {});
+
+  // any_connection interface:
+
+  static constexpr bool is_https = false;
+
+  void start_read(std::coroutine_handle<> callback, std::span<byte_t>, io_error_code&);
+  void start_write(std::coroutine_handle<> callback, std::span<const byte_t>, io_error_code&,
+                   size_t& written);
+  // terminates on unknown errors
+  void shutdown() noexcept;
 };
 
 }  // namespace tgbm

@@ -42,8 +42,9 @@ if (TGBM_ENABLE_GEN)
 endif()
 
 set(TGBM_SRC_LIST
+    src/net/asio_transport.cpp
+    src/net/asio_tls_transport.cpp
     src/net/http2/client.cpp
-    # src/api_types_cmp.cpp
     src/bot.cpp
     src/long_poll.cpp
     src/api/input_file.cpp
@@ -55,6 +56,7 @@ set(TGBM_SRC_LIST
     src/net/http_client.cpp
     src/net/ssl_context.cpp
     src/utils/url_encoded.cpp
+    src/net/transport_factory.cpp
     )
 
 add_library(tgbmlib ${TGBM_SRC_LIST})

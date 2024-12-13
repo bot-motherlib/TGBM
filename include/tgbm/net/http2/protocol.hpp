@@ -6,7 +6,7 @@
 #include <string_view>
 #include <cassert>
 
-#include <tgbm/net/http2/hpack.hpp>
+#include <hpack/hpack.hpp>
 #include <tgbm/net/http2/errors.hpp>
 #include <tgbm/utils/memory.hpp>
 

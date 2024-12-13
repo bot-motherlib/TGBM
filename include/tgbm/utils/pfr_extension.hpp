@@ -53,18 +53,9 @@ constexpr size_t tuple_element_index_v = details::element_index<Name, T>();
 template <tgbm::ce::string Name, typename T>
 constexpr size_t has_element_v = details::element_index<Name, T>() <= boost::pfr::tuple_size_v<T>;
 
-template <size_t I, typename T>
-using tuple_element_t = boost::pfr::tuple_element_t<I, T>;
-
-template <size_t I, typename T>
-consteval std::string_view get_name() {
-  return boost::pfr::get_name<I, T>();
-}
-
-template <size_t I, typename T>
-constexpr decltype(auto) get(T&& t) noexcept {
-  return boost::pfr::get<I>(std::forward<T>(t));
-}
+using boost::pfr::get;
+using boost::pfr::get_name;
+using boost::pfr::tuple_element_t;
 
 template <size_t I, typename T>
 constexpr std::string_view element_name_v = get_name<I, T>();
@@ -110,7 +101,7 @@ template <size_t N = size_t(-1)>
 constexpr void visit_object(auto&& t, auto&& functor) {
   using T = std::remove_cvref_t<decltype(t)>;
   constexpr auto default_size = boost::pfr::tuple_size_v<T>;
-  auto seq = std::make_index_sequence < N != -1 ? N : default_size > {};
+  auto seq = std::make_index_sequence<N != -1 ? N : default_size>{};
   details::visit_object_helper(FWD(t), FWD(functor), seq);
 }
 

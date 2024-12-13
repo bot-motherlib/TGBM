@@ -13,8 +13,6 @@ struct parser<T> : basic_parser<T> {
   using basic_parser<T>::basic_parser;
 
   ResultParse string(std::string_view val) {
-    assert(!this->parsed_);
-    TGBM_ON_DEBUG({ this->parsed_ = true; });
     *this->t_ = T{val};
     return ResultParse::kEnd;
   }
@@ -82,4 +80,5 @@ struct parser<std::vector<T>> : basic_parser<std::vector<T>> {
     return handle_result([](auto& parser) { return parser.null(); });
   }
 };
+
 }  // namespace tgbm::json::handler_parser
