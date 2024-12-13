@@ -95,7 +95,7 @@ struct http2_server : http_server {
     return _stop_requested.load(std::memory_order_acquire);
   }
   // not blocking, starts listening on other threads
-  // returns false if already starte
+  // returns false if already started
   bool start();
 
   // start + blocking
