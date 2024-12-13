@@ -33,8 +33,8 @@ struct print_server : tgbm::http2_server {
 namespace asio = boost::asio;
 
 int main() {
-  auto tf = tgbm::make_any_server_transport_factory<tgbm::asio_server_tls_transport>(
-      "E:/dev/ssl_test_crt/server.crt", "E:/dev/ssl_test_crt/server.key");
+  auto tf = $inplace(
+      tgbm::asio_server_tls_transport("E:/dev/ssl_test_crt/server.crt", "E:/dev/ssl_test_crt/server.key"));
   tgbm::http2_server_ptr server = new print_server(std::move(tf));
 
   asio::ip::tcp::endpoint ipv4_endpoint(asio::ip::address_v4::loopback(), 443);

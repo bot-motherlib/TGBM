@@ -19,9 +19,4 @@ required intereface:
 */
 using any_acceptor = aa::basic_any_with<aa::default_allocator, 0, accept_m>;
 
-template <typename T, typename... Args>
-any_acceptor make_any_acceptor(Args&&... args) {
-  return aa::make_any<any_acceptor, T>(std::forward<Args>(args)...);
-}
-
 }  // namespace tgbm

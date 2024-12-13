@@ -44,11 +44,4 @@
   }                                                                                              \
   struct NAME##_m : noexport::NAME##_do_invoke_and_plugin<NAME##_m, SIGNATURE> {};
 
-namespace aa {
-
-template <typename Any, typename ConcreteType, typename... Args>
-[[nodiscard]] Any make_any(Args&&... args) {
-  return Any(std::in_place_type<ConcreteType>, std::forward<Args>(args)...);
-}
-
-}  // namespace aa
+#define $inplace(...) ::aa::inplaced([&] { return __VA_ARGS__; })

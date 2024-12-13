@@ -73,11 +73,10 @@ int main() try {
                                  // disable timeouts, so client will not check them in run_one(500ms) later
                                  .timeout_check_interval = tgbm::duration_t::max(),
                              },
-                             tgbm::make_any_transport_factory<tgbm::asio_tls_transport>(std::move(opts))));
+                             $inplace(tgbm::asio_tls_transport(std::move(opts)))));
   tgbm::bot bot("123456789:ABCDefghIJKlmnoPQRstuvWXyz1234567890", std::move(client));
 
-  auto tf = tgbm::make_any_server_transport_factory<tgbm::asio_server_tls_transport>(TEST_SERVER_CERT_PATH,
-                                                                                     TEST_SERVER_KEY_PATH);
+  auto tf = $inplace(tgbm::asio_server_tls_transport(TEST_SERVER_CERT_PATH, TEST_SERVER_KEY_PATH));
   tgbm::http2_server_ptr server = new print_server(std::move(tf));
 
   namespace asio = boost::asio;

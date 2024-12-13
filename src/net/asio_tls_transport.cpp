@@ -73,7 +73,7 @@ void asio_server_tls_transport::stop() {
 }
 
 any_acceptor asio_server_tls_transport::make_acceptor(endpoint_t ep) {
-  return make_any_acceptor<asio_tls_acceptor>(io_ctx, sslctx, std::move(ep), opened_sessions);
+  return $inplace(asio_tls_acceptor(io_ctx, sslctx, std::move(ep), opened_sessions));
 }
 
 bool asio_server_tls_transport::start() {

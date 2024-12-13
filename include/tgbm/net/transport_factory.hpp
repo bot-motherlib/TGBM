@@ -40,11 +40,6 @@ required intereface:
 using any_transport_factory =
     aa::basic_any_with<aa::default_allocator, 0, create_connection_m, run_m, stop_m, run_one_m, sleep_m>;
 
-template <typename T, typename... Args>
-any_transport_factory make_any_transport_factory(Args&&... args) {
-  return aa::make_any<any_transport_factory, T>(std::forward<Args>(args)...);
-}
-
 [[nodiscard]] any_transport_factory default_transport_factory();
 
 using endpoint_t = boost::asio::ip::tcp::endpoint;
@@ -74,10 +69,5 @@ required intereface:
 */
 using any_server_transport_factory =
     aa::basic_any_with<aa::default_allocator, 0, run_m, stop_m, make_acceptor_m, start_m>;
-
-template <typename T, typename... Args>
-any_server_transport_factory make_any_server_transport_factory(Args&&... args) {
-  return aa::make_any<any_server_transport_factory, T>(std::forward<Args>(args)...);
-}
 
 }  // namespace tgbm

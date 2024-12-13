@@ -14,7 +14,7 @@ std::unique_ptr<http_client> default_http_client(std::string_view host,
     opts.disable_ssl_certificate_verify = false;
   }
   return std::unique_ptr<http_client>(
-      new http2_client(host, {}, tgbm::make_any_transport_factory<asio_tls_transport>(std::move(opts))));
+      new http2_client(host, {}, $inplace(asio_tls_transport(std::move(opts)))));
 }
 
 [[nodiscard]] bool bot_commands::is_valid_name(std::string_view name) noexcept {

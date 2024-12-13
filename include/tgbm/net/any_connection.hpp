@@ -48,11 +48,6 @@ struct is_https_m {
 using any_connection =
     aa::basic_any_with<aa::default_allocator, 0, start_read_m, start_write_m, shutdown_m, is_https_m>;
 
-template <typename T, typename... Args>
-any_connection make_any_connection(Args&&... args) {
-  return aa::make_any<any_connection, T>(std::forward<Args>(args)...);
-}
-
 // awaiters for using with .start_write / .start_read
 
 struct read_awaiter {

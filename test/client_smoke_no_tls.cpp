@@ -83,12 +83,11 @@ int main() try {
   tgbm::http2_client_options opts{
       .timeout_check_interval = tgbm::duration_t::max(),  // disable timeouts
   };
-  auto transport = tgbm::make_any_transport_factory<tgbm::asio_transport>();
+  auto transport = $inplace(tgbm::asio_transport());
   tgbm::http2_client client(asio::ip::address_v6::loopback().to_string(), std::move(opts),
                             std::move(transport));
 
-  auto tf = tgbm::make_any_server_transport_factory<tgbm::asio_server_transport>(
-      tgbm::tcp_connection_options{}, /*thread count*/ 1);
+  auto tf = $inplace(tgbm::asio_server_transport(tgbm::tcp_connection_options{}, /*listen_thread_count=*/1));
   tgbm::http2_server_ptr server = new test_server(std::move(tf));
 
   asio::ip::tcp::endpoint ipv6_endpoint(asio::ip::address_v6::loopback(), 80);

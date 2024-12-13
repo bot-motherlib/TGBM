@@ -53,7 +53,7 @@ void asio_server_transport::stop() {
 }
 
 any_acceptor asio_server_transport::make_acceptor(endpoint_t ep) {
-  return make_any_acceptor<asio_acceptor>(io_ctx, std::move(ep), opened_sessions);
+  return $inplace(asio_acceptor(io_ctx, std::move(ep), opened_sessions));
 }
 
 bool asio_server_transport::start() {
