@@ -156,6 +156,11 @@ struct telegram {
   dd::task<UserProfilePhotos> getUserProfilePhotos(api::get_user_profile_photos_request,
                                                    deadline_t deadline = deadline_t::never()) const;
 
+  /* Changes the emoji status for a given user that previously allowed the bot to manage their emoji status
+   * via the Mini App method requestEmojiStatusAccess. Returns True on success. */
+  dd::task<bool> setUserEmojiStatus(api::set_user_emoji_status_request,
+                                    deadline_t deadline = deadline_t::never()) const;
+
   /* Use this method to get basic information about a file and prepare it for downloading. For the moment,
    * bots can download files of up to 20MB in size. On success, a File object is returned. The file can then
    * be downloaded via the link https://api.telegram.org/file/bot<token>/<file_path>, where <file_path> is
@@ -627,6 +632,14 @@ struct telegram {
   dd::task<bool> deleteStickerSet(api::delete_sticker_set_request,
                                   deadline_t deadline = deadline_t::never()) const;
 
+  /* Returns the list of gifts that can be sent by the bot to users. Requires no parameters. Returns a Gifts
+   * object. */
+  dd::task<Gifts> getAvailableGifts(deadline_t deadline = deadline_t::never()) const;
+
+  /* Sends a gift to the given user. The gift can't be converted to Telegram Stars by the user. Returns True
+   * on success. */
+  dd::task<bool> sendGift(api::send_gift_request, deadline_t deadline = deadline_t::never()) const;
+
   /* Use this method to send answers to an inline query. On success, True is returned.No more than 50 results
    * per query are allowed. */
   dd::task<bool> answerInlineQuery(api::answer_inline_query_request,
@@ -637,6 +650,10 @@ struct telegram {
    * returned. */
   dd::task<SentWebAppMessage> answerWebAppQuery(api::answer_web_app_query_request,
                                                 deadline_t deadline = deadline_t::never()) const;
+
+  /* Stores a message that can be sent by a user of a Mini App. Returns a PreparedInlineMessage object. */
+  dd::task<PreparedInlineMessage> savePreparedInlineMessage(api::save_prepared_inline_message_request,
+                                                            deadline_t deadline = deadline_t::never()) const;
 
   /* Use this method to send invoices. On success, the sent Message is returned. */
   dd::task<Message> sendInvoice(api::send_invoice_request, deadline_t deadline = deadline_t::never()) const;
@@ -667,6 +684,11 @@ struct telegram {
   /* Refunds a successful payment in Telegram Stars. Returns True on success. */
   dd::task<bool> refundStarPayment(api::refund_star_payment_request,
                                    deadline_t deadline = deadline_t::never()) const;
+
+  /* Allows the bot to cancel or re-enable extension of a subscription paid in Telegram Stars. Returns True on
+   * success. */
+  dd::task<bool> editUserStarSubscription(api::edit_user_star_subscription_request,
+                                          deadline_t deadline = deadline_t::never()) const;
 
   /* Informs a user that some of the Telegram Passport elements they provided contains errors. The user will
    * not be able to re-submit their Passport to you until the errors are fixed (the contents of the field for

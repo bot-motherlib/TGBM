@@ -334,6 +334,18 @@ dd::task<UserProfilePhotos> telegram::getUserProfilePhotos(api::get_user_profile
   co_return dd::rvo;
 }
 
+dd::task<bool> telegram::setUserEmojiStatus(api::set_user_emoji_status_request request,
+                                            deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("setUserEmojiStatus request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
 dd::task<File> telegram::getFile(api::get_file_request request, deadline_t deadline) const {
   File& result = co_await dd::this_coro::return_place;
   reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
@@ -1335,6 +1347,29 @@ dd::task<bool> telegram::deleteStickerSet(api::delete_sticker_set_request reques
   co_return dd::rvo;
 }
 
+dd::task<Gifts> telegram::getAvailableGifts(deadline_t deadline) const {
+  Gifts& result = co_await dd::this_coro::return_place;
+  reqerr_t err =
+      co_await api::send_request(api::get_available_gifts_request{}, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("getAvailableGifts request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::sendGift(api::send_gift_request request, deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("sendGift request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
 dd::task<bool> telegram::answerInlineQuery(api::answer_inline_query_request request,
                                            deadline_t deadline) const {
   bool& result = co_await dd::this_coro::return_place;
@@ -1354,6 +1389,18 @@ dd::task<SentWebAppMessage> telegram::answerWebAppQuery(api::answer_web_app_quer
   if (err) [[unlikely]] {
     TGBM_LOG_ERROR("answerWebAppQuery request ended with error, status: {}, description: {}", err.status,
                    err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<PreparedInlineMessage> telegram::savePreparedInlineMessage(
+    api::save_prepared_inline_message_request request, deadline_t deadline) const {
+  PreparedInlineMessage& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("savePreparedInlineMessage request ended with error, status: {}, description: {}",
+                   err.status, err.description.str());
     handle_telegram_http_status(err.status);
   }
   co_return dd::rvo;
@@ -1425,6 +1472,18 @@ dd::task<bool> telegram::refundStarPayment(api::refund_star_payment_request requ
   if (err) [[unlikely]] {
     TGBM_LOG_ERROR("refundStarPayment request ended with error, status: {}, description: {}", err.status,
                    err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::editUserStarSubscription(api::edit_user_star_subscription_request request,
+                                                  deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("editUserStarSubscription request ended with error, status: {}, description: {}",
+                   err.status, err.description.str());
     handle_telegram_http_status(err.status);
   }
   co_return dd::rvo;

@@ -18,10 +18,16 @@ struct SuccessfulPayment {
   String telegram_payment_charge_id;
   /* Provider payment identifier */
   String provider_payment_charge_id;
+  /* Optional. Expiration date of the subscription, in Unix time; for recurring payments only */
+  optional<Integer> subscription_expiration_date;
   /* Optional. Identifier of the shipping option chosen by the user */
   optional<String> shipping_option_id;
   /* Optional. Order information provided by the user */
   box<OrderInfo> order_info;
+  /* Optional. True, if the payment is a recurring payment for a subscription */
+  optional<True> is_recurring;
+  /* Optional. True, if the payment is the first payment for a subscription */
+  optional<True> is_first_recurring;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
