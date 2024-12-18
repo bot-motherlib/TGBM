@@ -62,8 +62,6 @@ struct GeneratorBoost {
   }
 };
 
-// clang-format off
-
 #define JSON_PARSE_TEST_NAME(Name) JsonParseTest##Name
 
 #define JSON_INFO_NAME(Method) test_info##Method
@@ -71,36 +69,34 @@ struct GeneratorBoost {
 #define JSON_REG_DECL(Method) static ::testing::TestInfo* JSON_INFO_NAME(Method)
 
 #define JSON_REG_DECL_ALL()    \
-JSON_REG_DECL(DomRapid);       \
-JSON_REG_DECL(DomBoost);       \
-JSON_REG_DECL(HandlerRapid);   \
-JSON_REG_DECL(HandlerBoost);   \
-JSON_REG_DECL(GeneratorBoost)
+  JSON_REG_DECL(DomRapid);     \
+  JSON_REG_DECL(DomBoost);     \
+  JSON_REG_DECL(HandlerRapid); \
+  JSON_REG_DECL(HandlerBoost); \
+  JSON_REG_DECL(GeneratorBoost)
 
-#define JSON_PARSE_REG(Name, Type, Method)                                                    \
-::testing::TestInfo* JSON_PARSE_TEST_NAME(Name)::JSON_INFO_NAME(Method)                       \
-    = ::testing::RegisterTest<>                                                               \
-    (#Method, #Name, nullptr, nullptr, __FILE__, __LINE__,                                    \
-    []() -> testing::Test* {                                                                  \
-      return new JSON_PARSE_TEST_NAME(Name){&Method::parse_json<Type>};                       \
-    })
+#define JSON_PARSE_REG(Name, Type, Method)                                                             \
+  ::testing::TestInfo* JSON_PARSE_TEST_NAME(Name)::JSON_INFO_NAME(Method) = ::testing::RegisterTest<>( \
+      #Method, #Name, nullptr, nullptr, __FILE__, __LINE__,                                            \
+      []() -> testing::Test* { return new JSON_PARSE_TEST_NAME(Name){&Method::parse_json<Type>}; })
 
-#define JSON_PARSE_REG_ALL(Name, Type)     \
-JSON_PARSE_REG(Name, Type, DomRapid);      \
-JSON_PARSE_REG(Name, Type, DomBoost);      \
-JSON_PARSE_REG(Name, Type, HandlerRapid);  \
-JSON_PARSE_REG(Name, Type, HandlerBoost);  \
-JSON_PARSE_REG(Name, Type, GeneratorBoost)
+#define JSON_PARSE_REG_ALL(Name, Type)      \
+  JSON_PARSE_REG(Name, Type, DomRapid);     \
+  JSON_PARSE_REG(Name, Type, DomBoost);     \
+  JSON_PARSE_REG(Name, Type, HandlerRapid); \
+  JSON_PARSE_REG(Name, Type, HandlerBoost); \
+  JSON_PARSE_REG(Name, Type, GeneratorBoost)
 
-#define JSON_PARSE_TEST(Name, Type) struct JSON_PARSE_TEST_NAME(Name) : testing::Test {       \
-  using parse_json_t = Type(*)(std::string_view);                                             \
-  void TestBody() override;                                                                   \
-  JSON_PARSE_TEST_NAME(Name)(parse_json_t parse_json) : parse_json(parse_json) {}             \
-private:                                                                                      \
-  parse_json_t parse_json;                                                                    \
-  JSON_REG_DECL_ALL();                                                                        \
-};                                                                                            \
-JSON_PARSE_REG_ALL(Name, Type);                                                               \
-void JSON_PARSE_TEST_NAME(Name)::TestBody()
-
-// clang-format on
+#define JSON_PARSE_TEST(Name, Type)                                                \
+  struct JSON_PARSE_TEST_NAME(Name) : testing::Test {                              \
+    using parse_json_t = Type (*)(std::string_view);                               \
+    void TestBody() override;                                                      \
+    JSON_PARSE_TEST_NAME(Name)(parse_json_t parse_json) : parse_json(parse_json) { \
+    }                                                                              \
+                                                                                   \
+   private:                                                                        \
+    parse_json_t parse_json;                                                       \
+    JSON_REG_DECL_ALL();                                                           \
+  };                                                                               \
+  JSON_PARSE_REG_ALL(Name, Type);                                                  \
+  void JSON_PARSE_TEST_NAME(Name)::TestBody()
