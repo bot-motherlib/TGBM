@@ -15,7 +15,7 @@ struct sax_parser<T> {
       if constexpr (!std::same_as<Suboneof, void>)
         return sax_parser<Suboneof>::parse(v.data.template emplace<Suboneof>(), tok, r);
       else
-        TGBM_JSON_PARSE_ERROR;
+        return sax_ignore_value(tok);
     };
     return v.discriminate(key, emplacer);
   }

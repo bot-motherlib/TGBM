@@ -5,8 +5,10 @@
 #include <string_view>
 
 #include <tgbm/utils/pfr_extension.hpp>
-#include "basic_parser.hpp"
 #include <tgbm/utils/traits.hpp>
+
+#include "basic_parser.hpp"
+#include "ignore.hpp"
 
 namespace tgbm::json::handler_parser {
 
@@ -43,10 +45,11 @@ struct parser<T> : basic_parser<T> {
         auto& suboneof = this->t_->data.template emplace<Suboneof>();
         this->parser_stack_.push(parser<Suboneof>{this->parser_stack_, suboneof});
         this->parser_stack_.start_object();
-        return ResultParse::kContinue;
       } else {
-        TGBM_JSON_HANDLER_PARSE_ERROR;
+        this->parser_stack_.push(ignore_parser{});
+        this->parser_stack_.start_object();
       }
+      return ResultParse::kContinue;
     };
     return this->t_->discriminate(key, emplacer);
   }
