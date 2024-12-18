@@ -20,7 +20,7 @@ Preferred way with [CPM](https://github.com/cpm-cmake/CPM.cmake)
 
 CPMAddPackage(
   NAME TGBM
-  GIT_REPOSITORY [https://github.com/kelbon/HPACK](https://github.com/bot-motherlib/TGBM)
+  GIT_REPOSITORY https://github.com/bot-motherlib/TGBM
   GIT_TAG        origin/master
   OPTIONS "TGBM_ENABLE_EXAMPLES ON"
 )
