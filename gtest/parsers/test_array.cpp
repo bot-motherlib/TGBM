@@ -1,6 +1,5 @@
 #include <numeric>
 #include <parsers/fixtures.hpp>
-#include "tgbm/api/Integer.hpp"
 
 namespace json_parser::test_array {
 
