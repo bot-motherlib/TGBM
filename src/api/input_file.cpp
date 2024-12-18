@@ -3,7 +3,6 @@
 #include <fmt/core.h>
 
 #include <fstream>
-// TODO boost filesystem + mapped file
 
 namespace tgbm::api {
 

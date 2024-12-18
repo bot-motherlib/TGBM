@@ -6,7 +6,7 @@
 #include <hpack/basic_types.hpp>
 
 #include <tgbm/net/errors.hpp>
-
+#undef NO_ERROR
 namespace tgbm::http2 {
 
 // 0 reserved for connection related

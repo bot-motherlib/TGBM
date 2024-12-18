@@ -8,7 +8,7 @@
 #include <tgbm/bot.hpp>
 #include <tgbm/net/http2/client.hpp>
 #include <tgbm/net/http_client_with_retry.hpp>
-#include <tgbm/net/asio_tls_transport.hpp>
+#include <tgbm/net/asio/asio_tls_transport.hpp>
 #include <tgbm/utils/formatters.hpp>
 
 /*

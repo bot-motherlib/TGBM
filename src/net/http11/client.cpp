@@ -4,7 +4,7 @@
 #include <charconv>
 #include <cstddef>
 
-#include <tgbm/net/asio_awaiters.hpp>
+#include <tgbm/net/asio/asio_awaiters.hpp>
 
 #include <tgbm/net/errors.hpp>
 

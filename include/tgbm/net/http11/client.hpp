@@ -3,9 +3,9 @@
 #include <string_view>
 
 #include <tgbm/net/http_client.hpp>
-#include <tgbm/net/connection_pool.hpp>
+#include <tgbm/net/http11/connection_pool.hpp>
 
-#include <tgbm/net/tcp_connection.hpp>
+#include <tgbm/net/asio/tcp_connection.hpp>
 
 namespace tgbm {
 

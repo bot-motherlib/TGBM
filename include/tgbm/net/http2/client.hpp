@@ -6,19 +6,17 @@
 
 #include <boost/intrusive/list_hook.hpp>
 #include <boost/intrusive/list.hpp>
-// TODO fix correct order of includes, windows macros(fuck them)
 
-#include <boost/asio/io_context.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
 #include <tgbm/utils/boost_intrusive.hpp>
-#include <tgbm/utils/macro.hpp>
 
 #include <tgbm/net/transport_factory.hpp>
 
 namespace tgbm {
 
 struct http2_client;
+
 struct http2_connection;
 
 void intrusive_ptr_add_ref(http2_connection*);

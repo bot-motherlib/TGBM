@@ -39,7 +39,6 @@ struct noop_events_handler_t {
   }
 };
 
-// TODO coro allocator multithread (interface)
 template <typename T, pool_events_handler_for<T> H = noop_events_handler_t<T>>
 struct pool_t {
  private:

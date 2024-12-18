@@ -1,5 +1,5 @@
 #include <tgbm/net/http2/client.hpp>
-#include <tgbm/net/asio_transport.hpp>
+#include <tgbm/net/asio/asio_transport.hpp>
 #include <tgbm/net/http2/server.hpp>
 
 constexpr std::string_view expected_response = "hello world";

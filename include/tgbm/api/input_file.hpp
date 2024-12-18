@@ -4,8 +4,7 @@
 #include <filesystem>
 
 namespace tgbm::api {
-// TODO better
-// TODO use this file instead of deprecated InputFile
+
 struct InputFile {
   std::string filename;
   std::string mimetype;

@@ -30,10 +30,10 @@ struct deadline_t {
   std::strong_ordering operator<=>(const deadline_t&) const = default;
 };
 
-// TODO tests.. Hmm, what if duration overflows bottom?
 inline deadline_t deadline_after(duration_t duration) noexcept {
   // avoid overflow
   auto tp = std::chrono::steady_clock::now();
+  // TODO tests.. handle duration underflow
   if (tp.max() - tp <= duration)
     return deadline_t{tp.max()};
   return deadline_t{tp + duration};

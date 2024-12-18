@@ -139,7 +139,6 @@ struct rj_tojson<W, const_string> {
     rj_tojson<W, std::string_view>(writer, v.str());
   }
 };
-// TODO fn serialize + remove cv ref
 
 template <rjson_writer W>
 struct rj_tojson<W, api::Integer> {

@@ -1,6 +1,5 @@
 #pragma once
 
-// TODO разобраться откуда лезет #define YIeld и прикрыть эти хедеры (азио)
 #ifdef _WIN32
   #undef Yield
 #endif
