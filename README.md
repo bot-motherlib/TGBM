@@ -1,15 +1,16 @@
 
-<p align="center">
-  <img src="https://avatars.githubusercontent.com/u/183412394?s=200&v=4" alt="Image" width="315"/>
-</p>
-
-
-TGBM is a easy-to-use, flexible C++20 library for creating telegram bots
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/c8ea401b-c4aa-4417-8f35-ebc9e1e9337f?s=200&v=4" width="350" alt="Logo"/>
+  <h1><code>TGBM</code></h1>
+</div>
 
 ![supported api version](https://img.shields.io/badge/%20API%20version-%208.1%20-brightgreen)
 [![build and test](
 https://github.com/bot-motherlib/TGBM/actions/workflows/CI_ubuntu.yaml/badge.svg?branch=master)](
 https://github.com/bot-motherlib/TGBM/actions/workflows/CI_ubuntu.yaml)
+
+
+TGBM is a easy-to-use, flexible C++20 library for creating telegram bots
 
 ### Why Choose TGBM?
 
