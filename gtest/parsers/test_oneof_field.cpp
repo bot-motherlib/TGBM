@@ -264,7 +264,7 @@ JSON_PARSE_TEST(TestOneOfFieldUnknownOptionalField, {
     {
       "mandatory_string": "TestWithUnknown",
       "mandatory_int": 666,
-      "optional_uknown_field": true
+      "optional_unknown_field": true
     }
   )";
   CustomStruct expected;
