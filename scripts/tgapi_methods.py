@@ -144,7 +144,12 @@ G_OPERATION_TO_RESULT = {
     'setPassportDataErrors': TRUE,
     'sendGame': MSG,
     'setGameScore': MSGORTRUE,
-    'getGameHighScores': 'arrayof<GameHighScore>'
+    'getGameHighScores': 'arrayof<GameHighScore>',
+    'editUserStarSubscription': TRUE,
+    'setUserEmojiStatus': TRUE,
+    'getAvailableGifts': 'Gifts',
+    'sendGift': TRUE,
+    'savePreparedInlineMessage': 'PreparedInlineMessage',
 }
 
 # loads TG api (html)

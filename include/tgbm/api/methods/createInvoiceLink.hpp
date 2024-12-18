@@ -19,8 +19,16 @@ struct create_invoice_link_request {
   /* Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost,
    * delivery tax, bonus, etc.). Must contain exactly one item for payments in Telegram Stars. */
   arrayof<LabeledPrice> prices;
+  /* Unique identifier of the business connection on behalf of which the link will be created. For payments in
+   * Telegram Stars only. */
+  optional<String> business_connection_id;
   /* Payment provider token, obtained via @BotFather. Pass an empty string for payments in Telegram Stars. */
   optional<String> provider_token;
+  /* The number of seconds the subscription will be active for before the next payment. The currency must be
+   * set to “XTR” (Telegram Stars) if the parameter is used. Currently, it must always be 2592000 (30 days) if
+   * specified. Any number of subscriptions can be active for a given bot at the same time, including multiple
+   * concurrent subscriptions from the same user. Subscription price must no exceed 2500 Telegram Stars. */
+  optional<Integer> subscription_period;
   /* The maximum accepted amount for tips in the smallest units of the currency (integer, not float/double).
    * For example, for a maximum tip of US$ 1.45 pass max_tip_amount = 145. See the exp parameter in
    * currencies.json, it shows the number of digits past the decimal point for each currency (2 for the
@@ -69,6 +77,8 @@ struct create_invoice_link_request {
   static constexpr http_method_e http_method = http_method_e::POST;
 
   void fill_nonfile_args(auto& body) const {
+    if (business_connection_id)
+      body.arg("business_connection_id", *business_connection_id);
     body.arg("title", title);
     body.arg("description", description);
     body.arg("payload", payload);
@@ -76,6 +86,8 @@ struct create_invoice_link_request {
       body.arg("provider_token", *provider_token);
     body.arg("currency", currency);
     body.arg("prices", prices);
+    if (subscription_period)
+      body.arg("subscription_period", *subscription_period);
     if (max_tip_amount)
       body.arg("max_tip_amount", *max_tip_amount);
     if (suggested_tip_amounts)

@@ -156,6 +156,8 @@
 #include <tgbm/api/types/StickerSet.hpp>
 #include <tgbm/api/types/MaskPosition.hpp>
 #include <tgbm/api/types/InputSticker.hpp>
+#include <tgbm/api/types/Gift.hpp>
+#include <tgbm/api/types/Gifts.hpp>
 #include <tgbm/api/types/InlineQuery.hpp>
 #include <tgbm/api/types/InlineQueryResultsButton.hpp>
 #include <tgbm/api/types/InlineQueryResult.hpp>
@@ -187,6 +189,7 @@
 #include <tgbm/api/types/InputInvoiceMessageContent.hpp>
 #include <tgbm/api/types/ChosenInlineResult.hpp>
 #include <tgbm/api/types/SentWebAppMessage.hpp>
+#include <tgbm/api/types/PreparedInlineMessage.hpp>
 #include <tgbm/api/types/LabeledPrice.hpp>
 #include <tgbm/api/types/Invoice.hpp>
 #include <tgbm/api/types/ShippingAddress.hpp>
@@ -201,8 +204,10 @@
 #include <tgbm/api/types/RevenueWithdrawalStatePending.hpp>
 #include <tgbm/api/types/RevenueWithdrawalStateSucceeded.hpp>
 #include <tgbm/api/types/RevenueWithdrawalStateFailed.hpp>
+#include <tgbm/api/types/AffiliateInfo.hpp>
 #include <tgbm/api/types/TransactionPartner.hpp>
 #include <tgbm/api/types/TransactionPartnerUser.hpp>
+#include <tgbm/api/types/TransactionPartnerAffiliateProgram.hpp>
 #include <tgbm/api/types/TransactionPartnerFragment.hpp>
 #include <tgbm/api/types/TransactionPartnerTelegramAds.hpp>
 #include <tgbm/api/types/TransactionPartnerTelegramApi.hpp>

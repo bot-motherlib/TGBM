@@ -29,6 +29,7 @@
 #include <tgbm/api/methods/sendChatAction.hpp>
 #include <tgbm/api/methods/setMessageReaction.hpp>
 #include <tgbm/api/methods/getUserProfilePhotos.hpp>
+#include <tgbm/api/methods/setUserEmojiStatus.hpp>
 #include <tgbm/api/methods/getFile.hpp>
 #include <tgbm/api/methods/banChatMember.hpp>
 #include <tgbm/api/methods/unbanChatMember.hpp>
@@ -114,14 +115,18 @@
 #include <tgbm/api/methods/setStickerSetThumbnail.hpp>
 #include <tgbm/api/methods/setCustomEmojiStickerSetThumbnail.hpp>
 #include <tgbm/api/methods/deleteStickerSet.hpp>
+#include <tgbm/api/methods/getAvailableGifts.hpp>
+#include <tgbm/api/methods/sendGift.hpp>
 #include <tgbm/api/methods/answerInlineQuery.hpp>
 #include <tgbm/api/methods/answerWebAppQuery.hpp>
+#include <tgbm/api/methods/savePreparedInlineMessage.hpp>
 #include <tgbm/api/methods/sendInvoice.hpp>
 #include <tgbm/api/methods/createInvoiceLink.hpp>
 #include <tgbm/api/methods/answerShippingQuery.hpp>
 #include <tgbm/api/methods/answerPreCheckoutQuery.hpp>
 #include <tgbm/api/methods/getStarTransactions.hpp>
 #include <tgbm/api/methods/refundStarPayment.hpp>
+#include <tgbm/api/methods/editUserStarSubscription.hpp>
 #include <tgbm/api/methods/setPassportDataErrors.hpp>
 #include <tgbm/api/methods/sendGame.hpp>
 #include <tgbm/api/methods/setGameScore.hpp>
