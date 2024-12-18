@@ -18,7 +18,7 @@ struct TestObject {
   }
 };
 
-JSON_PARSE_TEST(NestedObjectsInArray, {
+JSON_PARSE_TEST(NestedObjectsInArray, std::vector<TestObject>) {
   // clang-format off
   std::vector<TestObject> expected{
     TestObject{
@@ -58,11 +58,11 @@ JSON_PARSE_TEST(NestedObjectsInArray, {
         }
     ])";
 
-  auto got = parse_json<std::vector<TestObject>>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(RequiredFields, {
+JSON_PARSE_TEST(RequiredFields, TestObject) {
   TestObject expected{.int_field = 42,
                       .double_field = 3.14,
                       .bool_field = true,
@@ -81,11 +81,11 @@ JSON_PARSE_TEST(RequiredFields, {
             }
         )";
 
-  auto got = parse_json<TestObject>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(OptionalFields, {
+JSON_PARSE_TEST(OptionalFields, TestObject) {
   // clang-format off
   TestObject expected{.int_field = 100,
     .double_field = 0.01,
@@ -107,11 +107,11 @@ JSON_PARSE_TEST(OptionalFields, {
         }
     )";
 
-  auto got = parse_json<TestObject>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(NestedObjects, {
+JSON_PARSE_TEST(NestedObjects, TestObject) {
   // clang-format off
   TestObject expected{
     .int_field = 1,
@@ -151,11 +151,11 @@ JSON_PARSE_TEST(NestedObjects, {
             }
         )";
 
-  auto got = parse_json<TestObject>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(EmptyStringNumbersArrays, {
+JSON_PARSE_TEST(EmptyStringNumbersArrays, TestObject) {
   // clang-format off
   TestObject expected{
       .int_field = 0,
@@ -179,11 +179,11 @@ JSON_PARSE_TEST(EmptyStringNumbersArrays, {
   )";
   // clang-format on
 
-  auto got = parse_json<TestObject>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(ExtraFields, {
+JSON_PARSE_TEST(ExtraFields, TestObject) {
   auto json = R"(
             {
                 "int_field": 1,
@@ -241,11 +241,11 @@ JSON_PARSE_TEST(ExtraFields, {
     };
   // clang-format on
 
-  auto got = parse_json<TestObject>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(MissingRequiredFields, {
+JSON_PARSE_TEST(MissingRequiredFields, TestObject) {
   auto json = R"(
     {
         "int_field": 42,
@@ -254,7 +254,7 @@ JSON_PARSE_TEST(MissingRequiredFields, {
         "array_field": []
     }
   )";
-  EXPECT_ANY_THROW(parse_json<TestObject>(json));
-})
+  EXPECT_ANY_THROW(parse_json(json));
+}
 
 }  // namespace json_parser::test_cases

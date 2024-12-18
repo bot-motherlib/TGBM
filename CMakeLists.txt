@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 project(tgbm) # telegram bot mother library
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    add_compile_options(-freport-bug)
-endif()
-
 option(TGBM_ENABLE_BENCHS   "Set to ON to enable benchmarks" OFF)
 option(TGBM_ENABLE_GEN      "Set to ON to generate api"      OFF)
 option(TGBM_ENABLE_TESTING  "Set to ON to enable tests"      OFF)

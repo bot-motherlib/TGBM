@@ -18,7 +18,7 @@
 #include <tgbm/jsons/errors.hpp>
 #include <tgbm/jsons/stream_parser.hpp>
 
-struct DomRapid : testing::Test {
+struct DomRapid {
   template <typename T>
   static T parse_json(std::string_view json) {
     rapidjson::Document document;
@@ -30,7 +30,7 @@ struct DomRapid : testing::Test {
   }
 };
 
-struct DomBoost : testing::Test {
+struct DomBoost {
   template <typename T>
   static T parse_json(std::string_view json) {
     ::boost::json::value j = boost::json::parse(json);
@@ -38,21 +38,21 @@ struct DomBoost : testing::Test {
   }
 };
 
-struct HandlerRapid : testing::Test {
+struct HandlerRapid {
   template <typename T>
   static T parse_json(std::string_view json) {
     return tgbm::json::rapid::parse_handler<T>(json);
   }
 };
 
-struct HandlerBoost : testing::Test {
+struct HandlerBoost {
   template <typename T>
   static T parse_json(std::string_view json) {
     return tgbm::json::boost::parse_handler<T>(json);
   }
 };
 
-struct GeneratorBoost : testing::Test {
+struct GeneratorBoost {
   template <typename T>
   static T parse_json(std::string_view json) {
     T v;
@@ -62,13 +62,41 @@ struct GeneratorBoost : testing::Test {
   }
 };
 
-// clang-format off
+#define JSON_PARSE_TEST_NAME(Name) JsonParseTest##Name
 
-#define JSON_PARSE_TEST(Name, ...)             \
-  TEST_F(DomRapid, Name) __VA_ARGS__           \
-  TEST_F(DomBoost, Name) __VA_ARGS__           \
-  TEST_F(HandlerRapid, Name) __VA_ARGS__       \
-  TEST_F(HandlerBoost, Name)  __VA_ARGS__      \
-  TEST_F(GeneratorBoost, Name) __VA_ARGS__
+#define JSON_INFO_NAME(Method) test_info##Method
 
-// clang-format on
+#define JSON_REG_DECL(Method) static ::testing::TestInfo* JSON_INFO_NAME(Method)
+
+#define JSON_REG_DECL_ALL()    \
+  JSON_REG_DECL(DomRapid);     \
+  JSON_REG_DECL(DomBoost);     \
+  JSON_REG_DECL(HandlerRapid); \
+  JSON_REG_DECL(HandlerBoost); \
+  JSON_REG_DECL(GeneratorBoost)
+
+#define JSON_PARSE_REG(Name, Type, Method)                                                             \
+  ::testing::TestInfo* JSON_PARSE_TEST_NAME(Name)::JSON_INFO_NAME(Method) = ::testing::RegisterTest<>( \
+      #Method, #Name, nullptr, nullptr, __FILE__, __LINE__,                                            \
+      []() -> testing::Test* { return new JSON_PARSE_TEST_NAME(Name){&Method::parse_json<Type>}; })
+
+#define JSON_PARSE_REG_ALL(Name, Type)      \
+  JSON_PARSE_REG(Name, Type, DomRapid);     \
+  JSON_PARSE_REG(Name, Type, DomBoost);     \
+  JSON_PARSE_REG(Name, Type, HandlerRapid); \
+  JSON_PARSE_REG(Name, Type, HandlerBoost); \
+  JSON_PARSE_REG(Name, Type, GeneratorBoost)
+
+#define JSON_PARSE_TEST(Name, Type)                                                \
+  struct JSON_PARSE_TEST_NAME(Name) : testing::Test {                              \
+    using parse_json_t = Type (*)(std::string_view);                               \
+    void TestBody() override;                                                      \
+    JSON_PARSE_TEST_NAME(Name)(parse_json_t parse_json) : parse_json(parse_json) { \
+    }                                                                              \
+                                                                                   \
+   private:                                                                        \
+    parse_json_t parse_json;                                                       \
+    JSON_REG_DECL_ALL();                                                           \
+  };                                                                               \
+  JSON_PARSE_REG_ALL(Name, Type);                                                  \
+  void JSON_PARSE_TEST_NAME(Name)::TestBody()

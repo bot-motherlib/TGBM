@@ -17,7 +17,7 @@ struct TreeNode {
 std::strong_ordering TreeNode::operator<=>(const TreeNode&) const = default;
 bool TreeNode::operator==(const TreeNode&) const = default;
 
-JSON_PARSE_TEST(SimpleTree, {
+JSON_PARSE_TEST(SimpleTree, TreeNode) {
   TreeNode expected;
   expected.tree_value = "root";
   expected.children = std::vector<tgbm::box<TreeNode>>{
@@ -44,11 +44,11 @@ JSON_PARSE_TEST(SimpleTree, {
             }
         )";
 
-  auto got = parse_json<TreeNode>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(LeafOnly, {
+JSON_PARSE_TEST(LeafOnly, TreeNode) {
   TreeNode expected;
   expected.tree_value = "single";
 
@@ -58,8 +58,8 @@ JSON_PARSE_TEST(LeafOnly, {
             }
         )";
 
-  auto got = parse_json<TreeNode>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
 }  // namespace json_parser::test_tree

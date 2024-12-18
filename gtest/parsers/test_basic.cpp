@@ -16,47 +16,47 @@ struct SomeStruct {
 
 static_assert(tgbm::common_api_type<SomeStruct>);
 
-JSON_PARSE_TEST(Bool, {
+JSON_PARSE_TEST(Bool, bool) {
   auto expected = true;
-  auto got = parse_json<bool>("true");
+  auto got = parse_json("true");
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(Int, {
+JSON_PARSE_TEST(Int, int) {
   auto expected = 1231;
-  auto got = parse_json<int>("1231");
+  auto got = parse_json("1231");
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(Float, {
+JSON_PARSE_TEST(Float, float) {
   auto expected = 1.0;
-  auto got = parse_json<float>("1.0");
+  auto got = parse_json("1.0");
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(OptFloat, {
+JSON_PARSE_TEST(OptFloat, tgbm::api::optional<float>) {
   tgbm::api::optional<float> expected = 1.0;
-  auto got = parse_json<tgbm::api::optional<float>>("1.0");
+  auto got = parse_json("1.0");
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(BoxFloat, {
+JSON_PARSE_TEST(BoxFloat, tgbm::box<float>) {
   tgbm::box<float> expected = 1.0;
-  auto got = parse_json<tgbm::box<float>>("1.0");
+  auto got = parse_json("1.0");
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(String, {
+JSON_PARSE_TEST(String, std::string) {
   std::string expected = "Some string";
-  auto got = parse_json<std::string>(R"(
+  auto got = parse_json(R"(
             "Some string"
         )");
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(BasicAggregate, {
+JSON_PARSE_TEST(BasicAggregate, SomeStruct) {
   SomeStruct expected = {.a = 1, .b = 42.5, .c = "some kind"};
-  auto got = parse_json<SomeStruct>(R"(
+  auto got = parse_json(R"(
             {
                 "a" : 1,
                 "b" : 42.5,
@@ -64,6 +64,6 @@ JSON_PARSE_TEST(BasicAggregate, {
             }
         )");
   EXPECT_EQ(expected, got);
-})
+}
 
 }  // namespace json_parser::test_basic
