@@ -1,7 +1,7 @@
 TGBM is a easy-to-use, flexible C++20 library for creating telegram bots
 
 [![build and test](
-https://github.com/bot-motherlib/TGBM/actions/workflows/CI_ubuntu.yaml/badge.svg?branch=main)](
+https://github.com/bot-motherlib/TGBM/actions/workflows/CI_ubuntu.yaml/badge.svg?branch=master)](
 https://github.com/bot-motherlib/TGBM/actions/workflows/CI_ubuntu.yaml)
 
 ### Why Choose TGBM?
