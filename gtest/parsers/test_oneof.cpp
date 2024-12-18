@@ -137,7 +137,7 @@ struct MessageOrigin {
   }
 };
 
-JSON_PARSE_TEST(OneOfUserType, {
+JSON_PARSE_TEST(OneOfUserType, MessageOrigin) {
   MessageOrigin expected{
       .data =
           MessageOriginUser{
@@ -163,11 +163,11 @@ JSON_PARSE_TEST(OneOfUserType, {
     }
   )";
 
-  MessageOrigin parsed = parse_json<MessageOrigin>(json);
+  MessageOrigin parsed = parse_json(json);
   EXPECT_EQ(parsed, expected);
-})
+}
 
-JSON_PARSE_TEST(OneOfHiddenUserType, {
+JSON_PARSE_TEST(OneOfHiddenUserType, MessageOrigin) {
   MessageOrigin expected{
       .data =
           MessageOriginHiddenUser{
@@ -184,11 +184,11 @@ JSON_PARSE_TEST(OneOfHiddenUserType, {
     }
   )";
 
-  MessageOrigin parsed = parse_json<MessageOrigin>(json);
+  MessageOrigin parsed = parse_json(json);
   EXPECT_EQ(parsed, expected);
-})
+}
 
-JSON_PARSE_TEST(OneOfChatType, {
+JSON_PARSE_TEST(OneOfChatType, MessageOrigin) {
   MessageOrigin expected{
       .data =
           MessageOriginChat{
@@ -214,11 +214,11 @@ JSON_PARSE_TEST(OneOfChatType, {
     }
   )";
 
-  MessageOrigin parsed = parse_json<MessageOrigin>(json);
+  MessageOrigin parsed = parse_json(json);
   EXPECT_EQ(parsed, expected);
-})
+}
 
-JSON_PARSE_TEST(OneOfChannelType, {
+JSON_PARSE_TEST(OneOfChannelType, MessageOrigin) {
   MessageOrigin expected{
       .data =
           MessageOriginChannel{
@@ -244,11 +244,11 @@ JSON_PARSE_TEST(OneOfChannelType, {
     }
   )";
 
-  MessageOrigin parsed = parse_json<MessageOrigin>(json);
+  MessageOrigin parsed = parse_json(json);
   EXPECT_EQ(parsed, expected);
-})
+}
 
-JSON_PARSE_TEST(OneOfUnknownType, {
+JSON_PARSE_TEST(OneOfUnknownType, MessageOrigin) {
   MessageOrigin expected;
   auto json = R"(
         {
@@ -256,11 +256,11 @@ JSON_PARSE_TEST(OneOfUnknownType, {
         "date": 1630454400
         }
     )";
-  MessageOrigin parsed = parse_json<MessageOrigin>(json);
+  MessageOrigin parsed = parse_json(json);
   EXPECT_EQ(parsed, expected);
-})
+}
 
-JSON_PARSE_TEST(OneOfHiddenUserTypeMoreData, {
+JSON_PARSE_TEST(OneOfHiddenUserTypeMoreData, MessageOrigin) {
   MessageOrigin expected{
       .data =
           MessageOriginHiddenUser{
@@ -277,8 +277,8 @@ JSON_PARSE_TEST(OneOfHiddenUserTypeMoreData, {
         }
     )";
 
-  MessageOrigin parsed = parse_json<MessageOrigin>(json);
+  MessageOrigin parsed = parse_json(json);
   EXPECT_EQ(parsed, expected);
-})
+}
 
 }  // namespace test_oneof

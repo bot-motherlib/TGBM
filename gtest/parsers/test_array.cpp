@@ -1,5 +1,6 @@
 #include <numeric>
 #include <parsers/fixtures.hpp>
+#include "tgbm/api/Integer.hpp"
 
 namespace json_parser::test_array {
 
@@ -24,18 +25,18 @@ struct SimpleObject {
   }
 };
 
-JSON_PARSE_TEST(IntegerArray, {
+JSON_PARSE_TEST(IntegerArray, std::vector<tgbm::api::Integer>) {
   std::vector<tgbm::api::Integer> expected = {1, 2, 3, 4, 5};
 
   auto json = R"(
             [1, 2, 3, 4, 5]
         )";
 
-  auto got = parse_json<std::vector<tgbm::api::Integer>>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(ObjectArray, {
+JSON_PARSE_TEST(ObjectArray, std::vector<SimpleObject>) {
   // clang-format off
     std::vector<SimpleObject> expected{
         SimpleObject{
@@ -78,23 +79,23 @@ JSON_PARSE_TEST(ObjectArray, {
     ]
   )";
 
-  auto got_fast_parse = parse_json<std::vector<SimpleObject>>(json);
+  auto got_fast_parse = parse_json(json);
 
   EXPECT_EQ(expected, got_fast_parse);
-})
+}
 
-JSON_PARSE_TEST(EmptyArray, {
+JSON_PARSE_TEST(EmptyArray, std::vector<int>) {
   std::vector<int> expected = {};
 
   auto json = R"(
             []
         )";
 
-  auto got = parse_json<std::vector<int>>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(MultidimensionalArray, {
+JSON_PARSE_TEST(MultidimensionalArray, std::vector<std::vector<int>>) {
   std::vector<std::vector<int>> expected{
       {1, 2, 3},
       {4, 5, 6},
@@ -109,13 +110,13 @@ JSON_PARSE_TEST(MultidimensionalArray, {
     ]
   )";
 
-  auto got = parse_json<std::vector<std::vector<int>>>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(ObjectArrayWithOptionalFields, {
+JSON_PARSE_TEST(ObjectArrayWithOptionalFields, std::vector<SimpleObject>) {
   // clang-format off
-   std::vector<SimpleObject> expected{
+  std::vector<SimpleObject> expected{
         SimpleObject{
             .int_field = 1,
             .double_field = 1.1,
@@ -156,30 +157,30 @@ JSON_PARSE_TEST(ObjectArrayWithOptionalFields, {
             ]
         )";
 
-  auto got = parse_json<std::vector<SimpleObject>>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(ArrayWithNull, {
+JSON_PARSE_TEST(ArrayWithNull, std::vector<tgbm::api::optional<int>>) {
   std::vector<tgbm::api::optional<int>> expected{1, 2, std::nullopt, 4};
 
   auto json = R"(
             [1, 2, null, 4]
         )";
 
-  auto got = parse_json<std::vector<tgbm::api::optional<int>>>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(LargeArray, {
+JSON_PARSE_TEST(LargeArray, std::vector<int>) {
   std::vector<int> expected(10);
   std::iota(expected.begin(), expected.end(), 0);
   auto json = fmt::format("[{}]", fmt::join(expected, ","));
-  auto got = parse_json<std::vector<int>>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(MissingArrayElement, {
+JSON_PARSE_TEST(MissingArrayElement, std::vector<int>) {
   auto json = R"(
             [
                 1,
@@ -189,8 +190,7 @@ JSON_PARSE_TEST(MissingArrayElement, {
             ]
         )";
 
-  auto try_parse = [&]() { parse_json<std::vector<int>>(json); };
-  EXPECT_ANY_THROW(try_parse());
-})
+  EXPECT_ANY_THROW(parse_json(json));
+}
 
 }  // namespace json_parser::test_array

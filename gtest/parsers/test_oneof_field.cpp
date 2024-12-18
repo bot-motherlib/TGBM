@@ -120,7 +120,7 @@ struct CustomStruct {
   }
 };
 
-JSON_PARSE_TEST(TestOneOfFieldOptionalBool, {
+JSON_PARSE_TEST(TestOneOfFieldOptionalBool, CustomStruct) {
   CustomStruct expected;
   expected.mandatory_string = "TestWithBool";
   expected.mandatory_int = 100;
@@ -134,11 +134,11 @@ JSON_PARSE_TEST(TestOneOfFieldOptionalBool, {
     }
   )";
 
-  auto got = parse_json<CustomStruct>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(TestOneOfFieldOptionalDouble, {
+JSON_PARSE_TEST(TestOneOfFieldOptionalDouble, CustomStruct) {
   CustomStruct expected;
   expected.mandatory_string = "TestWithDouble";
   expected.mandatory_int = 100;
@@ -152,11 +152,11 @@ JSON_PARSE_TEST(TestOneOfFieldOptionalDouble, {
     }
   )";
 
-  auto got = parse_json<CustomStruct>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(TestOneOfFieldOptionalArray, {
+JSON_PARSE_TEST(TestOneOfFieldOptionalArray, CustomStruct) {
   CustomStruct expected;
   expected.mandatory_string = "TestWithArray";
   expected.mandatory_int = 300;
@@ -170,11 +170,11 @@ JSON_PARSE_TEST(TestOneOfFieldOptionalArray, {
     }
   )";
 
-  auto got = parse_json<CustomStruct>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(TestOneOfFieldObject1, {
+JSON_PARSE_TEST(TestOneOfFieldObject1, CustomStruct) {
   CustomStruct expected;
   expected.mandatory_string = "TestString";
   expected.mandatory_int = 123;
@@ -192,12 +192,12 @@ JSON_PARSE_TEST(TestOneOfFieldObject1, {
     }
   )";
 
-  auto got = parse_json<CustomStruct>(json);
+  auto got = parse_json(json);
 
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(TestOneOfFieldObject2, {
+JSON_PARSE_TEST(TestOneOfFieldObject2, CustomStruct) {
   CustomStruct expected;
   expected.mandatory_string = "TestWithObject2";
   expected.mandatory_int = 500;
@@ -214,11 +214,11 @@ JSON_PARSE_TEST(TestOneOfFieldObject2, {
     }
   )";
 
-  auto got = parse_json<CustomStruct>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(TestOneOfFieldCustom, {
+JSON_PARSE_TEST(TestOneOfFieldCustom, CustomStruct) {
   CustomStruct expected;
   expected.mandatory_string = "TestWithCustom";
   expected.mandatory_int = 600;
@@ -235,11 +235,11 @@ JSON_PARSE_TEST(TestOneOfFieldCustom, {
     }
   )";
 
-  auto got = parse_json<CustomStruct>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(TestOneOfFieldInvalidData, {
+JSON_PARSE_TEST(TestOneOfFieldInvalidData, CustomStruct) {
   auto json = R"(
     {
       "mandatory_string": "InvalidData",
@@ -247,19 +247,19 @@ JSON_PARSE_TEST(TestOneOfFieldInvalidData, {
       "optional_bool": "not_a_boolean"
     }
   )";
-  EXPECT_THROW(parse_json<CustomStruct>(json), std::exception);
-})
+  EXPECT_THROW(parse_json(json), std::exception);
+}
 
-JSON_PARSE_TEST(TestOneOfFieldMissingRequiredFields, {
+JSON_PARSE_TEST(TestOneOfFieldMissingRequiredFields, CustomStruct) {
   auto json = R"(
     {
       "optional_bool": true
     }
   )";
-  EXPECT_THROW(parse_json<CustomStruct>(json), std::exception);
-})
+  EXPECT_THROW(parse_json(json), std::exception);
+}
 
-JSON_PARSE_TEST(TestOneOfFieldUnknownOptionalField, {
+JSON_PARSE_TEST(TestOneOfFieldUnknownOptionalField, CustomStruct) {
   auto json = R"(
     {
       "mandatory_string": "TestWithUnknown",
@@ -270,6 +270,6 @@ JSON_PARSE_TEST(TestOneOfFieldUnknownOptionalField, {
   CustomStruct expected;
   expected.mandatory_string = "TestWithUnknown";
   expected.mandatory_int = 666;
-  auto got = parse_json<CustomStruct>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}

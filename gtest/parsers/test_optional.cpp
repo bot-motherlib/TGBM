@@ -28,7 +28,7 @@ struct ComplexOptionalType {
   }
 };
 
-JSON_PARSE_TEST(OptionalPresentValue, {
+JSON_PARSE_TEST(OptionalPresentValue, ComplexOptionalType) {
   ComplexOptionalType expected;
   expected.name = "TestObject";
   expected.optional_number = 42;
@@ -40,11 +40,11 @@ JSON_PARSE_TEST(OptionalPresentValue, {
             }
         )";
 
-  auto got = parse_json<ComplexOptionalType>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(OptionalAbsentValue, {
+JSON_PARSE_TEST(OptionalAbsentValue, ComplexOptionalType) {
   ComplexOptionalType expected;
   expected.name = "TestObject";
   expected.optional_number = std::nullopt;
@@ -55,11 +55,11 @@ JSON_PARSE_TEST(OptionalAbsentValue, {
             }
         )";
 
-  auto got = parse_json<ComplexOptionalType>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(InvalidOptionalValue, {
+JSON_PARSE_TEST(InvalidOptionalValue, ComplexOptionalType) {
   auto json = R"(
             {
                 "name": "TestObject",
@@ -67,10 +67,10 @@ JSON_PARSE_TEST(InvalidOptionalValue, {
             }
         )";
 
-  EXPECT_ANY_THROW(parse_json<ComplexOptionalType>(json));
-})
+  EXPECT_ANY_THROW(parse_json(json));
+}
 
-JSON_PARSE_TEST(OptionalComplexObject, {
+JSON_PARSE_TEST(OptionalComplexObject, ComplexOptionalType) {
   ComplexOptionalType expected;
   expected.name = "TestObject";
   expected.optional_object = SimpleType{"NestedObject", 100};
@@ -85,11 +85,11 @@ JSON_PARSE_TEST(OptionalComplexObject, {
             }
         )";
 
-  auto got = parse_json<ComplexOptionalType>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
-JSON_PARSE_TEST(OptionalArray, {
+JSON_PARSE_TEST(OptionalArray, ComplexOptionalType) {
   ComplexOptionalType expected;
   expected.name = "TestObject";
   expected.optional_array = std::vector<int>{1, 2, 3};
@@ -101,8 +101,8 @@ JSON_PARSE_TEST(OptionalArray, {
             }
         )";
 
-  auto got = parse_json<ComplexOptionalType>(json);
+  auto got = parse_json(json);
   EXPECT_EQ(expected, got);
-})
+}
 
 }  // namespace json_parser::test_optional
