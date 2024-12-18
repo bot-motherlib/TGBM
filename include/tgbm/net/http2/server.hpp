@@ -1,22 +1,13 @@
 #pragma once
 
-#include <boost/asio/ip/address.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <boost/smart_ptr/intrusive_ptr.hpp>
-#include <boost/asio/io_context.hpp>
+#include <utility>
 
-#undef NO_ERROR
-#undef Yield
-#undef min
-#undef max
+#include <boost/smart_ptr/intrusive_ptr.hpp>
 
 #include <kelcoro/job.hpp>
 #include <kelcoro/task.hpp>
-#include <kelcoro/thread_pool.hpp>
-#include <anyany/anyany.hpp>
 
 #include <tgbm/net/http_base.hpp>
-#include <tgbm/net/tcp_connection.hpp>
 #include <tgbm/utils/deadline.hpp>
 #include <tgbm/utils/memory.hpp>
 #include <tgbm/net/transport_factory.hpp>

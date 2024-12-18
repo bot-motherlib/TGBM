@@ -1,7 +1,7 @@
-#include <tgbm/net/tcp_connection.hpp>
+#include <tgbm/net/asio/tcp_connection.hpp>
 
 #include <tgbm/logger.hpp>
-#include <tgbm/net/asio_awaiters.hpp>
+#include <tgbm/net/asio/asio_awaiters.hpp>
 #include <tgbm/net/errors.hpp>
 
 #include <boost/asio/ssl/host_name_verification.hpp>

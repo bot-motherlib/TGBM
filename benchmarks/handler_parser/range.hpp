@@ -6,8 +6,7 @@
 #include "basic_parser.hpp"
 
 namespace tgbm::json::handler_parser {
-// TODO: string_like
-// TODO: range_like
+
 template <string_like T>
 struct parser<T> : basic_parser<T> {
   using basic_parser<T>::basic_parser;

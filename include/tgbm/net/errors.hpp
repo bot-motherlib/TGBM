@@ -2,6 +2,7 @@
 
 #include <boost/system/error_code.hpp>
 #undef Yield
+#undef NO_ERROR
 #include <exception>
 
 #include <fmt/core.h>
@@ -52,26 +53,6 @@ struct bad_request : http_exception {
 
   const char* what() const noexcept override {
     return description.c_str();
-  }
-};
-
-#define TGBM_TG_EXCEPTION(ERRC, FMT_STR, ...) \
-  ::tgbm::tg_exception(FMT_STR " errc: {}" __VA_OPT__(, ) __VA_ARGS__, e2str(ERRC))
-
-// thrown when Telegram refuses API request
-struct tg_exception : network_exception {
-  using network_exception::network_exception;
-};
-
-struct connection_shutted_down : std::exception {
-  const char* what() const noexcept override {
-    return "connection was shutted down";
-  }
-};
-
-struct client_stopped : std::exception {
-  const char* what() const noexcept {
-    return "http client was stopped";
   }
 };
 

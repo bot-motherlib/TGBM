@@ -1,7 +1,9 @@
 #pragma once
 
 #include <tgbm/net/http_client.hpp>
-#include <tgbm/net/asio_awaiters.hpp>
+#include <tgbm/net/errors.hpp>
+
+#include <boost/asio/error.hpp>
 
 namespace tgbm {
 
@@ -15,15 +17,10 @@ struct http_client_with_retries : Client {
 
  private:
   dd::task<bool> sleep(duration_t duration) {
-    if constexpr (requires { this->io_ctx; }) {
-      asio::steady_timer timer(this->io_ctx);
-      io_error_code ec;
-      co_await net.sleep(timer, duration, ec);
-      if (ec && ec != asio::error::operation_aborted)
-        co_return false;
-    } else {
-      std::this_thread::sleep_for(duration);
-    }
+    io_error_code ec;
+    co_await this->factory.sleep(duration, ec);
+    if (ec && ec != boost::asio::error::operation_aborted)
+      co_return false;
     co_return true;
   }
 

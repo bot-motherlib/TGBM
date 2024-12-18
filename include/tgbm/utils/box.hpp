@@ -138,6 +138,4 @@ struct TGBM_TRIVIAL_ABI box {
   }
 };
 
-// TODO? pointer union (llvm) integrated into box
-
 }  // namespace tgbm

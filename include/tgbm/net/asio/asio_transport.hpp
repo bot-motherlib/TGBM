@@ -9,7 +9,7 @@
 
 #include <kelcoro/thread_pool.hpp>
 
-#include <tgbm/net/tcp_connection.hpp>
+#include <tgbm/net/asio/tcp_connection.hpp>
 #include <tgbm/net/transport_factory.hpp>
 
 namespace tgbm {

@@ -1,5 +1,5 @@
-#include <tgbm/net/asio_transport.hpp>
-#include <tgbm/net/asio_awaiters.hpp>
+#include <tgbm/net/asio/asio_transport.hpp>
+#include <tgbm/net/asio/asio_awaiters.hpp>
 #include <tgbm/utils/zero_movable.hpp>
 
 namespace tgbm {
@@ -72,21 +72,21 @@ bool asio_server_transport::start() {
 }
 
 struct tcp_connection_with_ref : tcp_connection {
-  zero_movable<std::atomic_size_t*> opened_sessions;
+  std::atomic_size_t* opened_sessions;
 
   tcp_connection_with_ref(tcp_connection c, std::atomic_size_t& os)
       : tcp_connection(std::move(c)), opened_sessions(&os) {
   }
 
-  tcp_connection_with_ref(tcp_connection_with_ref&&) = default;
-  tcp_connection_with_ref& operator=(tcp_connection_with_ref&&) = default;
+  tcp_connection_with_ref(tcp_connection_with_ref&&) = delete;
+  tcp_connection_with_ref& operator=(tcp_connection_with_ref&&) = delete;
 
   void shutdown() {
-    if (!opened_sessions.value)
+    if (!opened_sessions)
       return;
     tcp_connection::shutdown();
-    opened_sessions.value->fetch_sub(1, std::memory_order_acq_rel);
-    opened_sessions.value = nullptr;
+    opened_sessions->fetch_sub(1, std::memory_order_acq_rel);
+    opened_sessions = nullptr;
   }
   ~tcp_connection_with_ref() {
     shutdown();
@@ -105,8 +105,8 @@ dd::task<any_connection> asio_acceptor::accept(io_error_code& ec) {
     co_return {};
 
   opened_sessions.fetch_add(1, std::memory_order_acq_rel);
-  // TODO make any
-  co_return tcp_connection_with_ref(tcp_connection(std::move(sock)), opened_sessions);
+
+  co_return $inplace(tcp_connection_with_ref(tcp_connection(std::move(sock)), opened_sessions));
 }
 
 asio_server_transport::asio_server_transport(tcp_connection_options opts, size_t listen_thread_count)

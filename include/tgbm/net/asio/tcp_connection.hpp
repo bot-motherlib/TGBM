@@ -1,5 +1,5 @@
 #pragma once
-// TODO wrap asio/detail/config.hpp (using include_next)
+
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -13,7 +13,7 @@
 
 #include <tgbm/net/errors.hpp>
 #include <tgbm/utils/macro.hpp>
-#include <tgbm/net/ssl_context.hpp>
+#include <tgbm/net/asio/ssl_context.hpp>
 #include <tgbm/logger.hpp>
 
 #include <kelcoro/task.hpp>

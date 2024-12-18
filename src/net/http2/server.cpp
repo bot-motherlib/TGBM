@@ -7,14 +7,10 @@ TODO docs about this file
 
 #include <tgbm/net/http2/server.hpp>
 #include <tgbm/logger.hpp>
-#include <tgbm/net/asio_awaiters.hpp>
-#include <tgbm/net/ssl_context.hpp>
 #include <tgbm/net/http2/protocol.hpp>
 #include <tgbm/utils/memory.hpp>
 #include <tgbm/utils/reusable_buffer.hpp>
 #include <tgbm/utils/scope_exit.hpp>
-
-#include <anyany/anyany.hpp>
 
 #define TGBM_HTTP2_LOG_SERVER(TYPE, STR, ...) \
   TGBM_LOG_##TYPE("[HTTP2] [SERVER]" STR __VA_OPT__(, ) __VA_ARGS__)
@@ -39,14 +35,11 @@ struct frames_buffer {
   struct frame_to_send {
     http2::frame_header hdr;
     bytes_t data;
-    // TODO rm ? или для стрим апдейта нужно будет ещё (стримы)
-    on_sended_t on_sended;
   };
   // used to handle control flow and stopping
   client_session_ptr session;  // must not be null
-  // TODO? сразу в один буфер складывать ? И просто отдельно список того что надо сделать после отправки
+  // TODO? optimize
   bytes_t bytes_to_send;
-  // TODO rm? std::vector<on_sended_t> todo_when_sended;
   std::coroutine_handle<> writer = nullptr;  // not nullptr if writer waits next frames
 
   explicit frames_buffer(client_session& ses) noexcept : session(&ses) {
@@ -85,7 +78,7 @@ struct client_session {
   client_session_ctx session_ctx;
   http2::settings_t client_settings;
   http2::settings_t server_settings;
-  // TODO intrusive all, опять request_node какой-то происходит
+  // TODO intrusive all
   std::unordered_map<http2::stream_id_t, http_request> incomplete_requests;
   std::unordered_map<http2::stream_id_t, http2_stream_ctx> incomplete_responses;
   http2::stream_id_t last_opened_stream = 0;
@@ -350,7 +343,6 @@ void client_session::receive_rst_stream(http2::rst_stream rst) {
   TGBM_HTTP2_LOG_SERVER(DEBUG, "rst stream {}, {}", rst.header.stream_id, erased ? "erased" : "not erased");
 }
 
-// TODO debug info only under special flag (ifdef)
 void client_session::receive_headers(http2::frame_header h, std::span<byte_t> data) {
   // validate
   if (!(h.flags & http2::flags::END_HEADERS))
@@ -376,16 +368,15 @@ void client_session::receive_headers(http2::frame_header h, std::span<byte_t> da
     (void)emplaced;
   }
 }
-// TODO signed размер сделать, потому что клиент может залезать в долги при отправке фреймов (например
-// отправка до SETTINGS)
+
 void client_session::receive_data(http2::frame_header h, std::span<byte_t> data) {
   assert(h.type == http2::frame_e::DATA);
   if (my_window_size < h.length) {
-    // TODO какую-то настройку или хз, ну по сути тестовый сервер, так что он проверяет всё strict...
+    // TODO do control flow optional (option to ignore it)
     send_goaway_and_drop(http2::errc_e::FLOW_CONTROL_ERROR,
                          fmt::format("too many DATA sended, can accept {}", my_window_size));
-    // TODO что делать, чтобы не плодить тыщу таких фреймов пока не отправится?
-    // TODO control flow для стрима
+    // TODO do smth to prevent creating many goaways
+    // TODO control flow for stream
     return;
   }
   if (h.flags & http2::flags::PADDED)
@@ -412,7 +403,7 @@ void client_session::end_stream_with_exception(http2::stream_id_t streamid, std:
   end_stream(streamid);
 }
 
-// TODO http2 stream вместо streamid, чтобы контрол флоу и тд
+// TODO http2 stream instead of stream id for control flow etc
 dd::job start_handle_request(client_session_ptr session, http2::stream_id_t streamid, http_request req) {
   assert(session);
   dd::task t = session->server->handle_request(std::move(req));
@@ -433,7 +424,7 @@ http2_server::http2_server(any_server_transport_factory tf, http2_server_options
     : options(std::move(opts)), transport(std::move(tf)) {
   if (!transport)
     throw std::logic_error("transport must be initialized!");
-  // TODO таймер на коннекшн и таймер на получение следующего запроса (фрейм хедер + данные)
+  // TODO timeout for client connections (when nothing happens)
   options.initial_stream_window_size = std::min(options.initial_stream_window_size, http2::max_window_size);
   options.max_concurrent_stream_per_connection = std::clamp<uint32_t>(
       options.max_concurrent_stream_per_connection, 1, http2::settings_t::max_max_concurrent_streams);
@@ -536,8 +527,8 @@ dd::job reader_for(client_session_ptr session) try {
         // ignore
         break;
     }
-    // TODO на уровне стримов тоже надо при получении данных увеличивать окно
-    // TODO ещё в начале нужно правильный установить хотя бы размер стриму
+    // TODO stream level control flow
+    // TODO set initial stream window size correctly (or check if it setted)
     if (session->my_window_size < http2::max_window_size / 2) {
       uint32_t inc = http2::max_window_size - session->my_window_size;
       byte_t bytes[window_update_frame::len];
@@ -567,8 +558,6 @@ network_error:
 
 // simple minimal connection establishment
 dd::job establish_client_session(http2_server_ptr server, client_session_ctx session_ctx) try {
-  // TODO use APLN for http2. Now uses prior knowledge even if client uses APLN
-
   io_error_code ec;
   using namespace http2;
   constexpr size_t preface_sz = std::size(http2::connection_preface);
@@ -646,7 +635,7 @@ dd::job establish_client_session(http2_server_ptr server, client_session_ctx ses
       co_return;
     }
   }
-  // TODO мб здесь это всё не нужно и автоматически будет завершаться с ошибкой (ec) если закрыто
+
   if (server->stop_requested())
     co_return;
 

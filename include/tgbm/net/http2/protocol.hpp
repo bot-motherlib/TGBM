@@ -10,8 +10,6 @@
 #include <tgbm/net/http2/errors.hpp>
 #include <tgbm/utils/memory.hpp>
 
-#include <fmt/core.h>
-
 namespace tgbm {
 
 struct http_request;

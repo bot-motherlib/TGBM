@@ -41,15 +41,12 @@ resources:
 #include <hpack/hpack.hpp>
 #include <tgbm/net/http2/protocol.hpp>
 #include <tgbm/net/http2/client.hpp>
-#include <tgbm/net/asio_awaiters.hpp>
 #include <tgbm/logger.hpp>
 #include <tgbm/utils/scope_exit.hpp>
 #include <tgbm/utils/macro.hpp>
 #include <tgbm/net/errors.hpp>
 #include <tgbm/utils/reusable_buffer.hpp>
 #include <tgbm/utils/deadline.hpp>
-
-#include <kelcoro/channel.hpp>
 
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/intrusive/unordered_set.hpp>
@@ -58,11 +55,11 @@ resources:
 #include <boost/intrusive/list.hpp>
 #include <boost/intrusive/slist.hpp>
 
-#include <tgbm/net/any_connection.hpp>
-
 #define TGBM_HTTP2_LOG(TYPE, STR, ...) TGBM_LOG_##TYPE("[HTTP2] " STR __VA_OPT__(, ) __VA_ARGS__)
 
 namespace tgbm {
+
+namespace asio = boost::asio;
 
 constexpr inline auto h2fhl = http2::frame_header_len;
 
@@ -369,7 +366,7 @@ struct http2_connection {
   [[nodiscard]] bool is_outof_streamids() const noexcept {
     return stream_id > http2::max_stream_id;
   }
-  // TODO test выставляя максимум небольшим
+
   // when streamid is max, connection is not broken, but required to stop
   [[nodiscard]] bool is_done_completely() const noexcept {
     return is_outof_streamids() && requests.empty() && responses.empty();
@@ -668,7 +665,7 @@ static dd::task<http2_connection_ptr> establish_http2_session(any_connection&& t
     throw network_exception("cannot read HTTP/2 server preface, {}", ec.what());
   frame_header header = frame_header::parse(buf);
   if (header.type != SETTINGS || header.length > frame_len_max)
-    throw connection_error{};  // TODO send GOAWAY frame
+    throw connection_error{};
   bytes_t bytes(header.length);
   co_await con->read(bytes, ec);
   if (ec)
@@ -1022,8 +1019,6 @@ dd::task<void> write_pending_data_frames(node_ptr work, size_t handled_bytes, ht
 // writer works on node with reader (window_update / rst_stream possible)
 // also node may be cancelled or destroyed, so writer and reader must never cache node
 // between co_awaits
-// TODO вынести функцию записи в буфер отдельно, чтобы её можно было вызывать с разными запросами и стейтом
-// коннекш
 dd::job http2_client::start_writer_for(http2_connection_ptr con) {
   assert(con);
   TGBM_HTTP2_LOG(DEBUG, "writer started for {}", (void*)con.get());

@@ -30,7 +30,7 @@ struct bot_commands {
  public:
   [[nodiscard]] static bool is_valid_name(std::string_view) noexcept;
   // TODO conforming with TG rules (parsing etc) + NOT EMPTY (""), send set commands etc
-  // TODO args (separately, parse_command_args<Args...>)
+
   // replaces current command if exist
   void add(std::string name, on_command_handler_t oncommand, std::string description = {});
   on_command_handler_t::cptr find(std::string_view name) const noexcept;

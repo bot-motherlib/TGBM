@@ -1,12 +1,11 @@
 #include <gtest/gtest.h>
 
-#include <tgbm/net/connection_pool.hpp>
+#include <tgbm/net/http11/connection_pool.hpp>
 
 #include <iostream>
 #include <source_location>
-#include <fmt/format.h>
 
-#include <kelcoro/thread_pool.hpp>
+#include <fmt/format.h>
 
 static void log_err(std::source_location loc = std::source_location::current()) {
   fmt::format_to(std::ostreambuf_iterator(std::cerr), "{} failed, location: {}:{}:{}", loc.function_name(),

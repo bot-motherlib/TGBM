@@ -1,7 +1,5 @@
 #pragma once
 
-#include <boost/asio/ip/tcp.hpp>
-
 #include <kelcoro/task.hpp>
 
 #include <tgbm/utils/memory.hpp>
