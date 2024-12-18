@@ -259,7 +259,7 @@ JSON_PARSE_TEST(TestOneOfFieldMissingRequiredFields, {
   EXPECT_THROW(parse_json<CustomStruct>(json), std::exception);
 })
 
-JSON_PARSE_TEST(TestOneOfFieldUknownOptionalField, {
+JSON_PARSE_TEST(TestOneOfFieldUnknownOptionalField, {
   auto json = R"(
     {
       "mandatory_string": "TestWithUnknown",
