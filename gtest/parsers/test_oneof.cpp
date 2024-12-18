@@ -248,25 +248,37 @@ JSON_PARSE_TEST(OneOfChannelType, {
   EXPECT_EQ(parsed, expected);
 })
 
-JSON_PARSE_TEST(OneOfInvalidType, {
+JSON_PARSE_TEST(OneOfUnknownType, {
+  MessageOrigin expected;
   auto json = R"(
         {
         "type": "unknown_type",
         "date": 1630454400
         }
     )";
-  EXPECT_ANY_THROW(parse_json<MessageOrigin>(json));
+  MessageOrigin parsed = parse_json<MessageOrigin>(json);
+  EXPECT_EQ(parsed, expected);
 })
 
-JSON_PARSE_TEST(OneOfInvalidType2, {
+JSON_PARSE_TEST(OneOfHiddenUserTypeMoreData, {
+  MessageOrigin expected{
+      .data =
+          MessageOriginHiddenUser{
+              .date = tgbm::api::Integer{1630454400},
+              .sender_name = "Anonymous User",
+          },
+  };
   auto json = R"(
         {
-        "type": "unknown_type",
-        "date": 1630454400
+          "type": "hidden_user",
+          "date": 1630454400,
+          "sender_name": "Anonymous User",
+          "more_data": "some_info"
         }
     )";
-  bool throwed = false;
-  EXPECT_ANY_THROW(parse_json<MessageOrigin>(json));
+
+  MessageOrigin parsed = parse_json<MessageOrigin>(json);
+  EXPECT_EQ(parsed, expected);
 })
 
 }  // namespace test_oneof

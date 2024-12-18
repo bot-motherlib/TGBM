@@ -28,9 +28,7 @@ struct parser<T> {
     auto str = Traits::get_string(d_ref);
 
     T::discriminate(str, [&]<typename U>() {
-      if constexpr (std::same_as<U, void>) {
-        Traits::on_error();
-      } else {
+      if constexpr (!std::same_as<U, void>) {
         parser<U>::template parse<Json, Traits>(json, out.data.template emplace<U>());
       }
     });
