@@ -8,7 +8,7 @@
 #include <tgbm/utils/deadline.hpp>
 
 namespace tgbm::api {
-#if 1
+
 dd::task<arrayof<Update>> telegram::getUpdates(api::get_updates_request request, deadline_t deadline) const {
   arrayof<Update>& result = co_await dd::this_coro::return_place;
   reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
@@ -1027,8 +1027,7 @@ dd::task<MenuButton> telegram::getChatMenuButton(api::get_chat_menu_button_reque
   }
   co_return dd::rvo;
 }
-#endif
-#if 1
+
 dd::task<bool> telegram::setMyDefaultAdministratorRights(
     api::set_my_default_administrator_rights_request request, deadline_t deadline) const {
   bool& result = co_await dd::this_coro::return_place;
@@ -1512,8 +1511,7 @@ dd::task<Message> telegram::sendGame(api::send_game_request request, deadline_t 
   }
   co_return dd::rvo;
 }
-#endif
-#if 0
+
 dd::task<oneof<bool, Message>> telegram::setGameScore(api::set_game_score_request request,
                                                       deadline_t deadline) const {
   oneof<bool, Message>& result = co_await dd::this_coro::return_place;
@@ -1537,5 +1535,5 @@ dd::task<arrayof<GameHighScore>> telegram::getGameHighScores(api::get_game_high_
   }
   co_return dd::rvo;
 }
-#endif
+
 }  // namespace tgbm::api
