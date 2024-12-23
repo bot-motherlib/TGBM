@@ -10,21 +10,30 @@
 
 namespace tgbm::json {
 
+namespace noexport {
+
+// noinline because of gcc-12 internal error
+template <typename T, size_t N, size_t... Is>
+[[gnu::noinline]] inline std::bitset<::pfr_extension::tuple_size_v<T>> make_required_mask(
+    std::index_sequence<Is...>) {
+  std::bitset<N> res;
+  (res.set(Is, T::is_mandatory_field(pfr_extension::element_name_v<Is, T>)), ...);
+  return res;
+}
+
+template <typename T>
+const inline std::bitset<::pfr_extension::tuple_size_v<T>> required_mask =
+    make_required_mask<T, ::pfr_extension::tuple_size_v<T>>(
+        std::make_index_sequence<::pfr_extension::tuple_size_v<T>>{});
+
+}  // namespace noexport
+
 template <common_api_type T>
 struct sax_parser<T> {
   static constexpr auto N = ::pfr_extension::tuple_size_v<T>;
 
   static bool all_parsed(const std::bitset<N>& parsed_) {
-    static std::bitset<N> required_mask = []<size_t... I>(std::index_sequence<I...>) {
-      std::bitset<N> res;
-      auto store_required = [&]<size_t J>(std::index_sequence<J>) {
-        constexpr std::string_view name = pfr_extension::element_name_v<J, T>;
-        res[J] = T::is_mandatory_field(name);
-      };
-      (store_required(std::index_sequence<I>{}), ...);
-      return res;
-    }(std::make_index_sequence<N>{});
-    return (parsed_ & required_mask) == required_mask;
+    return (parsed_ & noexport::required_mask<T>) == noexport::required_mask<T>;
   }
 
   static sax_consumer_t generator_field(T& v, std::string_view key, sax_token& tok, std::bitset<N>& parsed_,

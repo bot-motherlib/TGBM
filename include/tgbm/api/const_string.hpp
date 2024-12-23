@@ -190,7 +190,7 @@ struct TGBM_TRIVIAL_ABI const_string {
 
 template <>
 struct optional_traits<const_string> {
-  struct state_type {
+  struct TGBM_TRIVIAL_ABI state_type {
     const_string str;
   };
 

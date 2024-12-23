@@ -1,4 +1,4 @@
-name: CI
+name: format_check
 
 permissions:
   actions: write
@@ -14,11 +14,11 @@ env:
   UBSAN_OPTIONS: print_stacktrace=1
 
 jobs:
-  posix:
+  format_check:
     strategy:
       fail-fast: false
 
-    name: 'format'
+    name: 'format_check'
     runs-on: ubuntu-24.04
 
     steps:
