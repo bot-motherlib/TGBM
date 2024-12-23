@@ -12,13 +12,17 @@ namespace tgbm::json {
 
 namespace noexport {
 
+template <typename T, size_t N, size_t... Is>
+inline std::bitset<::pfr_extension::tuple_size_v<T>> make_required_mask(std::index_sequence<Is...>) {
+  std::bitset<N> res;
+  (res.set(Is, T::is_mandatory_field(pfr_extension::element_name_v<Is, T>)), ...);
+  return res;
+}
+
 template <typename T>
 const inline std::bitset<::pfr_extension::tuple_size_v<T>> required_mask =
-    []<size_t... Is>(std::index_sequence<Is...>) {
-      std::bitset<::pfr_extension::tuple_size_v<T>> res;
-      (res.set(Is, T::is_mandatory_field(pfr_extension::element_name_v<Is, T>)), ...);
-      return res;
-    }(std::make_index_sequence<::pfr_extension::tuple_size_v<T>>{});
+    make_required_mask<T, ::pfr_extension::tuple_size_v<T>>(
+        std::make_index_sequence<::pfr_extension::tuple_size_v<T>>{});
 
 }  // namespace noexport
 
