@@ -14,15 +14,15 @@
 struct empty_test_type {
   bool operator==(const empty_test_type&) const = default;
 };
-
-#ifndef _WIN32
+#if 0
+  #ifndef _WIN32
 static_assert(sizeof(tgbm::api::optional<empty_test_type>) == 1);
-#endif
+  #endif
 
 static_assert(sizeof(tgbm::api::optional<tgbm::const_string>) == sizeof(void*));
 static_assert(sizeof(tgbm::api::optional<bool>) == sizeof(bool));
 static_assert(sizeof(tgbm::api::optional<tgbm::api::Integer>) == sizeof(tgbm::api::Integer));
-
+#endif
 template <typename T>
 constexpr bool opttest(T v1, T v2) {
   tgbm::api::optional<T> opt = std::nullopt;

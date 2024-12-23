@@ -21,10 +21,10 @@ struct basic_optional_parser {
 
 template <typename T>
 struct parser<box<T>> : basic_optional_parser<box<T>> {};
-
+#if 0
 template <typename T>
 struct parser<tgbm::api::optional<T>> : basic_optional_parser<tgbm::api::optional<T>> {};
-
+#endif
 template <typename T>
 struct parser<std::optional<T>> : basic_optional_parser<std::optional<T>> {};
 

@@ -10,6 +10,19 @@
 
 namespace tgbm {
 
+template <typename T>
+struct optional_traits;
+
+}
+
+namespace tgbm::api {
+
+template <typename T>
+using optional = std::optional<T>;
+
+}
+
+#if 0
 template <typename Traits, typename T>
 concept optional_traits_for = requires { requires std::is_destructible_v<typename Traits::state_type>; } &&
                               requires(typename Traits::state_type& state) {
@@ -385,4 +398,5 @@ struct TGBM_TRIVIAL_ABI optional {
 template <typename T>
 optional(T&&) -> optional<std::decay_t<T>>;
 
-}  // namespace tgbm::api
+}  // namespace tgbm
+#endif
