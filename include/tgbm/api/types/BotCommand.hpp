@@ -12,7 +12,7 @@ struct BotCommand {
   /* Description of the command; 1-256 characters. */
   String description;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("command", true).case_("description", true).or_default(false);
   }
 };

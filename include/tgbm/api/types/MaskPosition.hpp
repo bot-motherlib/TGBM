@@ -18,7 +18,7 @@ struct MaskPosition {
   /* Mask scaling coefficient. For example, 2.0 means double size. */
   Double scale;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("point", true)
         .case_("x_shift", true)

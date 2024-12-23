@@ -14,7 +14,7 @@ struct PollOption {
    * allowed in poll option texts */
   optional<arrayof<MessageEntity>> text_entities;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("text", true).case_("voter_count", true).or_default(false);
   }
 };

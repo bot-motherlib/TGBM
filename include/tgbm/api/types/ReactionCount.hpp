@@ -11,7 +11,7 @@ struct ReactionCount {
   /* Number of times the reaction was added */
   Integer total_count;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("type", true).case_("total_count", true).or_default(false);
   }
 };

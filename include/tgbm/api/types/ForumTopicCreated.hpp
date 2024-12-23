@@ -13,7 +13,7 @@ struct ForumTopicCreated {
   /* Optional. Unique identifier of the custom emoji shown as the topic icon */
   optional<String> icon_custom_emoji_id;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("name", true).case_("icon_color", true).or_default(false);
   }
 };

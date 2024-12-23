@@ -9,7 +9,7 @@ struct BotDescription {
   /* The bot's description */
   String description;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("description", true).or_default(false);
   }
 };

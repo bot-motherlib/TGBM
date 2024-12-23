@@ -19,7 +19,7 @@ struct ChatPhoto {
    * different bots. Can't be used to download or reuse the file. */
   String big_file_unique_id;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("small_file_id", true)
         .case_("small_file_unique_id", true)

@@ -13,7 +13,7 @@ struct BusinessOpeningHoursInterval {
    * which the business is open; 0 - 8 * 24 * 60 */
   Integer closing_minute;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("opening_minute", true)
         .case_("closing_minute", true)

@@ -65,12 +65,12 @@ constexpr auto matcher_r(Foos&&... foos) noexcept(
   };
 }
 
-consteval size_t log2_constexpr(size_t n) {
+constexpr size_t log2_constexpr(size_t n) {
   return n == 1 ? 0 : log2_constexpr(n / 2) + 1;
 }
 
 template <typename T, typename... Ts>
-consteval size_t find_first() {
+constexpr size_t find_first() {
   bool same[]{std::same_as<T, Ts>...};
   for (bool& t : same)
     if (t)
@@ -79,7 +79,7 @@ consteval size_t find_first() {
 }
 
 template <typename T, typename... Ts>
-consteval bool contains_type() {
+constexpr bool contains_type() {
   return find_first<T, Ts...>() != -1;
 }
 
@@ -103,7 +103,7 @@ template <size_t I, typename... Types>
 using element_at_t = std::tuple_element_t<I, std::tuple<Types...>>;
 
 template <typename... Ts>
-consteval bool is_unique_types() {
+constexpr bool is_unique_types() {
   size_t is[] = {find_first<Ts, Ts...>()..., size_t(-1) /* avoid empty array */};
   auto count = [&is](size_t val) {
     size_t c = 0;

@@ -15,7 +15,7 @@ struct EncryptedCredentials {
   /* Base64-encoded secret, encrypted with the bot's public RSA key, required for data decryption */
   String secret;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("data", true)
         .case_("hash", true)

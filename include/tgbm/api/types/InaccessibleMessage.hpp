@@ -13,7 +13,7 @@ struct InaccessibleMessage {
   /* Always 0. The field can be used to differentiate regular and inaccessible messages. */
   Integer date;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("chat", true)
         .case_("message_id", true)

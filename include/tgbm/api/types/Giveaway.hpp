@@ -29,7 +29,7 @@ struct Giveaway {
   /* Optional. True, if the list of giveaway winners will be visible to everyone */
   optional<True> has_public_winners;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("chats", true)
         .case_("winners_selection_date", true)

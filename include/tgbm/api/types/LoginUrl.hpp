@@ -23,7 +23,7 @@ struct LoginUrl {
   /* Optional. Pass True to request the permission for your bot to send messages to the user. */
   optional<bool> request_write_access;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("url", true).or_default(false);
   }
 };

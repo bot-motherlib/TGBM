@@ -9,7 +9,7 @@ struct VideoChatScheduled {
   /* Point in time (Unix timestamp) when the video chat is supposed to be started by a chat administrator */
   Integer start_date;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("start_date", true).or_default(false);
   }
 };

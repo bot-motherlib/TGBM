@@ -15,7 +15,7 @@ struct InputTextMessageContent {
   /* Optional. Link preview generation options for the message */
   box<LinkPreviewOptions> link_preview_options;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
 };

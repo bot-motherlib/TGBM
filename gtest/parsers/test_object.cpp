@@ -13,7 +13,7 @@ struct TestObject {
   std::vector<tgbm::api::Integer> array_field;
   std::vector<tgbm::box<TestObject>> nested_objects;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return name != "optional_field";
   }
 };

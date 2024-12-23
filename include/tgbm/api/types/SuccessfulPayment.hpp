@@ -29,7 +29,7 @@ struct SuccessfulPayment {
   /* Optional. True, if the payment is the first payment for a subscription */
   optional<True> is_first_recurring;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("currency", true)
         .case_("total_amount", true)

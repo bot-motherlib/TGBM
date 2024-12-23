@@ -16,7 +16,7 @@ struct ChatBoost {
   /* Source of the added boost */
   box<ChatBoostSource> source;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("boost_id", true)
         .case_("add_date", true)

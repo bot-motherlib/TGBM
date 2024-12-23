@@ -216,7 +216,7 @@ struct Message {
    * reply_to_message if someone replies to a very first message in a channel. */
   optional<True> channel_chat_created;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("message_id", true)
         .case_("date", true)

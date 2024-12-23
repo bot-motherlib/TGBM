@@ -38,7 +38,7 @@ struct ChatPermissions {
    * can_pin_messages */
   optional<bool> can_manage_topics;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
 };

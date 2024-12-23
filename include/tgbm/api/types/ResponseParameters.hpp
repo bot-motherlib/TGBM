@@ -15,7 +15,7 @@ struct ResponseParameters {
    * be repeated */
   optional<Integer> retry_after;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
 };

@@ -10,7 +10,7 @@ struct SentWebAppMessage {
    * to the message. */
   optional<String> inline_message_id;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
 };

@@ -37,7 +37,7 @@ struct User {
   /* Optional. True, if the bot has a main Web App. Returned only in getMe. */
   optional<bool> has_main_web_app;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("id", true)
         .case_("is_bot", true)

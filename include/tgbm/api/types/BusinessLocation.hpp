@@ -11,7 +11,7 @@ struct BusinessLocation {
   /* Optional. Location of the business */
   box<Location> location;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("address", true).or_default(false);
   }
 };

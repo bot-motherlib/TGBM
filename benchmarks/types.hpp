@@ -13,7 +13,7 @@ struct Address {
   Integer houseNumber;            // Integer
   optional<std::string> zipCode;  // optional<String>
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return tgbm::string_switch<bool>(name).case_("street", true).case_("houseNumber", true).or_default(false);
   }
 };
@@ -21,7 +21,7 @@ struct Address {
 struct Contact {
   std::string type;   // String (например, "email" или "phone")
   std::string value;  // String (например, "example@example.com")
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return true;
   }
 };
@@ -30,7 +30,7 @@ struct Company {
   std::string name;                  // String
   arrayof<Address> locations;        // arrayof<Address>
   optional<Contact> primaryContact;  // optional<Contact>
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return true;
   }
 };
@@ -43,7 +43,7 @@ struct Employee {
   Address homeAddress;             // Address
   optional<Company> employer;      // optional<Company>
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return name != "contacts";
   }
 };
@@ -53,7 +53,7 @@ struct Department {
   arrayof<Employee> staff;  // arrayof<Employee>
   Company affiliate;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return true;
   }
 };
@@ -66,7 +66,7 @@ struct Organization {
   std::string description;  // String
   tgbm::box<Organization> parent;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return name != "parent" && name != "partners";
   }
 };
@@ -76,7 +76,7 @@ struct TreeNode {
   tgbm::box<TreeNode> left;
   tgbm::box<TreeNode> right;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return name == "value";
   }
 };

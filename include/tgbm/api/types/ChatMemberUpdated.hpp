@@ -25,7 +25,7 @@ struct ChatMemberUpdated {
   /* Optional. True, if the user joined the chat via a chat folder invite link */
   optional<bool> via_chat_folder_invite_link;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("chat", true)
         .case_("from", true)

@@ -14,7 +14,7 @@ struct BackgroundFillGradient {
   /* Clockwise rotation angle of the background fill in degrees; 0-359 */
   Integer rotation_angle;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("top_color", true)
         .case_("bottom_color", true)

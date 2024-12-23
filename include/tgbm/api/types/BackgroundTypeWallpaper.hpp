@@ -16,7 +16,7 @@ struct BackgroundTypeWallpaper {
   /* Optional. True, if the background moves slightly when the device is tilted */
   optional<True> is_moving;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("document", true)
         .case_("dark_theme_dimming", true)

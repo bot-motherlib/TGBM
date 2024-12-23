@@ -21,7 +21,7 @@ struct LinkPreviewOptions {
    * will be shown below the message text */
   optional<bool> show_above_text;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
 };

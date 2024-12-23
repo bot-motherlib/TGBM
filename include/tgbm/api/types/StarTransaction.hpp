@@ -24,7 +24,7 @@ struct StarTransaction {
    * withdrawal). Only for outgoing transactions */
   box<TransactionPartner> receiver;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("id", true)
         .case_("amount", true)

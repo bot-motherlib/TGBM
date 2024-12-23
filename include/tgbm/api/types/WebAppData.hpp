@@ -12,7 +12,7 @@ struct WebAppData {
    * send arbitrary data in this field. */
   String button_text;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("data", true).case_("button_text", true).or_default(false);
   }
 };

@@ -18,7 +18,7 @@ struct PhotoSize {
   /* Optional. File size in bytes */
   optional<Integer> file_size;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("file_id", true)
         .case_("file_unique_id", true)

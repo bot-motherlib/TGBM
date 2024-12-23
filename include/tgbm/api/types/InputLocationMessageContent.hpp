@@ -21,7 +21,7 @@ struct InputLocationMessageContent {
    * member, in meters. Must be between 1 and 100000 if specified. */
   optional<Integer> proximity_alert_radius;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("longitude", true).or_default(false);
   }
 };

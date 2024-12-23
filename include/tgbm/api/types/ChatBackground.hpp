@@ -9,7 +9,7 @@ struct ChatBackground {
   /* Type of the background */
   box<BackgroundType> type;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("type", true).or_default(false);
   }
 };

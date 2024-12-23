@@ -9,7 +9,7 @@ struct PaidMediaVideo {
   /* The video */
   box<Video> video;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("video", true).or_default(false);
   }
 };

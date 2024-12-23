@@ -11,7 +11,7 @@ struct InputPaidMediaPhoto {
    * new one using multipart/form-data under <file_attach_name> name. More information on Sending Files » */
   String media;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("media", true).or_default(false);
   }
 };

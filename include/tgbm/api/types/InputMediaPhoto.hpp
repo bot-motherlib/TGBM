@@ -22,7 +22,7 @@ struct InputMediaPhoto {
   /* Optional. Pass True if the photo needs to be covered with a spoiler animation */
   optional<bool> has_spoiler;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("media", true).or_default(false);
   }
 };

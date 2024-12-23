@@ -38,7 +38,7 @@ struct Poll {
   /* Optional. Point in time (Unix timestamp) when the poll will be automatically closed */
   optional<Integer> close_date;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("id", true)
         .case_("question", true)

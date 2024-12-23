@@ -15,7 +15,7 @@ struct PollAnswer {
   /* Optional. The user that changed the answer to the poll, if the voter isn't anonymous */
   box<User> user;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("poll_id", true).case_("option_ids", true).or_default(false);
   }
 };

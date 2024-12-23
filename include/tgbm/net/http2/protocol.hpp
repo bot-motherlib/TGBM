@@ -365,7 +365,7 @@ struct settings_frame {
 };
 
 // consists only of frame header
-consteval frame_header accepted_settings_frame() noexcept {
+constexpr frame_header accepted_settings_frame() noexcept {
   return frame_header{
       .length = 0,
       .type = frame_e::SETTINGS,

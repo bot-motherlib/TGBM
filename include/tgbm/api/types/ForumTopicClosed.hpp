@@ -13,7 +13,7 @@ struct ForumTopicClosed {
    * if the icon was removed */
   optional<String> icon_custom_emoji_id;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
 };

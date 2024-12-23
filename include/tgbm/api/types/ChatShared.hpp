@@ -22,7 +22,7 @@ struct ChatShared {
   /* Optional. Available sizes of the chat photo, if the photo was requested by the bot */
   optional<arrayof<PhotoSize>> photo;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("request_id", true).case_("chat_id", true).or_default(false);
   }
 };

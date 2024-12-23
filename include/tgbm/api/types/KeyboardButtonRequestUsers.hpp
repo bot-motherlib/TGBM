@@ -25,7 +25,7 @@ struct KeyboardButtonRequestUsers {
   /* Optional. Pass True to request the users' photos */
   optional<bool> request_photo;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("request_id", true).or_default(false);
   }
 };

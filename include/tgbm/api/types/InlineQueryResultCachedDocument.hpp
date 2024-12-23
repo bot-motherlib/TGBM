@@ -27,7 +27,7 @@ struct InlineQueryResultCachedDocument {
   /* Optional. Content of the message to be sent instead of the file */
   box<InputMessageContent> input_message_content;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("id", true)
         .case_("title", true)

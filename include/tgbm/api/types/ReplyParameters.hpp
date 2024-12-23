@@ -30,7 +30,7 @@ struct ReplyParameters {
    * of a business account. */
   optional<bool> allow_sending_without_reply;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("message_id", true).or_default(false);
   }
 };

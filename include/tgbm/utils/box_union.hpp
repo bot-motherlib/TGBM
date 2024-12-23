@@ -161,7 +161,7 @@ struct pointer_int_pair_fallback {
 
 // Determine the number of bits required to store integers with values < n.
 // This is ceil(log2(n)).
-consteval int bits_required(unsigned n) {
+constexpr int bits_required(unsigned n) {
   return n > 1 ? 1 + bits_required((n + 1) / 2) : 0;
 }
 

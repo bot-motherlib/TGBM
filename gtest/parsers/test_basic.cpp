@@ -7,7 +7,7 @@ struct SomeStruct {
   tgbm::api::optional<tgbm::api::Double> b;
   tgbm::api::optional<std::string> c;
 
-  static consteval bool is_mandatory_field(std::string_view name) {
+  static constexpr bool is_mandatory_field(std::string_view name) {
     return false;
   }
 

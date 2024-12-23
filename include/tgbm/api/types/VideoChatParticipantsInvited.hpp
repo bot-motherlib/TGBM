@@ -9,7 +9,7 @@ struct VideoChatParticipantsInvited {
   /* New members that were invited to the video chat */
   arrayof<User> users;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("users", true).or_default(false);
   }
 };

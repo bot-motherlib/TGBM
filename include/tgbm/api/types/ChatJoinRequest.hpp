@@ -23,7 +23,7 @@ struct ChatJoinRequest {
   /* Optional. Chat invite link that was used by the user to send the join request */
   box<ChatInviteLink> invite_link;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("chat", true)
         .case_("from", true)

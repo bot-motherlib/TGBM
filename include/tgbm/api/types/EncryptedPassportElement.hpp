@@ -43,7 +43,7 @@ struct EncryptedPassportElement {
    * can be decrypted and verified using the accompanying EncryptedCredentials. */
   optional<arrayof<PassportFile>> translation;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("type", true).case_("hash", true).or_default(false);
   }
 };

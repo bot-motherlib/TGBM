@@ -17,7 +17,7 @@ struct StickerSet {
   /* Optional. Sticker set thumbnail in the .WEBP, .TGS, or .WEBM format */
   box<PhotoSize> thumbnail;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("name", true)
         .case_("title", true)

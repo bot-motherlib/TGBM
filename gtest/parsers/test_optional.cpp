@@ -9,7 +9,7 @@ struct SimpleType {
   std::string name;
   int value;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return true;
   }
 };
@@ -23,7 +23,7 @@ struct ComplexOptionalType {
   tgbm::api::optional<SimpleType> optional_object;
   tgbm::api::optional<std::vector<int>> optional_array;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return name == "name";
   }
 };

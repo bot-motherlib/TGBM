@@ -21,7 +21,7 @@ struct ReplyKeyboardRemove {
    * showing the keyboard with poll options to users who haven't voted yet. */
   optional<bool> selective;
 
-  consteval static bool is_mandatory_field(std::string_view name) {
+  constexpr static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("remove_keyboard", true).or_default(false);
   }
 };
