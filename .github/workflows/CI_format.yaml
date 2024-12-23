@@ -1,4 +1,4 @@
-name: ci_format
+name: format_check
 
 permissions:
   actions: write
@@ -18,7 +18,7 @@ jobs:
     strategy:
       fail-fast: false
 
-    name: 'format'
+    name: 'format_check'
     runs-on: ubuntu-24.04
 
     steps:

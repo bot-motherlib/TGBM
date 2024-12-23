@@ -1,4 +1,4 @@
-name: ci_build_and_test
+name: build_and_test
 
 permissions:
   actions: write
