@@ -283,8 +283,8 @@ struct TGBM_TRIVIAL_ABI optional {
             std::enable_if_t<std::conjunction_v<std::negation<std::is_same<optional, std::decay_t<U>>>,
                                                 std::is_constructible<T, U&&>>,
                              int> = 0>
-  constexpr explicit(!std::is_convertible_v<U&&, T>)
-      optional(U&& v) noexcept(std::is_nothrow_constructible_v<T, U&&>) {
+  constexpr /*explicit(!std::is_convertible_v<U&&, T>)*/
+      optional(U&& v) /*noexcept(std::is_nothrow_constructible_v<T, U&&>)*/ {
     emplace(std::forward<U>(v));
   }
 
