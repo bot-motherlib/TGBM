@@ -69,10 +69,8 @@ struct TGBM_TRIVIAL_ABI box {
     a.swap(b);
   }
 
-  template <typename U = T,
-            std::enable_if_t<std::conjunction_v<std::negation<std::is_same<box, std::decay_t<U>>>,
-                                                std::is_constructible<T, U&&>>,
-                             int> = 0>
+  template <typename U = T>
+    requires(!std::is_same_v<box, std::decay_t<U>> && std::is_constructible_v<T, U &&>)
   constexpr explicit(!std::is_convertible_v<U&&, T>)
       box(U&& v) noexcept(std::is_nothrow_constructible_v<T, U&&>)
       : ptr(new T(std::forward<U>(v))) {

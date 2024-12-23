@@ -12,6 +12,7 @@ namespace tgbm::json {
 
 namespace noexport {
 
+// noinline because of gcc-12 internal error
 template <typename T, size_t N, size_t... Is>
 [[gnu::noinline]] inline std::bitset<::pfr_extension::tuple_size_v<T>> make_required_mask(
     std::index_sequence<Is...>) {
