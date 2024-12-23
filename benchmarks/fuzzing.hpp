@@ -367,7 +367,7 @@ struct randomizer<std::optional<T>> {
     return std::optional<T>(randomizer<T>::generate(context, generator));
   }
 };
-#if 0
+
 template <typename T>
 struct randomizer<tgbm::api::optional<T>> {
   static constexpr bool is_nesting = randomizer<T>::is_nesting;
@@ -375,7 +375,7 @@ struct randomizer<tgbm::api::optional<T>> {
     return tgbm::api::optional<T>(randomizer<T>::generate(context, generator));
   }
 };
-#endif
+
 template <>
 struct randomizer<tgbm::api::True> {
   static constexpr bool is_nesting = false;

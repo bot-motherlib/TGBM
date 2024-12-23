@@ -18,14 +18,13 @@ void tag_invoke(value_from_tag, value& jv, const std::optional<T>& val) {
     jv = boost::json::value_from(*val);
   }
 }
-#if 0
+
 template <typename T>
 void tag_invoke(value_from_tag, value& jv, const tgbm::api::optional<T>& val) {
   if (val) {
     jv = boost::json::value_from(*val);
   }
 }
-#endif
 
 template <typename T>
 void tag_invoke(value_from_tag, value& jv, const tgbm::box<T>& val) {
