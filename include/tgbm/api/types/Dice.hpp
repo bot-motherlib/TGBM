@@ -12,7 +12,7 @@ struct Dice {
    */
   Integer value;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("emoji", true).case_("value", true).or_default(false);
   }
 };

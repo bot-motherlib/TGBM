@@ -11,7 +11,7 @@ struct PaidMediaInfo {
   /* Information about the paid media */
   arrayof<PaidMedia> paid_media;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("star_count", true).case_("paid_media", true).or_default(false);
   }
 };

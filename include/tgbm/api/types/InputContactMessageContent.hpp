@@ -14,7 +14,7 @@ struct InputContactMessageContent {
   /* Optional. Additional data about the contact in the form of a vCard, 0-2048 bytes */
   optional<String> vcard;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("first_name", true).or_default(false);
   }
 };

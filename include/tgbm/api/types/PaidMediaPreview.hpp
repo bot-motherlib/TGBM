@@ -13,7 +13,7 @@ struct PaidMediaPreview {
   /* Optional. Duration of the media in seconds as defined by the sender */
   optional<Integer> duration;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
 };

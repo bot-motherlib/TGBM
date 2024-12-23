@@ -9,7 +9,7 @@ struct ReactionTypeCustomEmoji {
   /* Custom emoji identifier */
   String custom_emoji_id;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("custom_emoji_id", true).or_default(false);
   }
 };

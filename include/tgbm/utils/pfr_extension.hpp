@@ -61,7 +61,7 @@ template <size_t I, typename T>
 constexpr std::string_view element_name_v = get_name<I, T>();
 
 template <typename T>
-constexpr bool has_element(std::string_view name) {
+consteval bool has_element(std::string_view name) {
   constexpr auto names = boost::pfr::names_as_array<T>();
   for (std::string_view n : names) {
     if (name == n) {

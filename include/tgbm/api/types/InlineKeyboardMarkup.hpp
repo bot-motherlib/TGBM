@@ -9,7 +9,7 @@ struct InlineKeyboardMarkup {
   /* Array of button rows, each represented by an Array of InlineKeyboardButton objects */
   arrayof<arrayof<InlineKeyboardButton>> inline_keyboard;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("inline_keyboard", true).or_default(false);
   }
 };

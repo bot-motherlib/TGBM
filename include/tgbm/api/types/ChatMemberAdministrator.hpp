@@ -52,7 +52,7 @@ struct ChatMemberAdministrator {
    * only */
   optional<bool> can_manage_topics;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("user", true)
         .case_("can_be_edited", true)

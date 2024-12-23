@@ -11,7 +11,7 @@ struct ChatLocation {
   /* Location address; 1-64 characters, as defined by the chat owner */
   String address;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("location", true).case_("address", true).or_default(false);
   }
 };

@@ -27,7 +27,7 @@ struct InlineQueryResultCachedMpeg4Gif {
   /* Optional. Pass True, if the caption must be shown above the message media */
   optional<bool> show_caption_above_media;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("id", true).case_("mpeg4_file_id", true).or_default(false);
   }
 };

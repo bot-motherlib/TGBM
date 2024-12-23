@@ -20,7 +20,7 @@ struct File {
   /* Optional. File path. Use https://api.telegram.org/file/bot<token>/<file_path> to get the file. */
   optional<String> file_path;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("file_id", true).case_("file_unique_id", true).or_default(false);
   }
 };

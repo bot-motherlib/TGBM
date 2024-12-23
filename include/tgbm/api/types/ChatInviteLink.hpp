@@ -32,7 +32,7 @@ struct ChatInviteLink {
    * period to be a member of the chat using the link */
   optional<Integer> subscription_price;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("invite_link", true)
         .case_("creator", true)

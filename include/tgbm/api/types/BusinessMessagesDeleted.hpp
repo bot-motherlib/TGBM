@@ -14,7 +14,7 @@ struct BusinessMessagesDeleted {
   /* The list of identifiers of deleted messages in the chat of the business account */
   arrayof<Integer> message_ids;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("business_connection_id", true)
         .case_("chat", true)

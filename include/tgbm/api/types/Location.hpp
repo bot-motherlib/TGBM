@@ -21,7 +21,7 @@ struct Location {
    * sent live locations only. */
   optional<Integer> proximity_alert_radius;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("latitude", true).case_("longitude", true).or_default(false);
   }
 };

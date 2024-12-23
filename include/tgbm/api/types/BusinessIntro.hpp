@@ -13,7 +13,7 @@ struct BusinessIntro {
   /* Optional. Sticker of the business intro */
   box<Sticker> sticker;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
 };

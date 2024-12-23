@@ -19,7 +19,7 @@ struct SwitchInlineQueryChosenChat {
   /* Optional. True, if channel chats can be chosen */
   optional<bool> allow_channel_chats;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
 };

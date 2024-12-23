@@ -14,7 +14,7 @@ struct SimpleObject {
 
   std::strong_ordering operator<=>(const SimpleObject&) const = default;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return tgbm::string_switch<bool>(name)
         .case_("int_field", true)
         .case_("double_field", true)

@@ -16,7 +16,7 @@ struct GiveawayCompleted {
    * Telegram Premium giveaway. */
   optional<True> is_star_giveaway;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("winner_count", true).or_default(false);
   }
 };

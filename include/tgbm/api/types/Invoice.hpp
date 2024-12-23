@@ -19,7 +19,7 @@ struct Invoice {
    * past the decimal point for each currency (2 for the majority of currencies). */
   Integer total_amount;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("title", true)
         .case_("description", true)

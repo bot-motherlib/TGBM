@@ -10,7 +10,7 @@ struct GiveawayCreated {
    * only */
   optional<Integer> prize_star_count;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
 };

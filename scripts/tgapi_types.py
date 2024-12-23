@@ -341,9 +341,9 @@ def generate_api_struct(t: type_info_t) -> str:
         else:
             s += f'  optional<{field.cpptype}> {field.name};\n'
 
-    # constexpr static bool is_mandatory_field(std::string_view name)
+    # consteval static bool is_mandatory_field(std::string_view name)
 
-    s += '\n  constexpr static bool is_mandatory_field(std::string_view name) {\n'
+    s += '\n  consteval static bool is_mandatory_field(std::string_view name) {\n'
     s += '    return string_switch<bool>(name)\n'
     for f in t.mandatory_fields():
         s += f'    .case_("{f.name}", true)\n'

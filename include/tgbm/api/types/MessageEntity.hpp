@@ -29,7 +29,7 @@ struct MessageEntity {
    * get full information about the sticker */
   optional<String> custom_emoji_id;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("type", true)
         .case_("offset", true)

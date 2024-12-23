@@ -14,7 +14,7 @@ struct MessageOriginChat {
    * signature */
   optional<String> author_signature;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("date", true).case_("sender_chat", true).or_default(false);
   }
 };

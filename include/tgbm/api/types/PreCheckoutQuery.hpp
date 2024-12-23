@@ -23,7 +23,7 @@ struct PreCheckoutQuery {
   /* Optional. Order information provided by the user */
   box<OrderInfo> order_info;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("id", true)
         .case_("from", true)

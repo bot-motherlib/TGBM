@@ -23,7 +23,7 @@ struct InputSticker {
    * “regular” and “custom_emoji” stickers only. */
   optional<arrayof<String>> keywords;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("sticker", true)
         .case_("format", true)

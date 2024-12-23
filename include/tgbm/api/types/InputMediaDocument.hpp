@@ -28,7 +28,7 @@ struct InputMediaDocument {
    * multipart/form-data. Always True, if the document is sent as part of an album. */
   optional<bool> disable_content_type_detection;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("media", true).or_default(false);
   }
 };

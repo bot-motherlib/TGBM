@@ -9,7 +9,7 @@ struct VideoChatEnded {
   /* Video chat duration in seconds */
   Integer duration;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("duration", true).or_default(false);
   }
 };

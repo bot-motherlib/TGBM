@@ -22,7 +22,7 @@ struct TransactionPartnerUser {
   /* Optional. The gift sent to the user by the bot */
   box<Gift> gift;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("user", true).or_default(false);
   }
 };

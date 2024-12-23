@@ -13,7 +13,7 @@ struct Birthdate {
   /* Optional. Year of the user's birth */
   optional<Integer> year;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("day", true).case_("month", true).or_default(false);
   }
 };

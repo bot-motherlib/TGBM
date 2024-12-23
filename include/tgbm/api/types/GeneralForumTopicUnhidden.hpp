@@ -22,7 +22,7 @@ struct GeneralForumTopicUnhidden {
   /* Optional. Available sizes of the chat photo, if the photo was requested by the bot */
   optional<arrayof<PhotoSize>> photo;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("user_id", true).or_default(false);
   }
 };

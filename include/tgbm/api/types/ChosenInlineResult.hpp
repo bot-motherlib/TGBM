@@ -18,7 +18,7 @@ struct ChosenInlineResult {
    * to the message. Will be also received in callback queries and can be used to edit the message. */
   optional<String> inline_message_id;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("result_id", true)
         .case_("from", true)

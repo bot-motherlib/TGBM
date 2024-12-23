@@ -16,7 +16,7 @@ struct WriteAccessAllowed {
   /* Optional. True, if the access was granted when the bot was added to the attachment or side menu */
   optional<bool> from_attachment_menu;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
 };

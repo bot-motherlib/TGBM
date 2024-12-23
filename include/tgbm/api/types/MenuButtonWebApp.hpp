@@ -14,7 +14,7 @@ struct MenuButtonWebApp {
    * App's URL, in which case the Web App will be opened as if the user pressed the link. */
   box<WebAppInfo> web_app;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("text", true).case_("web_app", true).or_default(false);
   }
 };

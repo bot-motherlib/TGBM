@@ -9,7 +9,7 @@ struct CopyTextButton {
   /* The text to be copied to the clipboard; 1-256 characters */
   String text;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("text", true).or_default(false);
   }
 };

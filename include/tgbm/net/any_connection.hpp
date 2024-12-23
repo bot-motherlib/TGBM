@@ -25,7 +25,7 @@ struct is_https_m {
   using value_type = bool;
 
   template <typename T>
-  static constexpr bool do_value() {
+  static consteval bool do_value() {
     return T::is_https;
   }
 

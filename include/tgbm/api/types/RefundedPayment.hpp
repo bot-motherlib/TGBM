@@ -19,7 +19,7 @@ struct RefundedPayment {
   /* Optional. Provider payment identifier */
   optional<String> provider_payment_charge_id;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("currency", true)
         .case_("total_amount", true)

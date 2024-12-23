@@ -11,7 +11,7 @@ struct RevenueWithdrawalStateSucceeded {
   /* An HTTPS URL that can be used to see transaction details */
   String url;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("date", true).case_("url", true).or_default(false);
   }
 };

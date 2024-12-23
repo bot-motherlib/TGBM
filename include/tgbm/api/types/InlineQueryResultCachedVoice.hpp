@@ -26,7 +26,7 @@ struct InlineQueryResultCachedVoice {
   /* Optional. Content of the message to be sent instead of the voice message */
   box<InputMessageContent> input_message_content;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("id", true)
         .case_("voice_file_id", true)

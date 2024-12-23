@@ -9,7 +9,7 @@ struct TreeNode {
   std::string tree_value;
   tgbm::api::optional<std::vector<tgbm::box<TreeNode>>> children;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return name == "tree_value";
   }
 };

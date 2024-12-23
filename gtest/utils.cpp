@@ -7,19 +7,19 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
-constexpr int sstest1() {
+consteval int sstest1() {
   std::string_view str = "hello";
   return tgbm::string_switch<int>(str).case_("hi", 1).cases("hello", "world", 15);
 }
 static_assert(sstest1() == 15);
 
-constexpr int sstest2() {
+consteval int sstest2() {
   std::string_view str = "hello";
   return tgbm::string_switch<int>(str).case_("hi", 1).cases("hello", 15);
 }
 static_assert(sstest2() == 15);
 
-constexpr int sstest3() {
+consteval int sstest3() {
   std::string_view str = "hello";
   return tgbm::string_switch<int>(str).case_("hi", 1).cases("world", 15).or_default(15);
 }

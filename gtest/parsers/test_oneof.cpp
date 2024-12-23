@@ -6,7 +6,7 @@ struct User {
   tgbm::api::Integer id;
   std::string name;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return true;
   }
 
@@ -19,7 +19,7 @@ struct Chat {
   tgbm::api::Integer id;
   std::string title;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return true;
   }
 
@@ -30,7 +30,7 @@ struct Channel {
   tgbm::api::Integer id;
   std::string name;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return true;
   }
 
@@ -41,7 +41,7 @@ struct MessageOriginUser {
   tgbm::api::Integer date;
   tgbm::box<User> sender_user;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return true;
   }
 
@@ -52,7 +52,7 @@ struct MessageOriginHiddenUser {
   tgbm::api::Integer date;
   std::string sender_name;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return true;
   }
 
@@ -63,7 +63,7 @@ struct MessageOriginChat {
   tgbm::api::Integer date;
   tgbm::box<Chat> sender_chat;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return true;
   }
 
@@ -74,7 +74,7 @@ struct MessageOriginChannel {
   tgbm::api::Integer date;
   tgbm::box<Channel> sender_channel;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return true;
   }
 

@@ -18,7 +18,7 @@ struct ForceReply {
    * same chat and forum topic, sender of the original message. */
   optional<bool> selective;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("force_reply", true).or_default(false);
   }
 };

@@ -22,7 +22,7 @@ struct Venue {
   /* Optional. Google Places type of the venue. (See supported types.) */
   optional<String> google_place_type;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("location", true)
         .case_("title", true)

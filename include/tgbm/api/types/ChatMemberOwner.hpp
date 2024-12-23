@@ -14,7 +14,7 @@ struct ChatMemberOwner {
   /* Optional. Custom title for this user */
   optional<String> custom_title;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("user", true).case_("is_anonymous", true).or_default(false);
   }
 };

@@ -15,7 +15,7 @@ struct OrderInfo {
   /* Optional. User shipping address */
   box<ShippingAddress> shipping_address;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
 };

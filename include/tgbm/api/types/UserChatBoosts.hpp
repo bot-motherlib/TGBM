@@ -9,7 +9,7 @@ struct UserChatBoosts {
   /* The list of boosts added to the chat by the user */
   arrayof<ChatBoost> boosts;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("boosts", true).or_default(false);
   }
 };

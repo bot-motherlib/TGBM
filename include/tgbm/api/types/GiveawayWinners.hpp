@@ -33,7 +33,7 @@ struct GiveawayWinners {
   /* Optional. True, if the giveaway was canceled because the payment for it was refunded */
   optional<True> was_refunded;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("chat", true)
         .case_("giveaway_message_id", true)

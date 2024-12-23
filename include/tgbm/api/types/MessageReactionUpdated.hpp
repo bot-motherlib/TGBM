@@ -21,7 +21,7 @@ struct MessageReactionUpdated {
   /* Optional. The chat on behalf of which the reaction was changed, if the user is anonymous */
   box<Chat> actor_chat;
 
-  constexpr static bool is_mandatory_field(std::string_view name) {
+  consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
         .case_("chat", true)
         .case_("message_id", true)
