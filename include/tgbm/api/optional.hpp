@@ -279,11 +279,12 @@ struct TGBM_TRIVIAL_ABI optional {
     l.swap(r);
   }
 
-  template <typename U = T>
+  template <typename U = T,
+            std::enable_if_t<std::conjunction_v<std::negation<std::is_same<optional, std::decay_t<U>>>,
+                                                std::is_constructible<T, U&&>>,
+                             int> = 0>
   constexpr explicit(!std::is_convertible_v<U&&, T>)
-      optional(U&& v) noexcept(std::is_nothrow_constructible_v<T, U&&>)
-    requires(std::is_constructible_v<T, U &&> && !std::is_same_v<optional, std::decay_t<U>>)
-  {
+      optional(U&& v) noexcept(std::is_nothrow_constructible_v<T, U&&>) {
     emplace(std::forward<U>(v));
   }
 
