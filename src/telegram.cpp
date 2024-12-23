@@ -1512,7 +1512,8 @@ dd::task<Message> telegram::sendGame(api::send_game_request request, deadline_t 
   }
   co_return dd::rvo;
 }
-
+#endif
+#if 0
 dd::task<oneof<bool, Message>> telegram::setGameScore(api::set_game_score_request request,
                                                       deadline_t deadline) const {
   oneof<bool, Message>& result = co_await dd::this_coro::return_place;
