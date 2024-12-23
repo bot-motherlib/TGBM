@@ -1,4 +1,4 @@
-name: CI
+name: ci_format
 
 permissions:
   actions: write
@@ -14,7 +14,7 @@ env:
   UBSAN_OPTIONS: print_stacktrace=1
 
 jobs:
-  posix:
+  format_check:
     strategy:
       fail-fast: false
 
