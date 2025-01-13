@@ -13,6 +13,10 @@
 
 #include <fmt/core.h>
 
+#define REQUIRE(...)  \
+  if (!(__VA_ARGS__)) \
+  std::exit(__LINE__)
+
 namespace {
 
 struct test_factory;
@@ -81,8 +85,7 @@ struct test_factory {
   }
   bool run_one(tgbm::duration_t timeout) {
     stop_requested = false;
-    if (queue.empty())
-      return false;
+    REQUIRE(!queue.empty());
     auto x = std::move(queue.front());
     queue.pop_front();
     x.handle.resume();
@@ -143,9 +146,7 @@ void test_connection::start_write(std::coroutine_handle<> callback, std::span<co
   } else {
     tmp.insert(tmp.end(), buf.begin(), buf.end());
     written = buf.size();
-    // TODO rm 'ec', change queue...
     factory.queue.push_back({nullptr, validator.raw_handle().promise().current_worker, ec});
-    //++validator.cur_iterator();
   }
   callback.resume();
 }
@@ -162,8 +163,7 @@ void skip(tgbm::bytes_t& input, size_t n) {
 dd::generator<dd::nothing_t> wait_connection_preface(tgbm::bytes_t& input) {
   std::span preface = tgbm::http2::connection_preface;
   co_yield dd::elements_of(wait_bytes_n(input, preface.size()));
-  if (!tgbm::starts_with(input, preface))
-    throw "failed";  // TODO fail / require
+  REQUIRE(tgbm::starts_with(input, preface));
   skip(input, preface.size());
 }
 
@@ -186,23 +186,18 @@ dd::generator<dd::nothing_t> connection_validator(test_connection& con) {
   tgbm::http2::frame_header hdr;
   tgbm::bytes_t data;
   co_yield dd::elements_of(wait_header_and_data(input, hdr, data));
-  if (hdr.type != tgbm::http2::frame_e::SETTINGS || hdr.flags != 0 || hdr.stream_id != 0 ||
-      (hdr.length % 6) != 0) {
-    throw "fail";
-  }
+  REQUIRE(hdr.type == tgbm::http2::frame_e::SETTINGS && hdr.flags == 0 && hdr.stream_id == 0 &&
+          (hdr.length % 6) == 0);
   tgbm::bytes_t bytes;
   tgbm::http2::settings_frame::form({}, std::back_inserter(bytes));
   tgbm::http2::accepted_settings_frame().send_to(std::back_inserter(bytes));
   con.push_answer_bytes(std::move(bytes));
   co_yield dd::elements_of(wait_header_and_data(input, hdr, data));
-  if (hdr != tgbm::http2::accepted_settings_frame())
-    throw "fail";
+  REQUIRE(hdr == tgbm::http2::accepted_settings_frame());
   co_yield dd::elements_of(wait_header_and_data(input, hdr, data));
-  if (hdr.type != tgbm::http2::frame_e::HEADERS)  // TODO check
-    throw "fail";
+  REQUIRE(hdr.type == tgbm::http2::frame_e::HEADERS);
   co_yield dd::elements_of(wait_header_and_data(input, hdr, data));
-  if (hdr.type != tgbm::http2::frame_e::DATA)
-    throw "fail";
+  REQUIRE(hdr.type == tgbm::http2::frame_e::DATA);
   bytes.clear();
   tgbm::http2::frame_header h;
   h.type = tgbm::http2::frame_e::HEADERS;
