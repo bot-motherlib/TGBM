@@ -30,3 +30,12 @@ set_target_properties(tgbm_http2_notls_client PROPERTIES
   CXX_STANDARD 20)
 
 add_test(tgbm_http2_notls_client tgbm_http2_notls_client)
+
+add_executable(tgbm_test_http2_frames ${CMAKE_CURRENT_SOURCE_DIR}/test_http2_frames.cpp)
+target_link_libraries(tgbm_test_http2_frames PUBLIC tgbmlib)
+
+set_target_properties(tgbm_test_http2_frames PROPERTIES
+  CXX_STANDARD 20)
+
+
+add_test(tgbm_test_http2_frames tgbm_test_http2_frames)

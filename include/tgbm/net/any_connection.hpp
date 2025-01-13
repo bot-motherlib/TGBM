@@ -40,8 +40,9 @@ struct is_https_m {
 /*
   required interface:
 
-    dd::task<void> read(std::span<byte_t> buf, io_error_code& ec);
-    dd::task<size_t> write(std::span<const byte_t> buf, io_error_code& ec);
+    void start_read(std::coroutine_handle<> callback, std::span<byte_t> buf, io_error_code& ec);
+    void start_write(std::coroutine_handle<> callback, std::span<const byte_t> buf,
+                                io_error_code& ec, size_t& written);
     void shutdown() noexcept;
     static constexpr bool is_https = ...;
 */
