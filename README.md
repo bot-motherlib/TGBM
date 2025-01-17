@@ -4,7 +4,7 @@
   <h1><code>TGBM</code></h1>
 </div>
 
-![supported api version](https://img.shields.io/badge/%20API%20version-%208.1%20-brightgreen)
+![supported api version](https://img.shields.io/badge/%20API%20version-%208.2%20-brightgreen)
 [![build and test](
 https://github.com/bot-motherlib/TGBM/actions/workflows/CI_ubuntu.yaml/badge.svg?branch=master)](
 https://github.com/bot-motherlib/TGBM/actions/workflows/CI_ubuntu.yaml)
