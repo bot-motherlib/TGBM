@@ -43,7 +43,7 @@ function(TGBM_GENERATE_API)
         ERROR_VARIABLE error_output
     )
     if(NOT ${result} EQUAL 0)
-        message(FATAL_ERROR "fail while generating methods: Error output: [${error_output}]")
+        message(FATAL_ERROR "fail while generating methods: Out: ${output}, Error output: [${error_output}]")
     endif()
 
     message(STATUS ${output})

@@ -117,6 +117,10 @@
 #include <tgbm/api/methods/deleteStickerSet.hpp>
 #include <tgbm/api/methods/getAvailableGifts.hpp>
 #include <tgbm/api/methods/sendGift.hpp>
+#include <tgbm/api/methods/verifyUser.hpp>
+#include <tgbm/api/methods/verifyChat.hpp>
+#include <tgbm/api/methods/removeUserVerification.hpp>
+#include <tgbm/api/methods/removeChatVerification.hpp>
 #include <tgbm/api/methods/answerInlineQuery.hpp>
 #include <tgbm/api/methods/answerWebAppQuery.hpp>
 #include <tgbm/api/methods/savePreparedInlineMessage.hpp>

@@ -13,7 +13,7 @@ struct InputSticker {
    * information on Sending Files » */
   file_or_str sticker;
   /* Format of the added sticker, must be one of “static” for a .WEBP or .PNG image, “animated” for a .TGS
-   * animation, “video” for a WEBM video */
+   * animation, “video” for a .WEBM video */
   String format;
   /* List of 1-20 emoji associated with the sticker */
   arrayof<String> emoji_list;

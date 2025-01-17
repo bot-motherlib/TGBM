@@ -9,7 +9,7 @@ namespace tgbm::api {
 struct InlineQueryResultGif {
   /* Unique identifier for this result, 1-64 bytes */
   String id;
-  /* A valid URL for the GIF file. File size must not exceed 1MB */
+  /* A valid URL for the GIF file */
   String gif_url;
   /* URL of the static (JPEG or GIF) or animated (MPEG4) thumbnail for the result */
   String thumbnail_url;
