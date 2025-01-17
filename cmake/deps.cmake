@@ -75,7 +75,7 @@ find_package(Threads REQUIRED)
 CPMAddPackage(
   NAME telegram_bot_api_html
   GIT_REPOSITORY https://github.com/kelbon/telegram_bot_api_html
-  GIT_TAG v8.1 # last supported api
+  GIT_TAG v8.2 # last supported api
   DOWNLOAD_ONLY YES
 )
 

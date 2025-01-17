@@ -1,6 +1,5 @@
 #include <tgbm/net/asio/asio_tls_transport.hpp>
 #include <tgbm/net/asio/asio_awaiters.hpp>
-#include <tgbm/utils/zero_movable.hpp>
 
 namespace tgbm {
 

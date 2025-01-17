@@ -20,8 +20,9 @@ struct telegram {
 
   /* Use this method to specify a URL and receive incoming updates via an outgoing webhook. Whenever there is
    * an update for the bot, we will send an HTTPS POST request to the specified URL, containing a
-   * JSON-serialized Update. In case of an unsuccessful request, we will give up after a reasonable amount of
-   * attempts. Returns True on success. */
+   * JSON-serialized Update. In case of an unsuccessful request (a request with response HTTP status code
+   * different from 2XY), we will repeat the request and give up after a reasonable amount of attempts.
+   * Returns True on success. */
   dd::task<bool> setWebhook(api::set_webhook_request, deadline_t deadline = deadline_t::never()) const;
 
   /* Use this method to remove webhook integration if you decide to switch back to getUpdates. Returns True on
@@ -639,6 +640,24 @@ struct telegram {
   /* Sends a gift to the given user. The gift can't be converted to Telegram Stars by the user. Returns True
    * on success. */
   dd::task<bool> sendGift(api::send_gift_request, deadline_t deadline = deadline_t::never()) const;
+
+  /* Verifies a user on behalf of the organization which is represented by the bot. Returns True on success.
+   */
+  dd::task<bool> verifyUser(api::verify_user_request, deadline_t deadline = deadline_t::never()) const;
+
+  /* Verifies a chat on behalf of the organization which is represented by the bot. Returns True on success.
+   */
+  dd::task<bool> verifyChat(api::verify_chat_request, deadline_t deadline = deadline_t::never()) const;
+
+  /* Removes verification from a user who is currently verified on behalf of the organization represented by
+   * the bot. Returns True on success. */
+  dd::task<bool> removeUserVerification(api::remove_user_verification_request,
+                                        deadline_t deadline = deadline_t::never()) const;
+
+  /* Removes verification from a chat that is currently verified on behalf of the organization represented by
+   * the bot. Returns True on success. */
+  dd::task<bool> removeChatVerification(api::remove_chat_verification_request,
+                                        deadline_t deadline = deadline_t::never()) const;
 
   /* Use this method to send answers to an inline query. On success, True is returned.No more than 50 results
    * per query are allowed. */

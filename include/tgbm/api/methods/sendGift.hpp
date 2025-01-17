@@ -10,6 +10,9 @@ struct send_gift_request {
   Integer user_id;
   /* Identifier of the gift */
   String gift_id;
+  /* Pass True to pay for the gift upgrade from the bot's balance, thereby making the upgrade free for the
+   * receiver */
+  optional<bool> pay_for_upgrade;
   /* Text that will be shown along with the gift; 0-255 characters */
   optional<String> text;
   /* Mode for parsing entities in the text. See formatting options for more details. Entities other than
@@ -28,6 +31,8 @@ struct send_gift_request {
   void fill_nonfile_args(auto& body) const {
     body.arg("user_id", user_id);
     body.arg("gift_id", gift_id);
+    if (pay_for_upgrade)
+      body.arg("pay_for_upgrade", *pay_for_upgrade);
     if (text)
       body.arg("text", *text);
     if (text_parse_mode)

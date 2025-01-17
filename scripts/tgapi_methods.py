@@ -233,8 +233,13 @@ class method_info_t:
         self.name = name
         self.parameters: List[Parameter] = []
         self.description = description
-        self.ret_type = G_OPERATION_TO_RESULT[name]
-        assert self.ret_type is not None
+
+        if name in G_OPERATION_TO_RESULT:
+            self.ret_type = G_OPERATION_TO_RESULT[name]
+        elif 'ReturnsTrueonsuccess' in description.replace(" ", "").replace("\n", "").replace("\t", ""):
+            self.ret_type = TRUE
+        else:
+            assert self.ret_type is not None, "Error: ret_type is None. Ensure the return type is defined before mapping."
     
     def get_cppstruct_name(self) -> str:
         return to_flat_naming(self.name) + '_request'
@@ -299,7 +304,7 @@ def generate_api_struct(method_desc: method_info_t):
 
     # using return_type
 
-    typ = G_OPERATION_TO_RESULT[method_desc.name]
+    typ = method_desc.ret_type
     s += f'using return_type = {typ};\n'
 
     # static constexpr file_info_e file_info
@@ -402,7 +407,7 @@ def collect_required_includes(method_desc: method_info_t) -> list[str]:
         if ct:
             ts.append(f'{ct}')
     # return type
-    typ = G_OPERATION_TO_RESULT[method_desc.name]
+    typ = method_desc.ret_type
     if typ != MSGORTRUE:
         typ = get_compound_type(typ)
         if typ:
@@ -495,12 +500,6 @@ def generate_api_impl_file(methods: list[method_info_t], out):
             print(implstr, file=out)
     print('}\n', file=out) # namespace tgbm::api
 
-def array_diff(arr1, arr2):
-    set1 = set(arr1)
-    set2 = set(arr2)
-    diff = list((set1 - set2) | (set2 - set1))
-    return diff
-
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--outdir", type=str, required=True, help="output dir for methods, must be tgbm/api dir")
@@ -512,8 +511,7 @@ def main():
     os.makedirs(args.outdir, exist_ok=True)
 
     methods = parse_methods(load_file(args.apifile))
-    if len(methods) != len(G_OPERATION_TO_RESULT):
-        print(array_diff([e.name for e in methods], G_OPERATION_TO_RESULT.keys()))
+
     generate_all_methods(methods, args.outdir)
 
     with open(f'{args.outdir}/../telegram.hpp', 'w', encoding='utf-8') as out:

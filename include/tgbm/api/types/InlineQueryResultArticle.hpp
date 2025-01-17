@@ -25,8 +25,6 @@ struct InlineQueryResultArticle {
   optional<Integer> thumbnail_width;
   /* Optional. Thumbnail height */
   optional<Integer> thumbnail_height;
-  /* Optional. Pass True if you don't want the URL to be shown in the message */
-  optional<bool> hide_url;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)

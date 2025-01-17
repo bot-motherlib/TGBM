@@ -4,7 +4,9 @@
 
 namespace tgbm::api {
 
-/*This object contains basic information about a successful payment.*/
+/*This object contains basic information about a successful payment. Note that if the buyer initiates a
+ * chargeback with the relevant payment provider following this transaction, the funds may be debited from
+ * your balance. This is outside of Telegram's control.*/
 struct SuccessfulPayment {
   /* Three-letter ISO 4217 currency code, or “XTR” for payments in Telegram Stars */
   String currency;
