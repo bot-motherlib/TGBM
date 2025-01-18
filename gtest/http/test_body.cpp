@@ -15,7 +15,7 @@ TEST(http, body_generation) {
   request.limit = 100;
   request.timeout = 30;
   request.allowed_updates = {"message", "edited_channel_post"};
-  tgbm::http_body req = tgbm::api::make_http_boby(request);
+  tgbm::http_body req = tgbm::api::make_http_body(request);
   EXPECT_EQ(req.content_type, "application/json");
   std::string generated_body{(const char*)req.data.data(), req.data.size()};
   EXPECT_EQ(generated_body, expected_body);
@@ -39,7 +39,7 @@ TEST(http, body_generation_hard) {
       R"("caption":"example caption","parse_mode":"Markdown","disable_notification":true,)"
       R"("reply_markup":{"inline_keyboard":[[{"text":"Button1","callback_data":"hello world"}]]}})";
 
-  tgbm::http_body req = tgbm::api::make_http_boby(request);
+  tgbm::http_body req = tgbm::api::make_http_body(request);
   EXPECT_EQ(req.content_type, "application/json");
   std::string generated_body{(const char*)req.data.data(), req.data.size()};
   EXPECT_EQ(generated_body, expected_body);
