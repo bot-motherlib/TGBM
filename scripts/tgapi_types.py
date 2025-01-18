@@ -95,10 +95,10 @@ def parse_discriminator_value(alternative_description: str)->str:
     d = alternative_description
     d = d.replace('\n', ' ').strip()
     # NOTE: special quotes, not regular (telegram api..)
-    match = re.search('.*always\s+“(.+)”$', d)
+    match = re.search(r'.*always\s+“(.+)”$', d)
     if match:
         return match.group(1)
-    match = re.search('.*must\s+be\s+(.+)$', d)
+    match = re.search(r'.*must\s+be\s+(.+)$', d)
     if match:
         return match.group(1)
     raise ValueError()

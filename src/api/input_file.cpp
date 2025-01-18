@@ -3,6 +3,7 @@
 #include <fmt/core.h>
 
 #include <fstream>
+#include <sstream>
 
 namespace tgbm::api {
 
