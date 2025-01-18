@@ -25,7 +25,7 @@ CPMAddPackage(
   NAME kelcoro
   GIT_REPOSITORY https://github.com/kelbon/kelcoro
   GIT_TAG origin/main
-  OPTIONS "KELCORO_ENABLE_TESTING ${TGBM_ENABLE_TESTING}"
+  OPTIONS "KELCORO_ENABLE_TESTING OFF"
 )
 
 CPMAddPackage(

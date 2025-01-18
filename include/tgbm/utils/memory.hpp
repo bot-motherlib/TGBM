@@ -46,7 +46,7 @@ constexpr void byteswap(T& value) noexcept {
 }
 
 template <typename T>
-[[nodiscard]] constexpr T htonl(T value) noexcept {
+[[nodiscard]] constexpr T htonl_copy(T value) noexcept {
   static_assert(std::has_unique_object_representations_v<T> && std::is_trivially_copyable_v<T>);
   using enum std::endian;
   static_assert(native == little || native == big);

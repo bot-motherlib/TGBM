@@ -63,11 +63,11 @@ struct frame_header {
       *out = byte;
       ++out;
     };
-    uint32_t len = htonl(length);
+    uint32_t len = htonl_copy(length);
     out = std::copy_n(as_bytes(len).data() + 1, 3, out);
     push_byte(uint8_t(type));
     push_byte(flags);
-    stream_id_t id = htonl(stream_id);
+    stream_id_t id = htonl_copy(stream_id);
     out = std::copy_n((uint8_t*)&id, sizeof(id), out);
     return out;
   }
@@ -188,16 +188,16 @@ struct [[gnu::packed]] setting_t {
 
   template <std::output_iterator<byte_t> O>
   static O form(setting_t s, O out) {
-    s.identifier = htonl(s.identifier);
-    s.value = htonl(s.value);
+    s.identifier = htonl_copy(s.identifier);
+    s.value = htonl_copy(s.value);
     return std::copy_n(as_bytes(s).data(), sizeof(s), out);
   }
 
   [[nodiscard]] static setting_t parse(std::span<const byte_t, 6> bytes) noexcept {
     setting_t s;
     memcpy(&s, bytes.data(), sizeof(s));
-    s.identifier = htonl(s.identifier);
-    s.value = htonl(s.value);
+    s.identifier = htonl_copy(s.identifier);
+    s.value = htonl_copy(s.value);
     return s;
   }
 };
