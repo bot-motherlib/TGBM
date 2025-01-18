@@ -38,7 +38,7 @@ using request_return_t = typename R::return_type;
 using default_http_body = application_json_body;
 
 template <tgapi_request R>
-[[nodiscard]] http_body make_http_boby(const R& request) {
+[[nodiscard]] http_body make_http_body(const R& request) {
   static_assert(R::file_info == file_info_e::no || R::file_info == file_info_e::yes ||
                 R::file_info == file_info_e::maybe);
   if constexpr (R::http_method == http_method_e::GET) {
@@ -79,7 +79,7 @@ template <tgapi_request R>
       .path = std::move(path),
       .method = R::http_method,
       .scheme = scheme_e::HTTPS,
-      .body = make_http_boby(r),
+      .body = make_http_body(r),
   };
 }
 
