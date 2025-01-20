@@ -57,7 +57,7 @@ struct tcp_connection_options {
       asio::socket_base::receive_buffer_size rsv_sz_option(receive_buffer_size);
       tcp_sock.set_option(rsv_sz_option);
       tcp_sock.get_option(rsv_sz_option);
-      if (rsv_sz_option.value() != send_buffer_size) {
+      if (rsv_sz_option.value() != receive_buffer_size) {
         TGBM_LOG_WARN("tcp receive buf size option not fully applied, requested: {}, actual: {}",
                       send_buffer_size, rsv_sz_option.value());
       }
