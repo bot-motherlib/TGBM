@@ -183,18 +183,6 @@ struct read_some_operation {
   }
 };
 
-template <typename Stream, typename Buffer>
-struct read_until_operation {
-  Stream& stream;
-  std::span<byte_t> buffer;
-  std::string_view delim;
-
-  template <typename T>
-  void operator()(T&& cb) {
-    asio::async_read_until(stream, asio::buffer(buffer.data(), buffer.size()), delim, std::forward<T>(cb));
-  }
-};
-
 template <typename Timer>
 struct sleep_operation {
   Timer& timer;
