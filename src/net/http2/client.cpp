@@ -185,7 +185,7 @@ struct request_node {
     dd::task<int>::handle_type task;             // setted by 'await_suspend' (requester)
   };
   http2_connection_ptr connection = nullptr;
-  // received resonse (filled by 'reader' in connection)
+  //  received resonse (filled by 'reader' in connection)
   on_header_fn_ptr on_header;
   on_data_part_fn_ptr on_data_part;
   int status = reqerr_e::unknown_err;
@@ -519,6 +519,7 @@ struct http2_connection {
   void return_node(request_node* ptr) noexcept {
     assert(ptr);
     forget(*ptr);
+    ptr->connection = nullptr;
     if (free_nodes.size() >= std::min<size_t>(1024, server_settings.max_concurrent_streams)) {
       delete ptr;
       return;
@@ -557,8 +558,12 @@ void intrusive_ptr_add_ref(request_node* p) {
 
 void intrusive_ptr_release(request_node* p) noexcept {
   --p->refcount;
-  if (p->refcount == 0)
-    p->connection->return_node(p);
+  if (p->refcount == 0) {
+    if (p->connection)
+      p->connection->return_node(p);
+    else
+      delete p;
+  }
 }
 
 // any finish request with cancelled
@@ -1348,7 +1353,7 @@ std::coroutine_handle<> noexport::waiter_of_connection::await_suspend(std::corou
   return client->start_connecting().handle;
 }
 
-[[nodiscard]] http2_connection_ptr noexport::waiter_of_connection::await_resume() const {
+[[nodiscard]] http2_connection_ptr noexport::waiter_of_connection::await_resume() {
   if (!result || result->is_dropped() || client->stop_requested)
     return nullptr;
   return std::move(result);

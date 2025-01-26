@@ -39,7 +39,7 @@ struct waiter_of_connection : bi::list_base_hook<link_option> {
 
   bool await_ready() noexcept;
   std::coroutine_handle<> await_suspend(std::coroutine_handle<>) noexcept;
-  [[nodiscard]] http2_connection_ptr await_resume() const;
+  [[nodiscard]] http2_connection_ptr await_resume();
 };
 
 struct connection_lock_t {

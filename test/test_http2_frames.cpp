@@ -82,6 +82,12 @@ struct test_factory {
   }
   void stop() {
     stop_requested = true;
+    while (!queue.empty()) {
+      auto x = queue.front();
+      x.ec = boost::asio::error::operation_aborted;
+      queue.pop_front();
+      x.handle.resume();
+    }
   }
   bool run_one(tgbm::duration_t timeout) {
     stop_requested = false;
@@ -129,6 +135,14 @@ void test_connection::start_read(std::coroutine_handle<> callback, std::span<tgb
 }
 
 void test_connection::shutdown() noexcept {
+  if (reader) {
+    *reader_ec = boost::asio::error::operation_aborted;
+    std::coroutine_handle r = reader;
+    reader = nullptr;
+    reader_ec = nullptr;
+    reader_buf = {};
+    r.resume();
+  }
   while (!factory.queue.empty()) {
     auto [c, t, ec] = factory.queue.front();
     if (c == this) {
@@ -199,12 +213,15 @@ dd::generator<dd::nothing_t> connection_validator(test_connection& con) {
   co_yield dd::elements_of(wait_header_and_data(input, hdr, data));
   REQUIRE(hdr.type == tgbm::http2::frame_e::DATA);
   bytes.clear();
+  // TODO check this test fully
   tgbm::http2::frame_header h;
   h.type = tgbm::http2::frame_e::HEADERS;
   h.stream_id = hdr.stream_id;
   h.flags = tgbm::http2::flags::END_HEADERS | tgbm::http2::flags::END_STREAM;
   h.length = 0;
+  h.send_to(std::back_inserter(bytes));
   con.push_answer_bytes(bytes);
+
   fmt::println("received {}, {}", hdr.stream_id, (int)hdr.type);
 }
 
