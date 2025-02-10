@@ -9,6 +9,7 @@
 #include <rapidjson/error/en.h>
 
 #include <tgbm/jsons/dom_traits.hpp>
+#include <tgbm/jsons/errors.hpp>
 
 namespace tgbm::json {
 
@@ -75,7 +76,7 @@ struct dom_traits_for<rapidjson::GenericValue<rapidjson::UTF8<>>> {
   }
 
   static void on_error() {
-    throw std::runtime_error("JSON Error");
+    throw_json_parse_error();
   }
 
   static const type* find_field(const type& json, std::string_view key) {

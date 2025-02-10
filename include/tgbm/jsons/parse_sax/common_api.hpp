@@ -7,6 +7,7 @@
 #include <tgbm/jsons/sax.hpp>
 #include <tgbm/utils/pfr_extension.hpp>
 #include <tgbm/utils/traits.hpp>
+#include <tgbm/logger.hpp>
 
 namespace tgbm::json {
 

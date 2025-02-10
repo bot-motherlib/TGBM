@@ -281,4 +281,98 @@ JSON_PARSE_TEST(OneOfHiddenUserTypeMoreData, MessageOrigin) {
   EXPECT_EQ(parsed, expected);
 }
 
+TEST(GeneratorBoost, MissplaceDiscriminator) {
+  MessageOrigin expected{
+      .data =
+          MessageOriginChannel{
+              .date = tgbm::api::Integer{1630454400},
+              .sender_channel =
+                  tgbm::box<Channel>{
+                      Channel{
+                          .id = tgbm::api::Integer{13579},
+                          .name = "News Channel",
+                      },
+                  },
+          },
+  };
+
+  auto json = R"(
+    {
+      "date": 1630454400,
+      "sender_channel": {
+        "id": 13579,
+        "name": "News Channel"
+      },
+      "type": "channel"
+    }
+  )";
+
+  MessageOrigin parsed = GeneratorBoost::parse_json<MessageOrigin>(json);
+  EXPECT_EQ(parsed, expected);
+}
+
+TEST(GeneratorBoost, ArrayMissplaceDiscriminator) {
+  std::vector<MessageOrigin> expected{
+      MessageOrigin{
+          .data =
+              MessageOriginChannel{
+                  .date = tgbm::api::Integer{1630454400},
+                  .sender_channel =
+                      tgbm::box<Channel>{
+                          Channel{
+                              .id = tgbm::api::Integer{13579},
+                              .name = "News Channel",
+                          },
+                      },
+              },
+      },
+      MessageOrigin{
+          .data =
+              MessageOriginChat{
+                  .date = tgbm::api::Integer{1630454400},
+                  .sender_chat =
+                      tgbm::box<Chat>{
+                          Chat{
+                              .id = tgbm::api::Integer{67890},
+                              .title = "Group Chat",
+                          },
+                      },
+              },
+      },
+  };
+
+  auto json = R"(
+[
+   {
+      "date":1630454400,
+      "type":"channel",
+      "sender_channel":{
+         "id":13579,
+         "name":"News Channel"
+      }
+   },
+   {
+      "date":1630454400,
+      "sender_chat":{
+         "id":67890,
+         "title":"Group Chat"
+      },
+      "type":"chat"
+   }
+])";
+
+  auto parsed = GeneratorBoost::parse_json<std::vector<MessageOrigin>>(json);
+  EXPECT_EQ(parsed, expected);
+}
+
+JSON_PARSE_TEST(MissingField, MessageOrigin) {
+  MessageOrigin expected;
+  auto json = R"(
+{
+  "date": 1630454400
+}
+    )";
+  EXPECT_THROW(parse_json(json), tgbm::json::parse_error);
+}
+
 }  // namespace test_oneof
