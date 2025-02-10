@@ -27,6 +27,7 @@ struct stream_parser {
     p.write_some(!end, data.data(), data.size(), ec);
     if (ec) [[unlikely]]
       return;
+    // The json output has ended, but the generator is still expecting more tokens
     if (end && !p.handler().is_done()) [[unlikely]]
       ec = ::boost::json::error::extra_data;
   }

@@ -17,7 +17,6 @@ CPMAddPackage(
   OPTIONS "BOOST_ENABLE_CMAKE ON"
 )
 unset(BOOST_INCLUDE_LIBRARIES)
-find_package(Boost 1.87 COMPONENTS system asio pfr json boost_container REQUIRED)
 
 CPMAddPackage("gh:fmtlib/fmt#11.0.2")
 

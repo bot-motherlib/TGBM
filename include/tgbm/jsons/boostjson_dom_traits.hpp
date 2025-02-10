@@ -3,6 +3,7 @@
 #include <boost/json.hpp>
 
 #include <tgbm/jsons/dom_traits.hpp>
+#include <tgbm/jsons/errors.hpp>
 #include <tgbm/utils/macro.hpp>
 
 namespace tgbm::json {
@@ -64,7 +65,7 @@ struct dom_traits_for<::boost::json::value> {
   }
 
   static void on_error() {
-    throw std::runtime_error("JSON Error");
+    throw_json_parse_error();
   }
 
   static const type* find_field(const type& json, std::string_view key) {

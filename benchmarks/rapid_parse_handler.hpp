@@ -211,7 +211,7 @@ T parse_handler(std::string_view sv) {
   details::rapid_sv_stream ss(sv);
   rapidjson::ParseResult parse_result = reader.Parse(ss, handler);
   if (parse_result.IsError()) {
-    throw std::runtime_error(fmt::format("Fail parse"));
+    throw_json_parse_error();
   }
   return result;
 }

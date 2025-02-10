@@ -2,6 +2,7 @@ include(GoogleTest)
 
 add_executable(${PROJECT_NAME}_gtests 
     api/basic_types.cpp
+    api/update.cpp
     parsers/test_basic.cpp
     parsers/test_tree.cpp
     parsers/test_optional.cpp

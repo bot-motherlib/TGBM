@@ -212,7 +212,7 @@ struct Storage {
       file.exceptions(std::fstream::failbit | std::fstream::badbit);
       file.open(path);
       if (!file.is_open()) {
-        throw std::runtime_error("FUCK THIS SHIT");
+        throw std::runtime_error(fmt::format("can't open file on path : {}", path.generic_string()));
       }
       file << *json;
       file.flush();
@@ -243,7 +243,7 @@ struct Storage {
       file.exceptions(std::fstream::failbit | std::fstream::badbit);
       file.open(path);
       if (!file.is_open()) {
-        throw std::runtime_error("FUCK THIS SHIT");
+        throw std::runtime_error(fmt::format("can't open file on path : {}", path.generic_string()));
       }
       file << *json;
       file.flush();
