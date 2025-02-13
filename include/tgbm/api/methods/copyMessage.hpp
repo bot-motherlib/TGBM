@@ -18,6 +18,8 @@ struct copy_message_request {
   Integer message_id;
   /* Unique identifier for the target message thread (topic) of the forum; for forum supergroups only */
   optional<Integer> message_thread_id;
+  /* New start timestamp for the copied video in the message */
+  optional<Integer> video_start_timestamp;
   /* New caption for media, 0-1024 characters after entities parsing. If not specified, the original caption
    * is kept */
   optional<String> caption;
@@ -53,6 +55,8 @@ struct copy_message_request {
       body.arg("message_thread_id", *message_thread_id);
     body.arg("from_chat_id", from_chat_id);
     body.arg("message_id", message_id);
+    if (video_start_timestamp)
+      body.arg("video_start_timestamp", *video_start_timestamp);
     if (caption)
       body.arg("caption", *caption);
     if (parse_mode)

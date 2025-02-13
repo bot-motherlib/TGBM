@@ -99,6 +99,8 @@ struct ChatFullInfo {
   /* Optional. True, if all users directly joining the supergroup without using an invite link need to be
    * approved by supergroup administrators */
   optional<True> join_by_request;
+  /* Optional. True, if gifts can be sent to the chat */
+  optional<True> can_send_gift;
   /* Optional. True, if paid media messages can be sent or forwarded to the channel chat. The field is
    * available only for channel chats. */
   optional<True> can_send_paid_media;

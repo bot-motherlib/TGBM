@@ -209,6 +209,7 @@ struct RevenueWithdrawalStateFailed;
 struct AffiliateInfo;
 struct TransactionPartner;
 struct TransactionPartnerUser;
+struct TransactionPartnerChat;
 struct TransactionPartnerAffiliateProgram;
 struct TransactionPartnerFragment;
 struct TransactionPartnerTelegramAds;

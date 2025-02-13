@@ -16,7 +16,7 @@ struct InputMediaAudio {
    * can't be reused and can be only uploaded as a new file, so you can pass “attach://<file_attach_name>” if
    * the thumbnail was uploaded using multipart/form-data under <file_attach_name>. More information on
    * Sending Files » */
-  optional<file_or_str> thumbnail;
+  optional<String> thumbnail;
   /* Optional. Caption of the audio to be sent, 0-1024 characters after entities parsing */
   optional<String> caption;
   /* Optional. Mode for parsing entities in the audio caption. See formatting options for more details. */

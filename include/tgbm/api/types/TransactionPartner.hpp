@@ -2,6 +2,7 @@
 
 #include <tgbm/api/types/all_fwd.hpp>
 #include <tgbm/api/types/TransactionPartnerUser.hpp>
+#include <tgbm/api/types/TransactionPartnerChat.hpp>
 #include <tgbm/api/types/TransactionPartnerAffiliateProgram.hpp>
 #include <tgbm/api/types/TransactionPartnerFragment.hpp>
 #include <tgbm/api/types/TransactionPartnerTelegramAds.hpp>
@@ -13,12 +14,14 @@ namespace tgbm::api {
 /*This object describes the source of a transaction, or its recipient for outgoing transactions. Currently, it
  * can be one of*/
 struct TransactionPartner {
-  oneof<TransactionPartnerUser, TransactionPartnerAffiliateProgram, TransactionPartnerFragment,
-        TransactionPartnerTelegramAds, TransactionPartnerTelegramApi, TransactionPartnerOther>
+  oneof<TransactionPartnerUser, TransactionPartnerChat, TransactionPartnerAffiliateProgram,
+        TransactionPartnerFragment, TransactionPartnerTelegramAds, TransactionPartnerTelegramApi,
+        TransactionPartnerOther>
       data;
   static constexpr std::string_view discriminator = "type";
   enum struct type_e {
     k_user,
+    k_chat,
     k_affiliateprogram,
     k_fragment,
     k_telegramads,
@@ -36,6 +39,12 @@ struct TransactionPartner {
   }
   const TransactionPartnerUser* get_user() const noexcept {
     return data.get_if<TransactionPartnerUser>();
+  }
+  TransactionPartnerChat* get_chat() noexcept {
+    return data.get_if<TransactionPartnerChat>();
+  }
+  const TransactionPartnerChat* get_chat() const noexcept {
+    return data.get_if<TransactionPartnerChat>();
   }
   TransactionPartnerAffiliateProgram* get_affiliateprogram() noexcept {
     return data.get_if<TransactionPartnerAffiliateProgram>();
@@ -70,6 +79,7 @@ struct TransactionPartner {
   static constexpr type_e discriminate(std::string_view val) {
     return string_switch<type_e>(val)
         .case_("user", type_e::k_user)
+        .case_("chat", type_e::k_chat)
         .case_("affiliate_program", type_e::k_affiliateprogram)
         .case_("fragment", type_e::k_fragment)
         .case_("telegram_ads", type_e::k_telegramads)
@@ -81,6 +91,8 @@ struct TransactionPartner {
   static constexpr decltype(auto) discriminate(std::string_view val, auto&& visitor) {
     if (val == "user")
       return visitor.template operator()<TransactionPartnerUser>();
+    if (val == "chat")
+      return visitor.template operator()<TransactionPartnerChat>();
     if (val == "affiliate_program")
       return visitor.template operator()<TransactionPartnerAffiliateProgram>();
     if (val == "fragment")
@@ -99,6 +111,8 @@ struct TransactionPartner {
     switch (type()) {
       case k_user:
         return "user";
+      case k_chat:
+        return "chat";
       case k_affiliateprogram:
         return "affiliate_program";
       case k_fragment:

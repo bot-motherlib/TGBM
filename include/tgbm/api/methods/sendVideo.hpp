@@ -32,6 +32,13 @@ struct send_video_request {
    * thumbnail was uploaded using multipart/form-data under <file_attach_name>. More information on Sending
    * Files » */
   optional<file_or_str> thumbnail;
+  /* Cover for the video in the message. Pass a file_id to send a file that exists on the Telegram servers
+   * (recommended), pass an HTTP URL for Telegram to get a file from the Internet, or pass
+   * “attach://<file_attach_name>” to upload a new one using multipart/form-data under <file_attach_name>
+   * name. More information on Sending Files » */
+  optional<file_or_str> cover;
+  /* Start timestamp for the video in the message */
+  optional<Integer> start_timestamp;
   /* Video caption (may also be used when resending videos by file_id), 0-1024 characters after entities
    * parsing */
   optional<String> caption;
@@ -83,6 +90,11 @@ struct send_video_request {
     if (thumbnail)
       if (const auto* str = thumbnail->get_str())
         body.arg("thumbnail", *str);
+    if (cover)
+      if (const auto* str = cover->get_str())
+        body.arg("cover", *str);
+    if (start_timestamp)
+      body.arg("start_timestamp", *start_timestamp);
     if (caption)
       body.arg("caption", *caption);
     if (parse_mode)
@@ -114,6 +126,8 @@ struct send_video_request {
       return true;
     if (thumbnail && thumbnail->is_file())
       return true;
+    if (cover && cover->is_file())
+      return true;
     return false;
   }
 
@@ -123,6 +137,9 @@ struct send_video_request {
     if (thumbnail)
       if (const InputFile* f = thumbnail->get_file())
         body.arg("thumbnail", *f);
+    if (cover)
+      if (const InputFile* f = cover->get_file())
+        body.arg("cover", *f);
   }
 };
 
