@@ -6,11 +6,11 @@ constexpr std::string_view expected_response = "hello world";
 
 // all noinlines here is workaround gcc-12 bug (miscompilation)
 
-[[gnu::noinline]] void fail(int i) {
+TGBM_GCC_WORKAROUND void fail(int i) {
   std::exit(i);
 }
 
-[[gnu::noinline]] tgbm::http_response answer_req(tgbm::http_request req) {
+TGBM_GCC_WORKAROUND tgbm::http_response answer_req(tgbm::http_request req) {
   tgbm::http_response rsp;
   if (req.path == "/abc" && req.method == tgbm::http_method_e::GET) {
     rsp.status = 200;
@@ -39,7 +39,7 @@ struct test_server : tgbm::http2_server {
 
 inline bool all_good = false;
 
-[[gnu::noinline]] dd::task<tgbm::http_response> make_test_request(tgbm::http2_client& client) {
+TGBM_GCC_WORKAROUND dd::task<tgbm::http_response> make_test_request(tgbm::http2_client& client) {
   tgbm::http_request req{
       .path = "/abc",
       .method = tgbm::http_method_e::GET,
@@ -47,7 +47,7 @@ inline bool all_good = false;
   return client.send_request(std::move(req), tgbm::deadline_t::never());
 }
 
-[[gnu::noinline]] void check_response(tgbm::http2_client& client, const tgbm::http_response& rsp) {
+TGBM_GCC_WORKAROUND void check_response(tgbm::http2_client& client, const tgbm::http_response& rsp) {
   if (rsp.headers.size() != 1) {  // status and content-type
     TGBM_LOG_ERROR("incorrect count of headers: {}", rsp.headers.size());
     fail(3);

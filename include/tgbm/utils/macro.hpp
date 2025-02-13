@@ -35,5 +35,12 @@ struct pin {
 
 }  // namespace tgbm
 
+// gcc-12/14 internal error after inlining into coroutine + placement new
+#ifdef __GNUC__
+  #define TGBM_GCC_WORKAROUND [[gnu::noinline]]
+#else
+  #define TGBM_GCC_WORKAROUND
+#endif
+
 // must be used as field in type, makes it unmovable without breaking is_aggregate
 #define TGBM_PIN KELCORO_NO_UNIQUE_ADDRESS ::tgbm::pin _pin_;

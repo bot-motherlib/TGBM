@@ -45,3 +45,67 @@ TEST(utils, box) {
   static_assert(is_lowercase("f__rew../wwr44"));
   static_assert(!is_lowercase("rttr___trertg;..;A"));
 }
+
+struct strange_type {
+  int* ptr = nullptr;
+
+  strange_type() noexcept(false) {
+  }
+
+  strange_type(int* p) noexcept(false) : ptr(p) {
+  }
+
+  strange_type(strange_type&& o) : ptr(o.ptr) {
+    o.ptr = nullptr;
+  }
+
+  strange_type& operator=(strange_type&& o) {
+    std::swap(ptr, o.ptr);
+    return *this;
+  }
+
+  ~strange_type() {
+    if (ptr)
+      ++*ptr;
+  }
+};
+
+struct strange_type1 : strange_type {
+  strange_type1() noexcept : strange_type() {
+  }
+  using strange_type::strange_type;
+};
+
+struct strange_type2 : strange_type {
+  strange_type2() = default;
+  strange_type2(int* ptr) noexcept : strange_type(ptr) {
+  }
+};
+
+TEST(utils, box2) {
+  tgbm::box<strange_type> b;
+  int count = 0;
+  b.emplace(&count);
+  EXPECT_TRUE(b);
+
+  int count2 = 0;
+  b.emplace(&count2);
+
+  EXPECT_EQ(count, 1);
+
+  tgbm::box<strange_type1> b1;
+  b1.emplace(&count);
+  EXPECT_TRUE(b1);
+
+  b1.emplace(&count2);
+
+  EXPECT_EQ(count, 2);
+
+  tgbm::box<strange_type2> b2;
+  b2.emplace(&count);
+  EXPECT_TRUE(b2);
+
+  b2.emplace(&count2);
+
+  EXPECT_EQ(count, 3);
+}

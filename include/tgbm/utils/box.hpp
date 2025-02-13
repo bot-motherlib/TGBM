@@ -85,30 +85,30 @@ struct TGBM_TRIVIAL_ABI box {
   // if exception thrown from T constructor, then has_value() == false
   template <typename... Args>
   constexpr T& emplace(Args&&... args) {
-    if ((std::is_nothrow_constructible_v<T, Args&&...> || std::is_nothrow_default_constructible_v<T>) &&
-        ptr) {
-      // reuse memory
+    if (!ptr) {
+      ptr = new T(std::forward<Args>(args)...);
+      return *ptr;
+    }
+    // reuse memory
+    if constexpr (std::is_nothrow_constructible_v<T, Args&&...>) {
+      std::destroy_at(ptr);
+      std::construct_at(ptr, std::forward<Args>(args)...);
+      return *ptr;
+    } else if constexpr (std::is_nothrow_default_constructible_v<T>) {
       std::destroy_at(ptr);
       on_scope_failure(freemem) {
-        // if throw happens, then !std::is_nothrow_constructible_v<T, Args&&...>
-        // we are in this branch, this means is_nothrow_default_constructible<T> == true
-
-        // avoid compilation error for non default constructible types,
-        // they cannot appear in this branch
-        if constexpr (std::is_default_constructible_v<T>) {
-          // avoid calling destructor on empty memory by 'delete'
-          new (ptr) T;
-          reset();
-        } else {
-          unreachable();
-        }
+        // avoid calling destructor on empty memory by 'delete'
+        std::construct_at(ptr);
+        reset();
       };
-      ptr = new (ptr) T(std::forward<Args>(args)...);
+      std::construct_at(ptr, std::forward<Args>(args)...);
       freemem.no_longer_needed();
+      return *ptr;
     } else {
+      reset();
       ptr = new T(std::forward<Args>(args)...);
+      return *ptr;
     }
-    return *ptr;
   }
 
   [[nodiscard]] bool has_value() const noexcept {
