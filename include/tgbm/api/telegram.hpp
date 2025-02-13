@@ -147,9 +147,10 @@ struct telegram {
   dd::task<bool> sendChatAction(api::send_chat_action_request,
                                 deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to change the chosen reactions on a message. Service messages can't be reacted to.
-   * Automatically forwarded messages from a channel to its discussion group have the same available reactions
-   * as messages in the channel. Bots can't use paid reactions. Returns True on success. */
+  /* Use this method to change the chosen reactions on a message. Service messages of some types can't be
+   * reacted to. Automatically forwarded messages from a channel to its discussion group have the same
+   * available reactions as messages in the channel. Bots can't use paid reactions. Returns True on success.
+   */
   dd::task<bool> setMessageReaction(api::set_message_reaction_request,
                                     deadline_t deadline = deadline_t::never()) const;
 
@@ -633,12 +634,12 @@ struct telegram {
   dd::task<bool> deleteStickerSet(api::delete_sticker_set_request,
                                   deadline_t deadline = deadline_t::never()) const;
 
-  /* Returns the list of gifts that can be sent by the bot to users. Requires no parameters. Returns a Gifts
-   * object. */
+  /* Returns the list of gifts that can be sent by the bot to users and channel chats. Requires no parameters.
+   * Returns a Gifts object. */
   dd::task<Gifts> getAvailableGifts(deadline_t deadline = deadline_t::never()) const;
 
-  /* Sends a gift to the given user. The gift can't be converted to Telegram Stars by the user. Returns True
-   * on success. */
+  /* Sends a gift to the given user or channel chat. The gift can't be converted to Telegram Stars by the
+   * receiver. Returns True on success. */
   dd::task<bool> sendGift(api::send_gift_request, deadline_t deadline = deadline_t::never()) const;
 
   /* Verifies a user on behalf of the organization which is represented by the bot. Returns True on success.

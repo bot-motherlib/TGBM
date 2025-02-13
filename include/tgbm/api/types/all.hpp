@@ -207,6 +207,7 @@
 #include <tgbm/api/types/AffiliateInfo.hpp>
 #include <tgbm/api/types/TransactionPartner.hpp>
 #include <tgbm/api/types/TransactionPartnerUser.hpp>
+#include <tgbm/api/types/TransactionPartnerChat.hpp>
 #include <tgbm/api/types/TransactionPartnerAffiliateProgram.hpp>
 #include <tgbm/api/types/TransactionPartnerFragment.hpp>
 #include <tgbm/api/types/TransactionPartnerTelegramAds.hpp>

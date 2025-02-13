@@ -19,6 +19,10 @@ struct Video {
   Integer duration;
   /* Optional. Video thumbnail */
   box<PhotoSize> thumbnail;
+  /* Optional. Available sizes of the cover of the video in the message */
+  optional<arrayof<PhotoSize>> cover;
+  /* Optional. Timestamp in seconds from which the video will play in the message */
+  optional<Integer> start_timestamp;
   /* Optional. Original filename as defined by the sender */
   optional<String> file_name;
   /* Optional. MIME type of the file as defined by the sender */

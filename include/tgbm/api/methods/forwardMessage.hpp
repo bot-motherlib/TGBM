@@ -16,6 +16,8 @@ struct forward_message_request {
   Integer message_id;
   /* Unique identifier for the target message thread (topic) of the forum; for forum supergroups only */
   optional<Integer> message_thread_id;
+  /* New start timestamp for the forwarded video in the message */
+  optional<Integer> video_start_timestamp;
   /* Sends the message silently. Users will receive a notification with no sound. */
   optional<bool> disable_notification;
   /* Protects the contents of the forwarded message from forwarding and saving */
@@ -31,6 +33,8 @@ struct forward_message_request {
     if (message_thread_id)
       body.arg("message_thread_id", *message_thread_id);
     body.arg("from_chat_id", from_chat_id);
+    if (video_start_timestamp)
+      body.arg("video_start_timestamp", *video_start_timestamp);
     if (disable_notification)
       body.arg("disable_notification", *disable_notification);
     if (protect_content)
