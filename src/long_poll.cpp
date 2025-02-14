@@ -19,6 +19,9 @@ static dd::channel<api::Update> long_poll_loop(api::telegram api, api::get_updat
 dd::channel<api::Update> long_poll(api::telegram api, long_poll_options options) {
   // validate
 
+  if (options.timeout.count() > 40)
+    options.timeout = std::chrono::seconds(40);
+
   for (std::string_view str : options.allowed_updates)
     if (!api::allowed_updates::is_valid_update_category(str))
       throw bad_request(fmt::format("\"{}\" is not valid update name", str));
@@ -29,7 +32,7 @@ dd::channel<api::Update> long_poll(api::telegram api, long_poll_options options)
   using namespace std::chrono;
   // telegram automatically answeres 0 updates after 50 seconds
   seconds timeout(50);
-  req.timeout = 45;
+  req.timeout = options.timeout.count();
   // req.limit == 100 by default
   if (!options.allowed_updates.empty())
     req.allowed_updates = options.allowed_updates;
