@@ -15,6 +15,8 @@ namespace tgbm {
 struct long_poll_options {
   api::arrayof<api::String> allowed_updates = {};
   bool drop_pending_updates = false;
+  // timeout for each getUpdates request (not network timeout, but API timeout)
+  std::chrono::seconds timeout = std::chrono::seconds(10);
 };
 
 // Note: getUpdates does not work until webHooks are deleted
