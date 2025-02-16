@@ -13,6 +13,9 @@ dd::task<void> start_main_task(tgbm::bot& bot) {
 
   co_foreach(tgbm::api::Update && u, bot.updates()) {
     tgbm::api::Message* m = u.get_message();
+    // private message and channel post both have 'message' type in API
+    if (!m)
+      m = u.get_channel_post();
     if (!m || !m->text)
       continue;
     fmt::println("user wrote {}", *m->text);

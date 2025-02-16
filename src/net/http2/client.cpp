@@ -802,8 +802,9 @@ dd::job start_pinger_for(http2_connection_ptr con, any_transport_factory& f, dur
 }
 
 dd::job http2_client::start_connecting() {
-  assert(!connection);
   co_await std::suspend_always{};  // resumed when needed by creator
+  if (connection)
+    co_return;
   if (stop_requested) {
     TGBM_HTTP2_LOG(DEBUG, "connection tries to create when stop requested, ignored");
     co_return;
@@ -1311,7 +1312,7 @@ network_error:
 drop_connection:
   drop_connection(static_cast<reqerr_e::values>(reason));
 connection_dropped:
-  if (!connection_waiters.empty())
+  if (!connection_waiters.empty() && !is_connecting)
     co_await dd::this_coro::destroy_and_transfer_control_to(start_connecting().handle);
   co_return;
 }

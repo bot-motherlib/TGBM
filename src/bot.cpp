@@ -73,13 +73,13 @@ dd::channel<api::Update> bot::updates(long_poll_options options) {
   co_foreach(api::Update && u, chan) {
     switch (u.type()) {
       case api::Update::type_e::k_channel_post:
-        if (maybe_handle_command(*u.get_channel_post()))
-          break;
-        [[fallthrough]];
+        if (!maybe_handle_command(*u.get_channel_post()))
+          co_yield std::move(u);
+        break;
       case api::Update::type_e::k_message:
-        if (maybe_handle_command(*u.get_message()))
-          break;
-        [[fallthrough]];
+        if (!maybe_handle_command(*u.get_message()))
+          co_yield std::move(u);
+        break;
       default:
         co_yield std::move(u);
         break;
