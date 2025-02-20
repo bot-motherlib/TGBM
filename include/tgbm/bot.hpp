@@ -88,6 +88,20 @@ struct bot {
   //  * ignores update, which handled by bot.commands already
   dd::channel<api::Update> updates(long_poll_options = {});
 
+  // Suspends the coroutine. It will be resumed after `duration`.
+  // The error code `errc` will be set if the bot stops.
+  // This can be used for implementing periodic tasks.
+  //
+  // Example:
+  // io_error_code errc;
+  // while (!errc) {
+  //     // Your code to be executed every 3 seconds
+  //     co_await bot.sleep(std::chrono::seconds(3));
+  // }
+  dd::task<void> sleep(duration_t d, io_error_code& errc) {
+    return client->sleep(d, errc);
+  }
+
   // works until all done or error happens
   void run() {
     stopped = false;

@@ -134,6 +134,8 @@ struct http2_client : http_client {
   dd::task<int> send_request(on_header_fn_ptr on_header, on_data_part_fn_ptr on_data_part, http_request,
                              deadline_t deadline) override;
 
+  dd::task<void> sleep(duration_t, io_error_code&) override;
+
   void run() override;
 
   bool run_one(duration_t timeout) override;

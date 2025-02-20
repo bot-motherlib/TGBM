@@ -7,6 +7,7 @@
 
 #include <anyany/anyany.hpp>
 
+#include <tgbm/net/errors.hpp>
 #include <tgbm/net/http_base.hpp>
 #include <tgbm/utils/fn_ref.hpp>
 #include <tgbm/utils/memory.hpp>
@@ -47,6 +48,7 @@ struct http_client {
   // > 0 if 3-digit server response code
   virtual dd::task<int> send_request(on_header_fn_ptr, on_data_part_fn_ptr, http_request, deadline_t) = 0;
 
+  virtual dd::task<void> sleep(duration_t, io_error_code&) = 0;
   // throws on errors
   dd::task<http_response> send_request(http_request, deadline_t);
 

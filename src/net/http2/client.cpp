@@ -1434,4 +1434,8 @@ void http2_client::stop() {
   assert(requests_in_progress == 0);
 }
 
+dd::task<void> http2_client::sleep(duration_t duration, io_error_code& ec) {
+  return factory.sleep(duration, ec);
+}
+
 }  // namespace tgbm
