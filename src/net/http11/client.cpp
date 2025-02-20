@@ -268,4 +268,9 @@ void http11_client::stop() {
   io_ctx.stop();
 }
 
+dd::task<void> http11_client::sleep(duration_t d, io_error_code& ec) {
+  asio::steady_timer t(io_ctx);
+  co_await net.sleep(t, d, ec);
+}
+
 }  // namespace tgbm
