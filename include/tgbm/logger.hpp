@@ -21,12 +21,22 @@
 
 #endif
 
-#define TGBM_LOG_INFO(FMT_STR, ...) TGBM_LOG("[INFO] " FMT_STR __VA_OPT__(, ) __VA_ARGS__)
-#define TGBM_LOG_ERROR(FMT_STR, ...) TGBM_LOG("[ERROR] " FMT_STR __VA_OPT__(, ) __VA_ARGS__)
-#define TGBM_LOG_WARN(FMT_STR, ...) TGBM_LOG("[WARN] " FMT_STR __VA_OPT__(, ) __VA_ARGS__)
+#ifndef TGBM_LOG_INFO
+  #define TGBM_LOG_INFO(FMT_STR, ...) TGBM_LOG("[INFO] " FMT_STR __VA_OPT__(, ) __VA_ARGS__)
+#endif
 
-#ifndef NDEBUG
-  #define TGBM_LOG_DEBUG(FMT_STR, ...) TGBM_LOG("[DEBUG] " FMT_STR __VA_OPT__(, ) __VA_ARGS__)
-#else
-  #define TGBM_LOG_DEBUG(FMT_STR, ...) (void)0
+#ifndef TGBM_LOG_ERROR
+  #define TGBM_LOG_ERROR(FMT_STR, ...) TGBM_LOG("[ERROR] " FMT_STR __VA_OPT__(, ) __VA_ARGS__)
+#endif
+
+#ifndef TGBM_LOG_WARN
+  #define TGBM_LOG_WARN(FMT_STR, ...) TGBM_LOG("[WARN] " FMT_STR __VA_OPT__(, ) __VA_ARGS__)
+#endif
+
+#ifndef TGBM_LOG_DEBUG
+  #ifndef NDEBUG
+    #define TGBM_LOG_DEBUG(FMT_STR, ...) TGBM_LOG("[DEBUG] " FMT_STR __VA_OPT__(, ) __VA_ARGS__)
+  #else
+    #define TGBM_LOG_DEBUG(FMT_STR, ...) (void)0
+  #endif
 #endif
