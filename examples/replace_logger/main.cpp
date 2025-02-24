@@ -25,7 +25,7 @@ dd::task<void> start_main_task(tgbm::bot& bot) {
 }
 
 int main() {
-  const char* token = "7490968070:AAF-0PI1G7KUilI_jQA151r8u8RcSnF8Gts";
+  const char* token = std::getenv("BOT_TOKEN");
   if (!token) {
     fmt::println("launching telegram bot requires bot token from @BotFather");
     return -1;
