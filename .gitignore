@@ -17,7 +17,6 @@ cmake_build
 .cache
 
 src/api_types_cmp.cpp
-**/tgbm_replace/*
 
 .vs/
 .vscode/
