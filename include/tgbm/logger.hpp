@@ -40,3 +40,7 @@
     #define TGBM_LOG_DEBUG(FMT_STR, ...) (void)0
   #endif
 #endif
+
+#ifndef TGBM_HTTP2_LOG
+  #define TGBM_HTTP2_LOG(TYPE, STR, ...) TGBM_LOG_##TYPE("[HTTP2] " STR __VA_OPT__(, ) __VA_ARGS__)
+#endif
