@@ -55,8 +55,6 @@ resources:
 #include <boost/intrusive/list.hpp>
 #include <boost/intrusive/slist.hpp>
 
-#define TGBM_HTTP2_LOG(TYPE, STR, ...) TGBM_LOG_##TYPE("[HTTP2] " STR __VA_OPT__(, ) __VA_ARGS__)
-
 namespace tgbm {
 
 namespace asio = boost::asio;
