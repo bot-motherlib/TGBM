@@ -513,8 +513,7 @@ void intrusive_ptr_release(request_node* p) noexcept {
 }
 
 // any finish request with cancelled
-static dd::task<void> send_rst_stream(http2_connection_ptr con, http2::stream_id_t streamid,
-                                      http2::errc_e errc) {
+dd::task<void> send_rst_stream(http2_connection_ptr con, http2::stream_id_t streamid, http2::errc_e errc) {
   if (!con || con->is_dropped())
     co_return;
   byte_t bytes[http2::rst_stream::len];
@@ -1182,9 +1181,9 @@ http2_client::~http2_client() {
 http2_client::http2_client(std::string_view host, http2_client_options opts, any_transport_factory tf)
     : http_client(host), options(opts), factory(tf ? std::move(tf) : default_transport_factory()) {
   options.max_receive_frame_size = std::min<size_t>(http2::frame_len_max, options.max_receive_frame_size);
-  // options.max_send_frame_size =
-  // 8 KB now, because of strange TG behavior when sending big files with big frames, it do not respond
-  //     std::min<size_t>(8 * 1024 /*http2::frame_len_max*/, options.max_send_frame_size);
+  options.max_send_frame_size =
+      // 8 KB now, because of strange TG behavior when sending big files with big frames, it do not respond
+      std::min<size_t>(8 * 1024 /*http2::frame_len_max*/, options.max_send_frame_size);
 }
 
 noexport::waiter_of_connection::~waiter_of_connection() {

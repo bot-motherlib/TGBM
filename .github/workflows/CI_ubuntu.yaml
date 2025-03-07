@@ -53,7 +53,7 @@ jobs:
         uses: styfle/cancel-workflow-action@0.9.1
 
       - name: Checkout the code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: install dependencies
         run: |
@@ -73,7 +73,7 @@ jobs:
           ccache -M 2.0GB
 
       - name: Reuse ccache directory
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache/ccache
           key: 'ubuntu-24.04 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}} ccache-dir ${{github.ref}}'
