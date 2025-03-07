@@ -104,9 +104,6 @@ struct http2_client : http_client {
 
   void notify_connection_waiters(http2_connection_ptr result) noexcept;
 
-  // postcondition: !connection
-  void drop_connection(reqerr_e::values reason) noexcept;
-
   [[nodiscard]] bool already_connecting() const noexcept {
     return is_connecting;
   }
@@ -141,6 +138,9 @@ struct http2_client : http_client {
   bool run_one(duration_t timeout) override;
 
   void stop() override;
+
+  // postcondition: !connection. Mostly used by client itself
+  void drop_connection(reqerr_e::values reason) noexcept;
 };
 
 }  // namespace tgbm

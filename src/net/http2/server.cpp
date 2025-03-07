@@ -496,8 +496,7 @@ dd::job reader_for(client_session_ptr session) try {
       case SETTINGS: {
         client_settings_visitor vtor{session->client_settings};
         settings_frame::parse(framehdr, buf, vtor);
-        if (vtor.header_table_size_decrease)
-          session->table_size_decrease += vtor.header_table_size_decrease;
+        // TODO settings sync etc, encoder
         break;
       }
       case PUSH_PROMISE:
