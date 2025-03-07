@@ -61,68 +61,22 @@ namespace asio = boost::asio;
 
 constexpr inline auto h2fhl = http2::frame_header_len;
 
-struct http2_frame_buffer {
-  byte_t* b;
-  byte_t* m;
-  byte_t* e;
-
-  explicit http2_frame_buffer(std::span<byte_t> buf) : b(buf.data()), m(b), e(buf.data() + buf.size()) {
-  }
-
-  [[nodiscard]] size_t available() const noexcept {
-    return std::distance(m, e);
-  }
-  // how many can be filled with frame_header in mind
-  [[nodiscard]] size_t available_payload() const noexcept {
-    size_t avail = available();
-    return avail < h2fhl ? 0 : avail - h2fhl;
-  }
-
-  // must be called only once on one buffer
-  [[nodiscard]] std::span<byte_t> filled_bytes() const noexcept {
-    return std::span<byte_t>(b, m);
-  }
-
-  [[nodiscard]] bool push_frame(http2::frame_header header, std::span<byte_t> payload) noexcept {
-    assert(header.length == payload.size());
-    if (available() < h2fhl + payload.size())
-      return false;
-    m = header.send_to(m);
-    m = copy_bytes(payload, m);
-    return true;
-  }
-  [[nodiscard]] bool push_frame(http2::frame_header header, byte_t* payload, size_t payload_len) noexcept {
-    return push_frame(header, std::span<byte_t>(payload, payload_len));
-  }
-  // assumes payload have atleast header.length bytes
-  [[nodiscard]] bool push_frame(http2::frame_header header, byte_t* payload) noexcept {
-    return push_frame(header, std::span<byte_t>(payload, header.length));
-  }
-};
-
 struct http2_frame_t {
   http2::frame_header header;
   std::span<byte_t> data;
-};
-
-struct prepared_http_request {
-  http2::stream_id_t streamid = 0;
-  bytes_t headers;
-  bytes_t data;
 };
 
 struct request_node;
 
 using node_ptr = boost::intrusive_ptr<request_node>;
 
-static bytes_t generate_http2_headers(const http_request& request, hpack::encoder& encoder) {
+static void generate_http2_headers_to(const http_request& request, hpack::encoder& encoder,
+                                      bytes_t& headers) {
   using hdrs = hpack::static_table_t::values;
 
   assert(!request.path.empty());
   assert(!(request.body.content_type.empty() && !request.body.data.empty()));
 
-  bytes_t headers;
-  headers.reserve(128);
   auto out = std::back_inserter(headers);
 
   // required scheme, method, authority, path
@@ -155,16 +109,6 @@ static bytes_t generate_http2_headers(const http_request& request, hpack::encode
     encoder.encode<true>(hdrs::content_type, request.body.content_type, out);
   for (auto& [name, value] : request.headers)
     encoder.encode<true>(name, value, out);
-  return headers;
-}
-
-static prepared_http_request form_http2_request(http_request&& request, http2::stream_id_t streamid,
-                                                hpack::encoder& encoder) {
-  return prepared_http_request{
-      .streamid = streamid,
-      .headers = generate_http2_headers(request, encoder),
-      .data = std::move(request.body.data),
-  };
 }
 
 // request starts in connection.requests, then goes into connection.responses
@@ -176,7 +120,8 @@ struct request_node {
   uint32_t refcount = 0;
   uint32_t streamlevel_window_size = 0;
   // 'new_request_node' fills req, deadline, writer_handle and streamlevel_window_size
-  prepared_http_request req;  // will be moved into writer
+  http_request req;  // will be moved into writer
+  http2::stream_id_t streamid = 0;
   deadline_t deadline;
   union {
     std::coroutine_handle<> writer_handle = {};  // setted initialy before 'await_suspend'
@@ -209,14 +154,10 @@ struct request_node {
     return status;
   }
 
-  [[nodiscard]] bool ignores_response() const noexcept {
-    return !on_header && !on_data_part;
-  }
-
   // returns false on protocol errors
   // precondition: padding removed
   void receive_headers(hpack::decoder& decoder, http2_frame_t&& frame) {
-    assert(frame.header.stream_id == req.streamid);
+    assert(frame.header.stream_id == streamid);
     assert(frame.header.type == http2::frame_e::HEADERS);
     // weird things like continuations, trailers, many header frames with CONTINUE etc not supported
     if (!(frame.header.flags & http2::flags::END_HEADERS))
@@ -224,7 +165,7 @@ struct request_node {
     const byte_t* in = frame.data.data();
     const byte_t* e = in + frame.data.size();
     status = decoder.decode_response_status(in, e);
-    // headers must be decoded to maintain HPACK dynamic table in correect state
+    // headers must be decoded to maintain HPACK dynamic table in correct state
     hpack::decode_headers_block(decoder, std::span(in, e),
                                 [&](std::string_view name, std::string_view value) {
                                   if (on_header)
@@ -235,7 +176,7 @@ struct request_node {
   // returns false on protocol errors
   // precondition: padding removed
   void receive_data(http2_frame_t&& frame, bool end_stream) {
-    assert(frame.header.stream_id == req.streamid);
+    assert(frame.header.stream_id == streamid);
     assert(frame.header.type == http2::frame_e::DATA);
     if (on_data_part)
       (*on_data_part)(frame.data, end_stream);
@@ -248,7 +189,7 @@ struct request_node {
   struct key_of_value {
     using type = http2::stream_id_t;
     const type& operator()(const request_node& v) const noexcept {
-      return v.req.streamid;
+      return v.streamid;
     }
   };
   struct hash_by_streamid {
@@ -287,6 +228,12 @@ struct http2_connection {
   http2::settings_t client_settings;
   any_connection tcp_con;
   hpack::encoder encoder;
+  // https://www.rfc-editor.org/rfc/rfc9113.html#section-6.5.2-2.2.1
+  // Server may send SETTINGS frame with reduced hpack table size,
+  // this means request for client encoder to send dynamic_size_update
+  //
+  // if true, new value in server_settings.header_table_size
+  bool encoder_table_size_change_requested = false;
   hpack::decoder decoder;
   // odd for client, even for server
   http2::stream_id_t stream_id;
@@ -374,7 +321,7 @@ struct http2_connection {
     if (node.requests_hook.is_linked())
       erase_byref(requests, node);
     if (node.responses_hook.is_linked()) {
-      assert(responses.count(node.req.streamid) == 1);
+      assert(responses.count(node.streamid) == 1);
       erase_byref(responses, node);
     }
     if (node.timers_hook.is_linked())
@@ -387,12 +334,12 @@ struct http2_connection {
     forget(node);
     if (!node.task)
       return;
-    TGBM_HTTP2_LOG(DEBUG, "stream {} finished, status: {}", node.req.streamid, status);
+    TGBM_HTTP2_LOG(DEBUG, "stream {} finished, status: {}", node.streamid, status);
     node.status = status;
     auto t = std::exchange(node.task, nullptr);
     if (status == reqerr_e::cancelled || status == reqerr_e::timeout)
       // ignore possible bad alloc for coroutine
-      send_rst_stream(this, node.req.streamid, http2::errc_e::CANCEL).start_and_detach();
+      send_rst_stream(this, node.streamid, http2::errc_e::CANCEL).start_and_detach();
     t.resume();
   }
 
@@ -500,7 +447,8 @@ struct http2_connection {
       free_nodes.pop_front();
     }
     node->streamlevel_window_size = server_settings.initial_stream_window_size;
-    node->req = form_http2_request(std::move(request), next_streamid(), encoder);
+    node->req = std::move(request);
+    node->streamid = 0;
     node->deadline = deadline;
     node->writer_handle = std::coroutine_handle<>(writer.handle);
     node->connection = this;
@@ -565,7 +513,8 @@ void intrusive_ptr_release(request_node* p) noexcept {
 }
 
 // any finish request with cancelled
-dd::task<void> send_rst_stream(http2_connection_ptr con, http2::stream_id_t streamid, http2::errc_e errc) {
+static dd::task<void> send_rst_stream(http2_connection_ptr con, http2::stream_id_t streamid,
+                                      http2::errc_e errc) {
   if (!con || con->is_dropped())
     co_return;
   byte_t bytes[http2::rst_stream::len];
@@ -573,10 +522,21 @@ dd::task<void> send_rst_stream(http2_connection_ptr con, http2::stream_id_t stre
   io_error_code ec;
   (void)co_await con->write(bytes, ec);
   if (ec)
-    TGBM_HTTP2_LOG(DEBUG, "cannot rst stream, ec: {}", ec.what());
+    TGBM_HTTP2_LOG(ERROR, "cannot rst stream, ec: {}", ec.what());
 }
 
-dd::task<bool> send_ping(http2_connection_ptr con, uint64_t data, bool request_pong) {
+static dd::task<void> send_settings_ack(http2_connection_ptr con) {
+  if (!con || con->is_dropped())
+    co_return;
+  bytes_t bytes;
+  http2::accepted_settings_frame().send_to(std::back_inserter(bytes));
+  io_error_code ec;
+  (void)co_await con->write(bytes, ec);
+  if (ec)
+    TGBM_HTTP2_LOG(ERROR, "cannot send settings ACK, err: {}", ec.what());
+}
+
+static dd::task<bool> send_ping(http2_connection_ptr con, uint64_t data, bool request_pong) {
   if (!con || con->is_dropped())
     co_return false;
   io_error_code ec;
@@ -585,43 +545,6 @@ dd::task<bool> send_ping(http2_connection_ptr con, uint64_t data, bool request_p
   (void)co_await con->write(buf, ec);
   co_return !ec;
 }
-
-struct first_settings_frame_visitor {
-  http2::settings_t& settings;
-
-  constexpr void operator()(http2::setting_t s) const {
-    using namespace http2;
-    switch (s.identifier) {
-      case SETTINGS_HEADER_TABLE_SIZE:
-        settings.header_table_size = s.value;
-        return;
-      case SETTINGS_ENABLE_PUSH:
-        if (s.value > 0)
-          throw protocol_error{};  // server MUST NOT send 1
-        settings.enable_push = s.value;
-        return;
-      case SETTINGS_MAX_CONCURRENT_STREAMS:
-        settings.max_concurrent_streams = s.value;
-        return;
-      case SETTINGS_INITIAL_WINDOW_SIZE:
-        settings.initial_stream_window_size = s.value;
-        return;
-      case SETTINGS_MAX_FRAME_SIZE:
-        settings.max_frame_size = s.value;
-        return;
-      case SETTINGS_MAX_HEADER_LIST_SIZE:
-        settings.max_header_list_size = s.value;
-        return;
-      case SETTINGS_NO_RFC7540_PRIORITIES:
-        if (s.value > 1)
-          throw protocol_error{};
-        settings.deprecated_priority_disabled = s.value;
-      default:
-          // ignore if dont know
-          ;
-    }
-  };
-};
 
 static dd::task<void> handle_ping(http2::ping_frame ping, http2_connection_ptr con) {
   TGBM_HTTP2_LOG(DEBUG, "received ping, data: {}", ping.get_data());
@@ -646,7 +569,7 @@ static dd::task<http2_connection_ptr> establish_http2_session(any_connection&& t
       .max_frame_size = options.max_receive_frame_size,
       .deprecated_priority_disabled = true,
   };
-  con->encoder = hpack::encoder(con->client_settings.header_table_size);
+  con->decoder = hpack::decoder(con->client_settings.header_table_size);
   con->stream_id = 1;  // client
 
   io_error_code ec;
@@ -674,7 +597,7 @@ static dd::task<http2_connection_ptr> establish_http2_session(any_connection&& t
   if (ec)
     throw network_exception(ec);
   if (accepted_settings_frame() != header)
-    settings_frame::parse(header, bytes, first_settings_frame_visitor(con->server_settings));
+    settings_frame::parse(header, bytes, server_settings_visitor(con->server_settings));
   // answer settings ACK as soon as possible
 
   accepted_settings_frame().send_to(buf);
@@ -685,7 +608,7 @@ static dd::task<http2_connection_ptr> establish_http2_session(any_connection&& t
   // TODO ? if ACK flag?
   if (std::ranges::equal(buf, bytes)) {  // server ACK already received
     TGBM_HTTP2_LOG(INFO, "connection successfully established without server settings frame");
-    // con.decoder is default with 4096 bytes
+    // con.encoder is default with 4096 bytes
     con->server_settings.max_frame_size =
         std::min(con->server_settings.max_frame_size, options.max_send_frame_size);
     co_return con;
@@ -707,7 +630,7 @@ static dd::task<http2_connection_ptr> establish_http2_session(any_connection&& t
         if (header.flags & flags::ACK) {
           if (header.length != 0 || header.stream_id != 0)
             throw protocol_error{};
-          con->decoder = hpack::decoder(con->server_settings.header_table_size);
+          con->encoder = hpack::encoder(con->server_settings.header_table_size);
           TGBM_HTTP2_LOG(INFO, "connection successfully established, decoder size: {}",
                          con->server_settings.header_table_size);
           con->server_settings.max_frame_size =
@@ -801,10 +724,13 @@ dd::job start_pinger_for(http2_connection_ptr con, any_transport_factory& f, dur
 
 dd::job http2_client::start_connecting() {
   co_await std::suspend_always{};  // resumed when needed by creator
-  if (connection)
+  if (connection) {
+    notify_connection_waiters(connection);
     co_return;
+  }
   if (stop_requested) {
     TGBM_HTTP2_LOG(DEBUG, "connection tries to create when stop requested, ignored");
+    notify_connection_waiters(nullptr);
     co_return;
   }
   if (already_connecting())
@@ -847,18 +773,6 @@ static bool validate_frame_header(const http2::frame_header& h) noexcept {
   return h.length <= http2::frame_len_max && h.stream_id <= http2::max_stream_id;
 }
 
-// 'out' must contain atleast 9 bytes
-static http2::frame_header form_headers_header(const prepared_http_request& request) noexcept {
-  using enum http2::frame_e;
-  using namespace http2::flags;
-  return http2::frame_header{
-      .length = uint32_t(request.headers.size()),
-      .type = HEADERS,
-      .flags = static_cast<http2::flags_t>(request.data.empty() ? END_HEADERS | END_STREAM : END_HEADERS),
-      .stream_id = request.streamid,
-  };
-}
-
 [[nodiscard]] static http2::frame_header form_data_header(http2::stream_id_t streamid, uint32_t frame_sz,
                                                           bool is_last) noexcept {
   using enum http2::frame_e;
@@ -883,44 +797,40 @@ static http2::frame_header form_headers_header(const prepared_http_request& requ
   using enum http2::frame_e;
   using namespace http2::flags;
 
-  assert(!node.req.data.empty());
-  assert(node.req.data.size() >= unhandled_bytes);
+  assert(!node.req.body.data.empty());
+  assert(node.req.body.data.size() >= unhandled_bytes);
   http2::frame_header header;
 
   header.length = std::min<size_t>({unhandled_bytes, con.server_settings.max_frame_size,
                                     node.streamlevel_window_size, con.receiver_window_size});
   header.type = DATA;
   header.flags = unhandled_bytes == header.length ? END_STREAM : EMPTY_FLAGS;
-  header.stream_id = node.req.streamid;
+  header.stream_id = node.streamid;
   header.send_to(out);
 
   return header.length;
 }
 
-dd::task<void> write_pending_data_frames(node_ptr work, size_t handled_bytes, http2_connection_ptr con,
-                                         any_transport_factory& factory) {
+static dd::task<void> write_pending_data_frames(node_ptr work, size_t handled_bytes, http2_connection_ptr con,
+                                                any_transport_factory& factory, http2_client& client) {
   assert(con && work);
 
-  assert(handled_bytes < work->req.data.size());
+  assert(handled_bytes < work->req.body.data.size());
   io_error_code ec;
-  prepared_http_request& req = work->req;
+  bytes_t& data = work->req.body.data;
 
   uint32_t frame_len = 0;
-  int status = reqerr_e::cancelled;
-  auto& streamid = req.streamid;
-  on_scope_exit {
-    if (work->ignores_response())
-      con->finish_request(*work, status);
-  };
+
+  // TODO optimize since always used with 0 (write first 9 + 9 bytes frame) (not ignore control flow)
   if (handled_bytes < h2fhl) {
-    TGBM_HTTP2_LOG(DEBUG, "required to relocate {} bytes. Handled {}", req.data.size(), handled_bytes);
+    TGBM_HTTP2_LOG(DEBUG, "required to relocate {} bytes. Handled {}", data.size(), handled_bytes);
     // code above reuses already sended bytes as buffer for frame_header
-    req.data.insert(req.data.begin(), h2fhl - handled_bytes, 0);
+    data.insert(data.begin(), h2fhl - handled_bytes, 0);
     handled_bytes = h2fhl;
   }
   assert(handled_bytes >= h2fhl);
-  for (byte_t* in = req.data.data() + handled_bytes, *data_end = req.data.data() + req.data.size();
-       in != data_end; in += frame_len) {
+  for (byte_t* in = data.data() + handled_bytes, *data_end = data.data() + data.size(); in != data_end;
+       in += frame_len) {
     if (work->finished() || con->is_dropped())
       co_return;
     frame_len = fill_data_header(*work, *con, std::distance(in, data_end), in - h2fhl);
@@ -932,7 +842,9 @@ dd::task<void> write_pending_data_frames(node_ptr work, size_t handled_bytes, ht
       co_await factory.sleep(std::chrono::nanoseconds(500), ec);
       if (ec) {
         TGBM_HTTP2_LOG(ERROR, "something went wrong while sleeping", ec.what());
-        // anyway continue, ignore sleep errors
+        if (ec == asio::error::operation_aborted)
+          co_return;
+        // continue, ignore sleep errors
       }
       continue;
     }
@@ -943,8 +855,9 @@ dd::task<void> write_pending_data_frames(node_ptr work, size_t handled_bytes, ht
 
     if (ec) {
       if (ec != asio::error::operation_aborted) {
-        status = reqerr_e::network_err;
         TGBM_HTTP2_LOG(DEBUG, "sending pending data frames ended with network err: {}", ec.what());
+        con->finish_request(*work, reqerr_e::network_err);
+        client.drop_connection(reqerr_e::network_err);
       }
       co_return;
     }
@@ -952,71 +865,8 @@ dd::task<void> write_pending_data_frames(node_ptr work, size_t handled_bytes, ht
     con->receiver_window_size -= frame_len;
     work->streamlevel_window_size -= frame_len;
   }  // end loop
-  TGBM_HTTP2_LOG(DEBUG, "pending data frames for stream {} successfully sended", streamid);
-  status = reqerr_e::done;
+  TGBM_HTTP2_LOG(DEBUG, "pending data frames for stream {} successfully sended", work->streamid);
   co_return;
-}
-
-// handles con.requests, fills buf with their headers and data,
-// fills 'handled_ignorers' with requests which ignore responses and handled
-// returns filled bytes
-// if unfinished_bytes != -1, then first con.buf is unfinished and 'unfinished_bytes' contains how many
-// handled precondition: con.requests not empty
-// also handles control flow and sends utility frames window_update for streams/connection
-[[nodiscard]] std::span<const byte_t> fill_buffer(http2_connection& con, reusable_buffer& buf,
-                                                  size_t& unfinished_handled,
-                                                  std::vector<node_ptr>& handled_ignorers,
-                                                  size_t& data_sended) {
-  assert(!con.requests.empty());
-  request_node* node = &con.requests.front();
-  http2_frame_buffer frames(buf.get_atleast(node->req.headers.size() + h2fhl));
-  unfinished_handled = size_t(-1);
-  data_sended = 0;
-
-  goto start_filling_frames;
-  for (;;) {
-    // headers
-
-    if (frames.available() < node->req.headers.size() + h2fhl)
-      return frames.filled_bytes();
-  start_filling_frames:
-    if (!frames.push_frame(form_headers_header(node->req), node->req.headers))
-      unreachable();
-
-    // data
-
-    if (node->req.data.empty())
-      goto handle_next_node;
-    // TODO control flow (calculate how many streams started)
-
-    for (size_t handled_bytes = 0; handled_bytes != node->req.data.size();) {
-      size_t unhandled_now = node->req.data.size() - handled_bytes;
-      size_t frame_sz =
-          std::min<size_t>({unhandled_now, frames.available_payload(), con.server_settings.max_frame_size,
-                            node->streamlevel_window_size, con.receiver_window_size});
-      if (frame_sz == 0) {
-        unfinished_handled = handled_bytes;
-        return frames.filled_bytes();
-      }
-      if (!frames.push_frame(form_data_header(node->req.streamid, frame_sz, frame_sz == unhandled_now),
-                             node->req.data.data() + handled_bytes))
-        unreachable();
-      handled_bytes += frame_sz;
-      // control flow
-      data_sended += handled_bytes;
-      node->streamlevel_window_size -= handled_bytes;
-    }  // end loop filling data frames
-
-  handle_next_node:
-    con.requests.pop_front();
-    if (!node->ignores_response())
-      con.responses.insert(*node);
-    else
-      handled_ignorers.push_back(node);
-    if (con.requests.empty())
-      return frames.filled_bytes();
-    node = &con.requests.front();
-  }  // end loop filling buffer
 }
 
 // writes requests, handles control flow on sending side
@@ -1031,52 +881,61 @@ dd::job http2_client::start_writer_for(http2_connection_ptr con) {
   };
 
   io_error_code ec;
-  reusable_buffer buffer;
-  buffer.reserve(std::min<size_t>(con->server_settings.max_frame_size, 1024 * 16));
+
   for (;;) {
     // waiting for job or connection shutdown
 
     if (!co_await con->wait_work())
       goto end;
+
     assert(!con->requests.empty());
 
-    // if != -1, then first node in request is unfinished (but its headers are sended)
-    size_t unfinished_handled;
-    std::vector<node_ptr> handled_ignorers;
-    size_t data_sended;
-    std::span bytes = fill_buffer(*con, buffer, unfinished_handled, handled_ignorers, data_sended);
-    node_ptr unfinished = nullptr;
-    if (unfinished_handled != -1) {
-      assert(!con->requests.empty());
-      unfinished = &con->requests.front();
+    while (!con->requests.empty()) {
+      node_ptr node = &con->requests.front();
+      node->streamid = con->next_streamid();
       con->requests.pop_front();
-      if (!unfinished->ignores_response())
-        con->responses.insert(*unfinished);
+      con->responses.insert(*node);
+
+      // send headers
+
+      // ignores con->concurrent_streams_now()
+      // TODO if headers > con->settings.max_frame_size
+      bytes_t headers(h2fhl, 0);  // reserve for frame header
+
+      // https://www.rfc-editor.org/rfc/rfc9113.html#name-settings-synchronization
+      if (con->encoder_table_size_change_requested) [[unlikely]] {
+        con->encoder_table_size_change_requested = false;
+        if (con->server_settings.header_table_size < con->encoder.dyntab.max_size()) {
+          con->encoder.encode_dynamic_table_size_update(con->server_settings.header_table_size,
+                                                        std::back_inserter(headers));
+          con->encoder.dyntab.update_size(con->server_settings.header_table_size);
+        }
+        send_settings_ack(con).start_and_detach();
+      }
+      generate_http2_headers_to(node->req, con->encoder, headers);
+      using namespace http2::flags;
+      http2::frame_header headers_frame_header{
+          .length = uint32_t(headers.size() - h2fhl),
+          .type = http2::frame_e::HEADERS,
+          .flags = http2::flags_t(node->req.body.data.empty() ? (END_HEADERS | END_STREAM) : END_HEADERS),
+          .stream_id = node->streamid,
+      };
+      headers_frame_header.send_to(headers.data());
+
+      (void)co_await con->write(headers, ec);
+
+      if (ec || con->is_dropped()) {
+        // otherwise will be finished by drop_connection with reqerr_e::cancelled
+        if (ec != boost::asio::error::operation_aborted)
+          con->finish_request(*node, reqerr_e::network_err);
+        goto end;
+      }
+      // send data
+      if (!node->req.body.data.empty())
+        write_pending_data_frames(std::move(node), 0, con, factory, *this).start_and_detach();
     }
-
-    // ignores con->concurrent_streams_now()
-    // TODO if headers > con->settings.max_frame_size
-
-    (void)co_await con->write(bytes, ec);
-
-    con->receiver_window_size -= data_sended;
-
-    if (!handled_ignorers.empty()) {  // finish handled nodes if they ignore response
-      int status = !ec                                    ? reqerr_e::done
-                   : ec == asio::error::operation_aborted ? reqerr_e::cancelled
-                                                          : reqerr_e::network_err;
-      for (node_ptr& node : handled_ignorers)
-        con->finish_request(*node, status);
-      handled_ignorers.clear();
-    }
-    if (ec || con->is_dropped())
-      goto end;
-    if (unfinished && !unfinished->finished())
-      write_pending_data_frames(std::move(unfinished), unfinished_handled, con, factory).start_and_detach();
   }  // end loop handling requests
 end:
-  if (ec && ec != asio::error::operation_aborted)
-    TGBM_HTTP2_LOG(DEBUG, "connection dropped with network err {}", ec.what());
   drop_connection(reqerr_e::network_err);
 }
 
@@ -1089,23 +948,21 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
     case HEADERS:
     case DATA:
       unreachable();
-    case SETTINGS:
-      /*
-        note: ignores reducing dynamic table size and not sends encoder.dynamic size update after it.
-        If it will break something its easily fixed by settings dyntab size to 0 initially
-        and really not easy to implement this requirement
-      */
-      {
-        server_settings_visitor vtor(con.server_settings);
-        settings_frame::parse(frame.header, frame.data, vtor);
-        if (vtor.header_table_size_decrease)
-          TGBM_HTTP2_LOG(
-              INFO,
-              "HPACK table resized, new size {}, old size: {}, IF ERROR HAPPENS AFTER THIS MESSAGE, "
-              "next time set dynamic table size for client to 0",
-              con.server_settings.header_table_size,
-              con.server_settings.header_table_size + vtor.header_table_size_decrease);
+    case SETTINGS: {
+      auto before = con.server_settings.header_table_size;
+      server_settings_visitor vtor(con.server_settings);
+      settings_frame::parse(frame.header, frame.data, vtor);
+      if (before != con.server_settings.header_table_size) {
+        TGBM_HTTP2_LOG(INFO, "HPACK table resized, new size {}, old size: {}",
+                       con.server_settings.header_table_size, before);
+        con.encoder_table_size_change_requested = true;
+        // checking since start_writer_for sends ACK based on this information
+        if (!(frame.header.flags & flags::ACK)) {
+          TGBM_HTTP2_LOG(ERROR, "settings ACK, but size not zero");
+          return false;
+        }
       }
+    }
       return true;
     case PING:
       handle_ping(ping_frame::parse(frame.header, frame.data), &con).start_and_detach();
@@ -1325,9 +1182,9 @@ http2_client::~http2_client() {
 http2_client::http2_client(std::string_view host, http2_client_options opts, any_transport_factory tf)
     : http_client(host), options(opts), factory(tf ? std::move(tf) : default_transport_factory()) {
   options.max_receive_frame_size = std::min<size_t>(http2::frame_len_max, options.max_receive_frame_size);
-  options.max_send_frame_size =
-      // 8 KB now, because of strange TG behavior when sending big files with big frames, it do not respond
-      std::min<size_t>(8 * 1024 /*http2::frame_len_max*/, options.max_send_frame_size);
+  // options.max_send_frame_size =
+  // 8 KB now, because of strange TG behavior when sending big files with big frames, it do not respond
+  //     std::min<size_t>(8 * 1024 /*http2::frame_len_max*/, options.max_send_frame_size);
 }
 
 noexport::waiter_of_connection::~waiter_of_connection() {
@@ -1337,7 +1194,6 @@ noexport::waiter_of_connection::~waiter_of_connection() {
 }
 
 bool noexport::waiter_of_connection::await_ready() noexcept {
-  assert(!client->stop_requested);
   if (!client->connection || client->connection->is_dropped() || client->connection->is_outof_streamids())
     return false;
   result = client->connection;
@@ -1386,9 +1242,11 @@ dd::task<int> http2_client::send_request(on_header_fn_ptr on_header, on_data_par
   if (request.authority.empty())  // default host
     request.authority = get_host();
   request.scheme = con->tcp_con.is_https() ? scheme_e::HTTPS : scheme_e::HTTP;
+
+  TGBM_HTTP2_LOG(DEBUG, "send_request, path: {}", request.path);
+
   node_ptr node = con->new_request_node(std::move(request), deadline, on_header, on_data_part);
 
-  TGBM_HTTP2_LOG(DEBUG, "send_request, path: {}, streamid: {}", request.path, node->req.streamid);
   co_return co_await con->request_finished(*node);
 }
 

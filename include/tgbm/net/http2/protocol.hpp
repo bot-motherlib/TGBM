@@ -209,13 +209,10 @@ static_assert(sizeof(setting_t) == 6);
 // client side
 struct server_settings_visitor {
   settings_t& settings;  // must be server settings
-  uint32_t header_table_size_decrease = 0;
 
   constexpr void operator()(setting_t s) {
     switch (s.identifier) {
       case SETTINGS_HEADER_TABLE_SIZE:
-        if (settings.header_table_size > s.value)
-          header_table_size_decrease = settings.header_table_size - s.value;
         settings.header_table_size = s.value;
         return;
       case SETTINGS_ENABLE_PUSH:
@@ -254,13 +251,10 @@ struct server_settings_visitor {
 // server side
 struct client_settings_visitor {
   settings_t& settings;  // must be client settings
-  uint32_t header_table_size_decrease = 0;
 
   constexpr void operator()(setting_t s) {
     switch (s.identifier) {
       case SETTINGS_HEADER_TABLE_SIZE:
-        if (settings.header_table_size > s.value)
-          header_table_size_decrease = settings.header_table_size - s.value;
         settings.header_table_size = s.value;
         return;
       case SETTINGS_ENABLE_PUSH:
