@@ -28,7 +28,7 @@ struct field_info {
 namespace details {
 
 template <tgbm::ce::string Name, typename T>
-size_t element_index() {
+constexpr size_t element_index() {
   constexpr auto names = boost::pfr::names_as_array<T>();
   size_t index = 0;
   for (std::string_view name : names) {
