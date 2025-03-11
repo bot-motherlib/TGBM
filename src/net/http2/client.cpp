@@ -486,6 +486,24 @@ struct http2_connection {
       timers.insert(timers.end(), node);
     return node;
   }
+
+  void ignore_frame(http2_frame_t frame) {
+    switch (frame.header.type) {
+      case http2::frame_e::HEADERS:
+        // https://www.rfc-editor.org/rfc/rfc9113.html#section-6.8-19
+        // maintain hpack dynamic table
+        hpack::decode_headers_block(decoder, frame.data,
+                                    [](std::string_view /*name*/, std::string_view /*value*/) {});
+        return;
+      case http2::frame_e::DATA:
+        // NOTE: not using data.size(), since padding should be counted as received octets
+        // ('data' does not contain padding)
+        my_window_size -= frame.header.length;
+        return;
+      default:
+        return;
+    }
+  }
 };
 
 void intrusive_ptr_add_ref(http2_connection* p) {
@@ -721,7 +739,7 @@ dd::job start_pinger_for(http2_connection_ptr con, any_transport_factory& f, dur
   }
 }
 
-dd::job http2_client::start_connecting() {
+dd::job http2_client::start_connecting(deadline_t deadline) {
   co_await std::suspend_always{};  // resumed when needed by creator
   if (connection) {
     notify_connection_waiters(connection);
@@ -749,7 +767,8 @@ dd::job http2_client::start_connecting() {
         lock.release();
         notify_connection_waiters(new_connection);
       };
-      any_connection tcp_con = co_await factory.create_connection(get_host());
+      any_connection tcp_con = co_await factory.create_connection(get_host(), deadline);
+      // Note: connection deadline not propagated here (TODO)
       new_connection = co_await establish_http2_session(std::move(tcp_con), options);
     }
     assert(!connection);
@@ -1007,8 +1026,10 @@ static bool handle_utility_frame(http2_frame_t&& frame, http2_connection& con) {
   }
 
   request_node* node = con.find_response_by_streamid(frame.header.stream_id);
-  if (!node)
+  if (!node) {
+    con.ignore_frame(frame);
     return true;
+  }
   try {
     switch (frame.header.type) {
       case HEADERS:
@@ -1167,7 +1188,8 @@ drop_connection:
   drop_connection(static_cast<reqerr_e::values>(reason));
 connection_dropped:
   if (!connection_waiters.empty() && !is_connecting)
-    co_await dd::this_coro::destroy_and_transfer_control_to(start_connecting().handle);
+    co_await dd::this_coro::destroy_and_transfer_control_to(
+        start_connecting(deadline_after(std::chrono::seconds(10))).handle);
   co_return;
 }
 
@@ -1204,7 +1226,7 @@ std::coroutine_handle<> noexport::waiter_of_connection::await_suspend(std::corou
   client->connection_waiters.push_back(*this);
   if (client->already_connecting())
     return std::noop_coroutine();
-  return client->start_connecting().handle;
+  return client->start_connecting(deadline).handle;
 }
 
 [[nodiscard]] http2_connection_ptr noexport::waiter_of_connection::await_resume() {
@@ -1235,7 +1257,9 @@ dd::task<int> http2_client::send_request(on_header_fn_ptr on_header, on_data_par
   on_scope_exit {
     --requests_in_progress;
   };
-  http2_connection_ptr con = co_await borrow_connection();
+  http2_connection_ptr con = co_await borrow_connection(deadline);
+  if (deadline.is_reached())
+    co_return reqerr_e::timeout;
   if (!con)
     co_return reqerr_e::network_err;
   if (request.authority.empty())  // default host

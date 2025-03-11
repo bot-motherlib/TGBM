@@ -69,7 +69,7 @@ struct test_factory {
       : validators_factory(std::move(f)) {
     assert(validators_factory);
   }
-  dd::task<tgbm::any_connection> create_connection(std::string_view /*host*/) {
+  dd::task<tgbm::any_connection> create_connection(std::string_view /*host*/, tgbm::deadline_t) {
     co_return $inplace(test_connection{*this, *&validators_factory});
   }
   void run() {

@@ -3,7 +3,6 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include <boost/asio/io_context.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include "tgbm/utils/memory.hpp"
 // windows is really bad
 
 #undef NO_ERROR
@@ -11,10 +10,12 @@
 #undef min
 #undef max
 
+#include <tgbm/utils/memory.hpp>
 #include <tgbm/net/errors.hpp>
 #include <tgbm/utils/macro.hpp>
 #include <tgbm/net/asio/ssl_context.hpp>
 #include <tgbm/logger.hpp>
+#include <tgbm/utils/deadline.hpp>
 
 #include <kelcoro/task.hpp>
 
@@ -89,7 +90,7 @@ struct tcp_tls_connection {
   // creates client connection
   // precondition: 'ctx' != nullptr
   static dd::task<tcp_tls_connection> create(asio::io_context& KELCORO_LIFETIMEBOUND, std::string host,
-                                             ssl_context_ptr ctx, tcp_connection_options = {});
+                                             ssl_context_ptr ctx, deadline_t, tcp_connection_options = {});
 
   // any_connection interface:
 
@@ -120,7 +121,7 @@ struct tcp_connection {
 
   // creates client connection
   static dd::task<tcp_connection> create(asio::io_context& KELCORO_LIFETIMEBOUND, std::string host,
-                                         tcp_connection_options = {});
+                                         deadline_t, tcp_connection_options = {});
 
   // any_connection interface:
 

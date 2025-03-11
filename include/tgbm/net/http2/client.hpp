@@ -30,9 +30,10 @@ struct waiter_of_connection : bi::list_base_hook<link_option> {
   std::coroutine_handle<> task;
   http2_client* client = nullptr;
   http2_connection_ptr result = nullptr;
+  deadline_t deadline;
   TGBM_PIN;
 
-  explicit waiter_of_connection(http2_client* c) noexcept : client(c) {
+  explicit waiter_of_connection(http2_client* c, deadline_t dl) noexcept : client(c), deadline(dl) {
   }
 
   ~waiter_of_connection();
@@ -98,8 +99,8 @@ struct http2_client : http_client {
   dd::job start_writer_for(http2_connection_ptr);
   // postcondiiton: returns not null, !returned->dropped && returned->stream_id <= max_stream_id
   // && !client.stop_requestedg
-  [[nodiscard]] noexport::waiter_of_connection borrow_connection() noexcept {
-    return noexport::waiter_of_connection(this);
+  [[nodiscard]] noexport::waiter_of_connection borrow_connection(deadline_t deadline) noexcept {
+    return noexport::waiter_of_connection(this, deadline);
   }
 
   void notify_connection_waiters(http2_connection_ptr result) noexcept;
@@ -112,7 +113,7 @@ struct http2_client : http_client {
   }
 
   // invariant: only one may be called at one time, 'is_connecting' flag setted only if now in progress
-  [[nodiscard("this handle must be resumed")]] dd::job start_connecting();
+  [[nodiscard("this handle must be resumed")]] dd::job start_connecting(deadline_t);
 
  public:
   explicit http2_client(std::string_view host = "api.telegram.org", http2_client_options = {},

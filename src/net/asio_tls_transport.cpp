@@ -9,11 +9,11 @@ asio_tls_transport::asio_tls_transport(tcp_connection_options opts)
     TGBM_LOG_WARN("SSL veriication for http2 client disabled");
 }
 
-dd::task<any_connection> asio_tls_transport::create_connection(std::string_view host) {
+dd::task<any_connection> asio_tls_transport::create_connection(std::string_view host, deadline_t deadline) {
   // TODO reuse ssl context ?
   tcp_tls_connection con = co_await tcp_tls_connection::create(
       io_ctx, std::string(host), make_ssl_context_for_http2(tcp_options.additional_ssl_certificates),
-      tcp_options);
+      deadline, tcp_options);
   co_return tcp_tls_connection{std::move(con)};
 }
 
