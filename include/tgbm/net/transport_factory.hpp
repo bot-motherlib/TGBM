@@ -15,7 +15,7 @@ namespace tgbm {
 // any_transport_factory interface
 
 // postcondition: .has_value() == true
-ANYANY_METHOD(create_connection, dd::task<any_connection>(std::string_view host));
+ANYANY_METHOD(create_connection, dd::task<any_connection>(std::string_view host, deadline_t));
 
 // Note: in server 'run' may be called on multiple threads!
 ANYANY_METHOD(run, void());
@@ -29,7 +29,7 @@ ANYANY_METHOD(sleep, dd::task<void>(duration_t d, io_error_code& ec));
 /*
 required intereface:
 
-  dd::task<any_connection> create_connection(std::string_view host);
+  dd::task<any_connection> create_connection(std::string_view host, deadline_t);
   void run();
   void stop();
   bool run_one(duration_t timeout);
