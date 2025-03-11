@@ -38,7 +38,6 @@ dd::task<tcp_tls_connection> tcp_tls_connection::create(asio::io_context& io_ctx
   if (timeoutflag)
     throw timeout_exception();
   if (results.empty() || ec) {
-    std::string s = ec.what();
     TGBM_LOG_ERROR("[TCP] cannot resolve host: {}, err: {}", host, ec.what());
     throw network_exception(ec);
   }
