@@ -11,7 +11,7 @@ namespace tgbm {
 // TLS CONNECTION
 
 dd::task<tcp_tls_connection> tcp_tls_connection::create(asio::io_context& io_ctx, std::string host,
-                                                        ssl_context_ptr sslctx,
+                                                        ssl_context_ptr sslctx, deadline_t deadline,
                                                         tcp_connection_options options) {
   namespace ssl = asio::ssl;
   using tcp = asio::ip::tcp;
@@ -20,17 +20,42 @@ dd::task<tcp_tls_connection> tcp_tls_connection::create(asio::io_context& io_ctx
   tcp_tls_connection connection(io_ctx, std::move(sslctx));
   ssl::stream<tcp::socket>& socket = connection.socket;
 
+  asio::steady_timer timer(io_ctx);
+  bool timeoutflag = false;
+
+  timer.expires_at(deadline.tp);
+  timer.async_wait([&resolver, &timeoutflag](const io_error_code& ec) {
+    if (ec != asio::error::operation_aborted) {
+      timeoutflag = true;
+      resolver.cancel();
+    }
+  });
+
   asio::ip::basic_resolver_query<asio::ip::tcp> query(host, "https");
+
   io_error_code ec;
   auto results = co_await net.resolve(resolver, query, ec);
+  if (timeoutflag)
+    throw timeout_exception();
   if (results.empty() || ec) {
     TGBM_LOG_ERROR("[TCP] cannot resolve host: {}, err: {}", host, ec.what());
     throw network_exception(ec);
   }
   auto& tcp_sock = socket.lowest_layer();
 
+  timer.cancel();
+  timer.expires_at(deadline.tp);
+  timer.async_wait([&connection, &timeoutflag](const io_error_code& ec) {
+    if (ec != asio::error::operation_aborted) {
+      timeoutflag = true;
+      connection.shutdown();
+    }
+  });
+
   co_await net.connect(tcp_sock, std::move(results), ec);
 
+  if (timeoutflag)
+    throw timeout_exception();
   if (ec) {
     TGBM_LOG_ERROR("[TCP] cannot connect to {}, err: {}", host, ec.message());
     throw network_exception(ec);
@@ -41,6 +66,8 @@ dd::task<tcp_tls_connection> tcp_tls_connection::create(asio::io_context& io_ctx
   if (!options.is_primal_connection)
     SSL_set_mode(socket.native_handle(), SSL_MODE_RELEASE_BUFFERS);
   co_await net.handshake(socket, ssl::stream_base::handshake_type::client, ec);
+  if (timeoutflag)
+    throw timeout_exception();
   if (ec) {
     TGBM_LOG_ERROR("[TCP/SSL] cannot ssl handshake: {}", ec.message());
     throw network_exception(ec);
@@ -84,7 +111,7 @@ void tcp_tls_connection::shutdown() noexcept {
 
 // WITHOUT TLS
 
-dd::task<tcp_connection> tcp_connection::create(asio::io_context& io_ctx, std::string host,
+dd::task<tcp_connection> tcp_connection::create(asio::io_context& io_ctx, std::string host, deadline_t,
                                                 tcp_connection_options options) {
   using tcp = asio::ip::tcp;
 
