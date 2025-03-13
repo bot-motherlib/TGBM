@@ -51,7 +51,7 @@ template <tgbm::ce::string Name, typename T>
 constexpr size_t tuple_element_index_v = details::element_index<Name, T>();
 
 template <tgbm::ce::string Name, typename T>
-constexpr size_t has_element_v = details::element_index<Name, T>() <= boost::pfr::tuple_size_v<T>;
+constexpr bool has_element_v = tuple_element_index_v<Name, T> < boost::pfr::tuple_size_v<T>;
 
 using boost::pfr::get;
 using boost::pfr::get_name;
