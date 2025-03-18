@@ -1,5 +1,6 @@
 #include <tgbm/net/asio/asio_tls_transport.hpp>
 #include <tgbm/net/asio/asio_awaiters.hpp>
+#include <tgbm/utils/scope_exit.hpp>
 
 namespace tgbm {
 
@@ -30,11 +31,20 @@ bool asio_tls_transport::run_one(duration_t timeout) {
 }
 
 void asio_tls_transport::stop() {
+  auto tmrs = std::move(timers);
+  for (asio::steady_timer* tmr : tmrs) {
+    assert(tmr);
+    tmr->cancel();
+  }
   io_ctx.stop();
 }
 
 dd::task<void> asio_tls_transport::sleep(duration_t d, io_error_code& ec) {
   asio::steady_timer t(io_ctx);
+  timers.insert(&t);
+  on_scope_exit {
+    timers.erase(&t);
+  };
   co_await net.sleep(t, d, ec);
 }
 

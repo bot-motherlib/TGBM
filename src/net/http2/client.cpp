@@ -337,7 +337,8 @@ struct http2_connection {
     TGBM_HTTP2_LOG(DEBUG, "stream {} finished, status: {}", node.streamid, status);
     node.status = status;
     auto t = std::exchange(node.task, nullptr);
-    if (status == reqerr_e::cancelled || status == reqerr_e::timeout)
+    // != 0, so stream already started
+    if (node.streamid != 0 && (status == reqerr_e::cancelled || status == reqerr_e::timeout))
       // ignore possible bad alloc for coroutine
       send_rst_stream(this, node.streamid, http2::errc_e::CANCEL).start_and_detach();
     t.resume();
