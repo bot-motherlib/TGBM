@@ -1188,7 +1188,7 @@ network_error:
 drop_connection:
   drop_connection(static_cast<reqerr_e::values>(reason));
 connection_dropped:
-  if (!connection_waiters.empty() && !is_connecting)
+  if (!connection_waiters.empty() && !already_connecting())
     co_await dd::this_coro::destroy_and_transfer_control_to(
         start_connecting(deadline_after(std::chrono::seconds(10))).handle);
   co_return;
@@ -1309,7 +1309,7 @@ void http2_client::stop() {
   factory.stop();
   lock.release();
   assert(!connection);
-  assert(!is_connecting);
+  assert(!already_connecting());
   assert(connection_waiters.empty());
   assert(requests_in_progress == 0);
 }
