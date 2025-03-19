@@ -1,5 +1,6 @@
 #include <tgbm/net/asio/asio_tls_transport.hpp>
 #include <tgbm/net/asio/asio_awaiters.hpp>
+#include <tgbm/utils/scope_exit.hpp>
 
 namespace tgbm {
 
@@ -9,11 +10,11 @@ asio_tls_transport::asio_tls_transport(tcp_connection_options opts)
     TGBM_LOG_WARN("SSL veriication for http2 client disabled");
 }
 
-dd::task<any_connection> asio_tls_transport::create_connection(std::string_view host) {
+dd::task<any_connection> asio_tls_transport::create_connection(std::string_view host, deadline_t deadline) {
   // TODO reuse ssl context ?
   tcp_tls_connection con = co_await tcp_tls_connection::create(
       io_ctx, std::string(host), make_ssl_context_for_http2(tcp_options.additional_ssl_certificates),
-      tcp_options);
+      deadline, tcp_options);
   co_return tcp_tls_connection{std::move(con)};
 }
 
@@ -30,11 +31,20 @@ bool asio_tls_transport::run_one(duration_t timeout) {
 }
 
 void asio_tls_transport::stop() {
+  auto tmrs = std::move(timers);
+  for (asio::steady_timer* tmr : tmrs) {
+    assert(tmr);
+    tmr->cancel();
+  }
   io_ctx.stop();
 }
 
 dd::task<void> asio_tls_transport::sleep(duration_t d, io_error_code& ec) {
   asio::steady_timer t(io_ctx);
+  timers.insert(&t);
+  on_scope_exit {
+    timers.erase(&t);
+  };
   co_await net.sleep(t, d, ec);
 }
 

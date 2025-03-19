@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <filesystem>
+#include <unordered_set>
 
 #include <boost/asio/io_context.hpp>
 
@@ -22,6 +23,7 @@ struct asio_tls_transport {
  private:
   boost::asio::io_context io_ctx;
   tcp_connection_options tcp_options;
+  std::unordered_set<asio::steady_timer*> timers;
 
  public:
   explicit asio_tls_transport(tcp_connection_options opts = {});
@@ -29,7 +31,7 @@ struct asio_tls_transport {
   asio_tls_transport(asio_tls_transport&&) = delete;
   void operator=(asio_tls_transport&&) = delete;
 
-  dd::task<any_connection> create_connection(std::string_view host);
+  dd::task<any_connection> create_connection(std::string_view host, deadline_t);
   void run();
   bool run_one(duration_t timeout);
   void stop();

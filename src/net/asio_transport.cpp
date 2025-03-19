@@ -6,8 +6,8 @@ namespace tgbm {
 asio_transport::asio_transport(tcp_connection_options opts) : io_ctx(1), tcp_options(std::move(opts)) {
 }
 
-dd::task<any_connection> asio_transport::create_connection(std::string_view host) {
-  co_return co_await tcp_connection::create(io_ctx, std::string(host), tcp_options);
+dd::task<any_connection> asio_transport::create_connection(std::string_view host, deadline_t deadline) {
+  co_return co_await tcp_connection::create(io_ctx, std::string(host), deadline, tcp_options);
 }
 
 void asio_transport::run() {

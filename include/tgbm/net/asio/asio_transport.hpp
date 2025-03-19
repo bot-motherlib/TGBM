@@ -25,7 +25,7 @@ struct asio_transport {
   asio_transport(asio_transport&&) = delete;
   void operator=(asio_transport&&) = delete;
 
-  dd::task<any_connection> create_connection(std::string_view host);
+  dd::task<any_connection> create_connection(std::string_view host, deadline_t);
   void run();
   bool run_one(duration_t timeout);
   void stop();

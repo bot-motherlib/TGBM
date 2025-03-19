@@ -5,6 +5,7 @@
   and add ../tgbm_replace into include dirs
 */
 
+#include <tgbm/utils/macro.hpp>
 #if __has_include(<tgbm_replace/logger.hpp>)
   #include <tgbm_replace/logger.hpp>
   #ifndef TGBM_LOG
@@ -17,7 +18,20 @@
   #include <fmt/ranges.h>
   #include <fmt/chrono.h>
 
-  #define TGBM_LOG(FMT_STR, ...) ::fmt::println(stdout, FMT_STR __VA_OPT__(, ) __VA_ARGS__)
+namespace tgbm::noexport {
+
+template <typename... Args>
+TGBM_GCC_WORKAROUND void do_log(fmt::format_string<Args...> fmtstr, Args&&... args) {
+  try {
+    ::fmt::println(stdout, fmtstr, std::forward<Args>(args)...);
+  } catch (...) {
+    ::fmt::println(stdout, "FMT_ERR");
+  }
+}
+}  // namespace tgbm::noexport
+
+// try catch is workaround fmt bug with "invalid" utf (exception on valid boost asio error strings)
+  #define TGBM_LOG(FMT_STR, ...) ::tgbm::noexport::do_log(FMT_STR __VA_OPT__(, ) __VA_ARGS__)
 
 #endif
 

@@ -30,9 +30,10 @@ struct waiter_of_connection : bi::list_base_hook<link_option> {
   std::coroutine_handle<> task;
   http2_client* client = nullptr;
   http2_connection_ptr result = nullptr;
+  deadline_t deadline;
   TGBM_PIN;
 
-  explicit waiter_of_connection(http2_client* c) noexcept : client(c) {
+  explicit waiter_of_connection(http2_client* c, deadline_t dl) noexcept : client(c), deadline(dl) {
   }
 
   ~waiter_of_connection();
@@ -44,15 +45,17 @@ struct waiter_of_connection : bi::list_base_hook<link_option> {
 
 struct connection_lock_t {
  private:
-  bool* is_connecting;
+  size_t* is_connecting;
 
  public:
-  explicit connection_lock_t(bool& b) : is_connecting(&b) {
-    assert(!b);
-    *is_connecting = true;
+  explicit connection_lock_t(size_t& b) : is_connecting(&b) {
+    ++*is_connecting;
   }
   void release() {
-    *is_connecting = false;
+    if (is_connecting) {
+      --*is_connecting;
+      is_connecting = nullptr;
+    }
   }
   ~connection_lock_t() {
     release();
@@ -89,7 +92,7 @@ struct http2_client : http_client {
   // while connection is not ready all new streams wait for it
   bi::list<noexport::waiter_of_connection, bi::cache_last<true>> connection_waiters;
   size_t requests_in_progress = 0;
-  bool is_connecting = false;  // if connection started to establish, but not established yet
+  size_t is_connecting = 0;  // if connection started to establish, but not established yet
   bool stop_requested = false;
 
   // fills requests from raw http2 frames
@@ -98,21 +101,21 @@ struct http2_client : http_client {
   dd::job start_writer_for(http2_connection_ptr);
   // postcondiiton: returns not null, !returned->dropped && returned->stream_id <= max_stream_id
   // && !client.stop_requestedg
-  [[nodiscard]] noexport::waiter_of_connection borrow_connection() noexcept {
-    return noexport::waiter_of_connection(this);
+  [[nodiscard]] noexport::waiter_of_connection borrow_connection(deadline_t deadline) noexcept {
+    return noexport::waiter_of_connection(this, deadline);
   }
 
   void notify_connection_waiters(http2_connection_ptr result) noexcept;
 
   [[nodiscard]] bool already_connecting() const noexcept {
-    return is_connecting;
+    return is_connecting > 0;
   }
   [[nodiscard]] noexport::connection_lock_t lock_connections() noexcept {
     return noexport::connection_lock_t(is_connecting);
   }
 
   // invariant: only one may be called at one time, 'is_connecting' flag setted only if now in progress
-  [[nodiscard("this handle must be resumed")]] dd::job start_connecting();
+  [[nodiscard("this handle must be resumed")]] dd::job start_connecting(deadline_t);
 
  public:
   explicit http2_client(std::string_view host = "api.telegram.org", http2_client_options = {},
