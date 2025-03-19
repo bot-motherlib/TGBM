@@ -130,7 +130,4 @@ if (WIN32)
   message (STATUS "[tgbm] TGBM_WINDOWS_VERSION: ${TGBM_WINDOWS_VERSION}")
   target_compile_definitions(tgbmlib PUBLIC _WIN32_WINNT=${TGBM_WINDOWS_VERSION})
 endif()
-if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    # add what you need
-    target_compile_options(tgbmlib PUBLIC -freport-bug)
-endif()
+
