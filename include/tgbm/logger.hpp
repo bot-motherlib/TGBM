@@ -5,6 +5,7 @@
   and add ../tgbm_replace into include dirs
 */
 
+#include <tgbm/utils/macro.hpp>
 #if __has_include(<tgbm_replace/logger.hpp>)
   #include <tgbm_replace/logger.hpp>
   #ifndef TGBM_LOG
@@ -18,8 +19,9 @@
   #include <fmt/chrono.h>
 
 namespace tgbm::noexport {
+
 template <typename... Args>
-void do_log(fmt::format_string<Args...> fmtstr, Args&&... args) {
+TGBM_GCC_WORKAROUND void do_log(fmt::format_string<Args...> fmtstr, Args&&... args) {
   try {
     ::fmt::println(stdout, fmtstr, std::forward<Args>(args)...);
   } catch (...) {
