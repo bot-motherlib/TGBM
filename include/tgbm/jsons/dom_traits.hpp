@@ -13,8 +13,14 @@ concept dom_traits = requires(const Json& json) {
 
   { Traits::is_bool(json) } -> std::same_as<bool>;
 
+  // is_integer guarantees only that get_integer(json) is valid and well-formed.
+  // It does NOT imply that the value is not an unsigned integer or that is_uinteger(json) is false.
+  // No assumptions should be made beyond the ability to retrieve the value via get_integer.
   { Traits::is_integer(json) } -> std::same_as<bool>;
 
+  // is_uinteger guarantees only that get_uinteger(json) is valid and well-formed.
+  // It does NOT imply that the value is not a signed integer or that is_integer(json) is false.
+  // No assumptions should be made beyond the ability to retrieve the value via get_uinteger.
   { Traits::is_uinteger(json) } -> std::same_as<bool>;
 
   { Traits::is_floating(json) } -> std::same_as<bool>;
