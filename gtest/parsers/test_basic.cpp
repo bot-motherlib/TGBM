@@ -22,9 +22,33 @@ JSON_PARSE_TEST(Bool, bool) {
   EXPECT_EQ(expected, got);
 }
 
-JSON_PARSE_TEST(Int, int) {
+JSON_PARSE_TEST(UIntPositive, unsigned int) {
+  auto expected = 1;
+  auto got = parse_json("1");
+  EXPECT_EQ(expected, got);
+}
+
+JSON_PARSE_TEST(UIntZero, unsigned int) {
+  auto expected = 0;
+  auto got = parse_json("0");
+  EXPECT_EQ(expected, got);
+}
+
+JSON_PARSE_TEST(IntPositive, int) {
   auto expected = 1231;
   auto got = parse_json("1231");
+  EXPECT_EQ(expected, got);
+}
+
+JSON_PARSE_TEST(IntZero, int) {
+  auto expected = 0;
+  auto got = parse_json("0");
+  EXPECT_EQ(expected, got);
+}
+
+JSON_PARSE_TEST(IntNegative, int) {
+  auto expected = -1;
+  auto got = parse_json("-1");
   EXPECT_EQ(expected, got);
 }
 
