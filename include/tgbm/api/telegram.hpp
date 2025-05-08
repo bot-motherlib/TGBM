@@ -558,6 +558,119 @@ struct telegram {
   dd::task<bool> deleteMessages(api::delete_messages_request,
                                 deadline_t deadline = deadline_t::never()) const;
 
+  /* Returns the list of gifts that can be sent by the bot to users and channel chats. Requires no parameters.
+   * Returns a Gifts object. */
+  dd::task<Gifts> getAvailableGifts(deadline_t deadline = deadline_t::never()) const;
+
+  /* Sends a gift to the given user or channel chat. The gift can't be converted to Telegram Stars by the
+   * receiver. Returns True on success. */
+  dd::task<bool> sendGift(api::send_gift_request, deadline_t deadline = deadline_t::never()) const;
+
+  /* Gifts a Telegram Premium subscription to the given user. Returns True on success. */
+  dd::task<bool> giftPremiumSubscription(api::gift_premium_subscription_request,
+                                         deadline_t deadline = deadline_t::never()) const;
+
+  /* Verifies a user on behalf of the organization which is represented by the bot. Returns True on success.
+   */
+  dd::task<bool> verifyUser(api::verify_user_request, deadline_t deadline = deadline_t::never()) const;
+
+  /* Verifies a chat on behalf of the organization which is represented by the bot. Returns True on success.
+   */
+  dd::task<bool> verifyChat(api::verify_chat_request, deadline_t deadline = deadline_t::never()) const;
+
+  /* Removes verification from a user who is currently verified on behalf of the organization represented by
+   * the bot. Returns True on success. */
+  dd::task<bool> removeUserVerification(api::remove_user_verification_request,
+                                        deadline_t deadline = deadline_t::never()) const;
+
+  /* Removes verification from a chat that is currently verified on behalf of the organization represented by
+   * the bot. Returns True on success. */
+  dd::task<bool> removeChatVerification(api::remove_chat_verification_request,
+                                        deadline_t deadline = deadline_t::never()) const;
+
+  /* Marks incoming message as read on behalf of a business account. Requires the can_read_messages business
+   * bot right. Returns True on success. */
+  dd::task<bool> readBusinessMessage(api::read_business_message_request,
+                                     deadline_t deadline = deadline_t::never()) const;
+
+  /* Delete messages on behalf of a business account. Requires the can_delete_sent_messages business bot right
+   * to delete messages sent by the bot itself, or the can_delete_all_messages business bot right to delete
+   * any message. Returns True on success. */
+  dd::task<bool> deleteBusinessMessages(api::delete_business_messages_request,
+                                        deadline_t deadline = deadline_t::never()) const;
+
+  /* Changes the first and last name of a managed business account. Requires the can_change_name business bot
+   * right. Returns True on success. */
+  dd::task<bool> setBusinessAccountName(api::set_business_account_name_request,
+                                        deadline_t deadline = deadline_t::never()) const;
+
+  /* Changes the username of a managed business account. Requires the can_change_username business bot right.
+   * Returns True on success. */
+  dd::task<bool> setBusinessAccountUsername(api::set_business_account_username_request,
+                                            deadline_t deadline = deadline_t::never()) const;
+
+  /* Changes the bio of a managed business account. Requires the can_change_bio business bot right. Returns
+   * True on success. */
+  dd::task<bool> setBusinessAccountBio(api::set_business_account_bio_request,
+                                       deadline_t deadline = deadline_t::never()) const;
+
+  /* Changes the profile photo of a managed business account. Requires the can_edit_profile_photo business bot
+   * right. Returns True on success. */
+  dd::task<bool> setBusinessAccountProfilePhoto(api::set_business_account_profile_photo_request,
+                                                deadline_t deadline = deadline_t::never()) const;
+
+  /* Removes the current profile photo of a managed business account. Requires the can_edit_profile_photo
+   * business bot right. Returns True on success. */
+  dd::task<bool> removeBusinessAccountProfilePhoto(api::remove_business_account_profile_photo_request,
+                                                   deadline_t deadline = deadline_t::never()) const;
+
+  /* Changes the privacy settings pertaining to incoming gifts in a managed business account. Requires the
+   * can_change_gift_settings business bot right. Returns True on success. */
+  dd::task<bool> setBusinessAccountGiftSettings(api::set_business_account_gift_settings_request,
+                                                deadline_t deadline = deadline_t::never()) const;
+
+  /* Returns the amount of Telegram Stars owned by a managed business account. Requires the
+   * can_view_gifts_and_stars business bot right. Returns StarAmount on success. */
+  dd::task<StarAmount> getBusinessAccountStarBalance(api::get_business_account_star_balance_request,
+                                                     deadline_t deadline = deadline_t::never()) const;
+
+  /* Transfers Telegram Stars from the business account balance to the bot's balance. Requires the
+   * can_transfer_stars business bot right. Returns True on success. */
+  dd::task<bool> transferBusinessAccountStars(api::transfer_business_account_stars_request,
+                                              deadline_t deadline = deadline_t::never()) const;
+
+  /* Returns the gifts received and owned by a managed business account. Requires the can_view_gifts_and_stars
+   * business bot right. Returns OwnedGifts on success. */
+  dd::task<OwnedGifts> getBusinessAccountGifts(api::get_business_account_gifts_request,
+                                               deadline_t deadline = deadline_t::never()) const;
+
+  /* Converts a given regular gift to Telegram Stars. Requires the can_convert_gifts_to_stars business bot
+   * right. Returns True on success. */
+  dd::task<bool> convertGiftToStars(api::convert_gift_to_stars_request,
+                                    deadline_t deadline = deadline_t::never()) const;
+
+  /* Upgrades a given regular gift to a unique gift. Requires the can_transfer_and_upgrade_gifts business bot
+   * right. Additionally requires the can_transfer_stars business bot right if the upgrade is paid. Returns
+   * True on success. */
+  dd::task<bool> upgradeGift(api::upgrade_gift_request, deadline_t deadline = deadline_t::never()) const;
+
+  /* Transfers an owned unique gift to another user. Requires the can_transfer_and_upgrade_gifts business bot
+   * right. Requires can_transfer_stars business bot right if the transfer is paid. Returns True on success.
+   */
+  dd::task<bool> transferGift(api::transfer_gift_request, deadline_t deadline = deadline_t::never()) const;
+
+  /* Posts a story on behalf of a managed business account. Requires the can_manage_stories business bot
+   * right. Returns Story on success. */
+  dd::task<Story> postStory(api::post_story_request, deadline_t deadline = deadline_t::never()) const;
+
+  /* Edits a story previously posted by the bot on behalf of a managed business account. Requires the
+   * can_manage_stories business bot right. Returns Story on success. */
+  dd::task<Story> editStory(api::edit_story_request, deadline_t deadline = deadline_t::never()) const;
+
+  /* Deletes a story previously posted by the bot on behalf of a managed business account. Requires the
+   * can_manage_stories business bot right. Returns True on success. */
+  dd::task<bool> deleteStory(api::delete_story_request, deadline_t deadline = deadline_t::never()) const;
+
   /* Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers. On success, the sent
    * Message is returned. */
   dd::task<Message> sendSticker(api::send_sticker_request, deadline_t deadline = deadline_t::never()) const;
@@ -633,32 +746,6 @@ struct telegram {
   /* Use this method to delete a sticker set that was created by the bot. Returns True on success. */
   dd::task<bool> deleteStickerSet(api::delete_sticker_set_request,
                                   deadline_t deadline = deadline_t::never()) const;
-
-  /* Returns the list of gifts that can be sent by the bot to users and channel chats. Requires no parameters.
-   * Returns a Gifts object. */
-  dd::task<Gifts> getAvailableGifts(deadline_t deadline = deadline_t::never()) const;
-
-  /* Sends a gift to the given user or channel chat. The gift can't be converted to Telegram Stars by the
-   * receiver. Returns True on success. */
-  dd::task<bool> sendGift(api::send_gift_request, deadline_t deadline = deadline_t::never()) const;
-
-  /* Verifies a user on behalf of the organization which is represented by the bot. Returns True on success.
-   */
-  dd::task<bool> verifyUser(api::verify_user_request, deadline_t deadline = deadline_t::never()) const;
-
-  /* Verifies a chat on behalf of the organization which is represented by the bot. Returns True on success.
-   */
-  dd::task<bool> verifyChat(api::verify_chat_request, deadline_t deadline = deadline_t::never()) const;
-
-  /* Removes verification from a user who is currently verified on behalf of the organization represented by
-   * the bot. Returns True on success. */
-  dd::task<bool> removeUserVerification(api::remove_user_verification_request,
-                                        deadline_t deadline = deadline_t::never()) const;
-
-  /* Removes verification from a chat that is currently verified on behalf of the organization represented by
-   * the bot. Returns True on success. */
-  dd::task<bool> removeChatVerification(api::remove_chat_verification_request,
-                                        deadline_t deadline = deadline_t::never()) const;
 
   /* Use this method to send answers to an inline query. On success, True is returned.No more than 50 results
    * per query are allowed. */
