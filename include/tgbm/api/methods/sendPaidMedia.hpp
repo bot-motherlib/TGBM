@@ -13,7 +13,7 @@ struct send_paid_media_request {
    * If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's
    * balance. Otherwise, they will be credited to the bot's balance. */
   int_or_str chat_id;
-  /* The number of Telegram Stars that must be paid to buy access to the media; 1-2500 */
+  /* The number of Telegram Stars that must be paid to buy access to the media; 1-10000 */
   Integer star_count;
   /* A JSON-serialized array describing the media to be sent; up to 10 items */
   arrayof<InputPaidMedia> media;

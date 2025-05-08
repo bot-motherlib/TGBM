@@ -13,7 +13,7 @@ struct create_chat_subscription_invite_link_request {
    * always be 2592000 (30 days). */
   Integer subscription_period;
   /* The amount of Telegram Stars a user must pay initially and after each subsequent subscription period to
-   * be a member of the chat; 1-2500 */
+   * be a member of the chat; 1-10000 */
   Integer subscription_price;
   /* Invite link name; 0-32 characters */
   optional<String> name;

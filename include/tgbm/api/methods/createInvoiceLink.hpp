@@ -27,7 +27,7 @@ struct create_invoice_link_request {
   /* The number of seconds the subscription will be active for before the next payment. The currency must be
    * set to “XTR” (Telegram Stars) if the parameter is used. Currently, it must always be 2592000 (30 days) if
    * specified. Any number of subscriptions can be active for a given bot at the same time, including multiple
-   * concurrent subscriptions from the same user. Subscription price must no exceed 2500 Telegram Stars. */
+   * concurrent subscriptions from the same user. Subscription price must no exceed 10000 Telegram Stars. */
   optional<Integer> subscription_period;
   /* The maximum accepted amount for tips in the smallest units of the currency (integer, not float/double).
    * For example, for a maximum tip of US$ 1.45 pass max_tip_amount = 145. See the exp parameter in

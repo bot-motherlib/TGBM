@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 import typing
 import argparse
 import os
+import re
 
 def load_file(path: str) -> str:
     with open(path, 'r', encoding='utf-8') as file:
@@ -161,11 +162,21 @@ def to_flat_naming(name: str):
             r += c
     return r
 
+def extract_success_return(text):
+    match = re.search(
+        r'returns\s+([a-zA-Z0-9_]+)\s+on\s+success', 
+        text, 
+        flags=re.IGNORECASE
+    )
+    return match.group(1) if match else None
+
 class method_info_t:
     def __init__(self, name, description):
         self.name = name
         self.parameters: List[Parameter] = []
         self.description = description
+
+        extract_success_return(description)
 
         striped_description = description.replace(" ", "").replace("\n", "").replace("\t", "")
         if name in G_OPERATION_TO_RESULT:
@@ -173,7 +184,10 @@ class method_info_t:
         elif 'ReturnsTrueonsuccess' in striped_description or 'Onsuccess,Trueisreturned' in striped_description:
             self.ret_type = TRUE
         else:
-            assert False, f"error while generating for {name}. Map method to error type manually please"
+            rett = extract_success_return(description)
+            assert rett is not None, f"error while generating for {name}. Map method to error type manually please"
+            print(f'for {name} ret is {rett}')
+            self.ret_type = rett
     
     def get_cppstruct_name(self) -> str:
         return to_flat_naming(self.name) + '_request'

@@ -17,6 +17,9 @@ struct ChatFullInfo {
   Integer accent_color_id;
   /* The maximum number of reactions that can be set on a message in the chat */
   Integer max_reaction_count;
+  /* Information about types of gifts that are accepted by the chat or by the corresponding user for private
+   * chats */
+  box<AcceptedGiftTypes> accepted_gift_types;
   /* Optional. Title, for supergroups, channels and group chats */
   optional<String> title;
   /* Optional. Username, for private chats, supergroups and channels if available */
@@ -99,8 +102,6 @@ struct ChatFullInfo {
   /* Optional. True, if all users directly joining the supergroup without using an invite link need to be
    * approved by supergroup administrators */
   optional<True> join_by_request;
-  /* Optional. True, if gifts can be sent to the chat */
-  optional<True> can_send_gift;
   /* Optional. True, if paid media messages can be sent or forwarded to the channel chat. The field is
    * available only for channel chats. */
   optional<True> can_send_paid_media;
@@ -123,6 +124,7 @@ struct ChatFullInfo {
         .case_("type", true)
         .case_("accent_color_id", true)
         .case_("max_reaction_count", true)
+        .case_("accepted_gift_types", true)
         .or_default(false);
   }
 };

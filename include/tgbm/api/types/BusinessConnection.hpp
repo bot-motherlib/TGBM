@@ -17,11 +17,10 @@ struct BusinessConnection {
   Integer user_chat_id;
   /* Date the connection was established in Unix time */
   Integer date;
-  /* True, if the bot can act on behalf of the business account in chats that were active in the last 24 hours
-   */
-  bool can_reply;
   /* True, if the connection is active */
   bool is_enabled;
+  /* Optional. Rights of the business bot */
+  box<BusinessBotRights> rights;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
@@ -29,7 +28,6 @@ struct BusinessConnection {
         .case_("user", true)
         .case_("user_chat_id", true)
         .case_("date", true)
-        .case_("can_reply", true)
         .case_("is_enabled", true)
         .or_default(false);
   }

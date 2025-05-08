@@ -55,6 +55,8 @@ struct Message {
   /* Optional. Signature of the post author for messages in channels, or the custom title of an anonymous
    * group administrator */
   optional<String> author_signature;
+  /* Optional. The number of Telegram Stars that were paid by the sender of the message to send it */
+  optional<Integer> paid_star_count;
   /* Optional. For text messages, the actual UTF-8 text of the message */
   optional<String> text;
   /* Optional. For text messages, special entities like usernames, URLs, bot commands, etc. that appear in the
@@ -141,6 +143,10 @@ struct Message {
   box<UsersShared> users_shared;
   /* Optional. Service message: a chat was shared with the bot */
   box<ChatShared> chat_shared;
+  /* Optional. Service message: a regular gift was sent or received */
+  box<GiftInfo> gift;
+  /* Optional. Service message: a unique gift was sent or received */
+  box<UniqueGiftInfo> unique_gift;
   /* Optional. The domain name of the website on which the user has logged in. More about Telegram Login » */
   optional<String> connected_website;
   /* Optional. Service message: the user allowed the bot to write messages after adding it to the attachment
@@ -176,6 +182,8 @@ struct Message {
   box<GiveawayWinners> giveaway_winners;
   /* Optional. Service message: a giveaway without public winners was completed */
   box<GiveawayCompleted> giveaway_completed;
+  /* Optional. Service message: the price for paid messages has changed in the chat */
+  box<PaidMessagePriceChanged> paid_message_price_changed;
   /* Optional. Service message: video chat scheduled */
   box<VideoChatScheduled> video_chat_scheduled;
   /* Optional. Service message: video chat started */

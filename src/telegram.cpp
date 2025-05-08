@@ -1157,6 +1157,286 @@ dd::task<bool> telegram::deleteMessages(api::delete_messages_request request, de
   co_return dd::rvo;
 }
 
+dd::task<Gifts> telegram::getAvailableGifts(deadline_t deadline) const {
+  Gifts& result = co_await dd::this_coro::return_place;
+  reqerr_t err =
+      co_await api::send_request(api::get_available_gifts_request{}, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("getAvailableGifts request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::sendGift(api::send_gift_request request, deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("sendGift request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::giftPremiumSubscription(api::gift_premium_subscription_request request,
+                                                 deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("giftPremiumSubscription request ended with error, status: {}, description: {}",
+                   err.status, err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::verifyUser(api::verify_user_request request, deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("verifyUser request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::verifyChat(api::verify_chat_request request, deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("verifyChat request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::removeUserVerification(api::remove_user_verification_request request,
+                                                deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("removeUserVerification request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::removeChatVerification(api::remove_chat_verification_request request,
+                                                deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("removeChatVerification request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::readBusinessMessage(api::read_business_message_request request,
+                                             deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("readBusinessMessage request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::deleteBusinessMessages(api::delete_business_messages_request request,
+                                                deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("deleteBusinessMessages request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::setBusinessAccountName(api::set_business_account_name_request request,
+                                                deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("setBusinessAccountName request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::setBusinessAccountUsername(api::set_business_account_username_request request,
+                                                    deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("setBusinessAccountUsername request ended with error, status: {}, description: {}",
+                   err.status, err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::setBusinessAccountBio(api::set_business_account_bio_request request,
+                                               deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("setBusinessAccountBio request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::setBusinessAccountProfilePhoto(
+    api::set_business_account_profile_photo_request request, deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("setBusinessAccountProfilePhoto request ended with error, status: {}, description: {}",
+                   err.status, err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::removeBusinessAccountProfilePhoto(
+    api::remove_business_account_profile_photo_request request, deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("removeBusinessAccountProfilePhoto request ended with error, status: {}, description: {}",
+                   err.status, err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::setBusinessAccountGiftSettings(
+    api::set_business_account_gift_settings_request request, deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("setBusinessAccountGiftSettings request ended with error, status: {}, description: {}",
+                   err.status, err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<StarAmount> telegram::getBusinessAccountStarBalance(
+    api::get_business_account_star_balance_request request, deadline_t deadline) const {
+  StarAmount& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("getBusinessAccountStarBalance request ended with error, status: {}, description: {}",
+                   err.status, err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::transferBusinessAccountStars(api::transfer_business_account_stars_request request,
+                                                      deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("transferBusinessAccountStars request ended with error, status: {}, description: {}",
+                   err.status, err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<OwnedGifts> telegram::getBusinessAccountGifts(api::get_business_account_gifts_request request,
+                                                       deadline_t deadline) const {
+  OwnedGifts& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("getBusinessAccountGifts request ended with error, status: {}, description: {}",
+                   err.status, err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::convertGiftToStars(api::convert_gift_to_stars_request request,
+                                            deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("convertGiftToStars request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::upgradeGift(api::upgrade_gift_request request, deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("upgradeGift request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::transferGift(api::transfer_gift_request request, deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("transferGift request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<Story> telegram::postStory(api::post_story_request request, deadline_t deadline) const {
+  Story& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("postStory request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<Story> telegram::editStory(api::edit_story_request request, deadline_t deadline) const {
+  Story& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("editStory request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<bool> telegram::deleteStory(api::delete_story_request request, deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("deleteStory request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
 dd::task<Message> telegram::sendSticker(api::send_sticker_request request, deadline_t deadline) const {
   Message& result = co_await dd::this_coro::return_place;
   reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
@@ -1341,75 +1621,6 @@ dd::task<bool> telegram::deleteStickerSet(api::delete_sticker_set_request reques
   reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
   if (err) [[unlikely]] {
     TGBM_LOG_ERROR("deleteStickerSet request ended with error, status: {}, description: {}", err.status,
-                   err.description.str());
-    handle_telegram_http_status(err.status);
-  }
-  co_return dd::rvo;
-}
-
-dd::task<Gifts> telegram::getAvailableGifts(deadline_t deadline) const {
-  Gifts& result = co_await dd::this_coro::return_place;
-  reqerr_t err =
-      co_await api::send_request(api::get_available_gifts_request{}, client, bottoken, result, deadline);
-  if (err) [[unlikely]] {
-    TGBM_LOG_ERROR("getAvailableGifts request ended with error, status: {}, description: {}", err.status,
-                   err.description.str());
-    handle_telegram_http_status(err.status);
-  }
-  co_return dd::rvo;
-}
-
-dd::task<bool> telegram::sendGift(api::send_gift_request request, deadline_t deadline) const {
-  bool& result = co_await dd::this_coro::return_place;
-  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
-  if (err) [[unlikely]] {
-    TGBM_LOG_ERROR("sendGift request ended with error, status: {}, description: {}", err.status,
-                   err.description.str());
-    handle_telegram_http_status(err.status);
-  }
-  co_return dd::rvo;
-}
-
-dd::task<bool> telegram::verifyUser(api::verify_user_request request, deadline_t deadline) const {
-  bool& result = co_await dd::this_coro::return_place;
-  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
-  if (err) [[unlikely]] {
-    TGBM_LOG_ERROR("verifyUser request ended with error, status: {}, description: {}", err.status,
-                   err.description.str());
-    handle_telegram_http_status(err.status);
-  }
-  co_return dd::rvo;
-}
-
-dd::task<bool> telegram::verifyChat(api::verify_chat_request request, deadline_t deadline) const {
-  bool& result = co_await dd::this_coro::return_place;
-  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
-  if (err) [[unlikely]] {
-    TGBM_LOG_ERROR("verifyChat request ended with error, status: {}, description: {}", err.status,
-                   err.description.str());
-    handle_telegram_http_status(err.status);
-  }
-  co_return dd::rvo;
-}
-
-dd::task<bool> telegram::removeUserVerification(api::remove_user_verification_request request,
-                                                deadline_t deadline) const {
-  bool& result = co_await dd::this_coro::return_place;
-  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
-  if (err) [[unlikely]] {
-    TGBM_LOG_ERROR("removeUserVerification request ended with error, status: {}, description: {}", err.status,
-                   err.description.str());
-    handle_telegram_http_status(err.status);
-  }
-  co_return dd::rvo;
-}
-
-dd::task<bool> telegram::removeChatVerification(api::remove_chat_verification_request request,
-                                                deadline_t deadline) const {
-  bool& result = co_await dd::this_coro::return_place;
-  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
-  if (err) [[unlikely]] {
-    TGBM_LOG_ERROR("removeChatVerification request ended with error, status: {}, description: {}", err.status,
                    err.description.str());
     handle_telegram_http_status(err.status);
   }
