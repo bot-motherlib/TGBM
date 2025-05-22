@@ -1,17 +1,61 @@
-name: build_and_test_windows
+name: build_and_test
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
+  push:
+    branches:
+      - master
+      - '*'
+
+permissions:
+  actions: write
+  contents: read
 
 jobs:
-  build_and_test_windows:
-    runs-on: windows-latest
+  build_and_test:
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'NO_PIPELINE') }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - type: debug
+            compiler: clang
+            version: 18
+          - type: release
+            compiler: clang
+            version: 18
+
+    name: windows-2022 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}
+    runs-on: windows-2022
+
     steps:
-      - name: Checkout repository
+      - name: Cancel Previous Runs
+        uses: styfle/cancel-workflow-action@0.9.1
+
+      - name: Checkout the code
         uses: actions/checkout@v4
 
-      - name: Dummy step
-        run: echo "Windows CI is working"
+      - name: Verify clang version
+        run: clang --version
+
+      - name: Setup ccache (optional)
+        run: |
+          choco install ccache -y
+          echo "CCACHE_DIR=C:\Users\runneradmin\.ccache" >> $env:GITHUB_ENV
+          echo "CCACHE_MAXSIZE=2.0G" >> $env:GITHUB_ENV
+          echo "CCACHE_BASEDIR=${{ github.workspace }}" >> $env:GITHUB_ENV
+
+      - name: Configure CMake project
+        run: |
+          cp scripts/presets_windows.json CMakePresets.json
+          cmake --preset ${{matrix.compiler}}_${{matrix.version}}_${{matrix.type}}
+
+      - name: Build project
+        run: >
+          cmake 
+          --build cmake_build
+          --target all
+
+      - name: Run tests
+        run: | 
+          cd cmake_build && ctest --output-on-failure

@@ -18,7 +18,7 @@ CPMAddPackage(
 )
 unset(BOOST_INCLUDE_LIBRARIES)
 
-CPMAddPackage("gh:fmtlib/fmt#11.0.2")
+CPMAddPackage("gh:fmtlib/fmt#11.2.0")
 
 CPMAddPackage(
   NAME kelcoro

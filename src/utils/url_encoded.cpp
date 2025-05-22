@@ -1,5 +1,6 @@
 #include <tgbm/utils/url_encoded.hpp>
 
+#include <chrono>
 #include <cstdio>
 #include <random>
 #include <string>
