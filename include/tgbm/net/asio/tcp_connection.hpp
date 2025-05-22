@@ -89,7 +89,7 @@ struct tcp_tls_connection {
 
   // creates client connection
   // precondition: 'ctx' != nullptr
-  static dd::task<tcp_tls_connection> create(asio::io_context& KELCORO_LIFETIMEBOUND, std::string host,
+  static dd::task<tcp_tls_connection> create(asio::io_context& io_ctx KELCORO_LIFETIMEBOUND, std::string host,
                                              ssl_context_ptr ctx, deadline_t, tcp_connection_options = {});
 
   // any_connection interface:
@@ -120,7 +120,7 @@ struct tcp_connection {
   }
 
   // creates client connection
-  static dd::task<tcp_connection> create(asio::io_context& KELCORO_LIFETIMEBOUND, std::string host,
+  static dd::task<tcp_connection> create(asio::io_context& io_ctx KELCORO_LIFETIMEBOUND, std::string host,
                                          deadline_t, tcp_connection_options = {});
 
   // any_connection interface:
