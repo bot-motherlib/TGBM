@@ -62,8 +62,10 @@ jobs:
           cmake --preset ${{matrix.compiler}}_${{matrix.version}}_${{matrix.type}}
 
       - name: Build project
-        run: |
-          cmake --build cmake_build --target ALL_BUILD --config ${{ matrix.type | upper }}
+        run: >
+          cmake 
+          --build cmake_build
+          --target all
 
       - name: Run tests
         run: |
