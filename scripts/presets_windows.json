@@ -1,0 +1,49 @@
+{
+    "version": 5,
+    "configurePresets": [
+        {
+            "name": "clang_17_debug",
+            "displayName": "Clang 17 Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/cmake_build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++"
+            }
+        },
+        {
+            "name": "clang_17_release",
+            "displayName": "Clang 17 Release",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/cmake_build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++"
+            }
+        },
+        {
+            "name": "clang_19_debug",
+            "displayName": "Clang 19 Debug",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/cmake_build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++"
+            }
+        },
+        {
+            "name": "clang_19_release",
+            "displayName": "Clang 19 Release",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/cmake_build",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_C_COMPILER": "clang",
+                "CMAKE_CXX_COMPILER": "clang++"
+            }
+        }
+    ]
+}

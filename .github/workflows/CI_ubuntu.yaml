@@ -1,4 +1,4 @@
-name: build_and_test
+name: build_and_test_linux
 
 permissions:
   actions: write
@@ -14,7 +14,7 @@ env:
   UBSAN_OPTIONS: print_stacktrace=1
 
 jobs:
-  build_and_test:
+  build_and_test_linux:
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'NO_PIPELINE') }}
     strategy:
       fail-fast: false
