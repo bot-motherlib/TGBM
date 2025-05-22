@@ -20,16 +20,10 @@ jobs:
         include:
           - type: debug
             compiler: clang
-            version: 17
+            version: 18
           - type: release
             compiler: clang
-            version: 17
-          - type: debug
-            compiler: clang
-            version: 19
-          - type: release
-            compiler: clang
-            version: 19
+            version: 18
 
     name: windows-2022 ${{matrix.type}} ${{matrix.compiler}}-${{matrix.version}}
     runs-on: windows-2022
@@ -40,11 +34,6 @@ jobs:
 
       - name: Checkout the code
         uses: actions/checkout@v4
-
-      - name: Install LLVM
-        run: |
-          choco install llvm --version=${{ matrix.version }} --allow-downgrade -y
-          echo "C:\Program Files\LLVM\bin" | Out-File -Append -Encoding ascii $env:GITHUB_PATH
 
       - name: Verify clang version
         run: clang --version
