@@ -68,6 +68,5 @@ jobs:
           --target all
 
       - name: Run tests
-        run: |
-          cd cmake_build
-          ctest --output-on-failure -C ${{ matrix.type | upper }}
+        run: | 
+          cd cmake_build && sudo ctest --output-on-failure
