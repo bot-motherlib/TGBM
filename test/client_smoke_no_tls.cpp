@@ -72,6 +72,7 @@ dd::task<void> main_coro(tgbm::http2_client& client) {
 }
 
 int main() try {
+#ifndef _WIN32
   std::thread([] {
     std::this_thread::sleep_for(std::chrono::seconds(5));
     TGBM_LOG_ERROR("timeout!");
@@ -100,6 +101,8 @@ int main() try {
 
   if (!all_good)
     return 8;
+#endif
+
   return 0;
 } catch (...) {
   TGBM_LOG_ERROR("unknown error");

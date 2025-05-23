@@ -22,7 +22,7 @@
                 "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
                 "CMAKE_CXX_STANDARD": "20",
                 "CMAKE_LINKER_TYPE": "LLD",
-                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_BUILD_TYPE": "Release",
                 "TGBM_ENABLE_TESTING": "ON",
                 "TGBM_ENABLE_EXAMPLES": "ON"
             }
