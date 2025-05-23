@@ -33,7 +33,7 @@
             "inherits": "base_release",
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "clang-cl",
-                "CMAKE_CXX_COMPILER": "clang-cl++"
+                "CMAKE_CXX_COMPILER": "clang-cl"
             }
         },
         {
@@ -42,7 +42,7 @@
             "inherits": "base_debug",
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "clang-cl",
-                "CMAKE_CXX_COMPILER": "clang-cl++"
+                "CMAKE_CXX_COMPILER": "clang-cl"
             }
         }
     ]
