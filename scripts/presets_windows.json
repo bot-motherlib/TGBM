@@ -32,8 +32,8 @@
             "displayName": "clang 18 release",
             "inherits": "base_release",
             "cacheVariables": {
-                "CMAKE_C_COMPILER": "clang",
-                "CMAKE_CXX_COMPILER": "clang++"
+                "CMAKE_C_COMPILER": "clang-cl",
+                "CMAKE_CXX_COMPILER": "clang-cl++"
             }
         },
         {
@@ -41,8 +41,8 @@
             "displayName": "clang 18 debug",
             "inherits": "base_debug",
             "cacheVariables": {
-                "CMAKE_C_COMPILER": "clang",
-                "CMAKE_CXX_COMPILER": "clang++"
+                "CMAKE_C_COMPILER": "clang-cl",
+                "CMAKE_CXX_COMPILER": "clang-cl++"
             }
         }
     ]
