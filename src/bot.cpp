@@ -48,12 +48,14 @@ static constexpr std::string_view parse_command(std::string_view text) {
     return "";
   text.remove_prefix(1);
   auto index = text.find_first_of(" \n\t");
-  return text.substr(0, index - 1);
+  return text.substr(0, index);
 }
 
 static_assert(parse_command("fdsfsf") == "");
 static_assert(parse_command("/start") == "start");
 static_assert(parse_command("   \t\n/start") == "start");
+static_assert(parse_command("/start arg1 arg2") == "start");
+static_assert(parse_command("  \n/command  ") == "command");
 
 dd::channel<api::Update> bot::updates(long_poll_options options) {
   dd::channel chan = long_poll(api, std::move(options));

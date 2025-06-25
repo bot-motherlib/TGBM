@@ -7,7 +7,7 @@ namespace tgbm {
 asio_tls_transport::asio_tls_transport(tcp_connection_options opts)
     : io_ctx(1), tcp_options(std::move(opts)) {
   if (tcp_options.disable_ssl_certificate_verify)
-    TGBM_LOG_WARN("SSL veriication for http2 client disabled");
+    TGBM_LOG_WARN("SSL verification for http2 client disabled");
 }
 
 dd::task<any_connection> asio_tls_transport::create_connection(std::string_view host, deadline_t deadline) {
