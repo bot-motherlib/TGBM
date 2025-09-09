@@ -18,6 +18,8 @@ struct Gift {
   optional<Integer> total_count;
   /* Optional. The number of remaining gifts of this type that can be sent; for limited gifts only */
   optional<Integer> remaining_count;
+  /* Optional. Information about the chat that published the gift */
+  box<Chat> publisher_chat;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)

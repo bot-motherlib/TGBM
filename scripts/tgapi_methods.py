@@ -84,6 +84,9 @@ G_OPERATION_TO_RESULT = {
     'getGameHighScores': 'arrayof<GameHighScore>',
     'getAvailableGifts': 'Gifts',
     'savePreparedInlineMessage': 'PreparedInlineMessage',
+    'sendChecklist': MSG,
+    'editMessageChecklist': MSG,
+    'getMyStarBalance': 'StarAmount',
 }
 
 # loads TG api (html)

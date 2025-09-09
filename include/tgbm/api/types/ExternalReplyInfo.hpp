@@ -37,6 +37,8 @@ struct ExternalReplyInfo {
   box<VideoNote> video_note;
   /* Optional. Message is a voice message, information about the file */
   box<Voice> voice;
+  /* Optional. Message is a checklist */
+  box<Checklist> checklist;
   /* Optional. Message is a shared contact, information about the contact */
   box<Contact> contact;
   /* Optional. Message is a dice with random value */

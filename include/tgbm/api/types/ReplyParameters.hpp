@@ -11,7 +11,7 @@ struct ReplyParameters {
   Integer message_id;
   /* Optional. If the message to be replied to is from a different chat, unique identifier for the chat or
    * username of the channel (in the format @channelusername). Not supported for messages sent on behalf of a
-   * business account. */
+   * business account and messages from channel direct messages chats. */
   optional<int_or_str> chat_id;
   /* Optional. Quoted part of the message to be replied to; 0-1024 characters after entities parsing. The
    * quote must be an exact substring of the message to be replied to, including bold, italic, underline,
@@ -25,6 +25,8 @@ struct ReplyParameters {
   optional<arrayof<MessageEntity>> quote_entities;
   /* Optional. Position of the quote in the original message in UTF-16 code units */
   optional<Integer> quote_position;
+  /* Optional. Identifier of the specific checklist task to be replied to */
+  optional<Integer> checklist_task_id;
   /* Optional. Pass True if the message should be sent even if the specified message to be replied to is not
    * found. Always False for replies in another chat or forum topic. Always True for messages sent on behalf
    * of a business account. */

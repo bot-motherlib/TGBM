@@ -4,6 +4,7 @@
 #include <tgbm/api/types/MessageEntity.hpp>
 #include <tgbm/api/types/MessageId.hpp>
 #include <tgbm/api/types/ReplyParameters.hpp>
+#include <tgbm/api/types/SuggestedPostParameters.hpp>
 
 namespace tgbm::api {
 
@@ -18,6 +19,9 @@ struct copy_message_request {
   Integer message_id;
   /* Unique identifier for the target message thread (topic) of the forum; for forum supergroups only */
   optional<Integer> message_thread_id;
+  /* Identifier of the direct messages topic to which the message will be sent; required if the message is
+   * sent to a direct messages chat */
+  optional<Integer> direct_messages_topic_id;
   /* New start timestamp for the copied video in the message */
   optional<Integer> video_start_timestamp;
   /* New caption for media, 0-1024 characters after entities parsing. If not specified, the original caption
@@ -38,6 +42,10 @@ struct copy_message_request {
   /* Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram
    * Stars per message. The relevant Stars will be withdrawn from the bot's balance */
   optional<bool> allow_paid_broadcast;
+  /* A JSON-serialized object containing the parameters of the suggested post to send; for direct messages
+   * chats only. If the message is sent as a reply to another suggested post, then that suggested post is
+   * automatically declined. */
+  box<SuggestedPostParameters> suggested_post_parameters;
   /* Description of the message to reply to */
   box<ReplyParameters> reply_parameters;
   /* Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard,
@@ -53,6 +61,8 @@ struct copy_message_request {
     body.arg("chat_id", chat_id);
     if (message_thread_id)
       body.arg("message_thread_id", *message_thread_id);
+    if (direct_messages_topic_id)
+      body.arg("direct_messages_topic_id", *direct_messages_topic_id);
     body.arg("from_chat_id", from_chat_id);
     body.arg("message_id", message_id);
     if (video_start_timestamp)
@@ -71,6 +81,8 @@ struct copy_message_request {
       body.arg("protect_content", *protect_content);
     if (allow_paid_broadcast)
       body.arg("allow_paid_broadcast", *allow_paid_broadcast);
+    if (suggested_post_parameters)
+      body.arg("suggested_post_parameters", *suggested_post_parameters);
     if (reply_parameters)
       body.arg("reply_parameters", *reply_parameters);
     if (reply_markup)

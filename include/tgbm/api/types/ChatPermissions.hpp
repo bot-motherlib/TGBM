@@ -21,7 +21,7 @@ struct ChatPermissions {
   optional<bool> can_send_video_notes;
   /* Optional. True, if the user is allowed to send voice notes */
   optional<bool> can_send_voice_notes;
-  /* Optional. True, if the user is allowed to send polls */
+  /* Optional. True, if the user is allowed to send polls and checklists */
   optional<bool> can_send_polls;
   /* Optional. True, if the user is allowed to send animations, games, stickers and use inline bots */
   optional<bool> can_send_other_messages;

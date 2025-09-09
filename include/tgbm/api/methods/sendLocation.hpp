@@ -3,6 +3,7 @@
 #include <tgbm/api/common.hpp>
 #include <tgbm/api/types/Message.hpp>
 #include <tgbm/api/types/ReplyParameters.hpp>
+#include <tgbm/api/types/SuggestedPostParameters.hpp>
 
 namespace tgbm::api {
 
@@ -18,6 +19,9 @@ struct send_location_request {
   optional<String> business_connection_id;
   /* Unique identifier for the target message thread (topic) of the forum; for forum supergroups only */
   optional<Integer> message_thread_id;
+  /* Identifier of the direct messages topic to which the message will be sent; required if the message is
+   * sent to a direct messages chat */
+  optional<Integer> direct_messages_topic_id;
   /* The radius of uncertainty for the location, measured in meters; 0-1500 */
   optional<Double> horizontal_accuracy;
   /* Period in seconds during which the location will be updated (see Live Locations, should be between 60 and
@@ -38,6 +42,10 @@ struct send_location_request {
   optional<bool> allow_paid_broadcast;
   /* Unique identifier of the message effect to be added to the message; for private chats only */
   optional<String> message_effect_id;
+  /* A JSON-serialized object containing the parameters of the suggested post to send; for direct messages
+   * chats only. If the message is sent as a reply to another suggested post, then that suggested post is
+   * automatically declined. */
+  box<SuggestedPostParameters> suggested_post_parameters;
   /* Description of the message to reply to */
   box<ReplyParameters> reply_parameters;
   /* Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard,
@@ -55,6 +63,8 @@ struct send_location_request {
     body.arg("chat_id", chat_id);
     if (message_thread_id)
       body.arg("message_thread_id", *message_thread_id);
+    if (direct_messages_topic_id)
+      body.arg("direct_messages_topic_id", *direct_messages_topic_id);
     body.arg("latitude", latitude);
     body.arg("longitude", longitude);
     if (horizontal_accuracy)
@@ -73,6 +83,8 @@ struct send_location_request {
       body.arg("allow_paid_broadcast", *allow_paid_broadcast);
     if (message_effect_id)
       body.arg("message_effect_id", *message_effect_id);
+    if (suggested_post_parameters)
+      body.arg("suggested_post_parameters", *suggested_post_parameters);
     if (reply_parameters)
       body.arg("reply_parameters", *reply_parameters);
     if (reply_markup)

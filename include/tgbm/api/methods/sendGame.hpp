@@ -8,7 +8,8 @@
 namespace tgbm::api {
 
 struct send_game_request {
-  /* Unique identifier for the target chat */
+  /* Unique identifier for the target chat. Games can't be sent to channel direct messages chats and channel
+   * chats. */
   Integer chat_id;
   /* Short name of the game, serves as the unique identifier for the game. Set up your games via @BotFather.
    */

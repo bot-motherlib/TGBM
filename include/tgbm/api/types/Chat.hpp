@@ -22,6 +22,8 @@ struct Chat {
   optional<String> last_name;
   /* Optional. True, if the supergroup chat is a forum (has topics enabled) */
   optional<True> is_forum;
+  /* Optional. True, if the chat is the direct messages chat of a channel */
+  optional<True> is_direct_messages;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("id", true).case_("type", true).or_default(false);

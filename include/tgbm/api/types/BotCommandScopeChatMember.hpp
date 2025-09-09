@@ -8,7 +8,7 @@ namespace tgbm::api {
  * supported:*/
 struct BotCommandScopeChatMember {
   /* Unique identifier for the target chat or username of the target supergroup (in the format
-   * @supergroupusername) */
+   * @supergroupusername). Channel direct messages chats and channel chats aren't supported. */
   int_or_str chat_id;
   /* Unique identifier of the target user */
   Integer user_id;

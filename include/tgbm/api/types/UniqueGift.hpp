@@ -18,6 +18,8 @@ struct UniqueGift {
   box<UniqueGiftSymbol> symbol;
   /* Backdrop of the gift */
   box<UniqueGiftBackdrop> backdrop;
+  /* Optional. Information about the chat that published the gift */
+  box<Chat> publisher_chat;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)

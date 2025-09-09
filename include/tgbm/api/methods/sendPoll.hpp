@@ -9,12 +9,12 @@
 namespace tgbm::api {
 
 struct send_poll_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername).
+   * Polls can't be sent to channel direct messages chats. */
   int_or_str chat_id;
   /* Poll question, 1-300 characters */
   String question;
-  /* A JSON-serialized list of 2-10 answer options */
+  /* A JSON-serialized list of 2-12 answer options */
   arrayof<InputPollOption> options;
   /* Unique identifier of the business connection on behalf of which the message will be sent */
   optional<String> business_connection_id;
