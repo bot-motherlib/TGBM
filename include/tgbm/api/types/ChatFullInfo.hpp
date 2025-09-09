@@ -43,6 +43,8 @@ struct ChatFullInfo {
   box<BusinessOpeningHours> business_opening_hours;
   /* Optional. For private chats, the personal channel of the user */
   box<Chat> personal_chat;
+  /* Optional. Information about the corresponding channel chat; for direct messages chats only */
+  box<Chat> parent_chat;
   /* Optional. List of available reactions allowed in the chat. If omitted, then all emoji reactions are
    * allowed. */
   optional<arrayof<ReactionType>> available_reactions;
@@ -91,6 +93,8 @@ struct ChatFullInfo {
   box<ChatLocation> location;
   /* Optional. True, if the supergroup chat is a forum (has topics enabled) */
   optional<True> is_forum;
+  /* Optional. True, if the chat is the direct messages chat of a channel */
+  optional<True> is_direct_messages;
   /* Optional. True, if privacy settings of the other party in the private chat allows to use
    * tg://user?id=<user_id> links only in chats with the user */
   optional<True> has_private_forwards;

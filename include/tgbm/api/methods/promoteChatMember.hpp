@@ -13,8 +13,8 @@ struct promote_chat_member_request {
   /* Pass True if the administrator's presence in the chat is hidden */
   optional<bool> is_anonymous;
   /* Pass True if the administrator can access the chat event log, get boost list, see hidden supergroup and
-   * channel members, report spam messages and ignore slow mode. Implied by any other administrator privilege.
-   */
+   * channel members, report spam messages, ignore slow mode, and send messages to the chat without paying
+   * Telegram Stars. Implied by any other administrator privilege. */
   optional<bool> can_manage_chat;
   /* Pass True if the administrator can delete messages of other users */
   optional<bool> can_delete_messages;
@@ -38,8 +38,8 @@ struct promote_chat_member_request {
   optional<bool> can_edit_stories;
   /* Pass True if the administrator can delete stories posted by other users */
   optional<bool> can_delete_stories;
-  /* Pass True if the administrator can post messages in the channel, or access channel statistics; for
-   * channels only */
+  /* Pass True if the administrator can post messages in the channel, approve suggested posts, or access
+   * channel statistics; for channels only */
   optional<bool> can_post_messages;
   /* Pass True if the administrator can edit messages of other users and can pin messages; for channels only
    */
@@ -49,6 +49,9 @@ struct promote_chat_member_request {
   /* Pass True if the user is allowed to create, rename, close, and reopen forum topics; for supergroups only
    */
   optional<bool> can_manage_topics;
+  /* Pass True if the administrator can manage direct messages within the channel and decline suggested posts;
+   * for channels only */
+  optional<bool> can_manage_direct_messages;
 
   using return_type = bool;
   static constexpr file_info_e file_info = file_info_e::no;
@@ -88,6 +91,8 @@ struct promote_chat_member_request {
       body.arg("can_pin_messages", *can_pin_messages);
     if (can_manage_topics)
       body.arg("can_manage_topics", *can_manage_topics);
+    if (can_manage_direct_messages)
+      body.arg("can_manage_direct_messages", *can_manage_direct_messages);
   }
 };
 

@@ -26,7 +26,7 @@ struct ChatMemberRestricted {
   bool can_send_video_notes;
   /* True, if the user is allowed to send voice notes */
   bool can_send_voice_notes;
-  /* True, if the user is allowed to send polls */
+  /* True, if the user is allowed to send polls and checklists */
   bool can_send_polls;
   /* True, if the user is allowed to send animations, games, stickers and use inline bots */
   bool can_send_other_messages;

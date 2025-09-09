@@ -5,8 +5,8 @@
 namespace tgbm::api {
 
 struct send_chat_action_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target supergroup (in the format
+   * @supergroupusername). Channel chats and channel direct messages chats aren't supported. */
   int_or_str chat_id;
   /* Type of action to broadcast. Choose one, depending on what the user is about to receive: typing for text
    * messages, upload_photo for photos, record_video or upload_video for videos, record_voice or upload_voice

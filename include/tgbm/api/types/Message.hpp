@@ -16,6 +16,8 @@ struct Message {
   box<Chat> chat;
   /* Optional. Unique identifier of a message thread to which the message belongs; for supergroups only */
   optional<Integer> message_thread_id;
+  /* Optional. Information about the direct messages chat topic that contains the message */
+  box<DirectMessagesTopic> direct_messages_topic;
   /* Optional. Sender of the message; may be empty for messages sent to channels. For backward compatibility,
    * if the message was sent on behalf of a chat, the field contains a fake sender user in non-channel chats
    */
@@ -46,6 +48,8 @@ struct Message {
   box<TextQuote> quote;
   /* Optional. For replies to a story, the original story */
   box<Story> reply_to_story;
+  /* Optional. Identifier of the specific checklist task that is being replied to */
+  optional<Integer> reply_to_checklist_task_id;
   /* Optional. Bot through which the message was sent */
   box<User> via_bot;
   /* Optional. Date the message was last edited in Unix time */
@@ -65,6 +69,10 @@ struct Message {
   /* Optional. Options used for link preview generation for the message, if it is a text message and link
    * preview options were changed */
   box<LinkPreviewOptions> link_preview_options;
+  /* Optional. Information about suggested post parameters if the message is a suggested post in a channel
+   * direct messages chat. If the message is an approved or declined suggested post, then it can't be edited.
+   */
+  box<SuggestedPostInfo> suggested_post_info;
   /* Optional. Unique identifier of the message effect added to the message */
   optional<String> effect_id;
   /* Optional. Message is an animation, information about the animation. For backward compatibility, when this
@@ -93,6 +101,8 @@ struct Message {
   /* Optional. For messages with a caption, special entities like usernames, URLs, bot commands, etc. that
    * appear in the caption */
   optional<arrayof<MessageEntity>> caption_entities;
+  /* Optional. Message is a checklist */
+  box<Checklist> checklist;
   /* Optional. Message is a shared contact, information about the contact */
   box<Contact> contact;
   /* Optional. Message is a dice with random value */
@@ -162,6 +172,13 @@ struct Message {
   box<ChatBoostAdded> boost_added;
   /* Optional. Service message: chat background set */
   box<ChatBackground> chat_background_set;
+  /* Optional. Service message: some tasks in a checklist were marked as done or not done */
+  box<ChecklistTasksDone> checklist_tasks_done;
+  /* Optional. Service message: tasks were added to a checklist */
+  box<ChecklistTasksAdded> checklist_tasks_added;
+  /* Optional. Service message: the price for paid messages in the corresponding direct messages chat of a
+   * channel has changed */
+  box<DirectMessagePriceChanged> direct_message_price_changed;
   /* Optional. Service message: forum topic created */
   box<ForumTopicCreated> forum_topic_created;
   /* Optional. Service message: forum topic edited */
@@ -184,6 +201,16 @@ struct Message {
   box<GiveawayCompleted> giveaway_completed;
   /* Optional. Service message: the price for paid messages has changed in the chat */
   box<PaidMessagePriceChanged> paid_message_price_changed;
+  /* Optional. Service message: a suggested post was approved */
+  box<SuggestedPostApproved> suggested_post_approved;
+  /* Optional. Service message: approval of a suggested post has failed */
+  box<SuggestedPostApprovalFailed> suggested_post_approval_failed;
+  /* Optional. Service message: a suggested post was declined */
+  box<SuggestedPostDeclined> suggested_post_declined;
+  /* Optional. Service message: payment for a suggested post was received */
+  box<SuggestedPostPaid> suggested_post_paid;
+  /* Optional. Service message: payment for a suggested post was refunded */
+  box<SuggestedPostRefunded> suggested_post_refunded;
   /* Optional. Service message: video chat scheduled */
   box<VideoChatScheduled> video_chat_scheduled;
   /* Optional. Service message: video chat started */
@@ -207,6 +234,9 @@ struct Message {
   /* Optional. True, if the message was sent by an implicit action, for example, as an away or a greeting
    * business message, or as a scheduled message */
   optional<True> is_from_offline;
+  /* Optional. True, if the message is a paid post. Note that such posts must not be deleted for 24 hours to
+   * receive the payment and can't be edited. */
+  optional<True> is_paid_post;
   /* Optional. True, if the caption must be shown above the message media */
   optional<True> show_caption_above_media;
   /* Optional. True, if the message media is covered by a spoiler animation */

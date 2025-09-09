@@ -97,7 +97,7 @@ struct sax_token_value {
     if (rhs.is_string(rhs.got)) {
       std::construct_at(&str_m, std::move(rhs.str_m));
     } else {
-      std::memcpy(this, &rhs, sizeof(*this));
+      std::memcpy((void*)this, &rhs, sizeof(*this));
     }
     return *this;
   }

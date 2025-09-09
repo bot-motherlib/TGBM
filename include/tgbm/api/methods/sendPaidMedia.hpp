@@ -5,6 +5,7 @@
 #include <tgbm/api/types/Message.hpp>
 #include <tgbm/api/types/MessageEntity.hpp>
 #include <tgbm/api/types/ReplyParameters.hpp>
+#include <tgbm/api/types/SuggestedPostParameters.hpp>
 
 namespace tgbm::api {
 
@@ -19,6 +20,11 @@ struct send_paid_media_request {
   arrayof<InputPaidMedia> media;
   /* Unique identifier of the business connection on behalf of which the message will be sent */
   optional<String> business_connection_id;
+  /* Unique identifier for the target message thread (topic) of the forum; for forum supergroups only */
+  optional<Integer> message_thread_id;
+  /* Identifier of the direct messages topic to which the message will be sent; required if the message is
+   * sent to a direct messages chat */
+  optional<Integer> direct_messages_topic_id;
   /* Bot-defined paid media payload, 0-128 bytes. This will not be displayed to the user, use it for your
    * internal processes. */
   optional<String> payload;
@@ -38,6 +44,10 @@ struct send_paid_media_request {
   /* Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram
    * Stars per message. The relevant Stars will be withdrawn from the bot's balance */
   optional<bool> allow_paid_broadcast;
+  /* A JSON-serialized object containing the parameters of the suggested post to send; for direct messages
+   * chats only. If the message is sent as a reply to another suggested post, then that suggested post is
+   * automatically declined. */
+  box<SuggestedPostParameters> suggested_post_parameters;
   /* Description of the message to reply to */
   box<ReplyParameters> reply_parameters;
   /* Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard,
@@ -53,6 +63,10 @@ struct send_paid_media_request {
     if (business_connection_id)
       body.arg("business_connection_id", *business_connection_id);
     body.arg("chat_id", chat_id);
+    if (message_thread_id)
+      body.arg("message_thread_id", *message_thread_id);
+    if (direct_messages_topic_id)
+      body.arg("direct_messages_topic_id", *direct_messages_topic_id);
     body.arg("star_count", star_count);
     body.arg("media", media);
     if (payload)
@@ -71,6 +85,8 @@ struct send_paid_media_request {
       body.arg("protect_content", *protect_content);
     if (allow_paid_broadcast)
       body.arg("allow_paid_broadcast", *allow_paid_broadcast);
+    if (suggested_post_parameters)
+      body.arg("suggested_post_parameters", *suggested_post_parameters);
     if (reply_parameters)
       body.arg("reply_parameters", *reply_parameters);
     if (reply_markup)

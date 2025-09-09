@@ -14,8 +14,8 @@ struct ChatMemberAdministrator {
   /* True, if the user's presence in the chat is hidden */
   bool is_anonymous;
   /* True, if the administrator can access the chat event log, get boost list, see hidden supergroup and
-   * channel members, report spam messages and ignore slow mode. Implied by any other administrator privilege.
-   */
+   * channel members, report spam messages, ignore slow mode, and send messages to the chat without paying
+   * Telegram Stars. Implied by any other administrator privilege. */
   bool can_manage_chat;
   /* True, if the administrator can delete messages of other users */
   bool can_delete_messages;
@@ -40,8 +40,8 @@ struct ChatMemberAdministrator {
   bool can_delete_stories;
   /* Optional. Custom title for this user */
   optional<String> custom_title;
-  /* Optional. True, if the administrator can post messages in the channel, or access channel statistics; for
-   * channels only */
+  /* Optional. True, if the administrator can post messages in the channel, approve suggested posts, or access
+   * channel statistics; for channels only */
   optional<bool> can_post_messages;
   /* Optional. True, if the administrator can edit messages of other users and can pin messages; for channels
    * only */
@@ -51,6 +51,9 @@ struct ChatMemberAdministrator {
   /* Optional. True, if the user is allowed to create, rename, close, and reopen forum topics; for supergroups
    * only */
   optional<bool> can_manage_topics;
+  /* Optional. True, if the administrator can manage direct messages of the channel and decline suggested
+   * posts; for channels only */
+  optional<bool> can_manage_direct_messages;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)

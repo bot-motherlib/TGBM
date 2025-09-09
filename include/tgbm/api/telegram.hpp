@@ -120,8 +120,8 @@ struct telegram {
                                   deadline_t deadline = deadline_t::never()) const;
 
   /* Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio
-   * files can be only grouped in an album with messages of the same type. On success, an array of Messages
-   * that were sent is returned. */
+   * files can be only grouped in an album with messages of the same type. On success, an array of Message
+   * objects that were sent is returned. */
   dd::task<arrayof<Message>> sendMediaGroup(api::send_media_group_request,
                                             deadline_t deadline = deadline_t::never()) const;
 
@@ -136,6 +136,11 @@ struct telegram {
 
   /* Use this method to send a native poll. On success, the sent Message is returned. */
   dd::task<Message> sendPoll(api::send_poll_request, deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to send a checklist on behalf of a connected business account. On success, the sent
+   * Message is returned. */
+  dd::task<Message> sendChecklist(api::send_checklist_request,
+                                  deadline_t deadline = deadline_t::never()) const;
 
   /* Use this method to send an animated emoji that will display a random value. On success, the sent Message
    * is returned. */
@@ -289,24 +294,24 @@ struct telegram {
   dd::task<bool> setChatDescription(api::set_chat_description_request,
                                     deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to add a message to the list of pinned messages in a chat. If the chat is not a private
-   * chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages'
-   * administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns True
-   * on success. */
+  /* Use this method to add a message to the list of pinned messages in a chat. In private chats and channel
+   * direct messages chats, all non-service messages can be pinned. Conversely, the bot must be an
+   * administrator with the 'can_pin_messages' right or the 'can_edit_messages' right to pin messages in
+   * groups and channels respectively. Returns True on success. */
   dd::task<bool> pinChatMessage(api::pin_chat_message_request,
                                 deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to remove a message from the list of pinned messages in a chat. If the chat is not a
-   * private chat, the bot must be an administrator in the chat for this to work and must have the
-   * 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a
-   * channel. Returns True on success. */
+  /* Use this method to remove a message from the list of pinned messages in a chat. In private chats and
+   * channel direct messages chats, all messages can be unpinned. Conversely, the bot must be an administrator
+   * with the 'can_pin_messages' right or the 'can_edit_messages' right to unpin messages in groups and
+   * channels respectively. Returns True on success. */
   dd::task<bool> unpinChatMessage(api::unpin_chat_message_request,
                                   deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to clear the list of pinned messages in a chat. If the chat is not a private chat, the
-   * bot must be an administrator in the chat for this to work and must have the 'can_pin_messages'
-   * administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns True
-   * on success. */
+  /* Use this method to clear the list of pinned messages in a chat. In private chats and channel direct
+   * messages chats, no additional rights are required to unpin all pinned messages. Conversely, the bot must
+   * be an administrator with the 'can_pin_messages' right or the 'can_edit_messages' right to unpin all
+   * pinned messages in groups and channels respectively. Returns True on success. */
   dd::task<bool> unpinAllChatMessages(api::unpin_all_chat_messages_request,
                                       deadline_t deadline = deadline_t::never()) const;
 
@@ -498,66 +503,6 @@ struct telegram {
   dd::task<ChatAdministratorRights> getMyDefaultAdministratorRights(
       api::get_my_default_administrator_rights_request, deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to edit text and game messages. On success, if the edited message is not an inline
-   * message, the edited Message is returned, otherwise True is returned. Note that business messages that
-   * were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from
-   * the time they were sent. */
-  dd::task<oneof<bool, Message>> editMessageText(api::edit_message_text_request,
-                                                 deadline_t deadline = deadline_t::never()) const;
-
-  /* Use this method to edit captions of messages. On success, if the edited message is not an inline message,
-   * the edited Message is returned, otherwise True is returned. Note that business messages that were not
-   * sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time
-   * they were sent. */
-  dd::task<oneof<bool, Message>> editMessageCaption(api::edit_message_caption_request,
-                                                    deadline_t deadline = deadline_t::never()) const;
-
-  /* Use this method to edit animation, audio, document, photo, or video messages, or to add media to text
-   * messages. If a message is part of a message album, then it can be edited only to an audio for audio
-   * albums, only to a document for document albums and to a photo or a video otherwise. When an inline
-   * message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or
-   * specify a URL. On success, if the edited message is not an inline message, the edited Message is
-   * returned, otherwise True is returned. Note that business messages that were not sent by the bot and do
-   * not contain an inline keyboard can only be edited within 48 hours from the time they were sent. */
-  dd::task<oneof<bool, Message>> editMessageMedia(api::edit_message_media_request,
-                                                  deadline_t deadline = deadline_t::never()) const;
-
-  /* Use this method to edit live location messages. A location can be edited until its live_period expires or
-   * editing is explicitly disabled by a call to stopMessageLiveLocation. On success, if the edited message is
-   * not an inline message, the edited Message is returned, otherwise True is returned. */
-  dd::task<oneof<bool, Message>> editMessageLiveLocation(api::edit_message_live_location_request,
-                                                         deadline_t deadline = deadline_t::never()) const;
-
-  /* Use this method to stop updating a live location message before live_period expires. On success, if the
-   * message is not an inline message, the edited Message is returned, otherwise True is returned. */
-  dd::task<oneof<bool, Message>> stopMessageLiveLocation(api::stop_message_live_location_request,
-                                                         deadline_t deadline = deadline_t::never()) const;
-
-  /* Use this method to edit only the reply markup of messages. On success, if the edited message is not an
-   * inline message, the edited Message is returned, otherwise True is returned. Note that business messages
-   * that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours
-   * from the time they were sent. */
-  dd::task<oneof<bool, Message>> editMessageReplyMarkup(api::edit_message_reply_markup_request,
-                                                        deadline_t deadline = deadline_t::never()) const;
-
-  /* Use this method to stop a poll which was sent by the bot. On success, the stopped Poll is returned. */
-  dd::task<Poll> stopPoll(api::stop_poll_request, deadline_t deadline = deadline_t::never()) const;
-
-  /* Use this method to delete a message, including service messages, with the following limitations:- A
-   * message can only be deleted if it was sent less than 48 hours ago.- Service messages about a supergroup,
-   * channel, or forum topic creation can't be deleted.- A dice message in a private chat can only be deleted
-   * if it was sent more than 24 hours ago.- Bots can delete outgoing messages in private chats, groups, and
-   * supergroups.- Bots can delete incoming messages in private chats.- Bots granted can_post_messages
-   * permissions can delete outgoing messages in channels.- If the bot is an administrator of a group, it can
-   * delete any message there.- If the bot has can_delete_messages permission in a supergroup or a channel, it
-   * can delete any message there.Returns True on success. */
-  dd::task<bool> deleteMessage(api::delete_message_request, deadline_t deadline = deadline_t::never()) const;
-
-  /* Use this method to delete multiple messages simultaneously. If some of the specified messages can't be
-   * found, they are skipped. Returns True on success. */
-  dd::task<bool> deleteMessages(api::delete_messages_request,
-                                deadline_t deadline = deadline_t::never()) const;
-
   /* Returns the list of gifts that can be sent by the bot to users and channel chats. Requires no parameters.
    * Returns a Gifts object. */
   dd::task<Gifts> getAvailableGifts(deadline_t deadline = deadline_t::never()) const;
@@ -671,6 +616,84 @@ struct telegram {
    * can_manage_stories business bot right. Returns True on success. */
   dd::task<bool> deleteStory(api::delete_story_request, deadline_t deadline = deadline_t::never()) const;
 
+  /* Use this method to edit text and game messages. On success, if the edited message is not an inline
+   * message, the edited Message is returned, otherwise True is returned. Note that business messages that
+   * were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from
+   * the time they were sent. */
+  dd::task<oneof<bool, Message>> editMessageText(api::edit_message_text_request,
+                                                 deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to edit captions of messages. On success, if the edited message is not an inline message,
+   * the edited Message is returned, otherwise True is returned. Note that business messages that were not
+   * sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time
+   * they were sent. */
+  dd::task<oneof<bool, Message>> editMessageCaption(api::edit_message_caption_request,
+                                                    deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to edit animation, audio, document, photo, or video messages, or to add media to text
+   * messages. If a message is part of a message album, then it can be edited only to an audio for audio
+   * albums, only to a document for document albums and to a photo or a video otherwise. When an inline
+   * message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or
+   * specify a URL. On success, if the edited message is not an inline message, the edited Message is
+   * returned, otherwise True is returned. Note that business messages that were not sent by the bot and do
+   * not contain an inline keyboard can only be edited within 48 hours from the time they were sent. */
+  dd::task<oneof<bool, Message>> editMessageMedia(api::edit_message_media_request,
+                                                  deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to edit live location messages. A location can be edited until its live_period expires or
+   * editing is explicitly disabled by a call to stopMessageLiveLocation. On success, if the edited message is
+   * not an inline message, the edited Message is returned, otherwise True is returned. */
+  dd::task<oneof<bool, Message>> editMessageLiveLocation(api::edit_message_live_location_request,
+                                                         deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to stop updating a live location message before live_period expires. On success, if the
+   * message is not an inline message, the edited Message is returned, otherwise True is returned. */
+  dd::task<oneof<bool, Message>> stopMessageLiveLocation(api::stop_message_live_location_request,
+                                                         deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to edit a checklist on behalf of a connected business account. On success, the edited
+   * Message is returned. */
+  dd::task<Message> editMessageChecklist(api::edit_message_checklist_request,
+                                         deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to edit only the reply markup of messages. On success, if the edited message is not an
+   * inline message, the edited Message is returned, otherwise True is returned. Note that business messages
+   * that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours
+   * from the time they were sent. */
+  dd::task<oneof<bool, Message>> editMessageReplyMarkup(api::edit_message_reply_markup_request,
+                                                        deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to stop a poll which was sent by the bot. On success, the stopped Poll is returned. */
+  dd::task<Poll> stopPoll(api::stop_poll_request, deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to approve a suggested post in a direct messages chat. The bot must have the
+   * 'can_post_messages' administrator right in the corresponding channel chat. Returns True on success. */
+  dd::task<bool> approveSuggestedPost(api::approve_suggested_post_request,
+                                      deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to decline a suggested post in a direct messages chat. The bot must have the
+   * 'can_manage_direct_messages' administrator right in the corresponding channel chat. Returns True on
+   * success. */
+  dd::task<bool> declineSuggestedPost(api::decline_suggested_post_request,
+                                      deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to delete a message, including service messages, with the following limitations:- A
+   * message can only be deleted if it was sent less than 48 hours ago.- Service messages about a supergroup,
+   * channel, or forum topic creation can't be deleted.- A dice message in a private chat can only be deleted
+   * if it was sent more than 24 hours ago.- Bots can delete outgoing messages in private chats, groups, and
+   * supergroups.- Bots can delete incoming messages in private chats.- Bots granted can_post_messages
+   * permissions can delete outgoing messages in channels.- If the bot is an administrator of a group, it can
+   * delete any message there.- If the bot has can_delete_messages administrator right in a supergroup or a
+   * channel, it can delete any message there.- If the bot has can_manage_direct_messages administrator right
+   * in a channel, it can delete any message in the corresponding direct messages chat.Returns True on
+   * success. */
+  dd::task<bool> deleteMessage(api::delete_message_request, deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to delete multiple messages simultaneously. If some of the specified messages can't be
+   * found, they are skipped. Returns True on success. */
+  dd::task<bool> deleteMessages(api::delete_messages_request,
+                                deadline_t deadline = deadline_t::never()) const;
+
   /* Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers. On success, the sent
    * Message is returned. */
   dd::task<Message> sendSticker(api::send_sticker_request, deadline_t deadline = deadline_t::never()) const;
@@ -782,6 +805,10 @@ struct telegram {
    * seconds after the pre-checkout query was sent. */
   dd::task<bool> answerPreCheckoutQuery(api::answer_pre_checkout_query_request,
                                         deadline_t deadline = deadline_t::never()) const;
+
+  /* A method to get the current Telegram Stars balance of the bot. Requires no parameters. On success,
+   * returns a StarAmount object. */
+  dd::task<StarAmount> getMyStarBalance(deadline_t deadline = deadline_t::never()) const;
 
   /* Returns the bot's Telegram Star transactions in chronological order. On success, returns a
    * StarTransactions object. */

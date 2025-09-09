@@ -17,6 +17,9 @@ struct send_media_group_request {
   optional<String> business_connection_id;
   /* Unique identifier for the target message thread (topic) of the forum; for forum supergroups only */
   optional<Integer> message_thread_id;
+  /* Identifier of the direct messages topic to which the messages will be sent; required if the messages are
+   * sent to a direct messages chat */
+  optional<Integer> direct_messages_topic_id;
   /* Sends messages silently. Users will receive a notification with no sound. */
   optional<bool> disable_notification;
   /* Protects the contents of the sent messages from forwarding and saving */
@@ -40,6 +43,8 @@ struct send_media_group_request {
     body.arg("chat_id", chat_id);
     if (message_thread_id)
       body.arg("message_thread_id", *message_thread_id);
+    if (direct_messages_topic_id)
+      body.arg("direct_messages_topic_id", *direct_messages_topic_id);
     body.arg("media", media);
     if (disable_notification)
       body.arg("disable_notification", *disable_notification);
