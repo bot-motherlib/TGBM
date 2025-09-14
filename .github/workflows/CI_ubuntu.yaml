@@ -28,9 +28,6 @@ jobs:
             version: 19
           - type: debug
             compiler: gcc
-            version: 13
-          - type: debug
-            compiler: gcc
             version: 14
           - type: release
             compiler: clang
@@ -38,9 +35,6 @@ jobs:
           - type: release
             compiler: clang
             version: 19
-          - type: release
-            compiler: gcc
-            version: 13
           - type: release
             compiler: gcc
             version: 14
