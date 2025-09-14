@@ -1,14 +1,5 @@
 include(cmake/get_cpm.cmake)
 
-CPMAddPackage(
-  NAME OPENSSL
-  GITHUB_REPOSITORY janbar/openssl-cmake
-  GIT_TAG 1.1.1w-20231130
-  OPTIONS "WITH_APPS OFF"
-  EXCLUDE_FROM_ALL YES
-  SYSTEM OFF
-)
-
 set(BOOST_INCLUDE_LIBRARIES system asio pfr json)
 CPMAddPackage(
   NAME BOOST
@@ -38,13 +29,6 @@ CPMAddPackage(
   NAME RAPIDJSON
   GIT_REPOSITORY https://github.com/kelbon/rapidjson-usable
   GIT_TAG        0931914e89b021fcf521d3bb39b501b96fbeffd2
-)
-
-CPMAddPackage(
-  NAME HPACK
-  GIT_REPOSITORY https://github.com/kelbon/HPACK
-  GIT_TAG        v1.1.1
-  OPTIONS "HPACK_ENABLE_TESTING ${TGBM_ENABLE_TESTING}"
 )
 
 if (TGBM_ENABLE_TESTING)
@@ -78,6 +62,10 @@ CPMAddPackage(
   DOWNLOAD_ONLY YES
 )
 
+if (NOT DEFINED TELEGRAM_BOT_API_HTML_SOURCE_DIR)
+  message(FATAL "[TGBM] cannot load telegram bot api")
+endif()
+
 CPMAddPackage(
   NAME HTTP2
   GIT_REPOSITORY https://github.com/kelbon/http2
@@ -86,10 +74,6 @@ CPMAddPackage(
           "KELHTTP2_DEBUG_SSL_KEYS_FILE ${TGBM_SSL_KEYS_FILE}"
 )
 
-if (NOT DEFINED telegram_bot_api_html_SOURCE_DIR)
-  message(FATAL "[TGBM] cannot load telegram bot api")
-endif()
-
-set(TGBM_APIFILE ${telegram_bot_api_html_SOURCE_DIR}/telegram_bot_api.html)
+set(TGBM_APIFILE ${TELEGRAM_BOT_API_HTML_SOURCE_DIR}/telegram_bot_api.html)
 
 message(STATUS "[TGBM] telegram bot api file: ${TGBM_APIFILE}")
