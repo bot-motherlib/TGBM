@@ -35,7 +35,7 @@ struct pin {
 
 }  // namespace tgbm
 
-// gcc-12/14 internal error after inlining into coroutine + placement new
+// gcc-13/14 internal error after inlining into coroutine + placement new
 #ifdef __GNUC__
   #define TGBM_GCC_WORKAROUND [[gnu::noinline]]
 #else
