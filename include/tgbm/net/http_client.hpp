@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 #include <string_view>
 
 #include <kelcoro/task.hpp>
@@ -15,29 +14,10 @@
 
 namespace tgbm {
 
-using on_header_fn_ptr = fn_ptr<void(std::string_view name, std::string_view value)>;
-
-using on_data_part_fn_ptr = fn_ptr<void(std::span<const byte_t> bytes, bool last_part)>;
-using on_data_part_fn_ref = fn_ref<void(std::span<const byte_t> bytes, bool last_part)>;
-
 struct http_client {
- protected:
-  std::string host;
-
- public:
-  std::string_view get_host() const noexcept {
-    return host;
-  }
-
-  // 'host' used for
-  //   * connecting when required
-  //   * SSL host name verification
-  //   * as default host if request host not setted
-  //  but 'host' header in requests may differ
-  // note: same as :authority for HTTP2
-  http_client(std::string_view host);
-
   virtual ~http_client() = default;
+
+  virtual std::string_view get_host() const noexcept = 0;
 
   // rethrows exceptions from 'on_header' and 'on_data_part' to caller
   // if 'on_header' is nullptr, all headers ignored (status parsed if 'on_data_part' != nullptr)
@@ -49,12 +29,6 @@ struct http_client {
   virtual dd::task<int> send_request(on_header_fn_ptr, on_data_part_fn_ptr, http_request, deadline_t) = 0;
 
   virtual dd::task<void> sleep(duration_t, io_error_code&) = 0;
-  // throws on errors
-  dd::task<http_response> send_request(http_request, deadline_t);
-
-  dd::task<http_response> send_request(http_request request, duration_t timeout) {
-    return send_request(std::move(request), deadline_after(timeout));
-  }
 
   // run until all work done
   virtual void run() = 0;

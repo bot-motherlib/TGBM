@@ -5,8 +5,9 @@
 #include <kelcoro/stack_memory_resource.hpp>
 
 #include <tgbm/jsons/sax.hpp>
-#include <tgbm/utils/scope_exit.hpp>
 #include <tgbm/utils/memory.hpp>
+
+#include <zal/zal.hpp>
 
 namespace tgbm {
 using io_error_code = boost::system::error_code;

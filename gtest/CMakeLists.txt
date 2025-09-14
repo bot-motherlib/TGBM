@@ -12,7 +12,6 @@ add_executable(${PROJECT_NAME}_gtests
     parsers/test_oneof_field.cpp
     parsers/test_stream.cpp
     http/test_body.cpp
-    http/connection_pool.cpp
     utils.cpp
 )
 

@@ -2,7 +2,8 @@
 #include <tgbm/bot.hpp>
 
 #include <tgbm/utils/formatters.hpp>
-#include <tgbm/utils/scope_exit.hpp>
+
+#include <zal/zal.hpp>
 
 #include <fstream>
 #include <filesystem>

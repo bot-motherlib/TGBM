@@ -7,8 +7,6 @@
 #include <tgbm/logger.hpp>
 #include <tgbm/bot.hpp>
 #include <tgbm/net/http2/client.hpp>
-#include <tgbm/net/http_client_with_retry.hpp>
-#include <tgbm/net/asio/asio_tls_transport.hpp>
 #include <tgbm/utils/formatters.hpp>
 
 /*
@@ -80,7 +78,7 @@ static tgbm::api::InputFile test_small_file() {
   tgbm::api::InputFile f;
   f.filename = "myname";
   f.mimetype = "text/plain";
-  // 512 byte of 'b'
+  // 512 bytes of 'b'
   f.data = std::string(512, 'b');
   return f;
 }
@@ -92,11 +90,7 @@ int main() try {
     return -1;
   }
 
-  auto* raw_client = new tgbm::http_client_with_retries<tgbm::http2_client>("api.telegram.org");
-  raw_client->wait_between_retries = std::chrono::seconds(1);
-  raw_client->retry_count = 4;
-
-  tgbm::bot bot(token, std::unique_ptr<tgbm::http_client>(raw_client));
+  tgbm::bot bot(token, std::unique_ptr<tgbm::http2_client>(new tgbm::http2_client("api.telegram.org")));
 
   assert(bot.get_token() == token);
   bot.commands.add("stop", [&bot](tgbm::api::Message&&) { bot.stop(); });

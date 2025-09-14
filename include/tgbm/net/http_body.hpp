@@ -1,15 +1,10 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include <http2/http_body.hpp>
 
 namespace tgbm {
 
-using bytes_t = std::vector<uint8_t>;
-
-struct http_body {
-  std::string content_type;
-  bytes_t data;
-};
+using http2::bytes_t;
+using http2::http_body;
 
 }  // namespace tgbm

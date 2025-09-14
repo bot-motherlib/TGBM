@@ -14,8 +14,9 @@
 
 namespace tgbm {
 
+template <typename PushBackable>
 struct rj_refbuffer_t {
-  bytes_t& buf;
+  PushBackable& buf;
 
   using Ch = char;
 
@@ -26,8 +27,11 @@ struct rj_refbuffer_t {
   }
 };
 
+template <typename T>
+rj_refbuffer_t(T&) -> rj_refbuffer_t<T>;
+
 struct rj_urlencoded_refbuffer_t {
-  bytes_t& buf;
+  http2::http_body_bytes& buf;
 
   using Ch = char;
 
@@ -39,7 +43,7 @@ struct rj_urlencoded_refbuffer_t {
 };
 // TODO PutReserve etc
 struct rj_byvalue_buffer_t {
-  bytes_t buf;
+  http2::http_body_bytes buf;
 
   using Ch = char;
 
@@ -77,7 +81,7 @@ struct application_json_body {
 
 struct application_x_www_form_urlencoded {
  private:
-  bytes_t body;
+  http2::http_body_bytes body;
 
  public:
   application_x_www_form_urlencoded() = default;
@@ -86,7 +90,7 @@ struct application_x_www_form_urlencoded {
   }
   http_body take() noexcept {
     if (!body.empty()) {
-      assert(body.back() == '&');
+      // assert(body.back() == '&');
       body.pop_back();
     }
     return http_body{
@@ -114,7 +118,7 @@ struct application_x_www_form_urlencoded {
 struct application_multipart_form_data {
  private:
   std::string boundary;
-  bytes_t body;
+  http2::http_body_bytes body;
 
  public:
   explicit application_multipart_form_data(size_t reserve = 0) {
@@ -169,7 +173,7 @@ struct application_multipart_form_data {
     using namespace rapidjson;
     constexpr auto flag =
         content_type == "text/plain" ? WriteFlag::kWriteUnquotedString : WriteFlag::kWriteDefaultFlags;
-    Writer<rj_refbuffer_t, UTF8<>, UTF8<>, CrtAllocator, flag> writer(b);
+    Writer<decltype(b), UTF8<>, UTF8<>, CrtAllocator, flag> writer(b);
     rj_tojson<decltype(writer), T>::serialize(writer, value);
     body.push_back('\r');
     body.push_back('\n');

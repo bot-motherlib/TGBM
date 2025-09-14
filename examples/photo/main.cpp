@@ -2,7 +2,7 @@
 #include <tgbm/bot.hpp>
 
 #include <tgbm/utils/formatters.hpp>
-#include <tgbm/utils/scope_exit.hpp>
+#include <zal/zal.hpp>
 
 dd::task<void> start_main_task(tgbm::bot& bot) {
   on_scope_exit {
