@@ -57,12 +57,8 @@ template <typename T>
 T parse_generator(std::string_view data) {
   T v;
   tgbm::byte_t bytes[4096];
-  ::boost::json::basic_parser<tgbm::json::boostjson_sax_producer> p{::boost::json::parse_options{}, v,
-                                                                    std::span(bytes)};
-  tgbm::io_error_code ec;
-  p.write_some(false, data.data(), data.size(), ec);
-  if (ec || !p.handler().is_done())
-    TGBM_JSON_PARSE_ERROR;
+  tgbm::json::stream_parser parser(v, bytes);
+  parser.feed(data, true);
   return v;
 }
 

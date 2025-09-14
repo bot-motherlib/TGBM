@@ -1,20 +1,17 @@
 #include <tgbm/bot.hpp>
 
 #include <tgbm/net/http2/client.hpp>
-#include <tgbm/net/asio/tcp_connection.hpp>
-#include <tgbm/net/asio/asio_tls_transport.hpp>
 
 namespace tgbm {
 
 std::unique_ptr<http_client> default_http_client(std::string_view host,
                                                  std::filesystem::path additional_ssl_cert) {
-  tcp_connection_options opts;
+  http2::tcp_connection_options opts;
   if (!additional_ssl_cert.empty()) {
     opts.additional_ssl_certificates.push_back(std::move(additional_ssl_cert));
-    opts.disable_ssl_certificate_verify = false;
+    opts.host_for_name_verification.emplace(host);
   }
-  return std::unique_ptr<http_client>(
-      new http2_client(host, {}, $inplace(asio_tls_transport(std::move(opts)))));
+  return std::unique_ptr<http_client>(new http2_client(host, {}));
 }
 
 [[nodiscard]] bool bot_commands::is_valid_name(std::string_view name) noexcept {
@@ -103,9 +100,9 @@ dd::task<int> download_file(api::telegram api, api::String file_path, on_data_pa
   co_return status;
 }
 
-dd::task<int> download_file_by_id(api::telegram api, api::String fileid,
-                                  fn_ref<void(std::span<const byte_t>, bool is_last_chunk)> on_data_part,
-                                  deadline_t deadline) {
+dd::task<int> download_file_by_id(
+    api::telegram api, api::String fileid,
+    fn_ref<void(std::span<const http2::byte_t>, bool is_last_chunk)> on_data_part, deadline_t deadline) {
   api::File info = co_await api.getFile({.file_id = std::move(fileid)}, deadline);
   if (!info.file_path)
     co_return 404;

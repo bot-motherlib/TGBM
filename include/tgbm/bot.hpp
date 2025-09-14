@@ -3,11 +3,14 @@
 #include <memory>
 #include <string>
 
+#include "tgbm/api/telegram.hpp"
+#include "tgbm/long_poll.hpp"
+#include "tgbm/net/http_client.hpp"
+
 #include <kelcoro/channel.hpp>
 
-#include <tgbm/api/telegram.hpp>
-#include <tgbm/net/http_client.hpp>
-#include <tgbm/long_poll.hpp>
+#include <boost/json.hpp>
+#include <boost/json/value.hpp>
 
 namespace tgbm {
 
@@ -51,10 +54,6 @@ struct bot {
   const_string token;
 
   // uses default http client
-  //
-  // Note:
-  //   by default ssl verification disabled (see reason in struct tcp_connection_options)
-  //   if 'additional_ssl_cert' is not empty, then verification enabled
   explicit bot(std::string_view bottoken, std::string_view host = "api.telegram.org",
                std::filesystem::path additional_ssl_cert = {})
       : client(default_http_client(host, std::move(additional_ssl_cert))),
@@ -73,6 +72,7 @@ struct bot {
   std::string_view get_token() const noexcept {
     return token.str();
   }
+
   std::string_view get_host() const noexcept {
     return client->get_host();
   }
@@ -88,18 +88,8 @@ struct bot {
   //  * ignores update, which handled by bot.commands already
   dd::channel<api::Update> updates(long_poll_options = {});
 
-  // Suspends the coroutine. It will be resumed after `duration`.
-  // The error code `errc` will be set if the bot stops.
-  // This can be used for implementing periodic tasks.
-  //
-  // Example:
-  // io_error_code errc;
-  // while (!errc) {
-  //     // Your code to be executed every 3 seconds
-  //     co_await bot.sleep(std::chrono::seconds(3));
-  // }
-  dd::task<void> sleep(duration_t d, io_error_code& errc) {
-    return client->sleep(d, errc);
+  dd::task<void> sleep(duration_t d, io_error_code& ec) {
+    return client->sleep(d, ec);
   }
 
   // works until all done or error happens

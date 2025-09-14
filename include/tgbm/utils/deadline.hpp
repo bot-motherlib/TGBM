@@ -1,42 +1,11 @@
 #pragma once
 
-#include <chrono>
-#include <compare>
+#include <http2/utils/deadline.hpp>
 
 namespace tgbm {
 
-using duration_t = std::chrono::steady_clock::duration;
-
-struct deadline_t {
-  using time_point_t = std::chrono::steady_clock::time_point;
-
-  time_point_t tp;
-
-  [[nodiscard]] constexpr bool is_reached(
-      time_point_t point = std::chrono::steady_clock::now()) const noexcept {
-    return tp <= point;
-  }
-
-  duration_t remaining_time() const noexcept {
-    return tp - std::chrono::steady_clock::now();
-  }
-
-  static constexpr deadline_t never() noexcept {
-    return deadline_t{time_point_t::max()};
-  }
-  static constexpr deadline_t yesterday() noexcept {
-    return deadline_t{time_point_t::min()};
-  }
-  std::strong_ordering operator<=>(const deadline_t&) const = default;
-};
-
-inline deadline_t deadline_after(duration_t duration) noexcept {
-  // avoid overflow
-  auto tp = std::chrono::steady_clock::now();
-  // TODO tests.. handle duration underflow
-  if (tp.max() - tp <= duration)
-    return deadline_t{tp.max()};
-  return deadline_t{tp + duration};
-}
+using http2::deadline_after;
+using http2::deadline_t;
+using http2::duration_t;
 
 }  // namespace tgbm

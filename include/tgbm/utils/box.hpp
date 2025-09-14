@@ -1,7 +1,6 @@
 #pragma once
 
 #include <compare>
-#include <concepts>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -9,7 +8,8 @@
 
 #include <tgbm/utils/macro.hpp>
 #include <tgbm/utils/meta.hpp>
-#include <tgbm/utils/scope_exit.hpp>
+
+#include <zal/zal.hpp>
 
 namespace tgbm {
 
