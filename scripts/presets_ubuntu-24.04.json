@@ -52,8 +52,8 @@
             "displayName": "gcc 12 release",
             "inherits": "base_release",
             "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc-12",
-                "CMAKE_CXX_COMPILER": "g++-12"
+                "CMAKE_C_COMPILER": "gcc-13",
+                "CMAKE_CXX_COMPILER": "g++-13"
             }
         },
         {
@@ -90,8 +90,8 @@
             "displayName": "gcc 12 debug",
             "inherits": "base_debug",
             "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc-12",
-                "CMAKE_CXX_COMPILER": "g++-12"
+                "CMAKE_C_COMPILER": "gcc-13",
+                "CMAKE_CXX_COMPILER": "g++-13"
             }
         },
         {

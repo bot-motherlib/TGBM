@@ -1,7 +1,7 @@
 include(cmake/get_cpm.cmake)
 
 CPMAddPackage(
-  NAME OpenSSL
+  NAME OPENSSL
   GITHUB_REPOSITORY janbar/openssl-cmake
   GIT_TAG 1.1.1w-20231130
   OPTIONS "WITH_APPS OFF"
@@ -11,7 +11,7 @@ CPMAddPackage(
 
 set(BOOST_INCLUDE_LIBRARIES system asio pfr json)
 CPMAddPackage(
-  NAME Boost
+  NAME BOOST
   VERSION 1.87.0
   URL https://github.com/boostorg/boost/releases/download/boost-1.87.0/boost-1.87.0-cmake.tar.xz
   OPTIONS "BOOST_ENABLE_CMAKE ON"
@@ -21,35 +21,35 @@ unset(BOOST_INCLUDE_LIBRARIES)
 CPMAddPackage("gh:fmtlib/fmt#11.2.0")
 
 CPMAddPackage(
-  NAME kelcoro
+  NAME KELCORO
   GIT_REPOSITORY https://github.com/kelbon/kelcoro
-  GIT_TAG origin/main
+  GIT_TAG v1.2.0
   OPTIONS "KELCORO_ENABLE_TESTING OFF"
 )
 
 CPMAddPackage(
-  NAME AnyAny
+  NAME ANYANY
   GIT_REPOSITORY https://github.com/kelbon/AnyAny
-  GIT_TAG origin/main
+  GIT_TAG v1.1.0
   OPTIONS "AA_ENABLE_TESTING ${TGBM_ENABLE_TESTING}"
 )
 
 CPMAddPackage(
-  NAME rapidjson
+  NAME RAPIDJSON
   GIT_REPOSITORY https://github.com/kelbon/rapidjson-usable
-  GIT_TAG        origin/master
+  GIT_TAG        0931914e89b021fcf521d3bb39b501b96fbeffd2
 )
 
 CPMAddPackage(
   NAME HPACK
   GIT_REPOSITORY https://github.com/kelbon/HPACK
-  GIT_TAG        origin/master
+  GIT_TAG        v1.1.1
   OPTIONS "HPACK_ENABLE_TESTING ${TGBM_ENABLE_TESTING}"
 )
 
 if (TGBM_ENABLE_TESTING)
   CPMAddPackage(
-    NAME googletest
+    NAME GOOGLETEST
     GITHUB_REPOSITORY google/googletest
     GIT_TAG release-1.12.1
     VERSION 1.12.1
@@ -59,7 +59,7 @@ endif()
 
 if (TGBM_ENABLE_BENCHS)
   CPMAddPackage(
-    NAME benchmark
+    NAME BENCHMARK
     GITHUB_REPOSITORY google/benchmark
     GIT_TAG v1.9.0
     OPTIONS "BENCHMARK_ENABLE_TESTING Off"
@@ -72,7 +72,7 @@ endif()
 find_package(Threads REQUIRED)
 
 CPMAddPackage(
-  NAME telegram_bot_api_html
+  NAME TELEGRAM_BOT_API_HTML
   GIT_REPOSITORY https://github.com/kelbon/telegram_bot_api_html
   GIT_TAG v9.2 # last supported api
   DOWNLOAD_ONLY YES
