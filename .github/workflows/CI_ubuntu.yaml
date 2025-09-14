@@ -28,7 +28,7 @@ jobs:
             version: 19
           - type: debug
             compiler: gcc
-            version: 12
+            version: 13
           - type: debug
             compiler: gcc
             version: 14
@@ -40,7 +40,7 @@ jobs:
             version: 19
           - type: release
             compiler: gcc
-            version: 12
+            version: 13
           - type: release
             compiler: gcc
             version: 14

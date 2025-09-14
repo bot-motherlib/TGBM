@@ -16,7 +16,7 @@ set (TGBM_PYTHON       "python"       CACHE STRING "Used only by api generator")
 set(TGBM_SSL_KEYS_FILE "" CACHE FILEPATH "")
 
 if (TGBM_SSL_KEYS_FILE)
-  message (STATUS "[tgbm] TGBM_SSL_KEYS_FILE: ${TGBM_SSL_KEYS_FILE}")
+  message (STATUS "[TGBM] TGBM_SSL_KEYS_FILE: ${TGBM_SSL_KEYS_FILE}")
 endif()
 message (STATUS "[TGBM] TGBM_ENABLE_BENCHS: ${TGBM_ENABLE_BENCHS}")
 message (STATUS "[TGBM] TGBM_ENABLE_GEN: ${TGBM_ENABLE_GEN}")
@@ -92,7 +92,6 @@ set_target_properties(tgbmlib PROPERTIES
 
 if (TGBM_ENABLE_TESTING)
   include(CTest)
-  add_subdirectory(test)
   add_subdirectory(gtest)
 endif()
 

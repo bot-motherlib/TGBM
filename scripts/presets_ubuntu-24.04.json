@@ -48,7 +48,7 @@
             }
         },
         {
-            "name": "gcc_12_release",
+            "name": "gcc_13_release",
             "displayName": "gcc 12 release",
             "inherits": "base_release",
             "cacheVariables": {
@@ -86,7 +86,7 @@
             }
         },
         {
-            "name": "gcc_12_debug",
+            "name": "gcc_13_debug",
             "displayName": "gcc 12 debug",
             "inherits": "base_debug",
             "cacheVariables": {
