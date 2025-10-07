@@ -72,7 +72,7 @@ struct sax_parser<api::telegram_answer<T>> {
           out.description = tok.str_m;
           continue;
         case unknown_key:
-          co_yield dd::elements_of(sax_ignore_value(tok));
+          co_yield dd::elements_of(sax_ignore_value(tok, r));
           continue;
       }
     }

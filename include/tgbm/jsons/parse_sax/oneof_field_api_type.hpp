@@ -37,7 +37,7 @@ struct sax_parser<T> {
               t_.data, key,
               [&]<typename Field>(Field& field) { return sax_parser<Field>::parse(field, tok, r); },
               []() -> sax_consumer_t { TGBM_JSON_PARSE_ERROR; },
-              [&]() -> sax_consumer_t { return sax_ignore_value(tok); });
+              [&]() -> sax_consumer_t { return sax_ignore_value(tok, r); });
         });
   }
 

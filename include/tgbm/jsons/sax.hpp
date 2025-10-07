@@ -5,6 +5,7 @@
 #include <tgbm/jsons/errors.hpp>
 
 #include <kelcoro/generator.hpp>
+#include <kelcoro/stack_memory_resource.hpp>
 
 namespace tgbm::json {
 
@@ -184,7 +185,7 @@ struct sax_parser {
   // Note: 'tok' never will be 'part', its handled by token producer
 };
 
-inline sax_consumer_t sax_ignore_value(sax_token& tok) {
+inline sax_consumer_t sax_ignore_value(sax_token& tok, dd::with_stack_resource r) {
   switch (tok.got) {
     case sax_token::string:
     case sax_token::int64:

@@ -48,9 +48,9 @@ struct sax_parser<T> {
             parsed_.set(I);
             return sax_parser<pfr_extension::tuple_element_t<I, T>>::parse(field, tok, r);
           },
-          [&]() { return sax_ignore_value(tok); });
+          [&]() { return sax_ignore_value(tok, r); });
     } else {
-      return sax_ignore_value(tok);
+      return sax_ignore_value(tok, r);
     }
   }
 

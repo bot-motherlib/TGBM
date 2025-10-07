@@ -14,7 +14,7 @@ CPMAddPackage("gh:fmtlib/fmt#11.2.0")
 CPMAddPackage(
   NAME KELCORO
   GIT_REPOSITORY https://github.com/kelbon/kelcoro
-  GIT_TAG v1.3.0
+  GIT_TAG experimental_attribute
 )
 
 CPMAddPackage(
