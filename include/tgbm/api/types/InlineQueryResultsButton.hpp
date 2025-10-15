@@ -10,9 +10,13 @@ struct InlineQueryResultsButton {
   String text;
   struct web_app {
     WebAppInfo value;
+    bool operator==(const web_app&) const = default;
+    std::strong_ordering operator<=>(const web_app&) const = default;
   };
   struct start_parameter {
     String value;
+    bool operator==(const start_parameter&) const = default;
+    std::strong_ordering operator<=>(const start_parameter&) const = default;
   };
   oneof<web_app, start_parameter> data;
   enum struct type_e {
@@ -72,6 +76,8 @@ struct InlineQueryResultsButton {
         unreachable();
     }
   }
+  bool operator==(const InlineQueryResultsButton&) const;
+  std::strong_ordering operator<=>(const InlineQueryResultsButton&) const;
 };
 
 }  // namespace tgbm::api

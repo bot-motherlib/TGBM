@@ -22,6 +22,9 @@ struct ForumTopic {
         .case_("icon_color", true)
         .or_default(false);
   }
+
+  bool operator==(const ForumTopic&) const;
+  std::strong_ordering operator<=>(const ForumTopic&) const;
 };
 
 }  // namespace tgbm::api

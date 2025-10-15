@@ -45,6 +45,9 @@ struct InlineQueryResultLocation {
         .case_("title", true)
         .or_default(false);
   }
+
+  bool operator==(const InlineQueryResultLocation&) const;
+  std::strong_ordering operator<=>(const InlineQueryResultLocation&) const;
 };
 
 }  // namespace tgbm::api

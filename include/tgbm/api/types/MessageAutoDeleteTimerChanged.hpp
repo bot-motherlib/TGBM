@@ -12,6 +12,9 @@ struct MessageAutoDeleteTimerChanged {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("message_auto_delete_time", true).or_default(false);
   }
+
+  bool operator==(const MessageAutoDeleteTimerChanged&) const;
+  std::strong_ordering operator<=>(const MessageAutoDeleteTimerChanged&) const;
 };
 
 }  // namespace tgbm::api

@@ -25,6 +25,9 @@ struct BackgroundTypePattern {
         .case_("intensity", true)
         .or_default(false);
   }
+
+  bool operator==(const BackgroundTypePattern&) const;
+  std::strong_ordering operator<=>(const BackgroundTypePattern&) const;
 };
 
 }  // namespace tgbm::api

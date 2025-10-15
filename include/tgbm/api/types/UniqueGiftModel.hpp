@@ -20,6 +20,9 @@ struct UniqueGiftModel {
         .case_("rarity_per_mille", true)
         .or_default(false);
   }
+
+  bool operator==(const UniqueGiftModel&) const;
+  std::strong_ordering operator<=>(const UniqueGiftModel&) const;
 };
 
 }  // namespace tgbm::api

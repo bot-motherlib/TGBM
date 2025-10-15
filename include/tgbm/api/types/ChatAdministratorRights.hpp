@@ -63,6 +63,9 @@ struct ChatAdministratorRights {
         .case_("can_delete_stories", true)
         .or_default(false);
   }
+
+  bool operator==(const ChatAdministratorRights&) const;
+  std::strong_ordering operator<=>(const ChatAdministratorRights&) const;
 };
 
 }  // namespace tgbm::api

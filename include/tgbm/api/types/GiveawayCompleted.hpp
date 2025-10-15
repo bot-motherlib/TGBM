@@ -19,6 +19,9 @@ struct GiveawayCompleted {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("winner_count", true).or_default(false);
   }
+
+  bool operator==(const GiveawayCompleted&) const;
+  std::strong_ordering operator<=>(const GiveawayCompleted&) const;
 };
 
 }  // namespace tgbm::api

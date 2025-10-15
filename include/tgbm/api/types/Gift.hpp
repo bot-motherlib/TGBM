@@ -28,6 +28,9 @@ struct Gift {
         .case_("star_count", true)
         .or_default(false);
   }
+
+  bool operator==(const Gift&) const;
+  std::strong_ordering operator<=>(const Gift&) const;
 };
 
 }  // namespace tgbm::api

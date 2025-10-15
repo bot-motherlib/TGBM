@@ -39,6 +39,9 @@ struct OwnedGiftRegular {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("gift", true).case_("send_date", true).or_default(false);
   }
+
+  bool operator==(const OwnedGiftRegular&) const;
+  std::strong_ordering operator<=>(const OwnedGiftRegular&) const;
 };
 
 }  // namespace tgbm::api

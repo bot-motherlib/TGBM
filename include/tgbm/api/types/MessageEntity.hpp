@@ -36,6 +36,9 @@ struct MessageEntity {
         .case_("length", true)
         .or_default(false);
   }
+
+  bool operator==(const MessageEntity&) const;
+  std::strong_ordering operator<=>(const MessageEntity&) const;
 };
 
 }  // namespace tgbm::api

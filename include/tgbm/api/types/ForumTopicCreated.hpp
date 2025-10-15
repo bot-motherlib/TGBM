@@ -16,6 +16,9 @@ struct ForumTopicCreated {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("name", true).case_("icon_color", true).or_default(false);
   }
+
+  bool operator==(const ForumTopicCreated&) const;
+  std::strong_ordering operator<=>(const ForumTopicCreated&) const;
 };
 
 }  // namespace tgbm::api

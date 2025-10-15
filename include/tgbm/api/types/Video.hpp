@@ -41,6 +41,9 @@ struct Video {
         .case_("duration", true)
         .or_default(false);
   }
+
+  bool operator==(const Video&) const;
+  std::strong_ordering operator<=>(const Video&) const;
 };
 
 }  // namespace tgbm::api

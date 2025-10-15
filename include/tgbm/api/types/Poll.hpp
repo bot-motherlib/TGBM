@@ -50,6 +50,9 @@ struct Poll {
         .case_("allows_multiple_answers", true)
         .or_default(false);
   }
+
+  bool operator==(const Poll&) const;
+  std::strong_ordering operator<=>(const Poll&) const;
 };
 
 }  // namespace tgbm::api

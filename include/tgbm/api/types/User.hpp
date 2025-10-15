@@ -44,6 +44,9 @@ struct User {
         .case_("first_name", true)
         .or_default(false);
   }
+
+  bool operator==(const User&) const;
+  std::strong_ordering operator<=>(const User&) const;
 };
 
 }  // namespace tgbm::api

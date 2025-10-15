@@ -15,6 +15,9 @@ struct ChatMemberMember {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("user", true).or_default(false);
   }
+
+  bool operator==(const ChatMemberMember&) const;
+  std::strong_ordering operator<=>(const ChatMemberMember&) const;
 };
 
 }  // namespace tgbm::api

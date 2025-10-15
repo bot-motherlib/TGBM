@@ -14,6 +14,9 @@ struct ChatLocation {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("location", true).case_("address", true).or_default(false);
   }
+
+  bool operator==(const ChatLocation&) const;
+  std::strong_ordering operator<=>(const ChatLocation&) const;
 };
 
 }  // namespace tgbm::api

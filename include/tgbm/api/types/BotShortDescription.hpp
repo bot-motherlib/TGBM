@@ -12,6 +12,9 @@ struct BotShortDescription {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("short_description", true).or_default(false);
   }
+
+  bool operator==(const BotShortDescription&) const;
+  std::strong_ordering operator<=>(const BotShortDescription&) const;
 };
 
 }  // namespace tgbm::api

@@ -23,6 +23,9 @@ struct AcceptedGiftTypes {
         .case_("premium_subscription", true)
         .or_default(false);
   }
+
+  bool operator==(const AcceptedGiftTypes&) const;
+  std::strong_ordering operator<=>(const AcceptedGiftTypes&) const;
 };
 
 }  // namespace tgbm::api

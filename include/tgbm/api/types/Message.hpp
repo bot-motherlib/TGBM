@@ -261,6 +261,9 @@ struct Message {
         .case_("chat", true)
         .or_default(false);
   }
+
+  bool operator==(const Message&) const;
+  std::strong_ordering operator<=>(const Message&) const;
 };
 
 }  // namespace tgbm::api

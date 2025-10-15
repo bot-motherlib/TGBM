@@ -18,6 +18,9 @@ struct PollAnswer {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("poll_id", true).case_("option_ids", true).or_default(false);
   }
+
+  bool operator==(const PollAnswer&) const;
+  std::strong_ordering operator<=>(const PollAnswer&) const;
 };
 
 }  // namespace tgbm::api

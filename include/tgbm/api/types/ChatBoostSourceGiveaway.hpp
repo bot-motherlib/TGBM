@@ -20,6 +20,9 @@ struct ChatBoostSourceGiveaway {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("giveaway_message_id", true).or_default(false);
   }
+
+  bool operator==(const ChatBoostSourceGiveaway&) const;
+  std::strong_ordering operator<=>(const ChatBoostSourceGiveaway&) const;
 };
 
 }  // namespace tgbm::api

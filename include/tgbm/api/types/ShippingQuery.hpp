@@ -23,6 +23,9 @@ struct ShippingQuery {
         .case_("shipping_address", true)
         .or_default(false);
   }
+
+  bool operator==(const ShippingQuery&) const;
+  std::strong_ordering operator<=>(const ShippingQuery&) const;
 };
 
 }  // namespace tgbm::api

@@ -35,6 +35,9 @@ struct ReplyParameters {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("message_id", true).or_default(false);
   }
+
+  bool operator==(const ReplyParameters&) const;
+  std::strong_ordering operator<=>(const ReplyParameters&) const;
 };
 
 }  // namespace tgbm::api

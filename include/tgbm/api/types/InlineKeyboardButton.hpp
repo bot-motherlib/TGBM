@@ -14,33 +14,53 @@ struct InlineKeyboardButton {
   String text;
   struct url {
     String value;
+    bool operator==(const url&) const = default;
+    std::strong_ordering operator<=>(const url&) const = default;
   };
   struct callback_data {
     String value;
+    bool operator==(const callback_data&) const = default;
+    std::strong_ordering operator<=>(const callback_data&) const = default;
   };
   struct web_app {
     WebAppInfo value;
+    bool operator==(const web_app&) const = default;
+    std::strong_ordering operator<=>(const web_app&) const = default;
   };
   struct login_url {
     LoginUrl value;
+    bool operator==(const login_url&) const = default;
+    std::strong_ordering operator<=>(const login_url&) const = default;
   };
   struct switch_inline_query {
     String value;
+    bool operator==(const switch_inline_query&) const = default;
+    std::strong_ordering operator<=>(const switch_inline_query&) const = default;
   };
   struct switch_inline_query_current_chat {
     String value;
+    bool operator==(const switch_inline_query_current_chat&) const = default;
+    std::strong_ordering operator<=>(const switch_inline_query_current_chat&) const = default;
   };
   struct switch_inline_query_chosen_chat {
     SwitchInlineQueryChosenChat value;
+    bool operator==(const switch_inline_query_chosen_chat&) const = default;
+    std::strong_ordering operator<=>(const switch_inline_query_chosen_chat&) const = default;
   };
   struct copy_text {
     CopyTextButton value;
+    bool operator==(const copy_text&) const = default;
+    std::strong_ordering operator<=>(const copy_text&) const = default;
   };
   struct callback_game {
     CallbackGame value;
+    bool operator==(const callback_game&) const = default;
+    std::strong_ordering operator<=>(const callback_game&) const = default;
   };
   struct pay {
     bool value;
+    bool operator==(const pay&) const = default;
+    std::strong_ordering operator<=>(const pay&) const = default;
   };
   oneof<url, callback_data, web_app, login_url, switch_inline_query, switch_inline_query_current_chat,
         switch_inline_query_chosen_chat, copy_text, callback_game, pay>
@@ -224,6 +244,8 @@ struct InlineKeyboardButton {
         unreachable();
     }
   }
+  bool operator==(const InlineKeyboardButton&) const;
+  std::strong_ordering operator<=>(const InlineKeyboardButton&) const;
 };
 
 }  // namespace tgbm::api

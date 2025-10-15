@@ -12,6 +12,9 @@ struct UserChatBoosts {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("boosts", true).or_default(false);
   }
+
+  bool operator==(const UserChatBoosts&) const;
+  std::strong_ordering operator<=>(const UserChatBoosts&) const;
 };
 
 }  // namespace tgbm::api
