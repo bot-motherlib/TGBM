@@ -91,6 +91,15 @@ struct ChatFullInfo {
   optional<Integer> linked_chat_id;
   /* Optional. For supergroups, the location to which the supergroup is connected */
   box<ChatLocation> location;
+  /* Optional. For private chats, the rating of the user if any */
+  box<UserRating> rating;
+  /* Optional. For private chats, the first audio added to the profile of the user */
+  box<Audio> first_profile_audio;
+  /* Optional. The color scheme based on a unique gift that must be used for the chat's name, message replies
+   * and link previews */
+  box<UniqueGiftColors> unique_gift_colors;
+  /* Optional. The number of Telegram Stars a general user have to pay to send a message to the chat */
+  optional<Integer> paid_message_star_count;
   /* Optional. True, if the supergroup chat is a forum (has topics enabled) */
   optional<True> is_forum;
   /* Optional. True, if the chat is the direct messages chat of a channel */

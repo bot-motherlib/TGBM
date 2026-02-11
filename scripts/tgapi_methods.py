@@ -87,6 +87,7 @@ G_OPERATION_TO_RESULT = {
     'sendChecklist': MSG,
     'editMessageChecklist': MSG,
     'getMyStarBalance': 'StarAmount',
+    'getUserProfileAudios': 'UserProfileAudios',
 }
 
 # loads TG api (html)

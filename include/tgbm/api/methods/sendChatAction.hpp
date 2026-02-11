@@ -15,7 +15,8 @@ struct send_chat_action_request {
   String action;
   /* Unique identifier of the business connection on behalf of which the action will be sent */
   optional<String> business_connection_id;
-  /* Unique identifier for the target message thread; for supergroups only */
+  /* Unique identifier for the target message thread or topic of a forum; for supergroups and private chats of
+   * bots with forum topic mode enabled only */
   optional<Integer> message_thread_id;
 
   using return_type = bool;

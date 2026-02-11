@@ -26,7 +26,8 @@ struct send_invoice_request {
   /* Price breakdown, a JSON-serialized list of components (e.g. product price, tax, discount, delivery cost,
    * delivery tax, bonus, etc.). Must contain exactly one item for payments in Telegram Stars. */
   arrayof<LabeledPrice> prices;
-  /* Unique identifier for the target message thread (topic) of the forum; for forum supergroups only */
+  /* Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private
+   * chats of bots with forum topic mode enabled only */
   optional<Integer> message_thread_id;
   /* Identifier of the direct messages topic to which the message will be sent; required if the message is
    * sent to a direct messages chat */

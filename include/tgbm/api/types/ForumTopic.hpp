@@ -14,6 +14,9 @@ struct ForumTopic {
   Integer icon_color;
   /* Optional. Unique identifier of the custom emoji shown as the topic icon */
   optional<String> icon_custom_emoji_id;
+  /* Optional. True, if the name of the topic wasn't specified explicitly by its creator and likely needs to
+   * be changed by the bot */
+  optional<True> is_name_implicit;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)

@@ -12,6 +12,12 @@ namespace tgbm::api {
 struct InlineKeyboardButton {
   /* Label text on the button */
   String text;
+  struct icon_custom_emoji_id {
+    String value;
+  };
+  struct style {
+    String value;
+  };
   struct url {
     String value;
   };
@@ -42,10 +48,17 @@ struct InlineKeyboardButton {
   struct pay {
     bool value;
   };
-  oneof<url, callback_data, web_app, login_url, switch_inline_query, switch_inline_query_current_chat,
-        switch_inline_query_chosen_chat, copy_text, callback_game, pay>
+  oneof<icon_custom_emoji_id, style, url, callback_data, web_app, login_url, switch_inline_query,
+        switch_inline_query_current_chat, switch_inline_query_chosen_chat, copy_text, callback_game, pay>
       data;
   enum struct type_e {
+    /* Optional. Unique identifier of the custom emoji shown before the text of the button. Can only be used
+       by bots that purchased additional usernames on Fragment or in the messages directly sent by the bot to
+       private, group and supergroup chats if the owner of the bot has a Telegram Premium subscription. */
+    k_icon_custom_emoji_id,
+    /* Optional. Style of the button. Must be one of “danger” (red), “success” (green) or “primary” (blue). If
+       omitted, then an app-specific style is used. */
+    k_style,
     /* Optional. HTTP or tg:// URL to be opened when the button is pressed. Links tg://user?id=<user_id> can
        be used to mention a user by their identifier without using a username, if this is allowed by their
        privacy settings. */
@@ -90,6 +103,22 @@ struct InlineKeyboardButton {
   static constexpr size_t variant_size = size_t(type_e::nothing);
   type_e type() const {
     return static_cast<type_e>(data.index());
+  }
+  String* get_icon_custom_emoji_id() noexcept {
+    auto* p = data.get_if<icon_custom_emoji_id>();
+    return p ? &p->value : nullptr;
+  }
+  const String* get_icon_custom_emoji_id() const noexcept {
+    auto* p = data.get_if<icon_custom_emoji_id>();
+    return p ? &p->value : nullptr;
+  }
+  String* get_style() noexcept {
+    auto* p = data.get_if<style>();
+    return p ? &p->value : nullptr;
+  }
+  const String* get_style() const noexcept {
+    auto* p = data.get_if<style>();
+    return p ? &p->value : nullptr;
   }
   String* get_url() noexcept {
     auto* p = data.get_if<url>();
@@ -172,6 +201,10 @@ struct InlineKeyboardButton {
     return p ? &p->value : nullptr;
   }
   static constexpr decltype(auto) discriminate_field(std::string_view val, auto&& visitor) {
+    if (val == "icon_custom_emoji_id")
+      return visitor.template operator()<icon_custom_emoji_id>();
+    if (val == "style")
+      return visitor.template operator()<style>();
     if (val == "url")
       return visitor.template operator()<url>();
     if (val == "callback_data")
@@ -198,6 +231,10 @@ struct InlineKeyboardButton {
   std::string_view discriminator_now() const noexcept {
     using enum InlineKeyboardButton::type_e;
     switch (type()) {
+      case k_icon_custom_emoji_id:
+        return "icon_custom_emoji_id";
+      case k_style:
+        return "style";
       case k_url:
         return "url";
       case k_callback_data:

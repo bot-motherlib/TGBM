@@ -15,7 +15,8 @@ struct forward_message_request {
   int_or_str from_chat_id;
   /* Message identifier in the chat specified in from_chat_id */
   Integer message_id;
-  /* Unique identifier for the target message thread (topic) of the forum; for forum supergroups only */
+  /* Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private
+   * chats of bots with forum topic mode enabled only */
   optional<Integer> message_thread_id;
   /* Identifier of the direct messages topic to which the message will be forwarded; required if the message
    * is forwarded to a direct messages chat */
@@ -26,6 +27,9 @@ struct forward_message_request {
   optional<bool> disable_notification;
   /* Protects the contents of the forwarded message from forwarding and saving */
   optional<bool> protect_content;
+  /* Unique identifier of the message effect to be added to the message; only available when forwarding to
+   * private chats */
+  optional<String> message_effect_id;
   /* A JSON-serialized object containing the parameters of the suggested post to send; for direct messages
    * chats only */
   box<SuggestedPostParameters> suggested_post_parameters;
@@ -48,6 +52,8 @@ struct forward_message_request {
       body.arg("disable_notification", *disable_notification);
     if (protect_content)
       body.arg("protect_content", *protect_content);
+    if (message_effect_id)
+      body.arg("message_effect_id", *message_effect_id);
     if (suggested_post_parameters)
       body.arg("suggested_post_parameters", *suggested_post_parameters);
     body.arg("message_id", message_id);

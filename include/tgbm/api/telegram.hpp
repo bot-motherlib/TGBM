@@ -146,6 +146,11 @@ struct telegram {
    * is returned. */
   dd::task<Message> sendDice(api::send_dice_request, deadline_t deadline = deadline_t::never()) const;
 
+  /* Use this method to stream a partial message to a user while the message is being generated; supported
+   * only for bots with forum topic mode enabled. Returns True on success. */
+  dd::task<bool> sendMessageDraft(api::send_message_draft_request,
+                                  deadline_t deadline = deadline_t::never()) const;
+
   /* Use this method when you need to tell the user that something is happening on the bot's side. The status
    * is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing
    * status). Returns True on success. */
@@ -161,6 +166,10 @@ struct telegram {
 
   /* Use this method to get a list of profile pictures for a user. Returns a UserProfilePhotos object. */
   dd::task<UserProfilePhotos> getUserProfilePhotos(api::get_user_profile_photos_request,
+                                                   deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to get a list of profile audios for a user. Returns a UserProfileAudios object. */
+  dd::task<UserProfileAudios> getUserProfileAudios(api::get_user_profile_audios_request,
                                                    deadline_t deadline = deadline_t::never()) const;
 
   /* Changes the emoji status for a given user that previously allowed the bot to manage their emoji status
@@ -354,15 +363,17 @@ struct telegram {
    * Requires no parameters. Returns an Array of Sticker objects. */
   dd::task<arrayof<Sticker>> getForumTopicIconStickers(deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to create a topic in a forum supergroup chat. The bot must be an administrator in the
-   * chat for this to work and must have the can_manage_topics administrator rights. Returns information about
-   * the created topic as a ForumTopic object. */
+  /* Use this method to create a topic in a forum supergroup chat or a private chat with a user. In the case
+   * of a supergroup chat the bot must be an administrator in the chat for this to work and must have the
+   * can_manage_topics administrator right. Returns information about the created topic as a ForumTopic
+   * object. */
   dd::task<ForumTopic> createForumTopic(api::create_forum_topic_request,
                                         deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an
-   * administrator in the chat for this to work and must have the can_manage_topics administrator rights,
-   * unless it is the creator of the topic. Returns True on success. */
+  /* Use this method to edit name and icon of a topic in a forum supergroup chat or a private chat with a
+   * user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and
+   * must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True
+   * on success. */
   dd::task<bool> editForumTopic(api::edit_forum_topic_request,
                                 deadline_t deadline = deadline_t::never()) const;
 
@@ -378,15 +389,16 @@ struct telegram {
   dd::task<bool> reopenForumTopic(api::reopen_forum_topic_request,
                                   deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to delete a forum topic along with all its messages in a forum supergroup chat. The bot
-   * must be an administrator in the chat for this to work and must have the can_delete_messages administrator
-   * rights. Returns True on success. */
+  /* Use this method to delete a forum topic along with all its messages in a forum supergroup chat or a
+   * private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat
+   * for this to work and must have the can_delete_messages administrator rights. Returns True on success. */
   dd::task<bool> deleteForumTopic(api::delete_forum_topic_request,
                                   deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to clear the list of pinned messages in a forum topic. The bot must be an administrator
-   * in the chat for this to work and must have the can_pin_messages administrator right in the supergroup.
-   * Returns True on success. */
+  /* Use this method to clear the list of pinned messages in a forum topic in a forum supergroup chat or a
+   * private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat
+   * for this to work and must have the can_pin_messages administrator right in the supergroup. Returns True
+   * on success. */
   dd::task<bool> unpinAllForumTopicMessages(api::unpin_all_forum_topic_messages_request,
                                             deadline_t deadline = deadline_t::never()) const;
 
@@ -481,6 +493,13 @@ struct telegram {
    * BotShortDescription on success. */
   dd::task<BotShortDescription> getMyShortDescription(api::get_my_short_description_request,
                                                       deadline_t deadline = deadline_t::never()) const;
+
+  /* Changes the profile photo of the bot. Returns True on success. */
+  dd::task<bool> setMyProfilePhoto(api::set_my_profile_photo_request,
+                                   deadline_t deadline = deadline_t::never()) const;
+
+  /* Removes the profile photo of the bot. Requires no parameters. Returns True on success. */
+  dd::task<bool> removeMyProfilePhoto(deadline_t deadline = deadline_t::never()) const;
 
   /* Use this method to change the bot's menu button in a private chat, or the default menu button. Returns
    * True on success. */
@@ -589,6 +608,14 @@ struct telegram {
   dd::task<OwnedGifts> getBusinessAccountGifts(api::get_business_account_gifts_request,
                                                deadline_t deadline = deadline_t::never()) const;
 
+  /* Returns the gifts owned and hosted by a user. Returns OwnedGifts on success. */
+  dd::task<OwnedGifts> getUserGifts(api::get_user_gifts_request,
+                                    deadline_t deadline = deadline_t::never()) const;
+
+  /* Returns the gifts owned by a chat. Returns OwnedGifts on success. */
+  dd::task<OwnedGifts> getChatGifts(api::get_chat_gifts_request,
+                                    deadline_t deadline = deadline_t::never()) const;
+
   /* Converts a given regular gift to Telegram Stars. Requires the can_convert_gifts_to_stars business bot
    * right. Returns True on success. */
   dd::task<bool> convertGiftToStars(api::convert_gift_to_stars_request,
@@ -607,6 +634,12 @@ struct telegram {
   /* Posts a story on behalf of a managed business account. Requires the can_manage_stories business bot
    * right. Returns Story on success. */
   dd::task<Story> postStory(api::post_story_request, deadline_t deadline = deadline_t::never()) const;
+
+  /* Reposts a story on behalf of a business account from another business account. Both business accounts
+   * must be managed by the same bot, and the story on the source account must have been posted (or reposted)
+   * by the bot. Requires the can_manage_stories business bot right for both business accounts. Returns Story
+   * on success. */
+  dd::task<Story> repostStory(api::repost_story_request, deadline_t deadline = deadline_t::never()) const;
 
   /* Edits a story previously posted by the bot on behalf of a managed business account. Requires the
    * can_manage_stories business bot right. Returns Story on success. */

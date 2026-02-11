@@ -5,12 +5,15 @@
 
 namespace tgbm::api {
 
-struct get_business_account_gifts_request {
-  /* Unique identifier of the business connection */
-  String business_connection_id;
-  /* Pass True to exclude gifts that aren't saved to the account's profile page */
+struct get_chat_gifts_request {
+  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
+   */
+  int_or_str chat_id;
+  /* Pass True to exclude gifts that aren't saved to the chat's profile page. Always True, unless the bot has
+   * the can_post_messages administrator right in the channel. */
   optional<bool> exclude_unsaved;
-  /* Pass True to exclude gifts that are saved to the account's profile page */
+  /* Pass True to exclude gifts that are saved to the chat's profile page. Always False, unless the bot has
+   * the can_post_messages administrator right in the channel. */
   optional<bool> exclude_saved;
   /* Pass True to exclude gifts that can be purchased an unlimited number of times */
   optional<bool> exclude_unlimited;
@@ -20,14 +23,14 @@ struct get_business_account_gifts_request {
   /* Pass True to exclude gifts that can be purchased a limited number of times and can't be upgraded to
    * unique */
   optional<bool> exclude_limited_non_upgradable;
-  /* Pass True to exclude unique gifts */
-  optional<bool> exclude_unique;
   /* Pass True to exclude gifts that were assigned from the TON blockchain and can't be resold or transferred
    * in Telegram */
   optional<bool> exclude_from_blockchain;
+  /* Pass True to exclude unique gifts */
+  optional<bool> exclude_unique;
   /* Pass True to sort results by gift price instead of send date. Sorting is applied before pagination. */
   optional<bool> sort_by_price;
-  /* Offset of the first entry to return as received from the previous request; use empty string to get the
+  /* Offset of the first entry to return as received from the previous request; use an empty string to get the
    * first chunk of results */
   optional<String> offset;
   /* The maximum number of gifts to be returned; 1-100. Defaults to 100 */
@@ -35,11 +38,11 @@ struct get_business_account_gifts_request {
 
   using return_type = OwnedGifts;
   static constexpr file_info_e file_info = file_info_e::no;
-  static constexpr std::string_view api_method_name = "getBusinessAccountGifts";
+  static constexpr std::string_view api_method_name = "getChatGifts";
   static constexpr http_method_e http_method = http_method_e::POST;
 
   void fill_nonfile_args(auto& body) const {
-    body.arg("business_connection_id", business_connection_id);
+    body.arg("chat_id", chat_id);
     if (exclude_unsaved)
       body.arg("exclude_unsaved", *exclude_unsaved);
     if (exclude_saved)
@@ -50,10 +53,10 @@ struct get_business_account_gifts_request {
       body.arg("exclude_limited_upgradable", *exclude_limited_upgradable);
     if (exclude_limited_non_upgradable)
       body.arg("exclude_limited_non_upgradable", *exclude_limited_non_upgradable);
-    if (exclude_unique)
-      body.arg("exclude_unique", *exclude_unique);
     if (exclude_from_blockchain)
       body.arg("exclude_from_blockchain", *exclude_from_blockchain);
+    if (exclude_unique)
+      body.arg("exclude_unique", *exclude_unique);
     if (sort_by_price)
       body.arg("sort_by_price", *sort_by_price);
     if (offset)

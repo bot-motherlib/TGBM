@@ -14,12 +14,16 @@ struct GiftInfo {
   /* Optional. Number of Telegram Stars that can be claimed by the receiver by converting the gift; omitted if
    * conversion to Telegram Stars is impossible */
   optional<Integer> convert_star_count;
-  /* Optional. Number of Telegram Stars that were prepaid by the sender for the ability to upgrade the gift */
+  /* Optional. Number of Telegram Stars that were prepaid for the ability to upgrade the gift */
   optional<Integer> prepaid_upgrade_star_count;
   /* Optional. Text of the message that was added to the gift */
   optional<String> text;
   /* Optional. Special entities that appear in the text */
   optional<arrayof<MessageEntity>> entities;
+  /* Optional. Unique number reserved for this gift when upgraded. See the number field in UniqueGift */
+  optional<Integer> unique_gift_number;
+  /* Optional. True, if the gift's upgrade was purchased after the gift was sent */
+  optional<True> is_upgrade_separate;
   /* Optional. True, if the gift can be upgraded to a unique gift */
   optional<True> can_be_upgraded;
   /* Optional. True, if the sender and gift text are shown only to the gift receiver; otherwise, everyone will

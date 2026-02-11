@@ -20,10 +20,12 @@ struct OwnedGiftRegular {
   /* Optional. Special entities that appear in the text */
   optional<arrayof<MessageEntity>> entities;
   /* Optional. Number of Telegram Stars that can be claimed by the receiver instead of the gift; omitted if
-   * the gift cannot be converted to Telegram Stars */
+   * the gift cannot be converted to Telegram Stars; for gifts received on behalf of business accounts only */
   optional<Integer> convert_star_count;
-  /* Optional. Number of Telegram Stars that were paid by the sender for the ability to upgrade the gift */
+  /* Optional. Number of Telegram Stars that were paid for the ability to upgrade the gift */
   optional<Integer> prepaid_upgrade_star_count;
+  /* Optional. Unique number reserved for this gift when upgraded. See the number field in UniqueGift */
+  optional<Integer> unique_gift_number;
   /* Optional. True, if the sender and gift text are shown only to the gift receiver; otherwise, everyone will
    * be able to see them */
   optional<True> is_private;
@@ -35,6 +37,9 @@ struct OwnedGiftRegular {
   optional<True> can_be_upgraded;
   /* Optional. True, if the gift was refunded and isn't available anymore */
   optional<True> was_refunded;
+  /* Optional. True, if the gift's upgrade was purchased after the gift was sent; for gifts received on behalf
+   * of business accounts only */
+  optional<True> is_upgrade_separate;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("gift", true).case_("send_date", true).or_default(false);

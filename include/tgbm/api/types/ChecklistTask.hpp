@@ -12,8 +12,10 @@ struct ChecklistTask {
   String text;
   /* Optional. Special entities that appear in the task text */
   optional<arrayof<MessageEntity>> text_entities;
-  /* Optional. User that completed the task; omitted if the task wasn't completed */
+  /* Optional. User that completed the task; omitted if the task wasn't completed by a user */
   box<User> completed_by_user;
+  /* Optional. Chat that completed the task; omitted if the task wasn't completed by a chat */
+  box<Chat> completed_by_chat;
   /* Optional. Point in time (Unix timestamp) when the task was completed; 0 if the task wasn't completed */
   optional<Integer> completion_date;
 
