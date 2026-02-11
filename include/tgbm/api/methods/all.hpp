@@ -27,9 +27,11 @@
 #include <tgbm/api/methods/sendPoll.hpp>
 #include <tgbm/api/methods/sendChecklist.hpp>
 #include <tgbm/api/methods/sendDice.hpp>
+#include <tgbm/api/methods/sendMessageDraft.hpp>
 #include <tgbm/api/methods/sendChatAction.hpp>
 #include <tgbm/api/methods/setMessageReaction.hpp>
 #include <tgbm/api/methods/getUserProfilePhotos.hpp>
+#include <tgbm/api/methods/getUserProfileAudios.hpp>
 #include <tgbm/api/methods/setUserEmojiStatus.hpp>
 #include <tgbm/api/methods/getFile.hpp>
 #include <tgbm/api/methods/banChatMember.hpp>
@@ -87,6 +89,8 @@
 #include <tgbm/api/methods/getMyDescription.hpp>
 #include <tgbm/api/methods/setMyShortDescription.hpp>
 #include <tgbm/api/methods/getMyShortDescription.hpp>
+#include <tgbm/api/methods/setMyProfilePhoto.hpp>
+#include <tgbm/api/methods/removeMyProfilePhoto.hpp>
 #include <tgbm/api/methods/setChatMenuButton.hpp>
 #include <tgbm/api/methods/getChatMenuButton.hpp>
 #include <tgbm/api/methods/setMyDefaultAdministratorRights.hpp>
@@ -109,10 +113,13 @@
 #include <tgbm/api/methods/getBusinessAccountStarBalance.hpp>
 #include <tgbm/api/methods/transferBusinessAccountStars.hpp>
 #include <tgbm/api/methods/getBusinessAccountGifts.hpp>
+#include <tgbm/api/methods/getUserGifts.hpp>
+#include <tgbm/api/methods/getChatGifts.hpp>
 #include <tgbm/api/methods/convertGiftToStars.hpp>
 #include <tgbm/api/methods/upgradeGift.hpp>
 #include <tgbm/api/methods/transferGift.hpp>
 #include <tgbm/api/methods/postStory.hpp>
+#include <tgbm/api/methods/repostStory.hpp>
 #include <tgbm/api/methods/editStory.hpp>
 #include <tgbm/api/methods/deleteStory.hpp>
 #include <tgbm/api/methods/editMessageText.hpp>

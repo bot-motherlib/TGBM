@@ -23,6 +23,7 @@
 #include <tgbm/api/types/Audio.hpp>
 #include <tgbm/api/types/Document.hpp>
 #include <tgbm/api/types/Story.hpp>
+#include <tgbm/api/types/VideoQuality.hpp>
 #include <tgbm/api/types/Video.hpp>
 #include <tgbm/api/types/VideoNote.hpp>
 #include <tgbm/api/types/Voice.hpp>
@@ -90,6 +91,7 @@
 #include <tgbm/api/types/SuggestedPostParameters.hpp>
 #include <tgbm/api/types/DirectMessagesTopic.hpp>
 #include <tgbm/api/types/UserProfilePhotos.hpp>
+#include <tgbm/api/types/UserProfileAudios.hpp>
 #include <tgbm/api/types/File.hpp>
 #include <tgbm/api/types/WebAppInfo.hpp>
 #include <tgbm/api/types/ReplyKeyboardMarkup.hpp>
@@ -123,6 +125,7 @@
 #include <tgbm/api/types/BusinessLocation.hpp>
 #include <tgbm/api/types/BusinessOpeningHoursInterval.hpp>
 #include <tgbm/api/types/BusinessOpeningHours.hpp>
+#include <tgbm/api/types/UserRating.hpp>
 #include <tgbm/api/types/StoryAreaPosition.hpp>
 #include <tgbm/api/types/LocationAddress.hpp>
 #include <tgbm/api/types/StoryAreaType.hpp>
@@ -141,12 +144,14 @@
 #include <tgbm/api/types/MessageReactionUpdated.hpp>
 #include <tgbm/api/types/MessageReactionCountUpdated.hpp>
 #include <tgbm/api/types/ForumTopic.hpp>
+#include <tgbm/api/types/GiftBackground.hpp>
 #include <tgbm/api/types/Gift.hpp>
 #include <tgbm/api/types/Gifts.hpp>
 #include <tgbm/api/types/UniqueGiftModel.hpp>
 #include <tgbm/api/types/UniqueGiftSymbol.hpp>
 #include <tgbm/api/types/UniqueGiftBackdropColors.hpp>
 #include <tgbm/api/types/UniqueGiftBackdrop.hpp>
+#include <tgbm/api/types/UniqueGiftColors.hpp>
 #include <tgbm/api/types/UniqueGift.hpp>
 #include <tgbm/api/types/GiftInfo.hpp>
 #include <tgbm/api/types/UniqueGiftInfo.hpp>
@@ -179,6 +184,8 @@
 #include <tgbm/api/types/ChatBoost.hpp>
 #include <tgbm/api/types/ChatBoostUpdated.hpp>
 #include <tgbm/api/types/ChatBoostRemoved.hpp>
+#include <tgbm/api/types/ChatOwnerLeft.hpp>
+#include <tgbm/api/types/ChatOwnerChanged.hpp>
 #include <tgbm/api/types/UserChatBoosts.hpp>
 #include <tgbm/api/types/BusinessBotRights.hpp>
 #include <tgbm/api/types/BusinessConnection.hpp>

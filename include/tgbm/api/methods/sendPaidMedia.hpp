@@ -14,13 +14,14 @@ struct send_paid_media_request {
    * If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's
    * balance. Otherwise, they will be credited to the bot's balance. */
   int_or_str chat_id;
-  /* The number of Telegram Stars that must be paid to buy access to the media; 1-10000 */
+  /* The number of Telegram Stars that must be paid to buy access to the media; 1-25000 */
   Integer star_count;
   /* A JSON-serialized array describing the media to be sent; up to 10 items */
   arrayof<InputPaidMedia> media;
   /* Unique identifier of the business connection on behalf of which the message will be sent */
   optional<String> business_connection_id;
-  /* Unique identifier for the target message thread (topic) of the forum; for forum supergroups only */
+  /* Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private
+   * chats of bots with forum topic mode enabled only */
   optional<Integer> message_thread_id;
   /* Identifier of the direct messages topic to which the message will be sent; required if the message is
    * sent to a direct messages chat */

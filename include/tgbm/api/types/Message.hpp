@@ -14,7 +14,8 @@ struct Message {
   Integer date;
   /* Chat the message belongs to */
   box<Chat> chat;
-  /* Optional. Unique identifier of a message thread to which the message belongs; for supergroups only */
+  /* Optional. Unique identifier of a message thread or forum topic to which the message belongs; for
+   * supergroups and private chats only */
   optional<Integer> message_thread_id;
   /* Optional. Information about the direct messages chat topic that contains the message */
   box<DirectMessagesTopic> direct_messages_topic;
@@ -122,6 +123,10 @@ struct Message {
   /* Optional. A member was removed from the group, information about them (this member may be the bot itself)
    */
   box<User> left_chat_member;
+  /* Optional. Service message: chat owner has left */
+  box<ChatOwnerLeft> chat_owner_left;
+  /* Optional. Service message: chat owner has changed */
+  box<ChatOwnerChanged> chat_owner_changed;
   /* Optional. A chat title was changed to this value */
   optional<String> new_chat_title;
   /* Optional. A chat photo was change to this value */
@@ -157,6 +162,8 @@ struct Message {
   box<GiftInfo> gift;
   /* Optional. Service message: a unique gift was sent or received */
   box<UniqueGiftInfo> unique_gift;
+  /* Optional. Service message: upgrade of a gift was purchased after the gift was sent */
+  box<GiftInfo> gift_upgrade_sent;
   /* Optional. The domain name of the website on which the user has logged in. More about Telegram Login » */
   optional<String> connected_website;
   /* Optional. Service message: the user allowed the bot to write messages after adding it to the attachment
@@ -224,7 +231,7 @@ struct Message {
   /* Optional. Inline keyboard attached to the message. login_url buttons are represented as ordinary url
    * buttons. */
   box<InlineKeyboardMarkup> reply_markup;
-  /* Optional. True, if the message is sent to a forum topic */
+  /* Optional. True, if the message is sent to a topic in a forum supergroup or a private chat with the bot */
   optional<True> is_topic_message;
   /* Optional. True, if the message is a channel post that was automatically forwarded to the connected
    * discussion group */

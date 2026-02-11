@@ -4,31 +4,19 @@
 
 namespace tgbm::api {
 
-/*This object represents a video file.*/
-struct Video {
+/*This object represents a video file of a specific quality.*/
+struct VideoQuality {
   /* Identifier for this file, which can be used to download or reuse the file */
   String file_id;
   /* Unique identifier for this file, which is supposed to be the same over time and for different bots. Can't
    * be used to download or reuse the file. */
   String file_unique_id;
-  /* Video width as defined by the sender */
+  /* Video width */
   Integer width;
-  /* Video height as defined by the sender */
+  /* Video height */
   Integer height;
-  /* Duration of the video in seconds as defined by the sender */
-  Integer duration;
-  /* Optional. Video thumbnail */
-  box<PhotoSize> thumbnail;
-  /* Optional. Available sizes of the cover of the video in the message */
-  optional<arrayof<PhotoSize>> cover;
-  /* Optional. Timestamp in seconds from which the video will play in the message */
-  optional<Integer> start_timestamp;
-  /* Optional. List of available qualities of the video */
-  optional<arrayof<VideoQuality>> qualities;
-  /* Optional. Original filename as defined by the sender */
-  optional<String> file_name;
-  /* Optional. MIME type of the file as defined by the sender */
-  optional<String> mime_type;
+  /* Codec that was used to encode the video, for example, “h264”, “h265”, or “av01” */
+  String codec;
   /* Optional. File size in bytes. It can be bigger than 2^31 and some programming languages may have
    * difficulty/silent defects in interpreting it. But it has at most 52 significant bits, so a signed 64-bit
    * integer or double-precision float type are safe for storing this value. */
@@ -40,7 +28,7 @@ struct Video {
         .case_("file_unique_id", true)
         .case_("width", true)
         .case_("height", true)
-        .case_("duration", true)
+        .case_("codec", true)
         .or_default(false);
   }
 };

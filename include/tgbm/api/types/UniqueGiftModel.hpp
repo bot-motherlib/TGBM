@@ -10,8 +10,12 @@ struct UniqueGiftModel {
   String name;
   /* The sticker that represents the unique gift */
   box<Sticker> sticker;
-  /* The number of unique gifts that receive this model for every 1000 gifts upgraded */
+  /* The number of unique gifts that receive this model for every 1000 gift upgrades. Always 0 for crafted
+   * gifts. */
   Integer rarity_per_mille;
+  /* Optional. Rarity of the model if it is a crafted model. Currently, can be “uncommon”, “rare”, “epic”, or
+   * “legendary”. */
+  optional<String> rarity;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)

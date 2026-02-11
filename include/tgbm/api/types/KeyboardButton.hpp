@@ -9,9 +9,15 @@
 namespace tgbm::api {
 
 struct KeyboardButton {
-  /* Text of the button. If none of the optional fields are used, it will be sent as a message when the button
-   * is pressed */
+  /* Text of the button. If none of the fields other than text, icon_custom_emoji_id, and style are used, it
+   * will be sent as a message when the button is pressed */
   String text;
+  struct icon_custom_emoji_id {
+    String value;
+  };
+  struct style {
+    String value;
+  };
   struct request_users {
     KeyboardButtonRequestUsers value;
   };
@@ -30,8 +36,17 @@ struct KeyboardButton {
   struct request_location {
     bool value;
   };
-  oneof<request_users, request_chat, request_poll, web_app, request_contact, request_location> data;
+  oneof<icon_custom_emoji_id, style, request_users, request_chat, request_poll, web_app, request_contact,
+        request_location>
+      data;
   enum struct type_e {
+    /* Optional. Unique identifier of the custom emoji shown before the text of the button. Can only be used
+       by bots that purchased additional usernames on Fragment or in the messages directly sent by the bot to
+       private, group and supergroup chats if the owner of the bot has a Telegram Premium subscription. */
+    k_icon_custom_emoji_id,
+    /* Optional. Style of the button. Must be one of “danger” (red), “success” (green) or “primary” (blue). If
+       omitted, then an app-specific style is used. */
+    k_style,
     /* Optional. If specified, pressing the button will open a list of suitable users. Identifiers of selected
        users will be sent to the bot in a “users_shared” service message. Available in private chats only. */
     k_request_users,
@@ -55,6 +70,22 @@ struct KeyboardButton {
   static constexpr size_t variant_size = size_t(type_e::nothing);
   type_e type() const {
     return static_cast<type_e>(data.index());
+  }
+  String* get_icon_custom_emoji_id() noexcept {
+    auto* p = data.get_if<icon_custom_emoji_id>();
+    return p ? &p->value : nullptr;
+  }
+  const String* get_icon_custom_emoji_id() const noexcept {
+    auto* p = data.get_if<icon_custom_emoji_id>();
+    return p ? &p->value : nullptr;
+  }
+  String* get_style() noexcept {
+    auto* p = data.get_if<style>();
+    return p ? &p->value : nullptr;
+  }
+  const String* get_style() const noexcept {
+    auto* p = data.get_if<style>();
+    return p ? &p->value : nullptr;
   }
   KeyboardButtonRequestUsers* get_request_users() noexcept {
     auto* p = data.get_if<request_users>();
@@ -105,6 +136,10 @@ struct KeyboardButton {
     return p ? &p->value : nullptr;
   }
   static constexpr decltype(auto) discriminate_field(std::string_view val, auto&& visitor) {
+    if (val == "icon_custom_emoji_id")
+      return visitor.template operator()<icon_custom_emoji_id>();
+    if (val == "style")
+      return visitor.template operator()<style>();
     if (val == "request_users")
       return visitor.template operator()<request_users>();
     if (val == "request_chat")
@@ -123,6 +158,10 @@ struct KeyboardButton {
   std::string_view discriminator_now() const noexcept {
     using enum KeyboardButton::type_e;
     switch (type()) {
+      case k_icon_custom_emoji_id:
+        return "icon_custom_emoji_id";
+      case k_style:
+        return "style";
       case k_request_users:
         return "request_users";
       case k_request_chat:

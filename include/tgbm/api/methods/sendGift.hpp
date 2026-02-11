@@ -6,7 +6,7 @@
 namespace tgbm::api {
 
 struct send_gift_request {
-  /* Identifier of the gift */
+  /* Identifier of the gift; limited gifts can't be sent to channel chats */
   String gift_id;
   /* Required if chat_id is not specified. Unique identifier of the target user who will receive the gift. */
   optional<Integer> user_id;

@@ -15,7 +15,8 @@ struct send_media_group_request {
   arrayof<InputMediaVideo> media;
   /* Unique identifier of the business connection on behalf of which the message will be sent */
   optional<String> business_connection_id;
-  /* Unique identifier for the target message thread (topic) of the forum; for forum supergroups only */
+  /* Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private
+   * chats of bots with forum topic mode enabled only */
   optional<Integer> message_thread_id;
   /* Identifier of the direct messages topic to which the messages will be sent; required if the messages are
    * sent to a direct messages chat */

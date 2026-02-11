@@ -15,7 +15,8 @@ struct forward_messages_request {
   /* A JSON-serialized list of 1-100 identifiers of messages in the chat from_chat_id to forward. The
    * identifiers must be specified in a strictly increasing order. */
   arrayof<Integer> message_ids;
-  /* Unique identifier for the target message thread (topic) of the forum; for forum supergroups only */
+  /* Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private
+   * chats of bots with forum topic mode enabled only */
   optional<Integer> message_thread_id;
   /* Identifier of the direct messages topic to which the messages will be forwarded; required if the messages
    * are forwarded to a direct messages chat */
