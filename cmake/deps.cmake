@@ -14,7 +14,7 @@ CPMAddPackage("gh:fmtlib/fmt#11.2.0")
 CPMAddPackage(
   NAME KELCORO
   GIT_REPOSITORY https://github.com/kelbon/kelcoro
-  GIT_TAG v1.3.0
+  GIT_TAG v1.4.2
 )
 
 CPMAddPackage(
@@ -67,7 +67,7 @@ endif()
 CPMAddPackage(
   NAME HTTP2
   GIT_REPOSITORY https://github.com/kelbon/http2
-  GIT_TAG v0.9.0
+  GIT_TAG v0.9.3
   OPTIONS "KELHTTP2_USE_CPM ON"
           "KELHTTP2_DEBUG_SSL_KEYS_FILE ${TGBM_SSL_KEYS_FILE}"
 )

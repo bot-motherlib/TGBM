@@ -18,7 +18,8 @@ struct http_client;
 
 // postcondition: client != nullptr
 std::unique_ptr<http_client> default_http_client(std::string_view host,
-                                                 std::filesystem::path additional_ssl_cert = {});
+                                                 std::filesystem::path additional_ssl_cert = {},
+                                                 http2::log_context logctx = {});
 
 struct bot_commands {
   using on_command_handler_t = move_only_fn<void(api::Message&& text) const>;
@@ -55,8 +56,8 @@ struct bot {
 
   // uses default http client
   explicit bot(std::string_view bottoken, std::string_view host = "api.telegram.org",
-               std::filesystem::path additional_ssl_cert = {})
-      : client(default_http_client(host, std::move(additional_ssl_cert))),
+               std::filesystem::path additional_ssl_cert = {}, http2::log_context logctx = {})
+      : client(default_http_client(host, std::move(additional_ssl_cert), std::move(logctx))),
         api(*client, bottoken),
         commands(),
         token(bottoken) {
@@ -88,6 +89,7 @@ struct bot {
   //  * ignores update, which handled by bot.commands already
   dd::channel<api::Update> updates(long_poll_options = {});
 
+  // uses client ioctx to wait, do not suspends bot
   dd::task<void> sleep(duration_t d, io_error_code& ec) {
     return client->sleep(d, ec);
   }
