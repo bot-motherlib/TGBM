@@ -32,6 +32,8 @@ struct ChatMemberRestricted {
   bool can_send_other_messages;
   /* True, if the user is allowed to add web page previews to their messages */
   bool can_add_web_page_previews;
+  /* True, if the user is allowed to edit their own tag */
+  bool can_edit_tag;
   /* True, if the user is allowed to change the chat title, photo and other settings */
   bool can_change_info;
   /* True, if the user is allowed to invite new users to the chat */
@@ -43,6 +45,8 @@ struct ChatMemberRestricted {
   /* Date when restrictions will be lifted for this user; Unix time. If 0, then the user is restricted forever
    */
   Integer until_date;
+  /* Optional. Tag of the member */
+  optional<String> tag;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
@@ -58,6 +62,7 @@ struct ChatMemberRestricted {
         .case_("can_send_polls", true)
         .case_("can_send_other_messages", true)
         .case_("can_add_web_page_previews", true)
+        .case_("can_edit_tag", true)
         .case_("can_change_info", true)
         .case_("can_invite_users", true)
         .case_("can_pin_messages", true)

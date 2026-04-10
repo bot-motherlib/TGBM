@@ -33,6 +33,8 @@ struct Message {
   /* Optional. The bot that actually sent the message on behalf of the business account. Available only for
    * outgoing messages sent on behalf of the connected business account. */
   box<User> sender_business_bot;
+  /* Optional. Tag or custom title of the sender of the message; for supergroups only */
+  optional<String> sender_tag;
   /* Optional. Unique identifier of the business connection from which the message was received. If non-empty,
    * the message belongs to a chat of the corresponding business account that is independent from any
    * potential bot chat which might share the same identifier. */
@@ -51,11 +53,13 @@ struct Message {
   box<Story> reply_to_story;
   /* Optional. Identifier of the specific checklist task that is being replied to */
   optional<Integer> reply_to_checklist_task_id;
+  /* Optional. Persistent identifier of the specific poll option that is being replied to */
+  optional<String> reply_to_poll_option_id;
   /* Optional. Bot through which the message was sent */
   box<User> via_bot;
   /* Optional. Date the message was last edited in Unix time */
   optional<Integer> edit_date;
-  /* Optional. The unique identifier of a media message group this message belongs to */
+  /* Optional. The unique identifier inside this chat of a media message group this message belongs to */
   optional<String> media_group_id;
   /* Optional. Signature of the post author for messages in channels, or the custom title of an anonymous
    * group administrator */
@@ -206,8 +210,14 @@ struct Message {
   box<GiveawayWinners> giveaway_winners;
   /* Optional. Service message: a giveaway without public winners was completed */
   box<GiveawayCompleted> giveaway_completed;
+  /* Optional. Service message: user created a bot that will be managed by the current bot */
+  box<ManagedBotCreated> managed_bot_created;
   /* Optional. Service message: the price for paid messages has changed in the chat */
   box<PaidMessagePriceChanged> paid_message_price_changed;
+  /* Optional. Service message: answer option was added to a poll */
+  box<PollOptionAdded> poll_option_added;
+  /* Optional. Service message: answer option was deleted from a poll */
+  box<PollOptionDeleted> poll_option_deleted;
   /* Optional. Service message: a suggested post was approved */
   box<SuggestedPostApproved> suggested_post_approved;
   /* Optional. Service message: approval of a suggested post has failed */

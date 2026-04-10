@@ -2,6 +2,7 @@
 
 #include <tgbm/api/types/KeyboardButtonPollType.hpp>
 #include <tgbm/api/types/KeyboardButtonRequestChat.hpp>
+#include <tgbm/api/types/KeyboardButtonRequestManagedBot.hpp>
 #include <tgbm/api/types/KeyboardButtonRequestUsers.hpp>
 #include <tgbm/api/types/WebAppInfo.hpp>
 #include <tgbm/api/types/all_fwd.hpp>
@@ -24,6 +25,9 @@ struct KeyboardButton {
   struct request_chat {
     KeyboardButtonRequestChat value;
   };
+  struct request_managed_bot {
+    KeyboardButtonRequestManagedBot value;
+  };
   struct request_poll {
     KeyboardButtonPollType value;
   };
@@ -36,8 +40,8 @@ struct KeyboardButton {
   struct request_location {
     bool value;
   };
-  oneof<icon_custom_emoji_id, style, request_users, request_chat, request_poll, web_app, request_contact,
-        request_location>
+  oneof<icon_custom_emoji_id, style, request_users, request_chat, request_managed_bot, request_poll, web_app,
+        request_contact, request_location>
       data;
   enum struct type_e {
     /* Optional. Unique identifier of the custom emoji shown before the text of the button. Can only be used
@@ -53,6 +57,10 @@ struct KeyboardButton {
     /* Optional. If specified, pressing the button will open a list of suitable chats. Tapping on a chat will
        send its identifier to the bot in a “chat_shared” service message. Available in private chats only. */
     k_request_chat,
+    /* Optional. If specified, pressing the button will ask the user to create and share a bot that will be
+       managed by the current bot. Available for bots that enabled management of other bots in the @BotFather
+       Mini App. Available in private chats only. */
+    k_request_managed_bot,
     /* Optional. If specified, the user will be asked to create a poll and send it to the bot when the button
        is pressed. Available in private chats only. */
     k_request_poll,
@@ -103,6 +111,14 @@ struct KeyboardButton {
     auto* p = data.get_if<request_chat>();
     return p ? &p->value : nullptr;
   }
+  KeyboardButtonRequestManagedBot* get_request_managed_bot() noexcept {
+    auto* p = data.get_if<request_managed_bot>();
+    return p ? &p->value : nullptr;
+  }
+  const KeyboardButtonRequestManagedBot* get_request_managed_bot() const noexcept {
+    auto* p = data.get_if<request_managed_bot>();
+    return p ? &p->value : nullptr;
+  }
   KeyboardButtonPollType* get_request_poll() noexcept {
     auto* p = data.get_if<request_poll>();
     return p ? &p->value : nullptr;
@@ -144,6 +160,8 @@ struct KeyboardButton {
       return visitor.template operator()<request_users>();
     if (val == "request_chat")
       return visitor.template operator()<request_chat>();
+    if (val == "request_managed_bot")
+      return visitor.template operator()<request_managed_bot>();
     if (val == "request_poll")
       return visitor.template operator()<request_poll>();
     if (val == "web_app")
@@ -166,6 +184,8 @@ struct KeyboardButton {
         return "request_users";
       case k_request_chat:
         return "request_chat";
+      case k_request_managed_bot:
+        return "request_managed_bot";
       case k_request_poll:
         return "request_poll";
       case k_web_app:

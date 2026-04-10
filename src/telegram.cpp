@@ -450,6 +450,18 @@ dd::task<bool> telegram::setChatAdministratorCustomTitle(
   co_return dd::rvo;
 }
 
+dd::task<bool> telegram::setChatMemberTag(api::set_chat_member_tag_request request,
+                                          deadline_t deadline) const {
+  bool& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("setChatMemberTag request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
 dd::task<bool> telegram::banChatSenderChat(api::ban_chat_sender_chat_request request,
                                            deadline_t deadline) const {
   bool& result = co_await dd::this_coro::return_place;
@@ -928,6 +940,30 @@ dd::task<BusinessConnection> telegram::getBusinessConnection(api::get_business_c
   reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
   if (err) [[unlikely]] {
     TGBM_LOG_ERROR("getBusinessConnection request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<String> telegram::getManagedBotToken(api::get_managed_bot_token_request request,
+                                              deadline_t deadline) const {
+  String& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("getManagedBotToken request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<String> telegram::replaceManagedBotToken(api::replace_managed_bot_token_request request,
+                                                  deadline_t deadline) const {
+  String& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("replaceManagedBotToken request ended with error, status: {}, description: {}", err.status,
                    err.description.str());
     handle_telegram_http_status(err.status);
   }
@@ -1424,6 +1460,42 @@ dd::task<bool> telegram::deleteStory(api::delete_story_request request, deadline
   co_return dd::rvo;
 }
 
+dd::task<SentWebAppMessage> telegram::answerWebAppQuery(api::answer_web_app_query_request request,
+                                                        deadline_t deadline) const {
+  SentWebAppMessage& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("answerWebAppQuery request ended with error, status: {}, description: {}", err.status,
+                   err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<PreparedInlineMessage> telegram::savePreparedInlineMessage(
+    api::save_prepared_inline_message_request request, deadline_t deadline) const {
+  PreparedInlineMessage& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("savePreparedInlineMessage request ended with error, status: {}, description: {}",
+                   err.status, err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
+dd::task<PreparedKeyboardButton> telegram::savePreparedKeyboardButton(
+    api::save_prepared_keyboard_button_request request, deadline_t deadline) const {
+  PreparedKeyboardButton& result = co_await dd::this_coro::return_place;
+  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
+  if (err) [[unlikely]] {
+    TGBM_LOG_ERROR("savePreparedKeyboardButton request ended with error, status: {}, description: {}",
+                   err.status, err.description.str());
+    handle_telegram_http_status(err.status);
+  }
+  co_return dd::rvo;
+}
+
 dd::task<oneof<bool, Message>> telegram::editMessageText(api::edit_message_text_request request,
                                                          deadline_t deadline) const {
   oneof<bool, Message>& result = co_await dd::this_coro::return_place;
@@ -1762,30 +1834,6 @@ dd::task<bool> telegram::answerInlineQuery(api::answer_inline_query_request requ
   if (err) [[unlikely]] {
     TGBM_LOG_ERROR("answerInlineQuery request ended with error, status: {}, description: {}", err.status,
                    err.description.str());
-    handle_telegram_http_status(err.status);
-  }
-  co_return dd::rvo;
-}
-
-dd::task<SentWebAppMessage> telegram::answerWebAppQuery(api::answer_web_app_query_request request,
-                                                        deadline_t deadline) const {
-  SentWebAppMessage& result = co_await dd::this_coro::return_place;
-  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
-  if (err) [[unlikely]] {
-    TGBM_LOG_ERROR("answerWebAppQuery request ended with error, status: {}, description: {}", err.status,
-                   err.description.str());
-    handle_telegram_http_status(err.status);
-  }
-  co_return dd::rvo;
-}
-
-dd::task<PreparedInlineMessage> telegram::savePreparedInlineMessage(
-    api::save_prepared_inline_message_request request, deadline_t deadline) const {
-  PreparedInlineMessage& result = co_await dd::this_coro::return_place;
-  reqerr_t err = co_await api::send_request(request, client, bottoken, result, deadline);
-  if (err) [[unlikely]] {
-    TGBM_LOG_ERROR("savePreparedInlineMessage request ended with error, status: {}, description: {}",
-                   err.status, err.description.str());
     handle_telegram_http_status(err.status);
   }
   co_return dd::rvo;

@@ -14,7 +14,7 @@ CPMAddPackage("gh:fmtlib/fmt#11.2.0")
 CPMAddPackage(
   NAME KELCORO
   GIT_REPOSITORY https://github.com/kelbon/kelcoro
-  GIT_TAG v1.4.2
+  GIT_TAG v1.4.3
 )
 
 CPMAddPackage(
@@ -56,7 +56,7 @@ find_package(Threads REQUIRED)
 CPMAddPackage(
   NAME TELEGRAM_BOT_API_HTML
   GIT_REPOSITORY https://github.com/kelbon/telegram_bot_api_html
-  GIT_TAG v9.4 # last supported api
+  GIT_TAG v9.6 # last supported api
   DOWNLOAD_ONLY YES
 )
 
@@ -67,7 +67,7 @@ endif()
 CPMAddPackage(
   NAME HTTP2
   GIT_REPOSITORY https://github.com/kelbon/http2
-  GIT_TAG v0.9.3
+  GIT_TAG v0.9.4
   OPTIONS "KELHTTP2_USE_CPM ON"
           "KELHTTP2_DEBUG_SSL_KEYS_FILE ${TGBM_SSL_KEYS_FILE}"
 )

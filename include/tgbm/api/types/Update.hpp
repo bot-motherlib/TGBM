@@ -9,6 +9,7 @@
 #include <tgbm/api/types/ChatMemberUpdated.hpp>
 #include <tgbm/api/types/ChosenInlineResult.hpp>
 #include <tgbm/api/types/InlineQuery.hpp>
+#include <tgbm/api/types/ManagedBotUpdated.hpp>
 #include <tgbm/api/types/Message.hpp>
 #include <tgbm/api/types/MessageReactionCountUpdated.hpp>
 #include <tgbm/api/types/MessageReactionUpdated.hpp>
@@ -97,11 +98,14 @@ struct Update {
   struct removed_chat_boost {
     ChatBoostRemoved value;
   };
+  struct managed_bot {
+    ManagedBotUpdated value;
+  };
   oneof<message, edited_message, channel_post, edited_channel_post, business_connection, business_message,
         edited_business_message, deleted_business_messages, message_reaction, message_reaction_count,
         inline_query, chosen_inline_result, callback_query, shipping_query, pre_checkout_query,
         purchased_paid_media, poll, poll_answer, my_chat_member, chat_member, chat_join_request, chat_boost,
-        removed_chat_boost>
+        removed_chat_boost, managed_bot>
       data;
   enum struct type_e {
     /* Optional. New incoming message of any kind - text, photo, sticker, etc. */
@@ -168,6 +172,9 @@ struct Update {
     /* Optional. A boost was removed from a chat. The bot must be an administrator in the chat to receive
        these updates. */
     k_removed_chat_boost,
+    /* Optional. A new bot was created to be managed by the bot, or token or owner of a managed bot was
+       changed */
+    k_managed_bot,
     nothing,
   };
   static constexpr size_t variant_size = size_t(type_e::nothing);
@@ -358,6 +365,14 @@ struct Update {
     auto* p = data.get_if<removed_chat_boost>();
     return p ? &p->value : nullptr;
   }
+  ManagedBotUpdated* get_managed_bot() noexcept {
+    auto* p = data.get_if<managed_bot>();
+    return p ? &p->value : nullptr;
+  }
+  const ManagedBotUpdated* get_managed_bot() const noexcept {
+    auto* p = data.get_if<managed_bot>();
+    return p ? &p->value : nullptr;
+  }
   static constexpr decltype(auto) discriminate_field(std::string_view val, auto&& visitor) {
     if (val == "message")
       return visitor.template operator()<message>();
@@ -405,6 +420,8 @@ struct Update {
       return visitor.template operator()<chat_boost>();
     if (val == "removed_chat_boost")
       return visitor.template operator()<removed_chat_boost>();
+    if (val == "managed_bot")
+      return visitor.template operator()<managed_bot>();
     return visitor.template operator()<void>();
   }
 
@@ -457,6 +474,8 @@ struct Update {
         return "chat_boost";
       case k_removed_chat_boost:
         return "removed_chat_boost";
+      case k_managed_bot:
+        return "managed_bot";
       case nothing:
         return "";
       default:

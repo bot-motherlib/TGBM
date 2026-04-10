@@ -47,6 +47,9 @@ struct ChatAdministratorRights {
   /* Optional. True, if the administrator can manage direct messages of the channel and decline suggested
    * posts; for channels only */
   optional<bool> can_manage_direct_messages;
+  /* Optional. True, if the administrator can edit the tags of regular members; for groups and supergroups
+   * only. If omitted defaults to the value of can_pin_messages. */
+  optional<bool> can_manage_tags;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)

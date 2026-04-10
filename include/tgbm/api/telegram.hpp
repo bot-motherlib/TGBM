@@ -146,8 +146,8 @@ struct telegram {
    * is returned. */
   dd::task<Message> sendDice(api::send_dice_request, deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to stream a partial message to a user while the message is being generated; supported
-   * only for bots with forum topic mode enabled. Returns True on success. */
+  /* Use this method to stream a partial message to a user while the message is being generated. Returns True
+   * on success. */
   dd::task<bool> sendMessageDraft(api::send_message_draft_request,
                                   deadline_t deadline = deadline_t::never()) const;
 
@@ -215,6 +215,12 @@ struct telegram {
    * True on success. */
   dd::task<bool> setChatAdministratorCustomTitle(api::set_chat_administrator_custom_title_request,
                                                  deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to set a tag for a regular member in a group or a supergroup. The bot must be an
+   * administrator in the chat for this to work and must have the can_manage_tags administrator right. Returns
+   * True on success. */
+  dd::task<bool> setChatMemberTag(api::set_chat_member_tag_request,
+                                  deadline_t deadline = deadline_t::never()) const;
 
   /* Use this method to ban a channel chat in a supergroup or a channel. Until the chat is unbanned, the owner
    * of the banned chat won't be able to send messages on behalf of any of their channels. The bot must be an
@@ -454,6 +460,15 @@ struct telegram {
   dd::task<BusinessConnection> getBusinessConnection(api::get_business_connection_request,
                                                      deadline_t deadline = deadline_t::never()) const;
 
+  /* Use this method to get the token of a managed bot. Returns the token as String on success. */
+  dd::task<String> getManagedBotToken(api::get_managed_bot_token_request,
+                                      deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to revoke the current token of a managed bot and generate a new one. Returns the new
+   * token as String on success. */
+  dd::task<String> replaceManagedBotToken(api::replace_managed_bot_token_request,
+                                          deadline_t deadline = deadline_t::never()) const;
+
   /* Use this method to change the list of the bot's commands. See this manual for more details about bot
    * commands. Returns True on success. */
   dd::task<bool> setMyCommands(api::set_my_commands_request, deadline_t deadline = deadline_t::never()) const;
@@ -649,6 +664,21 @@ struct telegram {
    * can_manage_stories business bot right. Returns True on success. */
   dd::task<bool> deleteStory(api::delete_story_request, deadline_t deadline = deadline_t::never()) const;
 
+  /* Use this method to set the result of an interaction with a Web App and send a corresponding message on
+   * behalf of the user to the chat from which the query originated. On success, a SentWebAppMessage object is
+   * returned. */
+  dd::task<SentWebAppMessage> answerWebAppQuery(api::answer_web_app_query_request,
+                                                deadline_t deadline = deadline_t::never()) const;
+
+  /* Stores a message that can be sent by a user of a Mini App. Returns a PreparedInlineMessage object. */
+  dd::task<PreparedInlineMessage> savePreparedInlineMessage(api::save_prepared_inline_message_request,
+                                                            deadline_t deadline = deadline_t::never()) const;
+
+  /* Stores a keyboard button that can be used by a user within a Mini App. Returns a PreparedKeyboardButton
+   * object. */
+  dd::task<PreparedKeyboardButton> savePreparedKeyboardButton(
+      api::save_prepared_keyboard_button_request, deadline_t deadline = deadline_t::never()) const;
+
   /* Use this method to edit text and game messages. On success, if the edited message is not an inline
    * message, the edited Message is returned, otherwise True is returned. Note that business messages that
    * were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from
@@ -807,16 +837,6 @@ struct telegram {
    * per query are allowed. */
   dd::task<bool> answerInlineQuery(api::answer_inline_query_request,
                                    deadline_t deadline = deadline_t::never()) const;
-
-  /* Use this method to set the result of an interaction with a Web App and send a corresponding message on
-   * behalf of the user to the chat from which the query originated. On success, a SentWebAppMessage object is
-   * returned. */
-  dd::task<SentWebAppMessage> answerWebAppQuery(api::answer_web_app_query_request,
-                                                deadline_t deadline = deadline_t::never()) const;
-
-  /* Stores a message that can be sent by a user of a Mini App. Returns a PreparedInlineMessage object. */
-  dd::task<PreparedInlineMessage> savePreparedInlineMessage(api::save_prepared_inline_message_request,
-                                                            deadline_t deadline = deadline_t::never()) const;
 
   /* Use this method to send invoices. On success, the sent Message is returned. */
   dd::task<Message> sendInvoice(api::send_invoice_request, deadline_t deadline = deadline_t::never()) const;

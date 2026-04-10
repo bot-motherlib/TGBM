@@ -22,12 +22,14 @@ struct Poll {
   String type;
   /* True, if the poll allows multiple answers */
   bool allows_multiple_answers;
+  /* True, if the poll allows to change the chosen answer options */
+  bool allows_revoting;
   /* Optional. Special entities that appear in the question. Currently, only custom emoji entities are allowed
    * in poll questions */
   optional<arrayof<MessageEntity>> question_entities;
-  /* Optional. 0-based identifier of the correct answer option. Available only for polls in the quiz mode,
-   * which are closed, or was sent (not forwarded) by the bot or to the private chat with the bot. */
-  optional<Integer> correct_option_id;
+  /* Optional. Array of 0-based identifiers of the correct answer options. Available only for polls in quiz
+   * mode which are closed or were sent (not forwarded) by the bot or to the private chat with the bot. */
+  optional<arrayof<Integer>> correct_option_ids;
   /* Optional. Text that is shown when a user chooses an incorrect answer or taps on the lamp icon in a
    * quiz-style poll, 0-200 characters */
   optional<String> explanation;
@@ -37,6 +39,10 @@ struct Poll {
   optional<Integer> open_period;
   /* Optional. Point in time (Unix timestamp) when the poll will be automatically closed */
   optional<Integer> close_date;
+  /* Optional. Description of the poll; for polls inside the Message object only */
+  optional<String> description;
+  /* Optional. Special entities like usernames, URLs, bot commands, etc. that appear in the description */
+  optional<arrayof<MessageEntity>> description_entities;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
@@ -48,6 +54,7 @@ struct Poll {
         .case_("is_anonymous", true)
         .case_("type", true)
         .case_("allows_multiple_answers", true)
+        .case_("allows_revoting", true)
         .or_default(false);
   }
 };

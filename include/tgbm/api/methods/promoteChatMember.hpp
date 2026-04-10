@@ -52,6 +52,8 @@ struct promote_chat_member_request {
   /* Pass True if the administrator can manage direct messages within the channel and decline suggested posts;
    * for channels only */
   optional<bool> can_manage_direct_messages;
+  /* Pass True if the administrator can edit the tags of regular members; for groups and supergroups only */
+  optional<bool> can_manage_tags;
 
   using return_type = bool;
   static constexpr file_info_e file_info = file_info_e::no;
@@ -93,6 +95,8 @@ struct promote_chat_member_request {
       body.arg("can_manage_topics", *can_manage_topics);
     if (can_manage_direct_messages)
       body.arg("can_manage_direct_messages", *can_manage_direct_messages);
+    if (can_manage_tags)
+      body.arg("can_manage_tags", *can_manage_tags);
   }
 };
 
