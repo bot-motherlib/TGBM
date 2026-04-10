@@ -39,6 +39,7 @@
 #include <tgbm/api/methods/restrictChatMember.hpp>
 #include <tgbm/api/methods/promoteChatMember.hpp>
 #include <tgbm/api/methods/setChatAdministratorCustomTitle.hpp>
+#include <tgbm/api/methods/setChatMemberTag.hpp>
 #include <tgbm/api/methods/banChatSenderChat.hpp>
 #include <tgbm/api/methods/unbanChatSenderChat.hpp>
 #include <tgbm/api/methods/setChatPermissions.hpp>
@@ -80,6 +81,8 @@
 #include <tgbm/api/methods/answerCallbackQuery.hpp>
 #include <tgbm/api/methods/getUserChatBoosts.hpp>
 #include <tgbm/api/methods/getBusinessConnection.hpp>
+#include <tgbm/api/methods/getManagedBotToken.hpp>
+#include <tgbm/api/methods/replaceManagedBotToken.hpp>
 #include <tgbm/api/methods/setMyCommands.hpp>
 #include <tgbm/api/methods/deleteMyCommands.hpp>
 #include <tgbm/api/methods/getMyCommands.hpp>
@@ -122,6 +125,9 @@
 #include <tgbm/api/methods/repostStory.hpp>
 #include <tgbm/api/methods/editStory.hpp>
 #include <tgbm/api/methods/deleteStory.hpp>
+#include <tgbm/api/methods/answerWebAppQuery.hpp>
+#include <tgbm/api/methods/savePreparedInlineMessage.hpp>
+#include <tgbm/api/methods/savePreparedKeyboardButton.hpp>
 #include <tgbm/api/methods/editMessageText.hpp>
 #include <tgbm/api/methods/editMessageCaption.hpp>
 #include <tgbm/api/methods/editMessageMedia.hpp>
@@ -151,8 +157,6 @@
 #include <tgbm/api/methods/setCustomEmojiStickerSetThumbnail.hpp>
 #include <tgbm/api/methods/deleteStickerSet.hpp>
 #include <tgbm/api/methods/answerInlineQuery.hpp>
-#include <tgbm/api/methods/answerWebAppQuery.hpp>
-#include <tgbm/api/methods/savePreparedInlineMessage.hpp>
 #include <tgbm/api/methods/sendInvoice.hpp>
 #include <tgbm/api/methods/createInvoiceLink.hpp>
 #include <tgbm/api/methods/answerShippingQuery.hpp>

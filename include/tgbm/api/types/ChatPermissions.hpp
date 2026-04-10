@@ -27,6 +27,8 @@ struct ChatPermissions {
   optional<bool> can_send_other_messages;
   /* Optional. True, if the user is allowed to add web page previews to their messages */
   optional<bool> can_add_web_page_previews;
+  /* Optional. True, if the user is allowed to edit their own tag */
+  optional<bool> can_edit_tag;
   /* Optional. True, if the user is allowed to change the chat title, photo and other settings. Ignored in
    * public supergroups */
   optional<bool> can_change_info;

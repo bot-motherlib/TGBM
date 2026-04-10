@@ -17,11 +17,12 @@ struct gift_premium_subscription_request {
   /* Text that will be shown along with the service message about the subscription; 0-128 characters */
   optional<String> text;
   /* Mode for parsing entities in the text. See formatting options for more details. Entities other than
-   * “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, and “custom_emoji” are ignored. */
+   * “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, “custom_emoji”, and “date_time” are ignored.
+   */
   optional<String> text_parse_mode;
   /* A JSON-serialized list of special entities that appear in the gift text. It can be specified instead of
-   * text_parse_mode. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”, and
-   * “custom_emoji” are ignored. */
+   * text_parse_mode. Entities other than “bold”, “italic”, “underline”, “strikethrough”, “spoiler”,
+   * “custom_emoji”, and “date_time” are ignored. */
   optional<arrayof<MessageEntity>> text_entities;
 
   using return_type = bool;

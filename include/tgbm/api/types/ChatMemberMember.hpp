@@ -9,6 +9,8 @@ namespace tgbm::api {
 struct ChatMemberMember {
   /* Information about the user */
   box<User> user;
+  /* Optional. Tag of the member */
+  optional<String> tag;
   /* Optional. Date when the user's subscription will expire; Unix time */
   optional<Integer> until_date;
 

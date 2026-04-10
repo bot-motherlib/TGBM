@@ -88,6 +88,9 @@ G_OPERATION_TO_RESULT = {
     'editMessageChecklist': MSG,
     'getMyStarBalance': 'StarAmount',
     'getUserProfileAudios': 'UserProfileAudios',
+    'getManagedBotToken': STRING,
+    'replaceManagedBotToken': STRING,
+    'savePreparedKeyboardButton': 'PreparedKeyboardButton',
 }
 
 # loads TG api (html)
@@ -189,7 +192,7 @@ class method_info_t:
             self.ret_type = TRUE
         else:
             rett = extract_success_return(description)
-            assert rett is not None, f"error while generating for {name}. Map method to error type manually please"
+            assert rett is not None, f"error while generating for {name}. Map method to result type manually please"
             print(f'for {name} ret is {rett}')
             self.ret_type = rett
     

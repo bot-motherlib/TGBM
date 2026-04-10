@@ -49,6 +49,10 @@
 #include <tgbm/api/types/WebAppData.hpp>
 #include <tgbm/api/types/ProximityAlertTriggered.hpp>
 #include <tgbm/api/types/MessageAutoDeleteTimerChanged.hpp>
+#include <tgbm/api/types/ManagedBotCreated.hpp>
+#include <tgbm/api/types/ManagedBotUpdated.hpp>
+#include <tgbm/api/types/PollOptionAdded.hpp>
+#include <tgbm/api/types/PollOptionDeleted.hpp>
 #include <tgbm/api/types/ChatBoostAdded.hpp>
 #include <tgbm/api/types/BackgroundFill.hpp>
 #include <tgbm/api/types/BackgroundFillSolid.hpp>
@@ -98,6 +102,7 @@
 #include <tgbm/api/types/KeyboardButton.hpp>
 #include <tgbm/api/types/KeyboardButtonRequestUsers.hpp>
 #include <tgbm/api/types/KeyboardButtonRequestChat.hpp>
+#include <tgbm/api/types/KeyboardButtonRequestManagedBot.hpp>
 #include <tgbm/api/types/KeyboardButtonPollType.hpp>
 #include <tgbm/api/types/ReplyKeyboardRemove.hpp>
 #include <tgbm/api/types/InlineKeyboardMarkup.hpp>
@@ -190,6 +195,9 @@
 #include <tgbm/api/types/BusinessBotRights.hpp>
 #include <tgbm/api/types/BusinessConnection.hpp>
 #include <tgbm/api/types/BusinessMessagesDeleted.hpp>
+#include <tgbm/api/types/SentWebAppMessage.hpp>
+#include <tgbm/api/types/PreparedInlineMessage.hpp>
+#include <tgbm/api/types/PreparedKeyboardButton.hpp>
 #include <tgbm/api/types/ResponseParameters.hpp>
 #include <tgbm/api/types/InputMedia.hpp>
 #include <tgbm/api/types/InputMediaAnimation.hpp>
@@ -241,8 +249,6 @@
 #include <tgbm/api/types/InputContactMessageContent.hpp>
 #include <tgbm/api/types/InputInvoiceMessageContent.hpp>
 #include <tgbm/api/types/ChosenInlineResult.hpp>
-#include <tgbm/api/types/SentWebAppMessage.hpp>
-#include <tgbm/api/types/PreparedInlineMessage.hpp>
 #include <tgbm/api/types/LabeledPrice.hpp>
 #include <tgbm/api/types/Invoice.hpp>
 #include <tgbm/api/types/ShippingAddress.hpp>

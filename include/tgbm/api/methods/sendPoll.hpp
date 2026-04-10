@@ -31,10 +31,21 @@ struct send_poll_request {
   optional<bool> is_anonymous;
   /* Poll type, “quiz” or “regular”, defaults to “regular” */
   optional<String> type;
-  /* True, if the poll allows multiple answers, ignored for polls in quiz mode, defaults to False */
+  /* Pass True, if the poll allows multiple answers, defaults to False */
   optional<bool> allows_multiple_answers;
-  /* 0-based identifier of the correct answer option, required for polls in quiz mode */
-  optional<Integer> correct_option_id;
+  /* Pass True, if the poll allows to change chosen answer options, defaults to False for quizzes and to True
+   * for regular polls */
+  optional<bool> allows_revoting;
+  /* Pass True, if the poll options must be shown in random order */
+  optional<bool> shuffle_options;
+  /* Pass True, if answer options can be added to the poll after creation; not supported for anonymous polls
+   * and quizzes */
+  optional<bool> allow_adding_options;
+  /* Pass True, if poll results must be shown only after the poll closes */
+  optional<bool> hide_results_until_closes;
+  /* A JSON-serialized list of monotonically increasing 0-based identifiers of the correct answer options,
+   * required for polls in quiz mode */
+  optional<arrayof<Integer>> correct_option_ids;
   /* Text that is shown when a user chooses an incorrect answer or taps on the lamp icon in a quiz-style poll,
    * 0-200 characters with at most 2 line feeds after entities parsing */
   optional<String> explanation;
@@ -43,14 +54,21 @@ struct send_poll_request {
   /* A JSON-serialized list of special entities that appear in the poll explanation. It can be specified
    * instead of explanation_parse_mode */
   optional<arrayof<MessageEntity>> explanation_entities;
-  /* Amount of time in seconds the poll will be active after creation, 5-600. Can't be used together with
+  /* Amount of time in seconds the poll will be active after creation, 5-2628000. Can't be used together with
    * close_date. */
   optional<Integer> open_period;
   /* Point in time (Unix timestamp) when the poll will be automatically closed. Must be at least 5 and no more
-   * than 600 seconds in the future. Can't be used together with open_period. */
+   * than 2628000 seconds in the future. Can't be used together with open_period. */
   optional<Integer> close_date;
   /* Pass True if the poll needs to be immediately closed. This can be useful for poll preview. */
   optional<bool> is_closed;
+  /* Description of the poll to be sent, 0-1024 characters after entities parsing */
+  optional<String> description;
+  /* Mode for parsing entities in the poll description. See formatting options for more details. */
+  optional<String> description_parse_mode;
+  /* A JSON-serialized list of special entities that appear in the poll description, which can be specified
+   * instead of description_parse_mode */
+  optional<arrayof<MessageEntity>> description_entities;
   /* Sends the message silently. Users will receive a notification with no sound. */
   optional<bool> disable_notification;
   /* Protects the contents of the sent message from forwarding and saving */
@@ -89,8 +107,16 @@ struct send_poll_request {
       body.arg("type", *type);
     if (allows_multiple_answers)
       body.arg("allows_multiple_answers", *allows_multiple_answers);
-    if (correct_option_id)
-      body.arg("correct_option_id", *correct_option_id);
+    if (allows_revoting)
+      body.arg("allows_revoting", *allows_revoting);
+    if (shuffle_options)
+      body.arg("shuffle_options", *shuffle_options);
+    if (allow_adding_options)
+      body.arg("allow_adding_options", *allow_adding_options);
+    if (hide_results_until_closes)
+      body.arg("hide_results_until_closes", *hide_results_until_closes);
+    if (correct_option_ids)
+      body.arg("correct_option_ids", *correct_option_ids);
     if (explanation)
       body.arg("explanation", *explanation);
     if (explanation_parse_mode)
@@ -103,6 +129,12 @@ struct send_poll_request {
       body.arg("close_date", *close_date);
     if (is_closed)
       body.arg("is_closed", *is_closed);
+    if (description)
+      body.arg("description", *description);
+    if (description_parse_mode)
+      body.arg("description_parse_mode", *description_parse_mode);
+    if (description_entities)
+      body.arg("description_entities", *description_entities);
     if (disable_notification)
       body.arg("disable_notification", *disable_notification);
     if (protect_content)

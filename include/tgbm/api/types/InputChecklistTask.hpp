@@ -14,8 +14,8 @@ struct InputChecklistTask {
   /* Optional. Mode for parsing entities in the text. See formatting options for more details. */
   optional<String> parse_mode;
   /* Optional. List of special entities that appear in the text, which can be specified instead of parse_mode.
-   * Currently, only bold, italic, underline, strikethrough, spoiler, and custom_emoji entities are allowed.
-   */
+   * Currently, only bold, italic, underline, strikethrough, spoiler, custom_emoji, and date_time entities are
+   * allowed. */
   optional<arrayof<MessageEntity>> text_entities;
 
   consteval static bool is_mandatory_field(std::string_view name) {

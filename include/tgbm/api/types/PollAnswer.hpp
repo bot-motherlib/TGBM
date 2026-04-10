@@ -10,13 +10,19 @@ struct PollAnswer {
   String poll_id;
   /* 0-based identifiers of chosen answer options. May be empty if the vote was retracted. */
   arrayof<Integer> option_ids;
+  /* Persistent identifiers of the chosen answer options. May be empty if the vote was retracted. */
+  arrayof<String> option_persistent_ids;
   /* Optional. The chat that changed the answer to the poll, if the voter is anonymous */
   box<Chat> voter_chat;
   /* Optional. The user that changed the answer to the poll, if the voter isn't anonymous */
   box<User> user;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return string_switch<bool>(name).case_("poll_id", true).case_("option_ids", true).or_default(false);
+    return string_switch<bool>(name)
+        .case_("poll_id", true)
+        .case_("option_ids", true)
+        .case_("option_persistent_ids", true)
+        .or_default(false);
   }
 };
 

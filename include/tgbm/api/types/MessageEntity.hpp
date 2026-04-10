@@ -13,7 +13,7 @@ struct MessageEntity {
    * “spoiler” (spoiler message), “blockquote” (block quotation), “expandable_blockquote”
    * (collapsed-by-default block quotation), “code” (monowidth string), “pre” (monowidth block), “text_link”
    * (for clickable text URLs), “text_mention” (for users without usernames), “custom_emoji” (for inline
-   * custom emoji stickers) */
+   * custom emoji stickers), or “date_time” (for formatted date and time) */
   String type;
   /* Offset in UTF-16 code units to the start of the entity */
   Integer offset;
@@ -28,6 +28,11 @@ struct MessageEntity {
   /* Optional. For “custom_emoji” only, unique identifier of the custom emoji. Use getCustomEmojiStickers to
    * get full information about the sticker */
   optional<String> custom_emoji_id;
+  /* Optional. For “date_time” only, the Unix time associated with the entity */
+  optional<Integer> unix_time;
+  /* Optional. For “date_time” only, the string that defines the formatting of the date and time. See
+   * date-time entity formatting for more details. */
+  optional<String> date_time_format;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)

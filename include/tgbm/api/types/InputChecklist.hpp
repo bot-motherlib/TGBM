@@ -13,8 +13,8 @@ struct InputChecklist {
   /* Optional. Mode for parsing entities in the title. See formatting options for more details. */
   optional<String> parse_mode;
   /* Optional. List of special entities that appear in the title, which can be specified instead of
-   * parse_mode. Currently, only bold, italic, underline, strikethrough, spoiler, and custom_emoji entities
-   * are allowed. */
+   * parse_mode. Currently, only bold, italic, underline, strikethrough, spoiler, custom_emoji, and date_time
+   * entities are allowed. */
   optional<arrayof<MessageEntity>> title_entities;
   /* Optional. Pass True if other users can add tasks to the checklist */
   optional<bool> others_can_add_tasks;
