@@ -86,6 +86,8 @@ struct BackgroundType {
         unreachable();
     }
   }
+  bool operator==(const BackgroundType&) const;
+  std::strong_ordering operator<=>(const BackgroundType&) const;
 };
 
 }  // namespace tgbm::api

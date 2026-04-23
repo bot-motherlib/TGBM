@@ -31,72 +31,118 @@ struct Update {
   Integer update_id;
   struct message {
     Message value;
+    bool operator==(const message&) const = default;
+    std::strong_ordering operator<=>(const message&) const = default;
   };
   struct edited_message {
     Message value;
+    bool operator==(const edited_message&) const = default;
+    std::strong_ordering operator<=>(const edited_message&) const = default;
   };
   struct channel_post {
     Message value;
+    bool operator==(const channel_post&) const = default;
+    std::strong_ordering operator<=>(const channel_post&) const = default;
   };
   struct edited_channel_post {
     Message value;
+    bool operator==(const edited_channel_post&) const = default;
+    std::strong_ordering operator<=>(const edited_channel_post&) const = default;
   };
   struct business_connection {
     BusinessConnection value;
+    bool operator==(const business_connection&) const = default;
+    std::strong_ordering operator<=>(const business_connection&) const = default;
   };
   struct business_message {
     Message value;
+    bool operator==(const business_message&) const = default;
+    std::strong_ordering operator<=>(const business_message&) const = default;
   };
   struct edited_business_message {
     Message value;
+    bool operator==(const edited_business_message&) const = default;
+    std::strong_ordering operator<=>(const edited_business_message&) const = default;
   };
   struct deleted_business_messages {
     BusinessMessagesDeleted value;
+    bool operator==(const deleted_business_messages&) const = default;
+    std::strong_ordering operator<=>(const deleted_business_messages&) const = default;
   };
   struct message_reaction {
     MessageReactionUpdated value;
+    bool operator==(const message_reaction&) const = default;
+    std::strong_ordering operator<=>(const message_reaction&) const = default;
   };
   struct message_reaction_count {
     MessageReactionCountUpdated value;
+    bool operator==(const message_reaction_count&) const = default;
+    std::strong_ordering operator<=>(const message_reaction_count&) const = default;
   };
   struct inline_query {
     InlineQuery value;
+    bool operator==(const inline_query&) const = default;
+    std::strong_ordering operator<=>(const inline_query&) const = default;
   };
   struct chosen_inline_result {
     ChosenInlineResult value;
+    bool operator==(const chosen_inline_result&) const = default;
+    std::strong_ordering operator<=>(const chosen_inline_result&) const = default;
   };
   struct callback_query {
     CallbackQuery value;
+    bool operator==(const callback_query&) const = default;
+    std::strong_ordering operator<=>(const callback_query&) const = default;
   };
   struct shipping_query {
     ShippingQuery value;
+    bool operator==(const shipping_query&) const = default;
+    std::strong_ordering operator<=>(const shipping_query&) const = default;
   };
   struct pre_checkout_query {
     PreCheckoutQuery value;
+    bool operator==(const pre_checkout_query&) const = default;
+    std::strong_ordering operator<=>(const pre_checkout_query&) const = default;
   };
   struct purchased_paid_media {
     PaidMediaPurchased value;
+    bool operator==(const purchased_paid_media&) const = default;
+    std::strong_ordering operator<=>(const purchased_paid_media&) const = default;
   };
   struct poll {
     Poll value;
+    bool operator==(const poll&) const = default;
+    std::strong_ordering operator<=>(const poll&) const = default;
   };
   struct poll_answer {
     PollAnswer value;
+    bool operator==(const poll_answer&) const = default;
+    std::strong_ordering operator<=>(const poll_answer&) const = default;
   };
   struct my_chat_member {
     ChatMemberUpdated value;
+    bool operator==(const my_chat_member&) const = default;
+    std::strong_ordering operator<=>(const my_chat_member&) const = default;
   };
   struct chat_member {
     ChatMemberUpdated value;
+    bool operator==(const chat_member&) const = default;
+    std::strong_ordering operator<=>(const chat_member&) const = default;
   };
   struct chat_join_request {
     ChatJoinRequest value;
+    bool operator==(const chat_join_request&) const = default;
+    std::strong_ordering operator<=>(const chat_join_request&) const = default;
   };
   struct chat_boost {
     ChatBoostUpdated value;
+    bool operator==(const chat_boost&) const = default;
+    std::strong_ordering operator<=>(const chat_boost&) const = default;
   };
   struct removed_chat_boost {
     ChatBoostRemoved value;
+    bool operator==(const removed_chat_boost&) const = default;
+    std::strong_ordering operator<=>(const removed_chat_boost&) const = default;
   };
   struct managed_bot {
     ManagedBotUpdated value;
@@ -482,6 +528,8 @@ struct Update {
         unreachable();
     }
   }
+  bool operator==(const Update&) const;
+  std::strong_ordering operator<=>(const Update&) const;
 };
 
 }  // namespace tgbm::api

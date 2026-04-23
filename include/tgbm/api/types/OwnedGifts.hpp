@@ -16,6 +16,9 @@ struct OwnedGifts {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("total_count", true).case_("gifts", true).or_default(false);
   }
+
+  bool operator==(const OwnedGifts&) const;
+  std::strong_ordering operator<=>(const OwnedGifts&) const;
 };
 
 }  // namespace tgbm::api

@@ -267,7 +267,7 @@ def generate_halfoneof_api_struct(t: type_info_t) -> str:
     # generate field-structs
 
     for f in t.optional_fields():
-        s += f'  struct {f.name} {{ {f.cpptype} value; }};\n'
+        s += f'  struct {f.name} {{ {f.cpptype} value; bool operator==(const {f.name}&) const = default; std::strong_ordering operator<=>(const {f.name}&) const = default; }};\n'
 
     # data
 
@@ -313,7 +313,8 @@ def generate_halfoneof_api_struct(t: type_info_t) -> str:
     s += 'case nothing: return "";\n'
     s += 'default: unreachable();\n'
     s += '}\n}\n'
-
+    s += f'bool operator==(const {t.name}&) const;'
+    s += f'std::strong_ordering operator<=>(const {t.name}&) const;'
     s += '};\n' # end struct
 
     return s
@@ -349,6 +350,8 @@ def generate_api_struct(t: type_info_t) -> str:
         s += f'    .case_("{f.name}", true)\n'
     s += '    .or_default(false);\n'
     s += '  }\n\n'
+    s += f'bool operator==(const {t.name}&) const;'
+    s += f'std::strong_ordering operator<=>(const {t.name}&) const;'
     s += '};\n' # struct end
 
     return s
@@ -418,7 +421,8 @@ def generate_api_struct_oneof(t: oneof_info_t) -> str:
     s += 'case nothing: return "";\n'
     s += 'default: unreachable();\n'
     s += '  }\n}\n'
-
+    s += f'bool operator==(const {t.name}&) const;'
+    s += f'std::strong_ordering operator<=>(const {t.name}&) const;'
     s += '};\n' # end struct
 
     return s
@@ -503,6 +507,17 @@ def generate_all_oneofs(types: list[oneof_info_t], outdir: str):
     subtypes = list(set(subtypes))
     generate_all_types(subtypes, outdir)
 
+
+def generate_compare_file(type_names, outfile):
+    print(f'#include <tgbm/api/types/all.hpp>', file = outfile)
+    print('namespace tgbm::api {', file = outfile)
+    
+    for t in type_names:
+        if t not in TYPES_WITHOUT_DISCRIMINATOR:
+            print(f'bool {t}::operator==(const {t}&) const = default;', file = outfile)
+            print(f'std::strong_ordering {t}::operator<=>(const {t}&) const = default;', file = outfile)
+    print('}', file = outfile)
+
 class CustomEncoder(json.JSONEncoder):
     def default(self, obj):
         if hasattr(obj, "to_dict"):
@@ -529,6 +544,16 @@ def main():
     generate_all_types(ts, args.outdir)
     generate_all_oneofs(ofs, args.outdir)
     generate_all_fwd_and_all_types_hdrs(args.outdir)
+    print(f'[TGBM] generating api_cmp.cpp"')
+
+    type_names = [obj.name for obj in ts] + [obj.name for obj in ofs]
+    for o in ofs:
+        for a in o.alternatives:
+            type_names.append(a.name)
+    unique_names = list(dict.fromkeys(type_names))
+
+    with open(f'{args.outdir}/../../../../src/api_cmp.cpp', 'w', encoding='utf-8') as api_cmp_cpp:
+        generate_compare_file(unique_names, api_cmp_cpp)
 
 if __name__ == '__main__':
     main()

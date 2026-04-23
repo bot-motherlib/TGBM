@@ -25,6 +25,9 @@ struct Document {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("file_id", true).case_("file_unique_id", true).or_default(false);
   }
+
+  bool operator==(const Document&) const;
+  std::strong_ordering operator<=>(const Document&) const;
 };
 
 }  // namespace tgbm::api

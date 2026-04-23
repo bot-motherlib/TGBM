@@ -140,6 +140,9 @@ struct ChatFullInfo {
         .case_("accepted_gift_types", true)
         .or_default(false);
   }
+
+  bool operator==(const ChatFullInfo&) const;
+  std::strong_ordering operator<=>(const ChatFullInfo&) const;
 };
 
 }  // namespace tgbm::api

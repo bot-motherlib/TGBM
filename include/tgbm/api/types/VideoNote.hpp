@@ -28,6 +28,9 @@ struct VideoNote {
         .case_("duration", true)
         .or_default(false);
   }
+
+  bool operator==(const VideoNote&) const;
+  std::strong_ordering operator<=>(const VideoNote&) const;
 };
 
 }  // namespace tgbm::api

@@ -60,6 +60,8 @@ struct InputProfilePhoto {
         unreachable();
     }
   }
+  bool operator==(const InputProfilePhoto&) const;
+  std::strong_ordering operator<=>(const InputProfilePhoto&) const;
 };
 
 }  // namespace tgbm::api

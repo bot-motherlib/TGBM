@@ -14,6 +14,9 @@ struct BusinessLocation {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("address", true).or_default(false);
   }
+
+  bool operator==(const BusinessLocation&) const;
+  std::strong_ordering operator<=>(const BusinessLocation&) const;
 };
 
 }  // namespace tgbm::api

@@ -26,6 +26,9 @@ struct AcceptedGiftTypes {
         .case_("gifts_from_channels", true)
         .or_default(false);
   }
+
+  bool operator==(const AcceptedGiftTypes&) const;
+  std::strong_ordering operator<=>(const AcceptedGiftTypes&) const;
 };
 
 }  // namespace tgbm::api

@@ -41,6 +41,9 @@ struct ChatInviteLink {
         .case_("is_revoked", true)
         .or_default(false);
   }
+
+  bool operator==(const ChatInviteLink&) const;
+  std::strong_ordering operator<=>(const ChatInviteLink&) const;
 };
 
 }  // namespace tgbm::api

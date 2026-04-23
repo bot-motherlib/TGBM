@@ -21,6 +21,9 @@ struct BackgroundFillGradient {
         .case_("rotation_angle", true)
         .or_default(false);
   }
+
+  bool operator==(const BackgroundFillGradient&) const;
+  std::strong_ordering operator<=>(const BackgroundFillGradient&) const;
 };
 
 }  // namespace tgbm::api

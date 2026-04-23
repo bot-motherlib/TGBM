@@ -21,6 +21,9 @@ struct BusinessMessagesDeleted {
         .case_("message_ids", true)
         .or_default(false);
   }
+
+  bool operator==(const BusinessMessagesDeleted&) const;
+  std::strong_ordering operator<=>(const BusinessMessagesDeleted&) const;
 };
 
 }  // namespace tgbm::api

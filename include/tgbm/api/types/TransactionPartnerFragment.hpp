@@ -13,6 +13,9 @@ struct TransactionPartnerFragment {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
+
+  bool operator==(const TransactionPartnerFragment&) const;
+  std::strong_ordering operator<=>(const TransactionPartnerFragment&) const;
 };
 
 }  // namespace tgbm::api

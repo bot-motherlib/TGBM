@@ -16,6 +16,9 @@ struct ForumTopicClosed {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
+
+  bool operator==(const ForumTopicClosed&) const;
+  std::strong_ordering operator<=>(const ForumTopicClosed&) const;
 };
 
 }  // namespace tgbm::api
