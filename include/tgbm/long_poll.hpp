@@ -21,6 +21,10 @@ struct long_poll_options {
 
 // Note: getUpdates does not work until webHooks are deleted
 // so api.deleteWebhook() is called before polling
+//
+// Note: throws exception if update is not valid. This means update is not handled
+// and next time bot will fetch updates bot will receive same update and likely with same result - exception
+// to break this loop you can use `drop_pending_updates` option
 dd::channel<api::Update> long_poll(api::telegram api, long_poll_options = {});
 
 }  // namespace tgbm
