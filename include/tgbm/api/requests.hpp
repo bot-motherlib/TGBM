@@ -111,8 +111,11 @@ dd::task<reqerr_t> send_request(const R& request KELCORO_LIFETIMEBOUND,
   io_error_code ec;
   auto parse_to_out = [&](std::span<const byte_t> bytes, bool last_part) {
     parser.feed(std::string_view((const char*)bytes.data(), bytes.size()), last_part, ec);
-    if (ec)
-      throw json::parse_error(ec.what());
+    if (ec) {
+      throw json::parse_error(std::format(
+          "parse error. Request: {}, error: {}, is_last_part: {}, data: \"{}\"", R::api_method_name,
+          ec.what(), last_part, std::string_view((const char*)bytes.data(), bytes.size())));
+    }
   };
   int status =
       co_await client.send_request(nullptr, &parse_to_out, make_request(request, bottoken.str()), deadline);
