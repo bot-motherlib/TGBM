@@ -101,6 +101,7 @@ struct reqerr_t {
 };
 
 // Note: 'out' must be alive while coroutine working
+// May throw exception from parsing answer or return error code on http/network errors
 template <tgapi_request R>
 dd::task<reqerr_t> send_request(const R& request KELCORO_LIFETIMEBOUND,
                                 http_client& client KELCORO_LIFETIMEBOUND,
@@ -108,14 +109,8 @@ dd::task<reqerr_t> send_request(const R& request KELCORO_LIFETIMEBOUND,
                                 request_return_t<R>& out KELCORO_LIFETIMEBOUND, deadline_t deadline) {
   telegram_answer r(out);
   json::stream_parser parser(r);
-  io_error_code ec;
   auto parse_to_out = [&](std::span<const byte_t> bytes, bool last_part) {
-    parser.feed(std::string_view((const char*)bytes.data(), bytes.size()), last_part, ec);
-    if (ec) {
-      throw json::parse_error(std::format(
-          "parse error. Request: {}, error: {}, is_last_part: {}, data: \"{}\"", R::api_method_name,
-          ec.what(), last_part, std::string_view((const char*)bytes.data(), bytes.size())));
-    }
+    parser.feed(std::string_view((const char*)bytes.data(), bytes.size()), last_part);
   };
   int status =
       co_await client.send_request(nullptr, &parse_to_out, make_request(request, bottoken.str()), deadline);
@@ -127,8 +122,7 @@ dd::task<reqerr_t> send_request(const R& request KELCORO_LIFETIMEBOUND,
 template <tgapi_request R>
 dd::task<int> send_request(const R& request KELCORO_LIFETIMEBOUND, http_client& client KELCORO_LIFETIMEBOUND,
                            const const_string& bottoken KELCORO_LIFETIMEBOUND, deadline_t deadline) {
-  auto noop = [](std::string_view, std::string_view) {};
-  return client.send_request(&noop, nullptr, make_request(request, bottoken.str()), deadline);
+  return client.send_request(nullptr, nullptr, make_request(request, bottoken.str()), deadline);
 }
 
 }  // namespace tgbm::api

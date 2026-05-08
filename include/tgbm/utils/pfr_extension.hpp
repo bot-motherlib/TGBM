@@ -100,8 +100,7 @@ constexpr void visit_struct_helper(auto&& functor, std::integer_sequence<size_t,
 template <size_t N = size_t(-1)>
 constexpr void visit_object(auto&& t, auto&& functor) {
   using T = std::remove_cvref_t<decltype(t)>;
-  constexpr auto default_size = boost::pfr::tuple_size_v<T>;
-  auto seq = std::make_index_sequence<N != -1 ? N : default_size>{};
+  auto seq = std::make_index_sequence<(N != -1 ? N : boost::pfr::tuple_size_v<T>)>{};
   details::visit_object_helper(FWD(t), FWD(functor), seq);
 }
 

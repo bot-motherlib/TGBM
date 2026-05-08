@@ -15,6 +15,7 @@ using io_error_code = boost::system::error_code;
 
 namespace tgbm::json {
 
+// fully ignores error_code and returns error in exception
 struct boostjson_sax_producer {
   static constexpr size_t max_array_size = -1;
   static constexpr size_t max_object_size = -1;
@@ -60,7 +61,7 @@ struct boostjson_sax_producer {
     co_yield dd::elements_of(sax_parser<T>::parse(v, event, r));
     ended = true;
     co_yield {};
-    TGBM_JSON_PARSE_ERROR;
+    throw parse_error(std::format("unexpected token `{}` after complete json parsing", event));
   }
 
   void on_part(std::string_view s) {
@@ -72,6 +73,7 @@ struct boostjson_sax_producer {
   }
 
   void consume() {
+    // may throw
     ++gen.cur_iterator();
   }
 

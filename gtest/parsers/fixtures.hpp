@@ -23,9 +23,8 @@ struct DomRapid {
   static T parse_json(std::string_view json) {
     rapidjson::Document document;
     document.Parse(json.data(), json.size());
-    if (document.HasParseError()) {
-      TGBM_JSON_PARSE_ERROR;
-    }
+    if (document.HasParseError())
+      throw tgbm::json::parse_error("document.hasParseError()");
     return tgbm::from_json<T, rapidjson::GenericValue<rapidjson::UTF8<>>>(document);
   }
 };

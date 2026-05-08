@@ -55,7 +55,7 @@ struct sax_parser<api::telegram_answer<T>> {
                           .or_default(unknown_key);
       if (curkey != unknown_key) {
         if (parsed & curkey)
-          json::throw_json_parse_error();
+          throw parse_error("key already parsed");
         parsed |= curkey;
       }
       co_yield {};
@@ -77,7 +77,7 @@ struct sax_parser<api::telegram_answer<T>> {
       }
     }
     if (!(parsed & ok_key))  // only mandatory field
-      json::throw_json_parse_error();
+      throw parse_error("required `ok` from telegram_answer are not present");
     co_return;
   }
 };

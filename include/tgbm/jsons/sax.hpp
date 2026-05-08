@@ -3,6 +3,7 @@
 #include <cstring>
 #include <tgbm/utils/pfr_extension.hpp>
 #include <tgbm/jsons/errors.hpp>
+#include <format>
 
 #include <kelcoro/generator.hpp>
 
@@ -39,9 +40,10 @@ struct sax_token {
   ~sax_token() {
   }
 
-  void expect(std::int16_t tokens) const {
+  void expect(uint16_t tokens) const {
     if (!(got & tokens))
-      TGBM_JSON_PARSE_ERROR;
+      throw parse_error(
+          std::format("unexpected token bits `{:b}`, expected bits: `{:b}`", uint16_t(got), tokens));
   }
 };
 
@@ -62,6 +64,7 @@ struct sax_token_value {
       case key:
       case part:
         std::construct_at(&str_m, token.str_m);
+        [[fallthrough]];
       case array_begin:
       case array_end:
       case object_begin:
@@ -72,7 +75,7 @@ struct sax_token_value {
         int_m = token.int_m;
         return;
       case uint64:
-        uint_m = token.int_m;
+        uint_m = token.uint_m;
         return;
       case double_:
         double_m = token.double_m;
@@ -88,17 +91,18 @@ struct sax_token_value {
   sax_token_value(const sax_token_value&) = delete;
 
   sax_token_value(sax_token_value&& rhs) noexcept {
-    *this = std::move(rhs);
-  }
-
-  sax_token_value& operator=(sax_token_value&& rhs) noexcept {
-    destroy();
-    got = rhs.got;
-    if (rhs.is_string(rhs.got)) {
+    if (is_string(rhs.got)) {
+      got = rhs.got;
       std::construct_at(&str_m, std::move(rhs.str_m));
     } else {
       std::memcpy((void*)this, &rhs, sizeof(*this));
     }
+  }
+
+  sax_token_value& operator=(sax_token_value&& rhs) noexcept {
+    assert(&rhs != this);  // for perf
+    std::destroy_at(this);
+    std::construct_at(this, std::move(rhs));
     return *this;
   }
 
@@ -111,6 +115,7 @@ struct sax_token_value {
       case key:
       case part:
         token.str_m = str_m;
+        [[fallthrough]];
       case array_begin:
       case array_end:
       case object_begin:
@@ -121,7 +126,7 @@ struct sax_token_value {
         token.int_m = int_m;
         break;
       case uint64:
-        token.uint_m = int_m;
+        token.uint_m = uint_m;
         break;
       case double_:
         token.double_m = double_m;
@@ -134,7 +139,7 @@ struct sax_token_value {
     return token;
   }
 
-  bool is_string(sax_token::kind_e got) const noexcept {
+  static bool is_string(sax_token::kind_e got) noexcept {
     using enum sax_token::kind_e;
     switch (got) {
       case string:
@@ -161,16 +166,17 @@ struct sax_token_value {
 
   sax_token::kind_e got = sax_token::object_begin;
 
-  void expect(std::int16_t tokens) const {
+  void expect(uint16_t tokens) const {
     if (!(got & tokens))
-      TGBM_JSON_PARSE_ERROR;
+      throw parse_error(
+          std::format("unexpected token bits `{:b}`, expected bits: `{:b}`", uint16_t(got), tokens));
   }
 
  private:
   void destroy() noexcept {
     if (is_string(got)) {
-      got = sax_token::object_begin;
       std::destroy_at(&str_m);
+      got = sax_token::object_begin;
     }
   }
 };
@@ -211,6 +217,7 @@ inline sax_consumer_t sax_ignore_value(sax_token& tok) {
         depth--;
         if (depth == 0)
           co_return;
+        [[fallthrough]];
       case sax_token::string:
       case sax_token::int64:
       case sax_token::uint64:
@@ -224,3 +231,40 @@ inline sax_consumer_t sax_ignore_value(sax_token& tok) {
 }
 
 }  // namespace tgbm::json
+
+namespace std {
+
+template <>
+struct formatter<::tgbm::json::sax_token> : std::formatter<std::string_view> {
+  auto format(tgbm::json::sax_token const& tok, auto& ctx) const -> decltype(ctx.out()) {
+    switch (tok.got) {
+      case tgbm::json::sax_token::array_begin:
+        return std::format_to(ctx.out(), "array_begin");
+      case tgbm::json::sax_token::array_end:
+        return std::format_to(ctx.out(), "array_end");
+      case tgbm::json::sax_token::object_begin:
+        return std::format_to(ctx.out(), "object_begin");
+      case tgbm::json::sax_token::object_end:
+        return std::format_to(ctx.out(), "object_end");
+      case tgbm::json::sax_token::string:
+        return std::format_to(ctx.out(), "string `{}`", tok.str_m);
+      case tgbm::json::sax_token::key:
+        return std::format_to(ctx.out(), "key `{}`", tok.str_m);
+      case tgbm::json::sax_token::int64:
+        return std::format_to(ctx.out(), "int64 `{}`", tok.int_m);
+      case tgbm::json::sax_token::uint64:
+        return std::format_to(ctx.out(), "uint64 `{}`", tok.uint_m);
+      case tgbm::json::sax_token::double_:
+        return std::format_to(ctx.out(), "double `{}`", tok.double_m);
+      case tgbm::json::sax_token::bool_:
+        return std::format_to(ctx.out(), "boolean `{}`", tok.bool_m);
+      case tgbm::json::sax_token::null:
+        return std::format_to(ctx.out(), "null");
+      case tgbm::json::sax_token::part:
+        return std::format_to(ctx.out(), "part `{}`", tok.str_m);
+    }
+    tgbm::unreachable();
+  }
+};
+
+}  // namespace std

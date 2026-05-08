@@ -66,7 +66,7 @@ inline void tag_invoke(value_from_tag, value& jv, const T& t) {
       if (!T::is_mandatory_field(name)) {
         obj.erase(name);
       } else {
-        TGBM_JSON_SERIALIZE_ERROR;
+        throw ::tgbm::json::serialize_error(std::format("field `{}` is null, but it is mandatory", name));
       }
     }
   });
@@ -106,14 +106,14 @@ inline void tag_invoke(value_from_tag, value& jv, const T& t) {
         constexpr std::string_view name = Info::name.AsStringView();
         obj[name] = boost::json::value_from(field);
         if (obj[name].is_null()) {
-          TGBM_JSON_SERIALIZE_ERROR;
+          throw ::tgbm::json::serialize_error(std::format("field `{}` is null", name));
         }
       });
 
   std::string_view opt_field = t.discriminator_now();
   tgbm::oneof_field_utils::visit(
       t, [&](auto& field) { obj[opt_field] = boost::json::value_from(field); },
-      []() { TGBM_JSON_SERIALIZE_ERROR; });
+      []() { throw ::tgbm::json::serialize_error(std::format("oneof does not contain value")); });
 }
 
 }  // namespace boost::json

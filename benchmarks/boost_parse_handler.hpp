@@ -196,9 +196,8 @@ T parse_handler(std::string_view sv) {
   ::boost::json::basic_parser<details::parser_handler<T>> parser(::boost::json::parse_options{}, result);
   io_error_code ec;
   parser.write_some(false, sv.data(), sv.size(), ec);
-  if (ec.failed()) {
-    TGBM_JSON_PARSE_ERROR;
-  }
+  if (ec.failed())
+    throw parse_error(ec.what());
   return result;
 }
 
@@ -206,9 +205,8 @@ inline bool parse_ignore_handler(std::string_view sv) {
   ::boost::json::basic_parser<details::ignore_handler> parser(::boost::json::parse_options{});
   io_error_code ec;
   parser.write_some(false, sv.data(), sv.size(), ec);
-  if (ec.failed()) {
-    TGBM_JSON_PARSE_ERROR;
-  }
+  if (ec.failed())
+    throw parse_error(ec.what());
   return true;
 }
 
