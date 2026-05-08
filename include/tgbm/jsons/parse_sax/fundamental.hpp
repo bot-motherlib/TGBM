@@ -23,7 +23,7 @@ template <>
 struct sax_parser<api::True> {
   static sax_consumer_t parse(api::True&, sax_token& tok, dd::with_stack_resource r) {
     if (tok.got != sax_token::bool_ || !tok.bool_m) [[unlikely]]
-      TGBM_JSON_PARSE_ERROR;
+      throw parse_error(std::format("expected `True`, got {}", tok));
     return {};
   }
 };
@@ -59,7 +59,7 @@ struct sax_parser<T> {
         safe_write(v, tok.uint_m);
         return {};
       default:
-        json::throw_json_parse_error();
+        throw parse_error(std::format("expected int64/uint64, got {}", tok));
     }
   }
 };

@@ -105,16 +105,16 @@ struct MessageOrigin {
         .case_("channel", type_e::k_channel)
         .or_default(type_e::nothing);
   }
-  static constexpr decltype(auto) discriminate(std::string_view val, auto&& visiter) {
+  static constexpr decltype(auto) discriminate(std::string_view val, auto&& visitor) {
     if (val == "user")
-      return visiter.template operator()<MessageOriginUser>();
+      return visitor.template operator()<MessageOriginUser>();
     if (val == "hidden_user")
-      return visiter.template operator()<MessageOriginHiddenUser>();
+      return visitor.template operator()<MessageOriginHiddenUser>();
     if (val == "chat")
-      return visiter.template operator()<MessageOriginChat>();
+      return visitor.template operator()<MessageOriginChat>();
     if (val == "channel")
-      return visiter.template operator()<MessageOriginChannel>();
-    return visiter.template operator()<void>();
+      return visitor.template operator()<MessageOriginChannel>();
+    return visitor.template operator()<void>();
   }
   type_e type() const {
     return static_cast<type_e>(data.index());
@@ -373,6 +373,76 @@ JSON_PARSE_TEST(MissingField, MessageOrigin) {
 }
     )";
   EXPECT_THROW(parse_json(json), tgbm::json::parse_error);
+}
+
+TEST(fails, injson) {
+  // invalid discriminator, ignoring value (API back compatibility, may be new type added)
+  auto json = R"(
+[
+   {
+      "date":1630454400,
+      "type":"chanel",
+      "sender_channel":{
+         "id":13579,
+         "name":"News Channel"
+      }
+   },
+   {
+      "date":1630454400,
+      "sender_chat":{
+         "id":67890,
+         "title":"Group Chat"
+      },
+      "type":"chat"
+   }
+])";
+  std::vector<MessageOrigin> res;
+  tgbm::json::stream_parser parser(res);
+  EXPECT_NO_THROW(parser.feed(json, /*end=*/true));
+}
+
+TEST(fails2, injson) {
+  // no required field `sender_channel`
+  auto json = R"(
+[
+   {
+      "date":1630454400,
+      "type":"channel"
+   }
+])";
+  std::vector<MessageOrigin> res;
+  tgbm::json::stream_parser parser(res);
+  try {
+    parser.feed(json, /*end=*/true);
+    FAIL();
+  } catch (tgbm::json::parse_error& e) {
+    EXPECT_TRUE(std::string(e.what()).find(json) != std::string::npos);
+    EXPECT_TRUE(std::string(e.what()).find("not all required fields are present") != std::string::npos);
+  }
+}
+
+TEST(fails3, injson) {
+  // syntax error (additional `,` at end of object)
+  auto json = R"(
+[
+   {
+      "date":1630454400,
+      "type":"channel",
+      "sender_channel":{
+         "id":13579,
+         "name":"News Channel"
+      },
+   }
+])";
+  std::vector<MessageOrigin> res;
+  tgbm::json::stream_parser parser(res);
+  try {
+    parser.feed(json, /*end=*/true);
+    FAIL();
+  } catch (tgbm::json::parse_error& e) {
+    EXPECT_TRUE(std::string(e.what()).find(json) != std::string::npos);
+    EXPECT_TRUE(std::string(e.what()).find("syntax error") != std::string::npos);
+  }
 }
 
 }  // namespace test_oneof

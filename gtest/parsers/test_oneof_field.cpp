@@ -80,20 +80,20 @@ struct CustomStruct {
 
   static constexpr size_t variant_size = size_t(type_e::nothing);
 
-  static constexpr decltype(auto) discriminate_field(std::string_view val, auto&& visiter) {
+  static constexpr decltype(auto) discriminate_field(std::string_view val, auto&& visitor) {
     if (val == "optional_bool")
-      return visiter.template operator()<optional_bool>();
+      return visitor.template operator()<optional_bool>();
     if (val == "optional_double")
-      return visiter.template operator()<optional_double>();
+      return visitor.template operator()<optional_double>();
     if (val == "optional_array")
-      return visiter.template operator()<optional_array>();
+      return visitor.template operator()<optional_array>();
     if (val == "optional_object1")
-      return visiter.template operator()<optional_object1>();
+      return visitor.template operator()<optional_object1>();
     if (val == "optional_object2")
-      return visiter.template operator()<optional_object2>();
+      return visitor.template operator()<optional_object2>();
     if (val == "optional_custom")
-      return visiter.template operator()<optional_custom>();
-    return visiter.template operator()<void>();
+      return visitor.template operator()<optional_custom>();
+    return visitor.template operator()<void>();
   }
   type_e type() const {
     return static_cast<type_e>(data.index());

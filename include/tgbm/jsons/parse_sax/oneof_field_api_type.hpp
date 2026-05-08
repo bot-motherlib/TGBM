@@ -26,8 +26,10 @@ struct sax_parser<T> {
         [&]<size_t I>() {
           using Field = pfr_extension::tuple_element_t<I, T>;
           auto& field = pfr_extension::get<I>(t_);
-          if (parsed_.test(I))
-            TGBM_JSON_PARSE_ERROR;
+          if (parsed_.test(I)) {
+            throw parse_error(
+                std::format("field `{}` already parsed", pfr_extension::element_name_v<I, std::decay_t<T>>));
+          }
           parsed_.set(I);
           return sax_parser<Field>::parse(field, tok, r);
         },
@@ -36,7 +38,7 @@ struct sax_parser<T> {
           return oneof_field_utils::emplace_field<T, sax_consumer_t>(
               t_.data, key,
               [&]<typename Field>(Field& field) { return sax_parser<Field>::parse(field, tok, r); },
-              []() -> sax_consumer_t { TGBM_JSON_PARSE_ERROR; },
+              []() -> sax_consumer_t { throw parse_error("`data` already not null"); },
               [&]() -> sax_consumer_t { return sax_ignore_value(tok); });
         });
   }
@@ -57,7 +59,7 @@ struct sax_parser<T> {
       co_yield dd::elements_of(get_generator_field(v, key, tok, parsed_, r));
     }
     if (!parsed_.all())
-      TGBM_JSON_PARSE_ERROR;
+      throw parse_error("not all required fields are parsed");
     assert(tok.got == object_end);
   }
 };

@@ -43,8 +43,10 @@ struct sax_parser<T> {
           key,
           [&]<size_t I>() {
             auto& field = pfr_extension::get<I>(v);
-            if (parsed_.test(I))
-              TGBM_JSON_PARSE_ERROR;
+            if (parsed_.test(I)) {
+              throw parse_error(std::format("field `{}` already parsed and appears again",
+                                            pfr_extension::element_name_v<I, std::decay_t<T>>));
+            }
             parsed_.set(I);
             return sax_parser<pfr_extension::tuple_element_t<I, T>>::parse(field, tok, r);
           },
@@ -69,7 +71,7 @@ struct sax_parser<T> {
       co_yield dd::elements_of(generator_field(v, cur_key, tok, parsed_, r));
     }
     if (!all_parsed(parsed_)) [[unlikely]]
-      TGBM_JSON_PARSE_ERROR;
+      throw parse_error("not all required fields are present");
   }
 };
 
