@@ -18,7 +18,6 @@ struct stream_parser {
   // Note: MUST NOT be reused after parsing value.
   // each value should be parsed by new stream_parser
   void feed(std::string_view data, bool end) {
-    assert(!p.handler().is_done());
     io_error_code ec;
     try {
       p.write_some(!end, data.data(), data.size(), ec);
