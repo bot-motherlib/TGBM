@@ -16,7 +16,7 @@ namespace tgbm {
 
 struct http_client {
   virtual ~http_client() = default;
-
+  // should return authority
   virtual std::string_view get_host() const noexcept = 0;
 
   // rethrows exceptions from 'on_header' and 'on_data_part' to caller

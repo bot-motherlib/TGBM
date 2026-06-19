@@ -6,8 +6,20 @@
 #include "http2/asio/awaiters.hpp"
 #include "tgbm/net/http_base.hpp"
 #include "tgbm/net/http_client.hpp"
+#include "tgbm/net/tcp_starters.hpp"
 
 namespace tgbm {
+
+struct http2_client_init {
+  // each request :authority
+  std::string host = "api.telegram.org";
+  // destination to connect (usually equal to `host`)
+  std::string dst = "api.telegram.org";
+  uint16_t dstport = 443;
+  http2_client_options options = {};
+  http2::tcp_connection_options tcp_options = {};
+  starter_t starter = {};
+};
 
 struct http2_client : http_client {
  protected:
@@ -16,11 +28,9 @@ struct http2_client : http_client {
 
  public:
   explicit http2_client(std::string_view host = "api.telegram.org", http2_client_options opts = {},
-                        asio::ip::port_type port = 443)
-      : impl(http2::endpoint(std::string(host), port), opts,
-             [](asio::io_context& ctx) { return http2::default_tls_transport_factory(ctx); }),
-        host(host) {
-  }
+                        asio::ip::port_type port = 443);
+
+  explicit http2_client(http2_client_init init);
 
   http2_client(http2_client&&) = delete;
   void operator=(http2_client&&) = delete;

@@ -67,7 +67,7 @@ endif()
 CPMAddPackage(
   NAME HTTP2
   GIT_REPOSITORY https://github.com/kelbon/http2
-  GIT_TAG v0.9.4
+  GIT_TAG v0.9.7
   OPTIONS "KELHTTP2_USE_CPM ON"
           "KELHTTP2_DEBUG_SSL_KEYS_FILE ${TGBM_SSL_KEYS_FILE}"
 )
