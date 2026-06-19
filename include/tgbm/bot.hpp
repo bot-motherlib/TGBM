@@ -6,6 +6,7 @@
 #include "tgbm/api/telegram.hpp"
 #include "tgbm/long_poll.hpp"
 #include "tgbm/net/http_client.hpp"
+#include "tgbm/net/tcp_starters.hpp"
 
 #include <kelcoro/channel.hpp>
 
@@ -32,12 +33,22 @@ struct bot_commands {
   std::unordered_map<std::string, command> commands;
 
  public:
-  [[nodiscard]] static bool is_valid_name(std::string_view) noexcept;
-  // TODO conforming with TG rules (parsing etc) + NOT EMPTY (""), send set commands etc
-
   // replaces current command if exist
   void add(std::string name, on_command_handler_t oncommand, std::string description = {});
   on_command_handler_t::cptr find(std::string_view name) const noexcept;
+};
+
+struct bot_options {
+  // each request :authority
+  std::string host = "api.telegram.org";
+  // destination to connect (usually equal to `host`)
+  std::string dst = "api.telegram.org";
+  uint16_t dstport = 443;
+  std::filesystem::path additional_ssl_cert = {};
+  // allows override where/what/how to log
+  http2::log_context logctx = {};
+  // invoked after TCP handshake, before TLS handshake
+  starter_t starter = {};
 };
 
 struct bot {
@@ -62,6 +73,8 @@ struct bot {
         commands(),
         token(bottoken) {
   }
+
+  explicit bot(std::string bottoken, bot_options);
 
   explicit bot(std::string_view bottoken, std::unique_ptr<http_client> c)
       : client(c ? std::move(c) : default_http_client("api.telegram.org")),

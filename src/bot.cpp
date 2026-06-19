@@ -4,27 +4,38 @@
 
 namespace tgbm {
 
+static std::unique_ptr<http_client> make_http2_client(bot_options options) {
+  http2_client_init init;
+  init.host = options.host;
+  init.dst = options.dst;
+  init.dstport = options.dstport;
+  if (!options.additional_ssl_cert.empty()) {
+    init.tcp_options.additional_ssl_certificates.push_back(std::move(options.additional_ssl_cert));
+    init.tcp_options.host_for_name_verification.emplace(options.host);
+  }
+  init.options.logctx = std::move(options.logctx);
+  init.starter = std::move(options.starter);
+  return std::unique_ptr<http_client>(new http2_client(std::move(init)));
+}
+
 std::unique_ptr<http_client> default_http_client(std::string_view host,
                                                  std::filesystem::path additional_ssl_cert,
                                                  http2::log_context logctx) {
-  http2::tcp_connection_options opts;
-  if (!additional_ssl_cert.empty()) {
-    opts.additional_ssl_certificates.push_back(std::move(additional_ssl_cert));
-    opts.host_for_name_verification.emplace(host);
-  }
-  http2_client_options h2opts;
-  h2opts.logctx = std::move(logctx);
-  return std::unique_ptr<http_client>(new http2_client(host, std::move(h2opts)));
+  bot_options opts;
+  opts.host = host;
+  opts.dst = host;
+  opts.dstport = 443;
+  opts.additional_ssl_cert = std::move(additional_ssl_cert);
+  opts.logctx = std::move(logctx);
+  opts.starter = {};
+  return make_http2_client(std::move(opts));
 }
 
-[[nodiscard]] bool bot_commands::is_valid_name(std::string_view name) noexcept {
-  // TODO
-  return true;
+bot::bot(std::string bottoken, bot_options options)
+    : client(make_http2_client(std::move(options))), api(*client, bottoken), commands(), token(bottoken) {
 }
 
 void bot_commands::add(std::string name, on_command_handler_t oncommand, std::string description) {
-  if (!is_valid_name(name))
-    throw std::runtime_error(fmt::format("\"{}\" is not valid name for bot command", name));
   commands.insert_or_assign(std::move(name), command(std::move(oncommand), std::move(description)));
 }
 

@@ -75,7 +75,7 @@ template <tgapi_request R>
   path.push_back('/');
   path += R::api_method_name;
   return http_request{
-      .authority = {},
+      .authority = {},  // setted in client
       .path = std::move(path),
       .method = R::http_method,
       .scheme = scheme_e::HTTPS,

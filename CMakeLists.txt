@@ -52,6 +52,8 @@ set(TGBM_SRC_LIST
     src/api/input_file.cpp
     src/telegram.cpp
     src/net/http_base.cpp
+    src/net/tcp_starters.cpp
+    src/net/http2/client.cpp
     src/utils/url_encoded.cpp
     )
 
