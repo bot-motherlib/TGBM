@@ -32,6 +32,9 @@ struct PreCheckoutQuery {
         .case_("invoice_payload", true)
         .or_default(false);
   }
+
+  bool operator==(const PreCheckoutQuery&) const;
+  std::strong_ordering operator<=>(const PreCheckoutQuery&) const;
 };
 
 }  // namespace tgbm::api

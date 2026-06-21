@@ -30,6 +30,9 @@ struct InlineQueryResultCachedGif {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("id", true).case_("gif_file_id", true).or_default(false);
   }
+
+  bool operator==(const InlineQueryResultCachedGif&) const;
+  std::strong_ordering operator<=>(const InlineQueryResultCachedGif&) const;
 };
 
 }  // namespace tgbm::api

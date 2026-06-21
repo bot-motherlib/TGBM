@@ -14,6 +14,9 @@ struct UserProfilePhotos {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("total_count", true).case_("photos", true).or_default(false);
   }
+
+  bool operator==(const UserProfilePhotos&) const;
+  std::strong_ordering operator<=>(const UserProfilePhotos&) const;
 };
 
 }  // namespace tgbm::api

@@ -40,6 +40,9 @@ struct SuccessfulPayment {
         .case_("provider_payment_charge_id", true)
         .or_default(false);
   }
+
+  bool operator==(const SuccessfulPayment&) const;
+  std::strong_ordering operator<=>(const SuccessfulPayment&) const;
 };
 
 }  // namespace tgbm::api

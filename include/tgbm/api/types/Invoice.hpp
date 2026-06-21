@@ -28,6 +28,9 @@ struct Invoice {
         .case_("total_amount", true)
         .or_default(false);
   }
+
+  bool operator==(const Invoice&) const;
+  std::strong_ordering operator<=>(const Invoice&) const;
 };
 
 }  // namespace tgbm::api

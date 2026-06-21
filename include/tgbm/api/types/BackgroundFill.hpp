@@ -74,6 +74,8 @@ struct BackgroundFill {
         unreachable();
     }
   }
+  bool operator==(const BackgroundFill&) const;
+  std::strong_ordering operator<=>(const BackgroundFill&) const;
 };
 
 }  // namespace tgbm::api

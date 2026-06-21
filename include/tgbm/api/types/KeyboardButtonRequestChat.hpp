@@ -46,6 +46,9 @@ struct KeyboardButtonRequestChat {
         .case_("chat_is_channel", true)
         .or_default(false);
   }
+
+  bool operator==(const KeyboardButtonRequestChat&) const;
+  std::strong_ordering operator<=>(const KeyboardButtonRequestChat&) const;
 };
 
 }  // namespace tgbm::api

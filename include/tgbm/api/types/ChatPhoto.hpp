@@ -27,6 +27,9 @@ struct ChatPhoto {
         .case_("big_file_unique_id", true)
         .or_default(false);
   }
+
+  bool operator==(const ChatPhoto&) const;
+  std::strong_ordering operator<=>(const ChatPhoto&) const;
 };
 
 }  // namespace tgbm::api

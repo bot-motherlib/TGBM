@@ -25,6 +25,9 @@ struct PassportElementErrorDataField {
         .case_("message", true)
         .or_default(false);
   }
+
+  bool operator==(const PassportElementErrorDataField&) const;
+  std::strong_ordering operator<=>(const PassportElementErrorDataField&) const;
 };
 
 }  // namespace tgbm::api

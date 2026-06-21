@@ -24,6 +24,9 @@ struct ChatBoost {
         .case_("source", true)
         .or_default(false);
   }
+
+  bool operator==(const ChatBoost&) const;
+  std::strong_ordering operator<=>(const ChatBoost&) const;
 };
 
 }  // namespace tgbm::api

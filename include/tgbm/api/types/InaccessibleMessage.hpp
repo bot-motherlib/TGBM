@@ -20,6 +20,9 @@ struct InaccessibleMessage {
         .case_("date", true)
         .or_default(false);
   }
+
+  bool operator==(const InaccessibleMessage&) const;
+  std::strong_ordering operator<=>(const InaccessibleMessage&) const;
 };
 
 }  // namespace tgbm::api

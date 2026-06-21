@@ -12,6 +12,9 @@ struct BotName {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("name", true).or_default(false);
   }
+
+  bool operator==(const BotName&) const;
+  std::strong_ordering operator<=>(const BotName&) const;
 };
 
 }  // namespace tgbm::api

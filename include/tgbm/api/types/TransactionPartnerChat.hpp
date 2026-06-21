@@ -15,6 +15,9 @@ struct TransactionPartnerChat {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("chat", true).or_default(false);
   }
+
+  bool operator==(const TransactionPartnerChat&) const;
+  std::strong_ordering operator<=>(const TransactionPartnerChat&) const;
 };
 
 }  // namespace tgbm::api

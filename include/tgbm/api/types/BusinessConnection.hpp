@@ -31,6 +31,9 @@ struct BusinessConnection {
         .case_("is_enabled", true)
         .or_default(false);
   }
+
+  bool operator==(const BusinessConnection&) const;
+  std::strong_ordering operator<=>(const BusinessConnection&) const;
 };
 
 }  // namespace tgbm::api

@@ -86,6 +86,8 @@ struct MessageOrigin {
         unreachable();
     }
   }
+  bool operator==(const MessageOrigin&) const;
+  std::strong_ordering operator<=>(const MessageOrigin&) const;
 };
 
 }  // namespace tgbm::api

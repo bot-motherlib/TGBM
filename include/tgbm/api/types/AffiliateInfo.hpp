@@ -27,6 +27,9 @@ struct AffiliateInfo {
         .case_("amount", true)
         .or_default(false);
   }
+
+  bool operator==(const AffiliateInfo&) const;
+  std::strong_ordering operator<=>(const AffiliateInfo&) const;
 };
 
 }  // namespace tgbm::api

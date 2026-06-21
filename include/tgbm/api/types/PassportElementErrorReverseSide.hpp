@@ -22,6 +22,9 @@ struct PassportElementErrorReverseSide {
         .case_("message", true)
         .or_default(false);
   }
+
+  bool operator==(const PassportElementErrorReverseSide&) const;
+  std::strong_ordering operator<=>(const PassportElementErrorReverseSide&) const;
 };
 
 }  // namespace tgbm::api

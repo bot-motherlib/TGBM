@@ -25,6 +25,9 @@ struct ChosenInlineResult {
         .case_("query", true)
         .or_default(false);
   }
+
+  bool operator==(const ChosenInlineResult&) const;
+  std::strong_ordering operator<=>(const ChosenInlineResult&) const;
 };
 
 }  // namespace tgbm::api

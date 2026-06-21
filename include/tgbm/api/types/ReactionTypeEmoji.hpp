@@ -15,6 +15,9 @@ struct ReactionTypeEmoji {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("emoji", true).or_default(false);
   }
+
+  bool operator==(const ReactionTypeEmoji&) const;
+  std::strong_ordering operator<=>(const ReactionTypeEmoji&) const;
 };
 
 }  // namespace tgbm::api

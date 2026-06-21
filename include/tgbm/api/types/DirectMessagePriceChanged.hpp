@@ -15,6 +15,9 @@ struct DirectMessagePriceChanged {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("are_direct_messages_enabled", true).or_default(false);
   }
+
+  bool operator==(const DirectMessagePriceChanged&) const;
+  std::strong_ordering operator<=>(const DirectMessagePriceChanged&) const;
 };
 
 }  // namespace tgbm::api

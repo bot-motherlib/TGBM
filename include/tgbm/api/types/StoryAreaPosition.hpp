@@ -29,6 +29,9 @@ struct StoryAreaPosition {
         .case_("corner_radius_percentage", true)
         .or_default(false);
   }
+
+  bool operator==(const StoryAreaPosition&) const;
+  std::strong_ordering operator<=>(const StoryAreaPosition&) const;
 };
 
 }  // namespace tgbm::api

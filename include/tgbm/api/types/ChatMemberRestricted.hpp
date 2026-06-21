@@ -70,6 +70,9 @@ struct ChatMemberRestricted {
         .case_("until_date", true)
         .or_default(false);
   }
+
+  bool operator==(const ChatMemberRestricted&) const;
+  std::strong_ordering operator<=>(const ChatMemberRestricted&) const;
 };
 
 }  // namespace tgbm::api

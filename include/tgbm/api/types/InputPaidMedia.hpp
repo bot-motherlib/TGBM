@@ -60,6 +60,8 @@ struct InputPaidMedia {
         unreachable();
     }
   }
+  bool operator==(const InputPaidMedia&) const;
+  std::strong_ordering operator<=>(const InputPaidMedia&) const;
 };
 
 }  // namespace tgbm::api

@@ -73,6 +73,8 @@ struct ReactionType {
         unreachable();
     }
   }
+  bool operator==(const ReactionType&) const;
+  std::strong_ordering operator<=>(const ReactionType&) const;
 };
 
 }  // namespace tgbm::api

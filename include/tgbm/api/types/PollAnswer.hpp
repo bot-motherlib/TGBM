@@ -24,6 +24,9 @@ struct PollAnswer {
         .case_("option_persistent_ids", true)
         .or_default(false);
   }
+
+  bool operator==(const PollAnswer&) const;
+  std::strong_ordering operator<=>(const PollAnswer&) const;
 };
 
 }  // namespace tgbm::api

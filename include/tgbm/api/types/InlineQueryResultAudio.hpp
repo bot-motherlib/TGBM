@@ -36,6 +36,9 @@ struct InlineQueryResultAudio {
         .case_("title", true)
         .or_default(false);
   }
+
+  bool operator==(const InlineQueryResultAudio&) const;
+  std::strong_ordering operator<=>(const InlineQueryResultAudio&) const;
 };
 
 }  // namespace tgbm::api

@@ -33,6 +33,9 @@ struct CallbackQuery {
         .case_("chat_instance", true)
         .or_default(false);
   }
+
+  bool operator==(const CallbackQuery&) const;
+  std::strong_ordering operator<=>(const CallbackQuery&) const;
 };
 
 }  // namespace tgbm::api

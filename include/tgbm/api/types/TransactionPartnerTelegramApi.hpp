@@ -13,6 +13,9 @@ struct TransactionPartnerTelegramApi {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("request_count", true).or_default(false);
   }
+
+  bool operator==(const TransactionPartnerTelegramApi&) const;
+  std::strong_ordering operator<=>(const TransactionPartnerTelegramApi&) const;
 };
 
 }  // namespace tgbm::api

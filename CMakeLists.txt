@@ -47,6 +47,7 @@ if (TGBM_ENABLE_GEN)
 endif()
 
 set(TGBM_SRC_LIST
+    src/api_cmp.cpp
     src/bot.cpp
     src/long_poll.cpp
     src/api/input_file.cpp

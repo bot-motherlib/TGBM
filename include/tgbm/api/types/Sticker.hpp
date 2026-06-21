@@ -52,6 +52,9 @@ struct Sticker {
         .case_("is_video", true)
         .or_default(false);
   }
+
+  bool operator==(const Sticker&) const;
+  std::strong_ordering operator<=>(const Sticker&) const;
 };
 
 }  // namespace tgbm::api

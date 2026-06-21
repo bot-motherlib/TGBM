@@ -72,6 +72,9 @@ struct InputInvoiceMessageContent {
         .case_("prices", true)
         .or_default(false);
   }
+
+  bool operator==(const InputInvoiceMessageContent&) const;
+  std::strong_ordering operator<=>(const InputInvoiceMessageContent&) const;
 };
 
 }  // namespace tgbm::api

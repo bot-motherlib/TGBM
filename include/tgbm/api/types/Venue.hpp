@@ -29,6 +29,9 @@ struct Venue {
         .case_("address", true)
         .or_default(false);
   }
+
+  bool operator==(const Venue&) const;
+  std::strong_ordering operator<=>(const Venue&) const;
 };
 
 }  // namespace tgbm::api

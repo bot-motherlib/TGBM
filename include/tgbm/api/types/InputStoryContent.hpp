@@ -60,6 +60,8 @@ struct InputStoryContent {
         unreachable();
     }
   }
+  bool operator==(const InputStoryContent&) const;
+  std::strong_ordering operator<=>(const InputStoryContent&) const;
 };
 
 }  // namespace tgbm::api

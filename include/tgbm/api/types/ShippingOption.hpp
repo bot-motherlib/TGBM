@@ -20,6 +20,9 @@ struct ShippingOption {
         .case_("prices", true)
         .or_default(false);
   }
+
+  bool operator==(const ShippingOption&) const;
+  std::strong_ordering operator<=>(const ShippingOption&) const;
 };
 
 }  // namespace tgbm::api

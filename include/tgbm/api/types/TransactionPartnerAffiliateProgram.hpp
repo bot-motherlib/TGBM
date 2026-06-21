@@ -16,6 +16,9 @@ struct TransactionPartnerAffiliateProgram {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("commission_per_mille", true).or_default(false);
   }
+
+  bool operator==(const TransactionPartnerAffiliateProgram&) const;
+  std::strong_ordering operator<=>(const TransactionPartnerAffiliateProgram&) const;
 };
 
 }  // namespace tgbm::api

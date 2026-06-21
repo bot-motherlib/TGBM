@@ -20,6 +20,9 @@ struct StoryAreaTypeWeather {
         .case_("background_color", true)
         .or_default(false);
   }
+
+  bool operator==(const StoryAreaTypeWeather&) const;
+  std::strong_ordering operator<=>(const StoryAreaTypeWeather&) const;
 };
 
 }  // namespace tgbm::api

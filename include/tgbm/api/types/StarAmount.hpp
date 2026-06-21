@@ -15,6 +15,9 @@ struct StarAmount {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("amount", true).or_default(false);
   }
+
+  bool operator==(const StarAmount&) const;
+  std::strong_ordering operator<=>(const StarAmount&) const;
 };
 
 }  // namespace tgbm::api

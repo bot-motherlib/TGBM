@@ -13,6 +13,9 @@ struct BackgroundFillSolid {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("color", true).or_default(false);
   }
+
+  bool operator==(const BackgroundFillSolid&) const;
+  std::strong_ordering operator<=>(const BackgroundFillSolid&) const;
 };
 
 }  // namespace tgbm::api

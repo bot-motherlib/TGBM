@@ -19,6 +19,9 @@ struct WriteAccessAllowed {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
+
+  bool operator==(const WriteAccessAllowed&) const;
+  std::strong_ordering operator<=>(const WriteAccessAllowed&) const;
 };
 
 }  // namespace tgbm::api
