@@ -48,12 +48,12 @@
             }
         },
         {
-            "name": "gcc_14_release",
-            "displayName": "gcc 14 release",
+            "name": "gcc_15_release",
+            "displayName": "gcc 15 release",
             "inherits": "base_release",
             "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc-14",
-                "CMAKE_CXX_COMPILER": "g++-14"
+                "CMAKE_C_COMPILER": "gcc-15",
+                "CMAKE_CXX_COMPILER": "g++-15"
             }
         },
         {
@@ -77,12 +77,12 @@
             }
         },
         {
-            "name": "gcc_14_debug",
-            "displayName": "gcc 14 debug",
+            "name": "gcc_15_debug",
+            "displayName": "gcc 15 debug",
             "inherits": "base_debug",
             "cacheVariables": {
-                "CMAKE_C_COMPILER": "gcc-14",
-                "CMAKE_CXX_COMPILER": "g++-14"
+                "CMAKE_C_COMPILER": "gcc-15",
+                "CMAKE_CXX_COMPILER": "g++-15"
             }
         }
     ]
