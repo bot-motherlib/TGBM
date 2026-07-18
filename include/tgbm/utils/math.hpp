@@ -24,9 +24,9 @@ struct numeric_limits<api::Integer> {
 
 namespace details {
 constexpr auto unstrongef(auto v) {
-  if constexpr (requires { v.value; }) {
+  if constexpr (requires { v.value; })
     return v.value;
-  } else
+  else
     return v;
 }
 
