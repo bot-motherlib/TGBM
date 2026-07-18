@@ -20,10 +20,10 @@ struct StarTransaction {
    * 999999999 */
   optional<Integer> nanostar_amount;
   /* Optional. Source of an incoming transaction (e.g., a user purchasing goods or services, Fragment
-   * refunding a failed withdrawal). Only for incoming transactions */
+   * refunding a failed withdrawal). Only for incoming transactions. */
   box<TransactionPartner> source;
   /* Optional. Receiver of an outgoing transaction (e.g., a user for a purchase refund, Fragment for a
-   * withdrawal). Only for outgoing transactions */
+   * withdrawal). Only for outgoing transactions. */
   box<TransactionPartner> receiver;
 
   consteval static bool is_mandatory_field(std::string_view name) {

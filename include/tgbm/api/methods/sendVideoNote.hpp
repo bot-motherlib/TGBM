@@ -8,12 +8,12 @@
 namespace tgbm::api {
 
 struct send_video_note_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target bot, supergroup or channel in the format
+   * @username */
   int_or_str chat_id;
   /* Video note to send. Pass a file_id as String to send a video note that exists on the Telegram servers
    * (recommended) or upload a new video using multipart/form-data. More information on Sending Files ».
-   * Sending video notes by a URL is currently unsupported */
+   * Sending video notes by a URL is currently unsupported. */
   file_or_str video_note;
   /* Unique identifier of the business connection on behalf of which the message will be sent */
   optional<String> business_connection_id;
@@ -23,6 +23,12 @@ struct send_video_note_request {
   /* Identifier of the direct messages topic to which the message will be sent; required if the message is
    * sent to a direct messages chat */
   optional<Integer> direct_messages_topic_id;
+  /* For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group
+   * and supergroup chats only. It is not guaranteed that the user will receive the message, especially if
+   * they are offline. See ephemeral message sending for more details. */
+  optional<Integer> receiver_user_id;
+  /* For outgoing ephemeral messages, identifier of the callback query which triggered the message if any */
+  optional<String> callback_query_id;
   /* Duration of sent video in seconds */
   optional<Integer> duration;
   /* Video width and height, i.e. diameter of the video message */
@@ -39,7 +45,7 @@ struct send_video_note_request {
   /* Protects the contents of the sent message from forwarding and saving */
   optional<bool> protect_content;
   /* Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram
-   * Stars per message. The relevant Stars will be withdrawn from the bot's balance */
+   * Stars per message. The relevant Stars will be withdrawn from the bot's balance. */
   optional<bool> allow_paid_broadcast;
   /* Unique identifier of the message effect to be added to the message; for private chats only */
   optional<String> message_effect_id;
@@ -50,7 +56,7 @@ struct send_video_note_request {
   /* Description of the message to reply to */
   box<ReplyParameters> reply_parameters;
   /* Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard,
-   * instructions to remove a reply keyboard or to force a reply from the user */
+   * instructions to remove a reply keyboard or to force a reply from the user. */
   optional<reply_markup_t> reply_markup;
 
   using return_type = Message;
@@ -66,6 +72,10 @@ struct send_video_note_request {
       body.arg("message_thread_id", *message_thread_id);
     if (direct_messages_topic_id)
       body.arg("direct_messages_topic_id", *direct_messages_topic_id);
+    if (receiver_user_id)
+      body.arg("receiver_user_id", *receiver_user_id);
+    if (callback_query_id)
+      body.arg("callback_query_id", *callback_query_id);
     if (const auto* str = video_note.get_str())
       body.arg("video_note", *str);
     if (duration)

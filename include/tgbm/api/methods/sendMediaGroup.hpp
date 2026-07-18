@@ -8,10 +8,10 @@
 namespace tgbm::api {
 
 struct send_media_group_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target bot, supergroup or channel in the format
+   * @username */
   int_or_str chat_id;
-  /* A JSON-serialized array describing messages to be sent, must include 2-10 items */
+  /* A JSON-serialized Array describing messages to be sent, must include 2-10 items */
   arrayof<InputMediaVideo> media;
   /* Unique identifier of the business connection on behalf of which the message will be sent */
   optional<String> business_connection_id;
@@ -26,7 +26,7 @@ struct send_media_group_request {
   /* Protects the contents of the sent messages from forwarding and saving */
   optional<bool> protect_content;
   /* Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram
-   * Stars per message. The relevant Stars will be withdrawn from the bot's balance */
+   * Stars per message. The relevant Stars will be withdrawn from the bot's balance. */
   optional<bool> allow_paid_broadcast;
   /* Unique identifier of the message effect to be added to the message; for private chats only */
   optional<String> message_effect_id;

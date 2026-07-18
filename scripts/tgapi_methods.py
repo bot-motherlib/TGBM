@@ -91,6 +91,11 @@ G_OPERATION_TO_RESULT = {
     'getManagedBotToken': STRING,
     'replaceManagedBotToken': STRING,
     'savePreparedKeyboardButton': 'PreparedKeyboardButton',
+    'sendLivePhoto': MSG,
+    'getUserPersonalChatMessages': f'arrayof<{MSG}>',
+    'answerGuestQuery': 'SentGuestMessage',
+    'getManagedBotAccessSettings': 'BotAccessSettings',
+    'sendRichMessage': MSG,
 }
 
 # loads TG api (html)
@@ -111,7 +116,8 @@ G_TYPE_MAPPING = {
     "float": "Double",
     "inputfileorstring": G_FILEORSTR,
     "inputfile": "InputFile",
-    "inlinekeyboardmarkuporreplykeyboardmarkuporreplykeyboardremoveorforcereply": "reply_markup_t"
+    "inlinekeyboardmarkuporreplykeyboardmarkuporreplykeyboardremoveorforcereply": "reply_markup_t",
+    "InputMediaAnimation or InputMediaAudio or InputMediaPhoto or InputMediaVideo or InputMediaVoiceNote".strip().lower().replace(' ', '') : "input_media_t",
 }
 
 # takes compound part from cpptype (array or not)

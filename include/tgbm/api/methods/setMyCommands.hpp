@@ -14,7 +14,7 @@ struct set_my_commands_request {
    * BotCommandScopeDefault. */
   box<BotCommandScope> scope;
   /* A two-letter ISO 639-1 language code. If empty, commands will be applied to all users from the given
-   * scope, for whose language there are no dedicated commands */
+   * scope, for whose language there are no dedicated commands. */
   optional<String> language_code;
 
   using return_type = bool;

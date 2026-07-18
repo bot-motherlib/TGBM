@@ -9,9 +9,9 @@ namespace tgbm::api {
  * in the chat if appropriate. More about requesting chats ».*/
 struct KeyboardButtonRequestChat {
   /* Signed 32-bit identifier of the request, which will be received back in the ChatShared object. Must be
-   * unique within the message */
+   * unique within the message. */
   Integer request_id;
-  /* Pass True to request a channel chat, pass False to request a group or a supergroup chat. */
+  /* Pass True to request a channel chat, pass False to request a group or a supergroup chat */
   bool chat_is_channel;
   /* Optional. A JSON-serialized object listing the required administrator rights of the user in the chat. The
    * rights must be a superset of bot_administrator_rights. If not specified, no additional restrictions are

@@ -30,7 +30,7 @@ struct get_business_account_gifts_request {
   /* Offset of the first entry to return as received from the previous request; use empty string to get the
    * first chunk of results */
   optional<String> offset;
-  /* The maximum number of gifts to be returned; 1-100. Defaults to 100 */
+  /* The maximum number of gifts to be returned; 1-100. Defaults to 100. */
   optional<Integer> limit;
 
   using return_type = OwnedGifts;

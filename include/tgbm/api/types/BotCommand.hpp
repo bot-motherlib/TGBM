@@ -9,8 +9,11 @@ struct BotCommand {
   /* Text of the command; 1-32 characters. Can contain only lowercase English letters, digits and underscores.
    */
   String command;
-  /* Description of the command; 1-256 characters. */
+  /* Description of the command; 1-256 characters */
   String description;
+  /* Optional. True, if the command sends an ephemeral message, which can be seen only by the sender of the
+   * message and the bot */
+  optional<bool> is_ephemeral;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("command", true).case_("description", true).or_default(false);

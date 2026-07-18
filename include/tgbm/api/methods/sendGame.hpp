@@ -8,9 +8,9 @@
 namespace tgbm::api {
 
 struct send_game_request {
-  /* Unique identifier for the target chat. Games can't be sent to channel direct messages chats and channel
-   * chats. */
-  Integer chat_id;
+  /* Unique identifier for the target chat or username of the target bot in the format @username. Games can't
+   * be sent to channel direct messages chats and channel chats. */
+  int_or_str chat_id;
   /* Short name of the game, serves as the unique identifier for the game. Set up your games via @BotFather.
    */
   String game_short_name;
@@ -24,7 +24,7 @@ struct send_game_request {
   /* Protects the contents of the sent message from forwarding and saving */
   optional<bool> protect_content;
   /* Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram
-   * Stars per message. The relevant Stars will be withdrawn from the bot's balance */
+   * Stars per message. The relevant Stars will be withdrawn from the bot's balance. */
   optional<bool> allow_paid_broadcast;
   /* Unique identifier of the message effect to be added to the message; for private chats only */
   optional<String> message_effect_id;

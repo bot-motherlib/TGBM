@@ -17,7 +17,7 @@ struct ChatMemberUpdated {
   /* New information about the chat member */
   box<ChatMember> new_chat_member;
   /* Optional. Chat invite link, which was used by the user to join the chat; for joining by invite link
-   * events only. */
+   * events only */
   box<ChatInviteLink> invite_link;
   /* Optional. True, if the user joined the chat after sending a direct join request without using an invite
    * link and being approved by an administrator */

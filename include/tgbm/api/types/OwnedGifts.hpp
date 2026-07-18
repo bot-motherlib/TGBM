@@ -10,7 +10,7 @@ struct OwnedGifts {
   Integer total_count;
   /* The list of gifts */
   arrayof<OwnedGift> gifts;
-  /* Optional. Offset for the next request. If empty, then there are no more results */
+  /* Optional. Offset for the next request. If empty, then there are no more results. */
   optional<String> next_offset;
 
   consteval static bool is_mandatory_field(std::string_view name) {

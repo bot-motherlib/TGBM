@@ -34,7 +34,7 @@ struct create_invoice_link_request {
    * currencies.json, it shows the number of digits past the decimal point for each currency (2 for the
    * majority of currencies). Defaults to 0. Not supported for payments in Telegram Stars. */
   optional<Integer> max_tip_amount;
-  /* A JSON-serialized array of suggested amounts of tips in the smallest units of the currency (integer, not
+  /* A JSON-serialized Array of suggested amounts of tips in the smallest units of the currency (integer, not
    * float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be
    * positive, passed in a strictly increased order and must not exceed max_tip_amount. */
   optional<arrayof<Integer>> suggested_tip_amounts;

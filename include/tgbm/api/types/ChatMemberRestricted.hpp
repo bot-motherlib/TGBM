@@ -11,8 +11,8 @@ struct ChatMemberRestricted {
   box<User> user;
   /* True, if the user is a member of the chat at the moment of the request */
   bool is_member;
-  /* True, if the user is allowed to send text messages, contacts, giveaways, giveaway winners, invoices,
-   * locations and venues */
+  /* True, if the user is allowed to send text messages, rich messages, contacts, giveaways, giveaway winners,
+   * invoices, locations and venues */
   bool can_send_messages;
   /* True, if the user is allowed to send audios */
   bool can_send_audios;
@@ -32,6 +32,8 @@ struct ChatMemberRestricted {
   bool can_send_other_messages;
   /* True, if the user is allowed to add web page previews to their messages */
   bool can_add_web_page_previews;
+  /* True, if the user is allowed to react to messages */
+  bool can_react_to_messages;
   /* True, if the user is allowed to edit their own tag */
   bool can_edit_tag;
   /* True, if the user is allowed to change the chat title, photo and other settings */
@@ -42,8 +44,8 @@ struct ChatMemberRestricted {
   bool can_pin_messages;
   /* True, if the user is allowed to create forum topics */
   bool can_manage_topics;
-  /* Date when restrictions will be lifted for this user; Unix time. If 0, then the user is restricted forever
-   */
+  /* Date when restrictions will be lifted for this user; Unix time. If 0, then the user is restricted
+   * forever. */
   Integer until_date;
   /* Optional. Tag of the member */
   optional<String> tag;
@@ -62,6 +64,7 @@ struct ChatMemberRestricted {
         .case_("can_send_polls", true)
         .case_("can_send_other_messages", true)
         .case_("can_add_web_page_previews", true)
+        .case_("can_react_to_messages", true)
         .case_("can_edit_tag", true)
         .case_("can_change_info", true)
         .case_("can_invite_users", true)

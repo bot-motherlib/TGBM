@@ -6,8 +6,7 @@
 namespace tgbm::api {
 
 struct revoke_chat_invite_link_request {
-  /* Unique identifier of the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier of the target chat or username of the target channel in the format @username */
   int_or_str chat_id;
   /* The invite link to revoke */
   String invite_link;

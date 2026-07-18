@@ -7,14 +7,14 @@
 namespace tgbm::api {
 
 struct stop_poll_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target bot, supergroup or channel in the format
+   * @username */
   int_or_str chat_id;
   /* Identifier of the original message with the poll */
   Integer message_id;
   /* Unique identifier of the business connection on behalf of which the message to be edited was sent */
   optional<String> business_connection_id;
-  /* A JSON-serialized object for a new message inline keyboard. */
+  /* A JSON-serialized object for a new message inline keyboard */
   box<InlineKeyboardMarkup> reply_markup;
 
   using return_type = Poll;

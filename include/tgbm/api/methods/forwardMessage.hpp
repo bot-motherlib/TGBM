@@ -7,11 +7,11 @@
 namespace tgbm::api {
 
 struct forward_message_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target bot, supergroup or channel in the format
+   * @username */
   int_or_str chat_id;
-  /* Unique identifier for the chat where the original message was sent (or channel username in the format
-   * @channelusername) */
+  /* Unique identifier for the chat where the original message was sent (or username of the target bot,
+   * supergroup or channel in the format @username) */
   int_or_str from_chat_id;
   /* Message identifier in the chat specified in from_chat_id */
   Integer message_id;

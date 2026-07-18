@@ -5,8 +5,7 @@
 namespace tgbm::api {
 
 struct unpin_all_chat_messages_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target channel in the format @username */
   int_or_str chat_id;
 
   using return_type = bool;

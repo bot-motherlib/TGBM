@@ -11,7 +11,7 @@ struct send_gift_request {
   /* Required if chat_id is not specified. Unique identifier of the target user who will receive the gift. */
   optional<Integer> user_id;
   /* Required if user_id is not specified. Unique identifier for the chat or username of the channel (in the
-   * format @channelusername) that will receive the gift. */
+   * format @username) that will receive the gift. */
   optional<int_or_str> chat_id;
   /* Pass True to pay for the gift upgrade from the bot's balance, thereby making the upgrade free for the
    * receiver */

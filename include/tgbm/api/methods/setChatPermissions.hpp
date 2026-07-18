@@ -6,8 +6,7 @@
 namespace tgbm::api {
 
 struct set_chat_permissions_request {
-  /* Unique identifier for the target chat or username of the target supergroup (in the format
-   * @supergroupusername) */
+  /* Unique identifier for the target chat or username of the target supergroup in the format @username */
   int_or_str chat_id;
   /* A JSON-serialized object for new default chat permissions */
   box<ChatPermissions> permissions;

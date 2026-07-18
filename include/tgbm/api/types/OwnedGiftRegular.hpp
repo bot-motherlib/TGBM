@@ -24,7 +24,7 @@ struct OwnedGiftRegular {
   optional<Integer> convert_star_count;
   /* Optional. Number of Telegram Stars that were paid for the ability to upgrade the gift */
   optional<Integer> prepaid_upgrade_star_count;
-  /* Optional. Unique number reserved for this gift when upgraded. See the number field in UniqueGift */
+  /* Optional. Unique number reserved for this gift when upgraded. See the number field in UniqueGift. */
   optional<Integer> unique_gift_number;
   /* Optional. True, if the sender and gift text are shown only to the gift receiver; otherwise, everyone will
    * be able to see them */

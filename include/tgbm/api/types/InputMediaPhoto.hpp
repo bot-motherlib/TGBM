@@ -17,7 +17,7 @@ struct InputMediaPhoto {
   /* Optional. List of special entities that appear in the caption, which can be specified instead of
    * parse_mode */
   optional<arrayof<MessageEntity>> caption_entities;
-  /* Optional. Pass True, if the caption must be shown above the message media */
+  /* Optional. Pass True if the caption must be shown above the message media */
   optional<bool> show_caption_above_media;
   /* Optional. Pass True if the photo needs to be covered with a spoiler animation */
   optional<bool> has_spoiler;

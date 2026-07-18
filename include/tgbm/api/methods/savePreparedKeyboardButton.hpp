@@ -10,7 +10,7 @@ struct save_prepared_keyboard_button_request {
   /* Unique identifier of the target user that can use the button */
   Integer user_id;
   /* A JSON-serialized object describing the button to be saved. The button must be of the type request_users,
-   * request_chat, or request_managed_bot */
+   * request_chat, or request_managed_bot. */
   box<KeyboardButton> button;
 
   using return_type = PreparedKeyboardButton;

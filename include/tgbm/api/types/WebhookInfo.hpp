@@ -27,7 +27,7 @@ struct WebhookInfo {
    */
   optional<Integer> max_connections;
   /* Optional. A list of update types the bot is subscribed to. Defaults to all update types except
-   * chat_member */
+   * chat_member, message_reaction, and message_reaction_count. */
   optional<arrayof<String>> allowed_updates;
 
   consteval static bool is_mandatory_field(std::string_view name) {

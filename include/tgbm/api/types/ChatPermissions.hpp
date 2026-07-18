@@ -6,8 +6,8 @@ namespace tgbm::api {
 
 /*Describes actions that a non-administrator user is allowed to take in a chat.*/
 struct ChatPermissions {
-  /* Optional. True, if the user is allowed to send text messages, contacts, giveaways, giveaway winners,
-   * invoices, locations and venues */
+  /* Optional. True, if the user is allowed to send text messages, rich messages, contacts, giveaways,
+   * giveaway winners, invoices, locations and venues */
   optional<bool> can_send_messages;
   /* Optional. True, if the user is allowed to send audios */
   optional<bool> can_send_audios;
@@ -27,17 +27,21 @@ struct ChatPermissions {
   optional<bool> can_send_other_messages;
   /* Optional. True, if the user is allowed to add web page previews to their messages */
   optional<bool> can_add_web_page_previews;
-  /* Optional. True, if the user is allowed to edit their own tag */
+  /* Optional. True, if the user is allowed to react to messages. If omitted, defaults to the value of
+   * can_send_messages. */
+  optional<bool> can_react_to_messages;
+  /* Optional. True, if the user is allowed to edit their own tag. If omitted, defaults to the value of
+   * can_pin_messages. */
   optional<bool> can_edit_tag;
   /* Optional. True, if the user is allowed to change the chat title, photo and other settings. Ignored in
-   * public supergroups */
+   * public supergroups. */
   optional<bool> can_change_info;
   /* Optional. True, if the user is allowed to invite new users to the chat */
   optional<bool> can_invite_users;
-  /* Optional. True, if the user is allowed to pin messages. Ignored in public supergroups */
+  /* Optional. True, if the user is allowed to pin messages. Ignored in public supergroups. */
   optional<bool> can_pin_messages;
-  /* Optional. True, if the user is allowed to create forum topics. If omitted defaults to the value of
-   * can_pin_messages */
+  /* Optional. True, if the user is allowed to create forum topics. If omitted, defaults to the value of
+   * can_pin_messages. */
   optional<bool> can_manage_topics;
 
   consteval static bool is_mandatory_field(std::string_view name) {

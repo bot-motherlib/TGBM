@@ -10,7 +10,7 @@ struct DirectMessagesTopic {
    * languages may have difficulty/silent defects in interpreting it. But it has at most 52 significant bits,
    * so a 64-bit integer or double-precision float type are safe for storing this identifier. */
   Integer topic_id;
-  /* Optional. Information about the user that created the topic. Currently, it is always present */
+  /* Optional. Information about the user that created the topic. Currently, it is always present. */
   box<User> user;
 
   consteval static bool is_mandatory_field(std::string_view name) {

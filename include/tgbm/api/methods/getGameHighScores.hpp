@@ -8,11 +8,11 @@ namespace tgbm::api {
 struct get_game_high_scores_request {
   /* Target user id */
   Integer user_id;
-  /* Required if inline_message_id is not specified. Unique identifier for the target chat */
+  /* Required if inline_message_id is not specified. Unique identifier for the target chat. */
   optional<Integer> chat_id;
-  /* Required if inline_message_id is not specified. Identifier of the sent message */
+  /* Required if inline_message_id is not specified. Identifier of the sent message. */
   optional<Integer> message_id;
-  /* Required if chat_id and message_id are not specified. Identifier of the inline message */
+  /* Required if chat_id and message_id are not specified. Identifier of the inline message. */
   optional<String> inline_message_id;
 
   using return_type = arrayof<GameHighScore>;

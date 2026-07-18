@@ -13,7 +13,7 @@ struct MessageEntity {
    * “spoiler” (spoiler message), “blockquote” (block quotation), “expandable_blockquote”
    * (collapsed-by-default block quotation), “code” (monowidth string), “pre” (monowidth block), “text_link”
    * (for clickable text URLs), “text_mention” (for users without usernames), “custom_emoji” (for inline
-   * custom emoji stickers), or “date_time” (for formatted date and time) */
+   * custom emoji stickers), or “date_time” (for formatted date and time). */
   String type;
   /* Offset in UTF-16 code units to the start of the entity */
   Integer offset;
@@ -26,7 +26,7 @@ struct MessageEntity {
   /* Optional. For “pre” only, the programming language of the entity text */
   optional<String> language;
   /* Optional. For “custom_emoji” only, unique identifier of the custom emoji. Use getCustomEmojiStickers to
-   * get full information about the sticker */
+   * get full information about the sticker. */
   optional<String> custom_emoji_id;
   /* Optional. For “date_time” only, the Unix time associated with the entity */
   optional<Integer> unix_time;

@@ -8,7 +8,7 @@ namespace tgbm::api {
  * be shared with the bot when the corresponding button is pressed. More about requesting users »*/
 struct KeyboardButtonRequestUsers {
   /* Signed 32-bit identifier of the request that will be received back in the UsersShared object. Must be
-   * unique within the message */
+   * unique within the message. */
   Integer request_id;
   /* Optional. The maximum number of users to be selected; 1-10. Defaults to 1. */
   optional<Integer> max_quantity;

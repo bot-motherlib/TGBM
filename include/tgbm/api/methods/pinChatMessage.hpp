@@ -5,8 +5,7 @@
 namespace tgbm::api {
 
 struct pin_chat_message_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target channel in the format @username */
   int_or_str chat_id;
   /* Identifier of a message to pin */
   Integer message_id;

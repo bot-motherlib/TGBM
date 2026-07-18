@@ -5,7 +5,7 @@
 namespace tgbm::api {
 
 /*This object represents the content of a message to be sent as a result of an inline query. Telegram clients
- * currently support the following 5 types:*/
+ * currently support the following types:*/
 struct InputContactMessageContent {
   /* Contact's first name */
   String first_name;

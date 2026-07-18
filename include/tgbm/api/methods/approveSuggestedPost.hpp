@@ -11,7 +11,7 @@ struct approve_suggested_post_request {
   Integer message_id;
   /* Point in time (Unix timestamp) when the post is expected to be published; omit if the date has already
    * been specified when the suggested post was created. If specified, then the date must be not more than
-   * 2678400 seconds (30 days) in the future */
+   * 2678400 seconds (30 days) in the future. */
   optional<Integer> send_date;
 
   using return_type = bool;

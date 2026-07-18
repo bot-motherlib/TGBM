@@ -6,8 +6,7 @@
 namespace tgbm::api {
 
 struct restrict_chat_member_request {
-  /* Unique identifier for the target chat or username of the target supergroup (in the format
-   * @supergroupusername) */
+  /* Unique identifier for the target chat or username of the target supergroup in the format @username */
   int_or_str chat_id;
   /* Unique identifier of the target user */
   Integer user_id;
@@ -19,7 +18,7 @@ struct restrict_chat_member_request {
    * permissions; the can_send_polls permission will imply the can_send_messages permission. */
   optional<bool> use_independent_chat_permissions;
   /* Date when restrictions will be lifted for the user; Unix time. If user is restricted for more than 366
-   * days or less than 30 seconds from the current time, they are considered to be restricted forever */
+   * days or less than 30 seconds from the current time, they are considered to be restricted forever. */
   optional<Integer> until_date;
 
   using return_type = bool;

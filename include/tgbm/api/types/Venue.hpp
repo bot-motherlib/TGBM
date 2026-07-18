@@ -6,7 +6,7 @@ namespace tgbm::api {
 
 /*This object represents a venue.*/
 struct Venue {
-  /* Venue location. Can't be a live location */
+  /* Venue location. Can't be a live location. */
   box<Location> location;
   /* Name of the venue */
   String title;

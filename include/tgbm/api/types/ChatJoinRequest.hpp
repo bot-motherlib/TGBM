@@ -18,10 +18,14 @@ struct ChatJoinRequest {
   Integer user_chat_id;
   /* Date the request was sent in Unix time */
   Integer date;
-  /* Optional. Bio of the user. */
+  /* Optional. Bio of the user */
   optional<String> bio;
   /* Optional. Chat invite link that was used by the user to send the join request */
   box<ChatInviteLink> invite_link;
+  /* Optional. Identifier of the join request query; for bots assigned to process join requests only. If
+   * present, then the bot must call sendChatJoinRequestWebApp or directly call answerChatJoinRequestQuery
+   * within 10 seconds. */
+  optional<String> query_id;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)

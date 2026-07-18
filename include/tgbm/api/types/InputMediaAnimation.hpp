@@ -30,7 +30,7 @@ struct InputMediaAnimation {
   optional<Integer> height;
   /* Optional. Animation duration in seconds */
   optional<Integer> duration;
-  /* Optional. Pass True, if the caption must be shown above the message media */
+  /* Optional. Pass True if the caption must be shown above the message media */
   optional<bool> show_caption_above_media;
   /* Optional. Pass True if the animation needs to be covered with a spoiler animation */
   optional<bool> has_spoiler;

@@ -8,7 +8,7 @@ struct delete_business_messages_request {
   /* Unique identifier of the business connection on behalf of which to delete the messages */
   String business_connection_id;
   /* A JSON-serialized list of 1-100 identifiers of messages to delete. All messages must be from the same
-   * chat. See deleteMessage for limitations on which messages can be deleted */
+   * chat. See deleteMessage for limitations on which messages can be deleted. */
   arrayof<Integer> message_ids;
 
   using return_type = bool;

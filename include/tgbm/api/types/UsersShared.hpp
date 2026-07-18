@@ -9,7 +9,7 @@ namespace tgbm::api {
 struct UsersShared {
   /* Identifier of the request */
   Integer request_id;
-  /* Information about users shared with the bot. */
+  /* Information about users shared with the bot */
   arrayof<SharedUser> users;
 
   consteval static bool is_mandatory_field(std::string_view name) {

@@ -10,13 +10,13 @@ struct edit_message_reply_markup_request {
   /* Unique identifier of the business connection on behalf of which the message to be edited was sent */
   optional<String> business_connection_id;
   /* Required if inline_message_id is not specified. Unique identifier for the target chat or username of the
-   * target channel (in the format @channelusername) */
+   * target bot, supergroup or channel in the format @username. */
   optional<int_or_str> chat_id;
-  /* Required if inline_message_id is not specified. Identifier of the message to edit */
+  /* Required if inline_message_id is not specified. Identifier of the message to edit. */
   optional<Integer> message_id;
-  /* Required if chat_id and message_id are not specified. Identifier of the inline message */
+  /* Required if chat_id and message_id are not specified. Identifier of the inline message. */
   optional<String> inline_message_id;
-  /* A JSON-serialized object for an inline keyboard. */
+  /* A JSON-serialized object for an inline keyboard */
   box<InlineKeyboardMarkup> reply_markup;
 
   using return_type = oneof<bool, Message>;

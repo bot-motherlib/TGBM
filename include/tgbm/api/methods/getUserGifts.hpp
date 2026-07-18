@@ -26,7 +26,7 @@ struct get_user_gifts_request {
   /* Offset of the first entry to return as received from the previous request; use an empty string to get the
    * first chunk of results */
   optional<String> offset;
-  /* The maximum number of gifts to be returned; 1-100. Defaults to 100 */
+  /* The maximum number of gifts to be returned; 1-100. Defaults to 100. */
   optional<Integer> limit;
 
   using return_type = OwnedGifts;

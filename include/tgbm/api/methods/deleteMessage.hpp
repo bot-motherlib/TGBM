@@ -5,8 +5,8 @@
 namespace tgbm::api {
 
 struct delete_message_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target bot, supergroup or channel in the format
+   * @username */
   int_or_str chat_id;
   /* Identifier of the message to delete */
   Integer message_id;

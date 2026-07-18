@@ -1,5 +1,6 @@
 #pragma once
 
+#include <tgbm/api/types/BotSubscriptionUpdated.hpp>
 #include <tgbm/api/types/BusinessConnection.hpp>
 #include <tgbm/api/types/BusinessMessagesDeleted.hpp>
 #include <tgbm/api/types/CallbackQuery.hpp>
@@ -53,6 +54,9 @@ struct Update {
   struct deleted_business_messages {
     BusinessMessagesDeleted value;
   };
+  struct guest_message {
+    Message value;
+  };
   struct message_reaction {
     MessageReactionUpdated value;
   };
@@ -101,11 +105,14 @@ struct Update {
   struct managed_bot {
     ManagedBotUpdated value;
   };
+  struct subscription {
+    BotSubscriptionUpdated value;
+  };
   oneof<message, edited_message, channel_post, edited_channel_post, business_connection, business_message,
-        edited_business_message, deleted_business_messages, message_reaction, message_reaction_count,
-        inline_query, chosen_inline_result, callback_query, shipping_query, pre_checkout_query,
-        purchased_paid_media, poll, poll_answer, my_chat_member, chat_member, chat_join_request, chat_boost,
-        removed_chat_boost, managed_bot>
+        edited_business_message, deleted_business_messages, guest_message, message_reaction,
+        message_reaction_count, inline_query, chosen_inline_result, callback_query, shipping_query,
+        pre_checkout_query, purchased_paid_media, poll, poll_answer, my_chat_member, chat_member,
+        chat_join_request, chat_boost, removed_chat_boost, managed_bot, subscription>
       data;
   enum struct type_e {
     /* Optional. New incoming message of any kind - text, photo, sticker, etc. */
@@ -128,6 +135,9 @@ struct Update {
     k_edited_business_message,
     /* Optional. Messages were deleted from a connected business account */
     k_deleted_business_messages,
+    /* Optional. New guest message. The bot can use the field Message.guest_query_id and the method
+       answerGuestQuery to send a message in response. */
+    k_guest_message,
     /* Optional. A reaction to a message was changed by a user. The bot must be an administrator in the chat
        and must explicitly specify "message_reaction" in the list of allowed_updates to receive these updates.
        The update isn't received for reactions set by bots. */
@@ -145,14 +155,14 @@ struct Update {
     k_chosen_inline_result,
     /* Optional. New incoming callback query */
     k_callback_query,
-    /* Optional. New incoming shipping query. Only for invoices with flexible price */
+    /* Optional. New incoming shipping query. Only for invoices with flexible price. */
     k_shipping_query,
-    /* Optional. New incoming pre-checkout query. Contains full information about checkout */
+    /* Optional. New incoming pre-checkout query. Contains full information about checkout. */
     k_pre_checkout_query,
     /* Optional. A user purchased paid media with a non-empty payload sent by the bot in a non-channel chat */
     k_purchased_paid_media,
     /* Optional. New poll state. Bots receive only updates about manually stopped polls and polls, which are
-       sent by the bot */
+       sent by the bot. */
     k_poll,
     /* Optional. A user changed their answer in a non-anonymous poll. Bots receive new votes only in polls
        that were sent by the bot itself. */
@@ -175,6 +185,8 @@ struct Update {
     /* Optional. A new bot was created to be managed by the bot, or token or owner of a managed bot was
        changed */
     k_managed_bot,
+    /* Optional. User payment subscription has changed */
+    k_subscription,
     nothing,
   };
   static constexpr size_t variant_size = size_t(type_e::nothing);
@@ -243,6 +255,14 @@ struct Update {
   }
   const BusinessMessagesDeleted* get_deleted_business_messages() const noexcept {
     auto* p = data.get_if<deleted_business_messages>();
+    return p ? &p->value : nullptr;
+  }
+  Message* get_guest_message() noexcept {
+    auto* p = data.get_if<guest_message>();
+    return p ? &p->value : nullptr;
+  }
+  const Message* get_guest_message() const noexcept {
+    auto* p = data.get_if<guest_message>();
     return p ? &p->value : nullptr;
   }
   MessageReactionUpdated* get_message_reaction() noexcept {
@@ -373,6 +393,14 @@ struct Update {
     auto* p = data.get_if<managed_bot>();
     return p ? &p->value : nullptr;
   }
+  BotSubscriptionUpdated* get_subscription() noexcept {
+    auto* p = data.get_if<subscription>();
+    return p ? &p->value : nullptr;
+  }
+  const BotSubscriptionUpdated* get_subscription() const noexcept {
+    auto* p = data.get_if<subscription>();
+    return p ? &p->value : nullptr;
+  }
   static constexpr decltype(auto) discriminate_field(std::string_view val, auto&& visitor) {
     if (val == "message")
       return visitor.template operator()<message>();
@@ -390,6 +418,8 @@ struct Update {
       return visitor.template operator()<edited_business_message>();
     if (val == "deleted_business_messages")
       return visitor.template operator()<deleted_business_messages>();
+    if (val == "guest_message")
+      return visitor.template operator()<guest_message>();
     if (val == "message_reaction")
       return visitor.template operator()<message_reaction>();
     if (val == "message_reaction_count")
@@ -422,6 +452,8 @@ struct Update {
       return visitor.template operator()<removed_chat_boost>();
     if (val == "managed_bot")
       return visitor.template operator()<managed_bot>();
+    if (val == "subscription")
+      return visitor.template operator()<subscription>();
     return visitor.template operator()<void>();
   }
 
@@ -444,6 +476,8 @@ struct Update {
         return "edited_business_message";
       case k_deleted_business_messages:
         return "deleted_business_messages";
+      case k_guest_message:
+        return "guest_message";
       case k_message_reaction:
         return "message_reaction";
       case k_message_reaction_count:
@@ -476,6 +510,8 @@ struct Update {
         return "removed_chat_boost";
       case k_managed_bot:
         return "managed_bot";
+      case k_subscription:
+        return "subscription";
       case nothing:
         return "";
       default:

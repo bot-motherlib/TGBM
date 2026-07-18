@@ -19,7 +19,7 @@ struct OwnedGiftUnique {
    * transfer the gift */
   optional<Integer> transfer_star_count;
   /* Optional. Point in time (Unix timestamp) when the gift can be transferred. If it is in the past, then the
-   * gift can be transferred now */
+   * gift can be transferred now. */
   optional<Integer> next_transfer_date;
   /* Optional. True, if the gift is displayed on the account's profile page; for gifts received on behalf of
    * business accounts only */

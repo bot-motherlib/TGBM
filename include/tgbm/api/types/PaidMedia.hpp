@@ -1,19 +1,21 @@
 #pragma once
 
 #include <tgbm/api/types/all_fwd.hpp>
-#include <tgbm/api/types/PaidMediaPreview.hpp>
+#include <tgbm/api/types/PaidMediaLivePhoto.hpp>
 #include <tgbm/api/types/PaidMediaPhoto.hpp>
+#include <tgbm/api/types/PaidMediaPreview.hpp>
 #include <tgbm/api/types/PaidMediaVideo.hpp>
 
 namespace tgbm::api {
 
 /*This object describes paid media. Currently, it can be one of*/
 struct PaidMedia {
-  oneof<PaidMediaPreview, PaidMediaPhoto, PaidMediaVideo> data;
+  oneof<PaidMediaLivePhoto, PaidMediaPhoto, PaidMediaPreview, PaidMediaVideo> data;
   static constexpr std::string_view discriminator = "type";
   enum struct type_e {
-    k_preview,
+    k_livephoto,
     k_photo,
+    k_preview,
     k_video,
     nothing,
   };
@@ -22,17 +24,23 @@ struct PaidMedia {
   type_e type() const {
     return static_cast<type_e>(data.index());
   }
-  PaidMediaPreview* get_preview() noexcept {
-    return data.get_if<PaidMediaPreview>();
+  PaidMediaLivePhoto* get_livephoto() noexcept {
+    return data.get_if<PaidMediaLivePhoto>();
   }
-  const PaidMediaPreview* get_preview() const noexcept {
-    return data.get_if<PaidMediaPreview>();
+  const PaidMediaLivePhoto* get_livephoto() const noexcept {
+    return data.get_if<PaidMediaLivePhoto>();
   }
   PaidMediaPhoto* get_photo() noexcept {
     return data.get_if<PaidMediaPhoto>();
   }
   const PaidMediaPhoto* get_photo() const noexcept {
     return data.get_if<PaidMediaPhoto>();
+  }
+  PaidMediaPreview* get_preview() noexcept {
+    return data.get_if<PaidMediaPreview>();
+  }
+  const PaidMediaPreview* get_preview() const noexcept {
+    return data.get_if<PaidMediaPreview>();
   }
   PaidMediaVideo* get_video() noexcept {
     return data.get_if<PaidMediaVideo>();
@@ -42,17 +50,20 @@ struct PaidMedia {
   }
   static constexpr type_e discriminate(std::string_view val) {
     return string_switch<type_e>(val)
-        .case_("preview", type_e::k_preview)
+        .case_("live_photo", type_e::k_livephoto)
         .case_("photo", type_e::k_photo)
+        .case_("preview", type_e::k_preview)
         .case_("video", type_e::k_video)
         .or_default(type_e::nothing);
   }
 
   static constexpr decltype(auto) discriminate(std::string_view val, auto&& visitor) {
-    if (val == "preview")
-      return visitor.template operator()<PaidMediaPreview>();
+    if (val == "live_photo")
+      return visitor.template operator()<PaidMediaLivePhoto>();
     if (val == "photo")
       return visitor.template operator()<PaidMediaPhoto>();
+    if (val == "preview")
+      return visitor.template operator()<PaidMediaPreview>();
     if (val == "video")
       return visitor.template operator()<PaidMediaVideo>();
     return visitor.template operator()<void>();
@@ -61,10 +72,12 @@ struct PaidMedia {
   std::string_view discriminator_now() const noexcept {
     using enum PaidMedia::type_e;
     switch (type()) {
-      case k_preview:
-        return "preview";
+      case k_livephoto:
+        return "live_photo";
       case k_photo:
         return "photo";
+      case k_preview:
+        return "preview";
       case k_video:
         return "video";
       case nothing:

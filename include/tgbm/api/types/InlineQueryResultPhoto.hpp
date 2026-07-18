@@ -9,7 +9,7 @@ namespace tgbm::api {
 struct InlineQueryResultPhoto {
   /* Unique identifier for this result, 1-64 bytes */
   String id;
-  /* A valid URL of the photo. Photo must be in JPEG format. Photo size must not exceed 5MB */
+  /* A valid URL of the photo. Photo must be in JPEG format. Photo size must not exceed 5MB. */
   String photo_url;
   /* URL of the thumbnail for the photo */
   String thumbnail_url;
@@ -32,7 +32,7 @@ struct InlineQueryResultPhoto {
   box<InlineKeyboardMarkup> reply_markup;
   /* Optional. Content of the message to be sent instead of the photo */
   box<InputMessageContent> input_message_content;
-  /* Optional. Pass True, if the caption must be shown above the message media */
+  /* Optional. Pass True if the caption must be shown above the message media */
   optional<bool> show_caption_above_media;
 
   consteval static bool is_mandatory_field(std::string_view name) {
