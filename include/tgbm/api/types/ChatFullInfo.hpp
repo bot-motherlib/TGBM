@@ -98,8 +98,13 @@ struct ChatFullInfo {
   /* Optional. The color scheme based on a unique gift that must be used for the chat's name, message replies
    * and link previews */
   box<UniqueGiftColors> unique_gift_colors;
-  /* Optional. The number of Telegram Stars a general user have to pay to send a message to the chat */
+  /* Optional. The number of Telegram Stars a general user has to pay to send a message to the chat */
   optional<Integer> paid_message_star_count;
+  /* Optional. The bot that processes join request queries in the chat. The field is only available to chat
+   * administrators. */
+  box<User> guard_bot;
+  /* Optional. The Community to which the chat belongs */
+  box<Community> community;
   /* Optional. True, if the supergroup chat is a forum (has topics enabled) */
   optional<True> is_forum;
   /* Optional. True, if the chat is the direct messages chat of a channel */

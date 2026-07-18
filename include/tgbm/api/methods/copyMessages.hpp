@@ -6,11 +6,11 @@
 namespace tgbm::api {
 
 struct copy_messages_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target bot, supergroup or channel in the format
+   * @username */
   int_or_str chat_id;
-  /* Unique identifier for the chat where the original messages were sent (or channel username in the format
-   * @channelusername) */
+  /* Unique identifier for the chat where the original messages were sent (or username of the target bot,
+   * supergroup or channel in the format @username) */
   int_or_str from_chat_id;
   /* A JSON-serialized list of 1-100 identifiers of messages in the chat from_chat_id to copy. The identifiers
    * must be specified in a strictly increasing order. */

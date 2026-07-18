@@ -7,8 +7,8 @@ namespace tgbm::api {
 /*This object represents the scope to which bot commands are applied. Currently, the following 7 scopes are
  * supported:*/
 struct BotCommandScopeChatAdministrators {
-  /* Unique identifier for the target chat or username of the target supergroup (in the format
-   * @supergroupusername). Channel direct messages chats and channel chats aren't supported. */
+  /* Unique identifier for the target chat or username of the target supergroup in the format @username.
+   * Channel direct messages chats and channel chats aren't supported. */
   int_or_str chat_id;
 
   consteval static bool is_mandatory_field(std::string_view name) {

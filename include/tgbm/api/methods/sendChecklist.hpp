@@ -11,8 +11,8 @@ namespace tgbm::api {
 struct send_checklist_request {
   /* Unique identifier of the business connection on behalf of which the message will be sent */
   String business_connection_id;
-  /* Unique identifier for the target chat */
-  Integer chat_id;
+  /* Unique identifier for the target chat or username of the target bot in the format @username */
+  int_or_str chat_id;
   /* A JSON-serialized object for the checklist to send */
   box<InputChecklist> checklist;
   /* Sends the message silently. Users will receive a notification with no sound. */

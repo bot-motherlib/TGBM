@@ -15,6 +15,8 @@ struct PollOption {
   /* Optional. Special entities that appear in the option text. Currently, only custom emoji entities are
    * allowed in poll option texts */
   optional<arrayof<MessageEntity>> text_entities;
+  /* Optional. Media added to the poll option */
+  box<PollMedia> media;
   /* Optional. User who added the option; omitted if the option wasn't added by a user after poll creation */
   box<User> added_by_user;
   /* Optional. Chat that added the option; omitted if the option wasn't added by a chat after poll creation */

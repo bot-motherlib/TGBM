@@ -9,7 +9,7 @@ struct ReactionTypeEmoji {
   /* Reaction emoji. Currently, it can be one of "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
    * "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
    * "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
-   * "", "", "", "", "", "" */
+   * "", "", "", "", "", "". */
   String emoji;
 
   consteval static bool is_mandatory_field(std::string_view name) {

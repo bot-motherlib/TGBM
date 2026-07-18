@@ -5,7 +5,7 @@
 namespace tgbm::api {
 
 struct set_webhook_request {
-  /* HTTPS URL to send updates to. Use an empty string to remove webhook integration */
+  /* HTTPS URL to send updates to. Use an empty string to remove webhook integration. */
   String url;
   /* Upload your public key certificate so that the root certificate in use can be checked. See our
    * self-signed guide for details. */

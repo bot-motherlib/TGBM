@@ -8,7 +8,7 @@ struct set_custom_emoji_sticker_set_thumbnail_request {
   /* Sticker set name */
   String name;
   /* Custom emoji identifier of a sticker from the sticker set; pass an empty string to drop the thumbnail and
-   * use the first sticker as the thumbnail. */
+   * use the first sticker as the thumbnail */
   optional<String> custom_emoji_id;
 
   using return_type = bool;

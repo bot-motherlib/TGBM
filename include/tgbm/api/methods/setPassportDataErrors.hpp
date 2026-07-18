@@ -8,7 +8,7 @@ namespace tgbm::api {
 struct set_passport_data_errors_request {
   /* User identifier */
   Integer user_id;
-  /* A JSON-serialized array describing the errors */
+  /* A JSON-serialized Array describing the errors */
   arrayof<PassportElementError> errors;
 
   using return_type = bool;

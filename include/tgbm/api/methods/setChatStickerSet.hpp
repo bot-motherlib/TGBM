@@ -5,8 +5,7 @@
 namespace tgbm::api {
 
 struct set_chat_sticker_set_request {
-  /* Unique identifier for the target chat or username of the target supergroup (in the format
-   * @supergroupusername) */
+  /* Unique identifier for the target chat or username of the target supergroup in the format @username */
   int_or_str chat_id;
   /* Name of the sticker set to be set as the group sticker set */
   String sticker_set_name;

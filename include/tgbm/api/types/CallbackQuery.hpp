@@ -18,7 +18,7 @@ struct CallbackQuery {
   String chat_instance;
   /* Optional. Message sent by the bot with the callback button that originated the query */
   box<MaybeInaccessibleMessage> message;
-  /* Optional. Identifier of the message sent via the bot in inline mode, that originated the query. */
+  /* Optional. Identifier of the message sent via the bot in inline mode, that originated the query */
   optional<String> inline_message_id;
   /* Optional. Data associated with the callback button. Be aware that the message originated the query can
    * contain no callback buttons with this data. */

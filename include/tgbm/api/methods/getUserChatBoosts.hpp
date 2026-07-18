@@ -6,7 +6,7 @@
 namespace tgbm::api {
 
 struct get_user_chat_boosts_request {
-  /* Unique identifier for the chat or username of the channel (in the format @channelusername) */
+  /* Unique identifier for the chat or username of the channel in the format @username */
   int_or_str chat_id;
   /* Unique identifier of the target user */
   Integer user_id;

@@ -5,8 +5,7 @@
 namespace tgbm::api {
 
 struct set_chat_administrator_custom_title_request {
-  /* Unique identifier for the target chat or username of the target supergroup (in the format
-   * @supergroupusername) */
+  /* Unique identifier for the target chat or username of the target supergroup in the format @username */
   int_or_str chat_id;
   /* Unique identifier of the target user */
   Integer user_id;

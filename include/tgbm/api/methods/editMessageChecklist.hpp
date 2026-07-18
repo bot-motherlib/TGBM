@@ -10,8 +10,8 @@ namespace tgbm::api {
 struct edit_message_checklist_request {
   /* Unique identifier of the business connection on behalf of which the message will be sent */
   String business_connection_id;
-  /* Unique identifier for the target chat */
-  Integer chat_id;
+  /* Unique identifier for the target chat or username of the target bot in the format @username */
+  int_or_str chat_id;
   /* Unique identifier for the target message */
   Integer message_id;
   /* A JSON-serialized object for the new checklist */

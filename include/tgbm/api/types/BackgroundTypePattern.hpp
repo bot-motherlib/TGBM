@@ -13,7 +13,7 @@ struct BackgroundTypePattern {
   /* Intensity of the pattern when it is shown above the filled background; 0-100 */
   Integer intensity;
   /* Optional. True, if the background fill must be applied only to the pattern itself. All other pixels are
-   * black in this case. For dark themes only */
+   * black in this case. For dark themes only. */
   optional<True> is_inverted;
   /* Optional. True, if the background moves slightly when the device is tilted */
   optional<True> is_moving;

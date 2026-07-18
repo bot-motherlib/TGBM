@@ -37,7 +37,7 @@ struct InlineQueryResultVideo {
   /* Optional. Content of the message to be sent instead of the video. This field is required if
    * InlineQueryResultVideo is used to send an HTML-page as a result (e.g., a YouTube video). */
   box<InputMessageContent> input_message_content;
-  /* Optional. Pass True, if the caption must be shown above the message media */
+  /* Optional. Pass True if the caption must be shown above the message media */
   optional<bool> show_caption_above_media;
 
   consteval static bool is_mandatory_field(std::string_view name) {

@@ -11,15 +11,15 @@ struct set_game_score_request {
   /* New score, must be non-negative */
   Integer score;
   /* Pass True if the high score is allowed to decrease. This can be useful when fixing mistakes or banning
-   * cheaters */
+   * cheaters. */
   optional<bool> force;
   /* Pass True if the game message should not be automatically edited to include the current scoreboard */
   optional<bool> disable_edit_message;
-  /* Required if inline_message_id is not specified. Unique identifier for the target chat */
+  /* Required if inline_message_id is not specified. Unique identifier for the target chat. */
   optional<Integer> chat_id;
-  /* Required if inline_message_id is not specified. Identifier of the sent message */
+  /* Required if inline_message_id is not specified. Identifier of the sent message. */
   optional<Integer> message_id;
-  /* Required if chat_id and message_id are not specified. Identifier of the inline message */
+  /* Required if chat_id and message_id are not specified. Identifier of the inline message. */
   optional<String> inline_message_id;
 
   using return_type = oneof<bool, Message>;

@@ -37,7 +37,7 @@ struct InputMediaVideo {
   optional<Integer> height;
   /* Optional. Video duration in seconds */
   optional<Integer> duration;
-  /* Optional. Pass True, if the caption must be shown above the message media */
+  /* Optional. Pass True if the caption must be shown above the message media */
   optional<bool> show_caption_above_media;
   /* Optional. Pass True if the uploaded video is suitable for streaming */
   optional<bool> supports_streaming;

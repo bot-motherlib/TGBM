@@ -1,6 +1,7 @@
 #pragma once
 
 #include <tgbm/api/common.hpp>
+#include <tgbm/api/types/InputPollMedia.hpp>
 #include <tgbm/api/types/InputPollOption.hpp>
 #include <tgbm/api/types/Message.hpp>
 #include <tgbm/api/types/MessageEntity.hpp>
@@ -9,12 +10,12 @@
 namespace tgbm::api {
 
 struct send_poll_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername).
-   * Polls can't be sent to channel direct messages chats. */
+  /* Unique identifier for the target chat or username of the target bot, supergroup or channel in the format
+   * @username. Polls can't be sent to channel direct messages chats. */
   int_or_str chat_id;
   /* Poll question, 1-300 characters */
   String question;
-  /* A JSON-serialized list of 2-12 answer options */
+  /* A JSON-serialized list of 1-12 answer options */
   arrayof<InputPollOption> options;
   /* Unique identifier of the business connection on behalf of which the message will be sent */
   optional<String> business_connection_id;
@@ -22,27 +23,35 @@ struct send_poll_request {
    * chats of bots with forum topic mode enabled only */
   optional<Integer> message_thread_id;
   /* Mode for parsing entities in the question. See formatting options for more details. Currently, only
-   * custom emoji entities are allowed */
+   * custom emoji entities are allowed. */
   optional<String> question_parse_mode;
   /* A JSON-serialized list of special entities that appear in the poll question. It can be specified instead
-   * of question_parse_mode */
+   * of question_parse_mode. */
   optional<arrayof<MessageEntity>> question_entities;
   /* True, if the poll needs to be anonymous, defaults to True */
   optional<bool> is_anonymous;
   /* Poll type, “quiz” or “regular”, defaults to “regular” */
   optional<String> type;
-  /* Pass True, if the poll allows multiple answers, defaults to False */
+  /* Pass True if the poll allows multiple answers, defaults to False */
   optional<bool> allows_multiple_answers;
-  /* Pass True, if the poll allows to change chosen answer options, defaults to False for quizzes and to True
+  /* Pass True if the poll allows to change chosen answer options, defaults to False for quizzes and to True
    * for regular polls */
   optional<bool> allows_revoting;
-  /* Pass True, if the poll options must be shown in random order */
+  /* Pass True if the poll options must be shown in random order */
   optional<bool> shuffle_options;
-  /* Pass True, if answer options can be added to the poll after creation; not supported for anonymous polls
+  /* Pass True if answer options can be added to the poll after creation; not supported for anonymous polls
    * and quizzes */
   optional<bool> allow_adding_options;
-  /* Pass True, if poll results must be shown only after the poll closes */
+  /* Pass True if poll results must be shown only after the poll closes */
   optional<bool> hide_results_until_closes;
+  /* Pass True if voting is limited to users who have been members of the chat where the poll is being sent
+   * for more than 24 hours; for channel chats only */
+  optional<bool> members_only;
+  /* A JSON-serialized list of 0-12 two-letter ISO 3166-1 alpha-2 country codes indicating the countries from
+   * which users can vote in the poll; for channel chats only. Use “FT” as a country code to allow users with
+   * anonymous numbers to vote. If omitted or empty, then users from any country can participate in the poll.
+   */
+  optional<arrayof<String>> country_codes;
   /* A JSON-serialized list of monotonically increasing 0-based identifiers of the correct answer options,
    * required for polls in quiz mode */
   optional<arrayof<Integer>> correct_option_ids;
@@ -52,8 +61,10 @@ struct send_poll_request {
   /* Mode for parsing entities in the explanation. See formatting options for more details. */
   optional<String> explanation_parse_mode;
   /* A JSON-serialized list of special entities that appear in the poll explanation. It can be specified
-   * instead of explanation_parse_mode */
+   * instead of explanation_parse_mode. */
   optional<arrayof<MessageEntity>> explanation_entities;
+  /* Media added to the quiz explanation */
+  box<InputPollMedia> explanation_media;
   /* Amount of time in seconds the poll will be active after creation, 5-2628000. Can't be used together with
    * close_date. */
   optional<Integer> open_period;
@@ -69,19 +80,21 @@ struct send_poll_request {
   /* A JSON-serialized list of special entities that appear in the poll description, which can be specified
    * instead of description_parse_mode */
   optional<arrayof<MessageEntity>> description_entities;
+  /* Media added to the poll description */
+  box<InputPollMedia> media;
   /* Sends the message silently. Users will receive a notification with no sound. */
   optional<bool> disable_notification;
   /* Protects the contents of the sent message from forwarding and saving */
   optional<bool> protect_content;
   /* Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram
-   * Stars per message. The relevant Stars will be withdrawn from the bot's balance */
+   * Stars per message. The relevant Stars will be withdrawn from the bot's balance. */
   optional<bool> allow_paid_broadcast;
   /* Unique identifier of the message effect to be added to the message; for private chats only */
   optional<String> message_effect_id;
   /* Description of the message to reply to */
   box<ReplyParameters> reply_parameters;
   /* Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard,
-   * instructions to remove a reply keyboard or to force a reply from the user */
+   * instructions to remove a reply keyboard or to force a reply from the user. */
   optional<reply_markup_t> reply_markup;
 
   using return_type = Message;
@@ -115,6 +128,10 @@ struct send_poll_request {
       body.arg("allow_adding_options", *allow_adding_options);
     if (hide_results_until_closes)
       body.arg("hide_results_until_closes", *hide_results_until_closes);
+    if (members_only)
+      body.arg("members_only", *members_only);
+    if (country_codes)
+      body.arg("country_codes", *country_codes);
     if (correct_option_ids)
       body.arg("correct_option_ids", *correct_option_ids);
     if (explanation)
@@ -123,6 +140,8 @@ struct send_poll_request {
       body.arg("explanation_parse_mode", *explanation_parse_mode);
     if (explanation_entities)
       body.arg("explanation_entities", *explanation_entities);
+    if (explanation_media)
+      body.arg("explanation_media", *explanation_media);
     if (open_period)
       body.arg("open_period", *open_period);
     if (close_date)
@@ -135,6 +154,8 @@ struct send_poll_request {
       body.arg("description_parse_mode", *description_parse_mode);
     if (description_entities)
       body.arg("description_entities", *description_entities);
+    if (media)
+      body.arg("media", *media);
     if (disable_notification)
       body.arg("disable_notification", *disable_notification);
     if (protect_content)

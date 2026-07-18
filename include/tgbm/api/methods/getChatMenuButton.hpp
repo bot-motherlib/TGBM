@@ -6,8 +6,8 @@
 namespace tgbm::api {
 
 struct get_chat_menu_button_request {
-  /* Unique identifier for the target private chat. If not specified, default bot's menu button will be
-   * returned */
+  /* Unique identifier for the target private chat. If not specified, the bot's default menu button will be
+   * returned. */
   optional<Integer> chat_id;
 
   using return_type = MenuButton;

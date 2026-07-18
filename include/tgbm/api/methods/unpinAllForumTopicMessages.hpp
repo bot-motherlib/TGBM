@@ -5,8 +5,7 @@
 namespace tgbm::api {
 
 struct unpin_all_forum_topic_messages_request {
-  /* Unique identifier for the target chat or username of the target supergroup (in the format
-   * @supergroupusername) */
+  /* Unique identifier for the target chat or username of the target supergroup in the format @username */
   int_or_str chat_id;
   /* Unique identifier for the target message thread of the forum topic */
   Integer message_thread_id;

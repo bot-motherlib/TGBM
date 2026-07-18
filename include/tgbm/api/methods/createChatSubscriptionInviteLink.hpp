@@ -6,8 +6,8 @@
 namespace tgbm::api {
 
 struct create_chat_subscription_invite_link_request {
-  /* Unique identifier for the target channel chat or username of the target channel (in the format
-   * @channelusername) */
+  /* Unique identifier for the target channel chat or username of the target channel in the format @username
+   */
   int_or_str chat_id;
   /* The number of seconds the subscription will be active for before the next payment. Currently, it must
    * always be 2592000 (30 days). */

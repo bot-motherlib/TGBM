@@ -1,0 +1,37 @@
+#pragma once
+
+#include <tgbm/api/types/all_fwd.hpp>
+
+namespace tgbm::api {
+
+/*This object represents the content of a poll option to be sent. It should be one of*/
+struct InputMediaVenue {
+  /* Latitude of the location */
+  Double latitude;
+  /* Longitude of the location */
+  Double longitude;
+  /* Name of the venue */
+  String title;
+  /* Address of the venue */
+  String address;
+  /* Optional. Foursquare identifier of the venue */
+  optional<String> foursquare_id;
+  /* Optional. Foursquare type of the venue, if known. (For example, “arts_entertainment/default”,
+   * “arts_entertainment/aquarium” or “food/icecream”.) */
+  optional<String> foursquare_type;
+  /* Optional. Google Places identifier of the venue */
+  optional<String> google_place_id;
+  /* Optional. Google Places type of the venue. (See supported types.) */
+  optional<String> google_place_type;
+
+  consteval static bool is_mandatory_field(std::string_view name) {
+    return string_switch<bool>(name)
+        .case_("latitude", true)
+        .case_("longitude", true)
+        .case_("title", true)
+        .case_("address", true)
+        .or_default(false);
+  }
+};
+
+}  // namespace tgbm::api

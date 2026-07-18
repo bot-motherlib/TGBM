@@ -11,11 +11,11 @@ struct edit_message_caption_request {
   /* Unique identifier of the business connection on behalf of which the message to be edited was sent */
   optional<String> business_connection_id;
   /* Required if inline_message_id is not specified. Unique identifier for the target chat or username of the
-   * target channel (in the format @channelusername) */
+   * target bot, supergroup or channel in the format @username. */
   optional<int_or_str> chat_id;
-  /* Required if inline_message_id is not specified. Identifier of the message to edit */
+  /* Required if inline_message_id is not specified. Identifier of the message to edit. */
   optional<Integer> message_id;
-  /* Required if chat_id and message_id are not specified. Identifier of the inline message */
+  /* Required if chat_id and message_id are not specified. Identifier of the inline message. */
   optional<String> inline_message_id;
   /* New caption of the message, 0-1024 characters after entities parsing */
   optional<String> caption;
@@ -24,10 +24,10 @@ struct edit_message_caption_request {
   /* A JSON-serialized list of special entities that appear in the caption, which can be specified instead of
    * parse_mode */
   optional<arrayof<MessageEntity>> caption_entities;
-  /* Pass True, if the caption must be shown above the message media. Supported only for animation, photo and
+  /* Pass True if the caption must be shown above the message media. Supported only for animation, photo and
    * video messages. */
   optional<bool> show_caption_above_media;
-  /* A JSON-serialized object for an inline keyboard. */
+  /* A JSON-serialized object for an inline keyboard */
   box<InlineKeyboardMarkup> reply_markup;
 
   using return_type = oneof<bool, Message>;

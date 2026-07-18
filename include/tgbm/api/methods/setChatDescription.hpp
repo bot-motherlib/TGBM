@@ -5,8 +5,7 @@
 namespace tgbm::api {
 
 struct set_chat_description_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target channel in the format @username */
   int_or_str chat_id;
   /* New chat description, 0-255 characters */
   optional<String> description;

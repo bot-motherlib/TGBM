@@ -14,16 +14,16 @@ struct edit_message_live_location_request {
   /* Unique identifier of the business connection on behalf of which the message to be edited was sent */
   optional<String> business_connection_id;
   /* Required if inline_message_id is not specified. Unique identifier for the target chat or username of the
-   * target channel (in the format @channelusername) */
+   * target bot, supergroup or channel in the format @username. */
   optional<int_or_str> chat_id;
-  /* Required if inline_message_id is not specified. Identifier of the message to edit */
+  /* Required if inline_message_id is not specified. Identifier of the message to edit. */
   optional<Integer> message_id;
-  /* Required if chat_id and message_id are not specified. Identifier of the inline message */
+  /* Required if chat_id and message_id are not specified. Identifier of the inline message. */
   optional<String> inline_message_id;
   /* New period in seconds during which the location can be updated, starting from the message send date. If
    * 0x7FFFFFFF is specified, then the location can be updated forever. Otherwise, the new value must not
    * exceed the current live_period by more than a day, and the live location expiration date must remain
-   * within the next 90 days. If not specified, then live_period remains unchanged */
+   * within the next 90 days. If not specified, then live_period remains unchanged. */
   optional<Integer> live_period;
   /* The radius of uncertainty for the location, measured in meters; 0-1500 */
   optional<Double> horizontal_accuracy;
@@ -32,7 +32,7 @@ struct edit_message_live_location_request {
   /* The maximum distance for proximity alerts about approaching another chat member, in meters. Must be
    * between 1 and 100000 if specified. */
   optional<Integer> proximity_alert_radius;
-  /* A JSON-serialized object for a new inline keyboard. */
+  /* A JSON-serialized object for a new inline keyboard */
   box<InlineKeyboardMarkup> reply_markup;
 
   using return_type = oneof<bool, Message>;

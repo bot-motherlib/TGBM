@@ -5,8 +5,7 @@
 namespace tgbm::api {
 
 struct unpin_chat_message_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target channel in the format @username */
   int_or_str chat_id;
   /* Unique identifier of the business connection on behalf of which the message will be unpinned */
   optional<String> business_connection_id;

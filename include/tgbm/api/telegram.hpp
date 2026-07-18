@@ -59,7 +59,7 @@ struct telegram {
 
   /* Use this method to forward multiple messages of any kind. If some of the specified messages can't be
    * found or forwarded, they are skipped. Service messages and messages with protected content can't be
-   * forwarded. Album grouping is kept for forwarded messages. On success, an array of MessageId of the sent
+   * forwarded. Album grouping is kept for forwarded messages. On success, an Array of MessageId of the sent
    * messages is returned. */
   dd::task<arrayof<MessageId>> forwardMessages(api::forward_messages_request,
                                                deadline_t deadline = deadline_t::never()) const;
@@ -76,12 +76,16 @@ struct telegram {
    * and invoice messages can't be copied. A quiz poll can be copied only if the value of the field
    * correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the
    * copied messages don't have a link to the original message. Album grouping is kept for copied messages. On
-   * success, an array of MessageId of the sent messages is returned. */
+   * success, an Array of MessageId of the sent messages is returned. */
   dd::task<arrayof<MessageId>> copyMessages(api::copy_messages_request,
                                             deadline_t deadline = deadline_t::never()) const;
 
   /* Use this method to send photos. On success, the sent Message is returned. */
   dd::task<Message> sendPhoto(api::send_photo_request, deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to send live photos. On success, the sent Message is returned. */
+  dd::task<Message> sendLivePhoto(api::send_live_photo_request,
+                                  deadline_t deadline = deadline_t::never()) const;
 
   /* Use this method to send audio files, if you want Telegram clients to display them in the music player.
    * Your audio must be in the .MP3 or .M4A format. On success, the sent Message is returned. Bots can
@@ -119,9 +123,9 @@ struct telegram {
   dd::task<Message> sendPaidMedia(api::send_paid_media_request,
                                   deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio
-   * files can be only grouped in an album with messages of the same type. On success, an array of Message
-   * objects that were sent is returned. */
+  /* Use this method to send a group of photos, live photos, videos, documents or audios as an album.
+   * Documents and audio files can be only grouped in an album with messages of the same type. On success, an
+   * Array of Message objects that were sent is returned. */
   dd::task<arrayof<Message>> sendMediaGroup(api::send_media_group_request,
                                             deadline_t deadline = deadline_t::never()) const;
 
@@ -146,8 +150,10 @@ struct telegram {
    * is returned. */
   dd::task<Message> sendDice(api::send_dice_request, deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to stream a partial message to a user while the message is being generated. Returns True
-   * on success. */
+  /* Use this method to stream a partial message to a user while the message is being generated. Note that the
+   * streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you
+   * must call sendMessage with the complete message to persist it in the user's chat. Returns True on
+   * success. */
   dd::task<bool> sendMessageDraft(api::send_message_draft_request,
                                   deadline_t deadline = deadline_t::never()) const;
 
@@ -287,6 +293,16 @@ struct telegram {
   dd::task<bool> declineChatJoinRequest(api::decline_chat_join_request_request,
                                         deadline_t deadline = deadline_t::never()) const;
 
+  /* Use this method to process a received chat join request query. Returns True on success. */
+  dd::task<bool> answerChatJoinRequestQuery(api::answer_chat_join_request_query_request,
+                                            deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to process a received chat join request query by showing a Mini App to the user before
+   * deciding the outcome. Call answerChatJoinRequestQuery to resolve the join request query based on the user
+   * interaction with the Mini App. Returns True on success. */
+  dd::task<bool> sendChatJoinRequestWebApp(api::send_chat_join_request_web_app_request,
+                                           deadline_t deadline = deadline_t::never()) const;
+
   /* Use this method to set a new profile photo for the chat. Photos can't be changed for private chats. The
    * bot must be an administrator in the chat for this to work and must have the appropriate administrator
    * rights. Returns True on success. */
@@ -337,12 +353,11 @@ struct telegram {
    */
   dd::task<ChatFullInfo> getChat(api::get_chat_request, deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to get a list of administrators in a chat, which aren't bots. Returns an Array of
-   * ChatMember objects. */
+  /* Use this method to get a list of administrators in a chat. Returns an Array of ChatMember objects. */
   dd::task<arrayof<ChatMember>> getChatAdministrators(api::get_chat_administrators_request,
                                                       deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to get the number of members in a chat. Returns Int on success. */
+  /* Use this method to get the number of members in a chat. Returns Integer on success. */
   dd::task<Integer> getChatMemberCount(api::get_chat_member_count_request,
                                        deadline_t deadline = deadline_t::never()) const;
 
@@ -350,6 +365,11 @@ struct telegram {
    * other users if the bot is an administrator in the chat. Returns a ChatMember object on success. */
   dd::task<ChatMember> getChatMember(api::get_chat_member_request,
                                      deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to get the last messages from the personal chat (i.e., the chat currently added to their
+   * profile) of a given user. On success, an Array of Message objects is returned. */
+  dd::task<arrayof<Message>> getUserPersonalChatMessages(api::get_user_personal_chat_messages_request,
+                                                         deadline_t deadline = deadline_t::never()) const;
 
   /* Use this method to set a new group sticker set for a supergroup. The bot must be an administrator in the
    * chat for this to work and must have the appropriate administrator rights. Use the field
@@ -450,6 +470,11 @@ struct telegram {
   dd::task<bool> answerCallbackQuery(api::answer_callback_query_request,
                                      deadline_t deadline = deadline_t::never()) const;
 
+  /* Use this method to reply to a received guest message. On success, a SentGuestMessage object is returned.
+   */
+  dd::task<SentGuestMessage> answerGuestQuery(api::answer_guest_query_request,
+                                              deadline_t deadline = deadline_t::never()) const;
+
   /* Use this method to get the list of boosts added to a chat by a user. Requires administrator rights in the
    * chat. Returns a UserChatBoosts object. */
   dd::task<UserChatBoosts> getUserChatBoosts(api::get_user_chat_boosts_request,
@@ -468,6 +493,15 @@ struct telegram {
    * token as String on success. */
   dd::task<String> replaceManagedBotToken(api::replace_managed_bot_token_request,
                                           deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to get the access settings of a managed bot. Returns a BotAccessSettings object on
+   * success. */
+  dd::task<BotAccessSettings> getManagedBotAccessSettings(api::get_managed_bot_access_settings_request,
+                                                          deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to change the access settings of a managed bot. Returns True on success. */
+  dd::task<bool> setManagedBotAccessSettings(api::set_managed_bot_access_settings_request,
+                                             deadline_t deadline = deadline_t::never()) const;
 
   /* Use this method to change the list of the bot's commands. See this manual for more details about bot
    * commands. Returns True on success. */
@@ -679,7 +713,7 @@ struct telegram {
   dd::task<PreparedKeyboardButton> savePreparedKeyboardButton(
       api::save_prepared_keyboard_button_request, deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to edit text and game messages. On success, if the edited message is not an inline
+  /* Use this method to edit text, rich and game messages. On success, if the edited message is not an inline
    * message, the edited Message is returned, otherwise True is returned. Note that business messages that
    * were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from
    * the time they were sent. */
@@ -693,13 +727,14 @@ struct telegram {
   dd::task<oneof<bool, Message>> editMessageCaption(api::edit_message_caption_request,
                                                     deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to edit animation, audio, document, photo, or video messages, or to add media to text
-   * messages. If a message is part of a message album, then it can be edited only to an audio for audio
-   * albums, only to a document for document albums and to a photo or a video otherwise. When an inline
-   * message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or
-   * specify a URL. On success, if the edited message is not an inline message, the edited Message is
-   * returned, otherwise True is returned. Note that business messages that were not sent by the bot and do
-   * not contain an inline keyboard can only be edited within 48 hours from the time they were sent. */
+  /* Use this method to edit animation, audio, document, live photo, photo, or video messages, or to replace a
+   * text or a rich message with a media. If a message is part of a message album, then it can be edited only
+   * to an audio for audio albums, only to a document for document albums and to a photo, a live photo, or a
+   * video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously
+   * uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline
+   * message, the edited Message is returned, otherwise True is returned. Note that business messages that
+   * were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from
+   * the time they were sent. */
   dd::task<oneof<bool, Message>> editMessageMedia(api::edit_message_media_request,
                                                   deadline_t deadline = deadline_t::never()) const;
 
@@ -729,6 +764,27 @@ struct telegram {
   /* Use this method to stop a poll which was sent by the bot. On success, the stopped Poll is returned. */
   dd::task<Poll> stopPoll(api::stop_poll_request, deadline_t deadline = deadline_t::never()) const;
 
+  /* Use this method to edit an ephemeral text message. Note that it is not guaranteed that the user will
+   * receive the message edit event, especially if they are offline. On success, True is returned. */
+  dd::task<bool> editEphemeralMessageText(api::edit_ephemeral_message_text_request,
+                                          deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to edit the media of an ephemeral message. Note that it is not guaranteed that the user
+   * will receive the message edit event, especially if they are offline. On success, True is returned. */
+  dd::task<bool> editEphemeralMessageMedia(api::edit_ephemeral_message_media_request,
+                                           deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to edit the caption of an ephemeral message. Note that it is not guaranteed that the user
+   * will receive the message edit event, especially if they are offline. On success, True is returned. */
+  dd::task<bool> editEphemeralMessageCaption(api::edit_ephemeral_message_caption_request,
+                                             deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to edit only the reply markup of an ephemeral message. Note that it is not guaranteed
+   * that the user will receive the message edit event, especially if they are offline. On success, True is
+   * returned. */
+  dd::task<bool> editEphemeralMessageReplyMarkup(api::edit_ephemeral_message_reply_markup_request,
+                                                 deadline_t deadline = deadline_t::never()) const;
+
   /* Use this method to approve a suggested post in a direct messages chat. The bot must have the
    * 'can_post_messages' administrator right in the corresponding channel chat. Returns True on success. */
   dd::task<bool> approveSuggestedPost(api::approve_suggested_post_request,
@@ -756,6 +812,22 @@ struct telegram {
    * found, they are skipped. Returns True on success. */
   dd::task<bool> deleteMessages(api::delete_messages_request,
                                 deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to delete an ephemeral message. Note that it is not guaranteed that the user will receive
+   * the message deletion event, especially if they are offline. Returns True on success. */
+  dd::task<bool> deleteEphemeralMessage(api::delete_ephemeral_message_request,
+                                        deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to remove a reaction from a message in a group or a supergroup chat. The bot must have
+   * the 'can_delete_messages' administrator right in the chat. Returns True on success. */
+  dd::task<bool> deleteMessageReaction(api::delete_message_reaction_request,
+                                       deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to remove up to 10000 recent reactions in a group or a supergroup chat added by a given
+   * user or chat. The bot must have the 'can_delete_messages' administrator right in the chat. Returns True
+   * on success. */
+  dd::task<bool> deleteAllMessageReactions(api::delete_all_message_reactions_request,
+                                           deadline_t deadline = deadline_t::never()) const;
 
   /* Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers. On success, the sent
    * Message is returned. */
@@ -832,6 +904,18 @@ struct telegram {
   /* Use this method to delete a sticker set that was created by the bot. Returns True on success. */
   dd::task<bool> deleteStickerSet(api::delete_sticker_set_request,
                                   deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to send rich messages. If the message contains a block with a media element, then the bot
+   * must have the right to send the media to the chat. On success, the sent Message is returned. */
+  dd::task<Message> sendRichMessage(api::send_rich_message_request,
+                                    deadline_t deadline = deadline_t::never()) const;
+
+  /* Use this method to stream a partial rich message to a user while the message is being generated. Note
+   * that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is
+   * finalized, you must call sendRichMessage with the complete message to persist it in the user's chat.
+   * Returns True on success. */
+  dd::task<bool> sendRichMessageDraft(api::send_rich_message_draft_request,
+                                      deadline_t deadline = deadline_t::never()) const;
 
   /* Use this method to send answers to an inline query. On success, True is returned.No more than 50 results
    * per query are allowed. */

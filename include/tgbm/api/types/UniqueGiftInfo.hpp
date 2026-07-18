@@ -11,13 +11,13 @@ struct UniqueGiftInfo {
   /* Origin of the gift. Currently, either “upgrade” for gifts upgraded from regular gifts, “transfer” for
    * gifts transferred from other users or channels, “resale” for gifts bought from other users,
    * “gifted_upgrade” for upgrades purchased after the gift was sent, or “offer” for gifts bought or sold
-   * through gift purchase offers */
+   * through gift purchase offers. */
   String origin;
   /* Optional. For gifts bought from other users, the currency in which the payment for the gift was done.
-   * Currently, one of “XTR” for Telegram Stars or “TON” for toncoins. */
+   * Currently, one of “XTR” for Telegram Stars or “TON” for TON grams. */
   optional<String> last_resale_currency;
   /* Optional. For gifts bought from other users, the price paid for the gift in either Telegram Stars or
-   * nanotoncoins */
+   * nanograms */
   optional<Integer> last_resale_amount;
   /* Optional. Unique identifier of the received gift for the bot; only present for gifts received on behalf
    * of business accounts */
@@ -26,7 +26,7 @@ struct UniqueGiftInfo {
    * transfer the gift */
   optional<Integer> transfer_star_count;
   /* Optional. Point in time (Unix timestamp) when the gift can be transferred. If it is in the past, then the
-   * gift can be transferred now */
+   * gift can be transferred now. */
   optional<Integer> next_transfer_date;
 
   consteval static bool is_mandatory_field(std::string_view name) {

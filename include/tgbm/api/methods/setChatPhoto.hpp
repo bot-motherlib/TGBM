@@ -5,8 +5,7 @@
 namespace tgbm::api {
 
 struct set_chat_photo_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target channel in the format @username */
   int_or_str chat_id;
   /* New chat photo, uploaded using multipart/form-data */
   InputFile photo;

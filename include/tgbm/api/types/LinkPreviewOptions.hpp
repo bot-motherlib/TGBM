@@ -7,7 +7,7 @@ namespace tgbm::api {
 /*Describes the options used for link preview generation.*/
 struct LinkPreviewOptions {
   /* Optional. URL to use for the link preview. If empty, then the first URL found in the message text will be
-   * used */
+   * used. */
   optional<String> url;
   /* Optional. True, if the link preview is disabled */
   optional<bool> is_disabled;

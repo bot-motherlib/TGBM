@@ -9,7 +9,7 @@ namespace tgbm::api {
 struct ChatMemberBanned {
   /* Information about the user */
   box<User> user;
-  /* Date when restrictions will be lifted for this user; Unix time. If 0, then the user is banned forever */
+  /* Date when restrictions will be lifted for this user; Unix time. If 0, then the user is banned forever. */
   Integer until_date;
 
   consteval static bool is_mandatory_field(std::string_view name) {

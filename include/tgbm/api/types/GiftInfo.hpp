@@ -20,7 +20,7 @@ struct GiftInfo {
   optional<String> text;
   /* Optional. Special entities that appear in the text */
   optional<arrayof<MessageEntity>> entities;
-  /* Optional. Unique number reserved for this gift when upgraded. See the number field in UniqueGift */
+  /* Optional. Unique number reserved for this gift when upgraded. See the number field in UniqueGift. */
   optional<Integer> unique_gift_number;
   /* Optional. True, if the gift's upgrade was purchased after the gift was sent */
   optional<True> is_upgrade_separate;

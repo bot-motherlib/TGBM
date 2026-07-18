@@ -6,8 +6,7 @@
 namespace tgbm::api {
 
 struct create_chat_invite_link_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target channel in the format @username */
   int_or_str chat_id;
   /* Invite link name; 0-32 characters */
   optional<String> name;
@@ -17,7 +16,7 @@ struct create_chat_invite_link_request {
    * this invite link; 1-99999 */
   optional<Integer> member_limit;
   /* True, if users joining the chat via the link need to be approved by chat administrators. If True,
-   * member_limit can't be specified */
+   * member_limit can't be specified. */
   optional<bool> creates_join_request;
 
   using return_type = ChatInviteLink;

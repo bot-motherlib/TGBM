@@ -15,9 +15,9 @@ struct ChatShared {
    * have access to the chat and could be unable to use this identifier, unless the chat is already known to
    * the bot by some other means. */
   Integer chat_id;
-  /* Optional. Title of the chat, if the title was requested by the bot. */
+  /* Optional. Title of the chat, if the title was requested by the bot */
   optional<String> title;
-  /* Optional. Username of the chat, if the username was requested by the bot and available. */
+  /* Optional. Username of the chat, if the username was requested by the bot and available */
   optional<String> username;
   /* Optional. Available sizes of the chat photo, if the photo was requested by the bot */
   optional<arrayof<PhotoSize>> photo;

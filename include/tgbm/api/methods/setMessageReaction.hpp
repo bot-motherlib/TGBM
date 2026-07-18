@@ -6,8 +6,8 @@
 namespace tgbm::api {
 
 struct set_message_reaction_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target bot, supergroup or channel in the format
+   * @username */
   int_or_str chat_id;
   /* Identifier of the target message. If the message belongs to a media group, the reaction is set to the
    * first non-deleted message in the group instead. */

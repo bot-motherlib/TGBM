@@ -2,6 +2,7 @@
 
 #include <tgbm/api/common.hpp>
 #include <tgbm/api/types/InlineKeyboardMarkup.hpp>
+#include <tgbm/api/types/InputRichMessage.hpp>
 #include <tgbm/api/types/LinkPreviewOptions.hpp>
 #include <tgbm/api/types/Message.hpp>
 #include <tgbm/api/types/MessageEntity.hpp>
@@ -9,17 +10,18 @@
 namespace tgbm::api {
 
 struct edit_message_text_request {
-  /* New text of the message, 1-4096 characters after entities parsing */
-  String text;
   /* Unique identifier of the business connection on behalf of which the message to be edited was sent */
   optional<String> business_connection_id;
   /* Required if inline_message_id is not specified. Unique identifier for the target chat or username of the
-   * target channel (in the format @channelusername) */
+   * target bot, supergroup or channel in the format @username. */
   optional<int_or_str> chat_id;
-  /* Required if inline_message_id is not specified. Identifier of the message to edit */
+  /* Required if inline_message_id is not specified. Identifier of the message to edit. */
   optional<Integer> message_id;
-  /* Required if chat_id and message_id are not specified. Identifier of the inline message */
+  /* Required if chat_id and message_id are not specified. Identifier of the inline message. */
   optional<String> inline_message_id;
+  /* New text of the message, 1-4096 characters after entity parsing; required if rich_message isn't specified
+   */
+  optional<String> text;
   /* Mode for parsing entities in the message text. See formatting options for more details. */
   optional<String> parse_mode;
   /* A JSON-serialized list of special entities that appear in message text, which can be specified instead of
@@ -27,7 +29,10 @@ struct edit_message_text_request {
   optional<arrayof<MessageEntity>> entities;
   /* Link preview generation options for the message */
   box<LinkPreviewOptions> link_preview_options;
-  /* A JSON-serialized object for an inline keyboard. */
+  /* New rich content of the message; required if text isn't specified. Direct upload of new files isn't
+   * supported when an inline message is edited. */
+  box<InputRichMessage> rich_message;
+  /* A JSON-serialized object for an inline keyboard */
   box<InlineKeyboardMarkup> reply_markup;
 
   using return_type = oneof<bool, Message>;
@@ -44,13 +49,16 @@ struct edit_message_text_request {
       body.arg("message_id", *message_id);
     if (inline_message_id)
       body.arg("inline_message_id", *inline_message_id);
-    body.arg("text", text);
+    if (text)
+      body.arg("text", *text);
     if (parse_mode)
       body.arg("parse_mode", *parse_mode);
     if (entities)
       body.arg("entities", *entities);
     if (link_preview_options)
       body.arg("link_preview_options", *link_preview_options);
+    if (rich_message)
+      body.arg("rich_message", *rich_message);
     if (reply_markup)
       body.arg("reply_markup", *reply_markup);
   }

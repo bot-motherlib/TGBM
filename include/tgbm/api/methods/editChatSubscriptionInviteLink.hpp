@@ -6,8 +6,7 @@
 namespace tgbm::api {
 
 struct edit_chat_subscription_invite_link_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target channel in the format @username */
   int_or_str chat_id;
   /* The invite link to edit */
   String invite_link;

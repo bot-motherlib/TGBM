@@ -5,8 +5,7 @@
 namespace tgbm::api {
 
 struct promote_chat_member_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target channel in the format @username */
   int_or_str chat_id;
   /* Unique identifier of the target user */
   Integer user_id;
@@ -21,7 +20,7 @@ struct promote_chat_member_request {
   /* Pass True if the administrator can manage video chats */
   optional<bool> can_manage_video_chats;
   /* Pass True if the administrator can restrict, ban or unban chat members, or access supergroup statistics.
-   * For backward compatibility, defaults to True for promotions of channel administrators */
+   * For backward compatibility, defaults to True for promotions of channel administrators. */
   optional<bool> can_restrict_members;
   /* Pass True if the administrator can add new administrators with a subset of their own privileges or demote
    * administrators that they have promoted, directly or indirectly (promoted by administrators that were

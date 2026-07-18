@@ -13,6 +13,7 @@
 #include <tgbm/api/methods/copyMessage.hpp>
 #include <tgbm/api/methods/copyMessages.hpp>
 #include <tgbm/api/methods/sendPhoto.hpp>
+#include <tgbm/api/methods/sendLivePhoto.hpp>
 #include <tgbm/api/methods/sendAudio.hpp>
 #include <tgbm/api/methods/sendDocument.hpp>
 #include <tgbm/api/methods/sendVideo.hpp>
@@ -51,6 +52,8 @@
 #include <tgbm/api/methods/revokeChatInviteLink.hpp>
 #include <tgbm/api/methods/approveChatJoinRequest.hpp>
 #include <tgbm/api/methods/declineChatJoinRequest.hpp>
+#include <tgbm/api/methods/answerChatJoinRequestQuery.hpp>
+#include <tgbm/api/methods/sendChatJoinRequestWebApp.hpp>
 #include <tgbm/api/methods/setChatPhoto.hpp>
 #include <tgbm/api/methods/deleteChatPhoto.hpp>
 #include <tgbm/api/methods/setChatTitle.hpp>
@@ -63,6 +66,7 @@
 #include <tgbm/api/methods/getChatAdministrators.hpp>
 #include <tgbm/api/methods/getChatMemberCount.hpp>
 #include <tgbm/api/methods/getChatMember.hpp>
+#include <tgbm/api/methods/getUserPersonalChatMessages.hpp>
 #include <tgbm/api/methods/setChatStickerSet.hpp>
 #include <tgbm/api/methods/deleteChatStickerSet.hpp>
 #include <tgbm/api/methods/getForumTopicIconStickers.hpp>
@@ -79,10 +83,13 @@
 #include <tgbm/api/methods/unhideGeneralForumTopic.hpp>
 #include <tgbm/api/methods/unpinAllGeneralForumTopicMessages.hpp>
 #include <tgbm/api/methods/answerCallbackQuery.hpp>
+#include <tgbm/api/methods/answerGuestQuery.hpp>
 #include <tgbm/api/methods/getUserChatBoosts.hpp>
 #include <tgbm/api/methods/getBusinessConnection.hpp>
 #include <tgbm/api/methods/getManagedBotToken.hpp>
 #include <tgbm/api/methods/replaceManagedBotToken.hpp>
+#include <tgbm/api/methods/getManagedBotAccessSettings.hpp>
+#include <tgbm/api/methods/setManagedBotAccessSettings.hpp>
 #include <tgbm/api/methods/setMyCommands.hpp>
 #include <tgbm/api/methods/deleteMyCommands.hpp>
 #include <tgbm/api/methods/getMyCommands.hpp>
@@ -136,10 +143,17 @@
 #include <tgbm/api/methods/editMessageChecklist.hpp>
 #include <tgbm/api/methods/editMessageReplyMarkup.hpp>
 #include <tgbm/api/methods/stopPoll.hpp>
+#include <tgbm/api/methods/editEphemeralMessageText.hpp>
+#include <tgbm/api/methods/editEphemeralMessageMedia.hpp>
+#include <tgbm/api/methods/editEphemeralMessageCaption.hpp>
+#include <tgbm/api/methods/editEphemeralMessageReplyMarkup.hpp>
 #include <tgbm/api/methods/approveSuggestedPost.hpp>
 #include <tgbm/api/methods/declineSuggestedPost.hpp>
 #include <tgbm/api/methods/deleteMessage.hpp>
 #include <tgbm/api/methods/deleteMessages.hpp>
+#include <tgbm/api/methods/deleteEphemeralMessage.hpp>
+#include <tgbm/api/methods/deleteMessageReaction.hpp>
+#include <tgbm/api/methods/deleteAllMessageReactions.hpp>
 #include <tgbm/api/methods/sendSticker.hpp>
 #include <tgbm/api/methods/getStickerSet.hpp>
 #include <tgbm/api/methods/getCustomEmojiStickers.hpp>
@@ -156,6 +170,8 @@
 #include <tgbm/api/methods/setStickerSetThumbnail.hpp>
 #include <tgbm/api/methods/setCustomEmojiStickerSetThumbnail.hpp>
 #include <tgbm/api/methods/deleteStickerSet.hpp>
+#include <tgbm/api/methods/sendRichMessage.hpp>
+#include <tgbm/api/methods/sendRichMessageDraft.hpp>
 #include <tgbm/api/methods/answerInlineQuery.hpp>
 #include <tgbm/api/methods/sendInvoice.hpp>
 #include <tgbm/api/methods/createInvoiceLink.hpp>

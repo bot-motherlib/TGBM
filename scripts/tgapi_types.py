@@ -13,6 +13,10 @@ def load_file(path: str) -> str:
 
 ######################### PARSING ########################
 
+# original - not modified type
+def unify(somestr: str) -> str:
+    return somestr.strip().lower().replace(' ', '').replace('\n', '')
+
 G_TYPE_MAPPING = {
     "integer": "Integer",
     "string": "String",
@@ -22,13 +26,11 @@ G_TYPE_MAPPING = {
     "float": "Double",
     "inputfileorstring": 'file_or_str',
     "inputfile": "InputFile",
+    unify("InputMediaAnimation or InputMediaAudio or InputMediaPhoto or InputMediaVideo or InputMediaVoiceNote"): "input_media_t",
 }
 
 PARSED_TYPES = {}
 
-# original - not modified type
-def unify(somestr: str) -> str:
-    return somestr.strip().lower().replace(' ', '').replace('\n', '')
 def map_tgtype_to_cpptype(tgtype: str):
     typeunified = unify(tgtype)
     if typeunified in G_TYPE_MAPPING:
@@ -354,8 +356,14 @@ def generate_api_struct(t: type_info_t) -> str:
     return s
 
 def cut_oneofname(name: str, ownername: str) -> str:
-    assert name.startswith(ownername)
-    return name[len(ownername):].lower()
+    if (name.startswith(ownername)):
+        return name[len(ownername):].lower()
+    # in api version v10 TG broke their convention and added bad types:
+    if ownername == 'InputPollOptionMedia':
+        return name[len("Input"):].lower()
+    if ownername == 'InputPollMedia':
+        return name[len("Input"):].lower()
+    assert name.startswith(ownername), f"{name} not starts with {ownername}"
 
 def generate_api_struct_oneof(t: oneof_info_t) -> str:
     if t.name in TYPES_WITHOUT_DISCRIMINATOR:
@@ -481,7 +489,7 @@ def generate_all_fwd_and_all_types_hdrs(outdir: str):
                 print(f'struct {t};', file=out)
         print('using MaybeInaccessibleMessage = Message;', file=out)
         # InputMessageContent
-        print('using InputMessageContent = oneof<InputTextMessageContent, InputLocationMessageContent, InputVenueMessageContent, InputContactMessageContent, InputInvoiceMessageContent>;', file=out)
+        print('using InputMessageContent = oneof<InputTextMessageContent, InputRichMessageContent, InputLocationMessageContent, InputVenueMessageContent, InputContactMessageContent, InputInvoiceMessageContent>;', file=out)
         print('\n} // namespace tgbm::api', file=out)
 
     # all.hpp

@@ -23,6 +23,8 @@ struct ExternalReplyInfo {
   box<Audio> audio;
   /* Optional. Message is a general file, information about the file */
   box<Document> document;
+  /* Optional. Message is a live photo, information about the live photo */
+  box<LivePhoto> live_photo;
   /* Optional. Message contains paid media; information about the paid media */
   box<PaidMediaInfo> paid_media;
   /* Optional. Message is a photo, available sizes of the photo */

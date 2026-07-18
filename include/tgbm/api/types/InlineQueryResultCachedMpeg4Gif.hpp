@@ -24,7 +24,7 @@ struct InlineQueryResultCachedMpeg4Gif {
   box<InlineKeyboardMarkup> reply_markup;
   /* Optional. Content of the message to be sent instead of the video animation */
   box<InputMessageContent> input_message_content;
-  /* Optional. Pass True, if the caption must be shown above the message media */
+  /* Optional. Pass True if the caption must be shown above the message media */
   optional<bool> show_caption_above_media;
 
   consteval static bool is_mandatory_field(std::string_view name) {

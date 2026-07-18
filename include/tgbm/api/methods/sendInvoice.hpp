@@ -10,8 +10,8 @@
 namespace tgbm::api {
 
 struct send_invoice_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target bot, supergroup or channel in the format
+   * @username */
   int_or_str chat_id;
   /* Product name, 1-32 characters */
   String title;
@@ -39,14 +39,14 @@ struct send_invoice_request {
    * currencies.json, it shows the number of digits past the decimal point for each currency (2 for the
    * majority of currencies). Defaults to 0. Not supported for payments in Telegram Stars. */
   optional<Integer> max_tip_amount;
-  /* A JSON-serialized array of suggested amounts of tips in the smallest units of the currency (integer, not
+  /* A JSON-serialized Array of suggested amounts of tips in the smallest units of the currency (integer, not
    * float/double). At most 4 suggested tip amounts can be specified. The suggested tip amounts must be
    * positive, passed in a strictly increased order and must not exceed max_tip_amount. */
   optional<arrayof<Integer>> suggested_tip_amounts;
   /* Unique deep-linking parameter. If left empty, forwarded copies of the sent message will have a Pay
    * button, allowing multiple users to pay directly from the forwarded message, using the same invoice. If
    * non-empty, forwarded copies of the sent message will have a URL button with a deep link to the bot
-   * (instead of a Pay button), with the value used as the start parameter */
+   * (instead of a Pay button), with the value used as the start parameter. */
   optional<String> start_parameter;
   /* JSON-serialized data about the invoice, which will be shared with the payment provider. A detailed
    * description of required fields should be provided by the payment provider. */
@@ -85,7 +85,7 @@ struct send_invoice_request {
   /* Protects the contents of the sent message from forwarding and saving */
   optional<bool> protect_content;
   /* Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram
-   * Stars per message. The relevant Stars will be withdrawn from the bot's balance */
+   * Stars per message. The relevant Stars will be withdrawn from the bot's balance. */
   optional<bool> allow_paid_broadcast;
   /* Unique identifier of the message effect to be added to the message; for private chats only */
   optional<String> message_effect_id;

@@ -11,7 +11,7 @@ struct answer_shipping_query_request {
   /* Pass True if delivery to the specified address is possible and False if there are any problems (for
    * example, if delivery to the specified address is not possible) */
   bool ok;
-  /* Required if ok is True. A JSON-serialized array of available shipping options. */
+  /* Required if ok is True. A JSON-serialized Array of available shipping options. */
   optional<arrayof<ShippingOption>> shipping_options;
   /* Required if ok is False. Error message in human readable form that explains why it is impossible to
    * complete the order (e.g. “Sorry, delivery to your desired address is unavailable”). Telegram will display

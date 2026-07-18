@@ -29,10 +29,12 @@ struct User {
   optional<bool> can_join_groups;
   /* Optional. True, if privacy mode is disabled for the bot. Returned only in getMe. */
   optional<bool> can_read_all_group_messages;
+  /* Optional. True, if the bot supports guest queries from chats it is not a member of. Returned only in
+   * getMe. */
+  optional<bool> supports_guest_queries;
   /* Optional. True, if the bot supports inline queries. Returned only in getMe. */
   optional<bool> supports_inline_queries;
-  /* Optional. True, if the bot can be connected to a Telegram Business account to receive its messages.
-   * Returned only in getMe. */
+  /* Optional. True, if the bot can be connected to a user account to manage it. Returned only in getMe. */
   optional<bool> can_connect_to_business;
   /* Optional. True, if the bot has a main Web App. Returned only in getMe. */
   optional<bool> has_main_web_app;
@@ -43,6 +45,9 @@ struct User {
   optional<bool> allows_users_to_create_topics;
   /* Optional. True, if other bots can be created to be controlled by the bot. Returned only in getMe. */
   optional<bool> can_manage_bots;
+  /* Optional. True, if the bot supports join request queries and can be assigned to process them. Returned
+   * only in getMe. */
+  optional<bool> supports_join_request_queries;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)

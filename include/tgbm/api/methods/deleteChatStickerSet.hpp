@@ -5,8 +5,7 @@
 namespace tgbm::api {
 
 struct delete_chat_sticker_set_request {
-  /* Unique identifier for the target chat or username of the target supergroup (in the format
-   * @supergroupusername) */
+  /* Unique identifier for the target chat or username of the target supergroup in the format @username */
   int_or_str chat_id;
 
   using return_type = bool;

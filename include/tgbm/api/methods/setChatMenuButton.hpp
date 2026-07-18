@@ -6,10 +6,10 @@
 namespace tgbm::api {
 
 struct set_chat_menu_button_request {
-  /* Unique identifier for the target private chat. If not specified, default bot's menu button will be
-   * changed */
+  /* Unique identifier for the target private chat. If not specified, the bot's default menu button will be
+   * changed. */
   optional<Integer> chat_id;
-  /* A JSON-serialized object for the bot's new menu button. Defaults to MenuButtonDefault */
+  /* A JSON-serialized object for the bot's new menu button. Defaults to MenuButtonDefault. */
   box<MenuButton> menu_button;
 
   using return_type = bool;

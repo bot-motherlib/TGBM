@@ -6,9 +6,10 @@ namespace tgbm::api {
 
 /*This object represents a message.*/
 struct Message {
-  /* Unique message identifier inside this chat. In specific instances (e.g., message containing a video sent
-   * to a big chat), the server might automatically schedule a message instead of sending it immediately. In
-   * such cases, this field will be 0 and the relevant message will be unusable until it is actually sent */
+  /* Unique message identifier inside this chat; 0 for ephemeral messages. In specific instances (e.g., a
+   * message containing a video sent to a big chat), the server might automatically schedule a message instead
+   * of sending it immediately. In such cases, this field will be 0 and the relevant message will be unusable
+   * until it is actually sent. */
   Integer message_id;
   /* Date the message was sent in Unix time. It is always a positive number, representing a valid date. */
   Integer date;
@@ -20,7 +21,7 @@ struct Message {
   /* Optional. Information about the direct messages chat topic that contains the message */
   box<DirectMessagesTopic> direct_messages_topic;
   /* Optional. Sender of the message; may be empty for messages sent to channels. For backward compatibility,
-   * if the message was sent on behalf of a chat, the field contains a fake sender user in non-channel chats
+   * if the message was sent on behalf of a chat, the field contains a fake sender user in non-channel chats.
    */
   box<User> from;
   /* Optional. Sender of the message when sent on behalf of a chat. For example, the supergroup itself for
@@ -35,6 +36,15 @@ struct Message {
   box<User> sender_business_bot;
   /* Optional. Tag or custom title of the sender of the message; for supergroups only */
   optional<String> sender_tag;
+  /* Optional. For ephemeral messages, the user who received the message */
+  box<User> receiver_user;
+  /* Optional. For ephemeral messages, identifier of the ephemeral message inside this chat. The identifier
+   * may be reused for another ephemeral message after the message is deleted or expires. */
+  optional<Integer> ephemeral_message_id;
+  /* Optional. The unique identifier for the guest query. Use this identifier with the method answerGuestQuery
+   * to send a response message. If non-empty, the message belongs to the chat where the guest bot was
+   * summoned, which may not coincide with other existing bot chats sharing the same identifier. */
+  optional<String> guest_query_id;
   /* Optional. Unique identifier of the business connection from which the message was received. If non-empty,
    * the message belongs to a chat of the corresponding business account that is independent from any
    * potential bot chat which might share the same identifier. */
@@ -42,7 +52,8 @@ struct Message {
   /* Optional. Information about the original message for forwarded messages */
   box<MessageOrigin> forward_origin;
   /* Optional. For replies in the same chat and message thread, the original message. Note that the Message
-   * object in this field will not contain further reply_to_message fields even if it itself is a reply. */
+   * object in this field will not contain further reply_to_message fields even if it itself is a reply. If
+   * the message is a reply to an ephemeral message, then this field may be omitted. */
   box<Message> reply_to_message;
   /* Optional. Information about the message that is being replied to, which may come from another chat or
    * forum topic */
@@ -57,6 +68,12 @@ struct Message {
   optional<String> reply_to_poll_option_id;
   /* Optional. Bot through which the message was sent */
   box<User> via_bot;
+  /* Optional. For a message sent by a guest bot, this is the user whose original message triggered the bot's
+   * response */
+  box<User> guest_bot_caller_user;
+  /* Optional. For a message sent by a guest bot, this is the chat whose original message triggered the bot's
+   * response */
+  box<Chat> guest_bot_caller_chat;
   /* Optional. Date the message was last edited in Unix time */
   optional<Integer> edit_date;
   /* Optional. The unique identifier inside this chat of a media message group this message belongs to */
@@ -80,13 +97,18 @@ struct Message {
   box<SuggestedPostInfo> suggested_post_info;
   /* Optional. Unique identifier of the message effect added to the message */
   optional<String> effect_id;
+  /* Optional. Message is a rich formatted message */
+  box<RichMessage> rich_message;
   /* Optional. Message is an animation, information about the animation. For backward compatibility, when this
-   * field is set, the document field will also be set */
+   * field is set, the document field will also be set. */
   box<Animation> animation;
   /* Optional. Message is an audio file, information about the file */
   box<Audio> audio;
   /* Optional. Message is a general file, information about the file */
   box<Document> document;
+  /* Optional. Message is a live photo, information about the live photo. For backward compatibility, when
+   * this field is set, the photo field will also be set. */
+  box<LivePhoto> live_photo;
   /* Optional. Message contains paid media; information about the paid media */
   box<PaidMediaInfo> paid_media;
   /* Optional. Message is a photo, available sizes of the photo */
@@ -117,7 +139,7 @@ struct Message {
   /* Optional. Message is a native poll, information about the poll */
   box<Poll> poll;
   /* Optional. Message is a venue, information about the venue. For backward compatibility, when this field is
-   * set, the location field will also be set */
+   * set, the location field will also be set. */
   box<Venue> venue;
   /* Optional. Message is a shared location, information about the location */
   box<Location> location;
@@ -176,8 +198,8 @@ struct Message {
   box<WriteAccessAllowed> write_access_allowed;
   /* Optional. Telegram Passport data */
   box<PassportData> passport_data;
-  /* Optional. Service message. A user in the chat triggered another user's proximity alert while sharing Live
-   * Location. */
+  /* Optional. Service message: a user in the chat triggered another user's proximity alert while sharing Live
+   * Location */
   box<ProximityAlertTriggered> proximity_alert_triggered;
   /* Optional. Service message: user boosted the chat */
   box<ChatBoostAdded> boost_added;
@@ -187,6 +209,10 @@ struct Message {
   box<ChecklistTasksDone> checklist_tasks_done;
   /* Optional. Service message: tasks were added to a checklist */
   box<ChecklistTasksAdded> checklist_tasks_added;
+  /* Optional. Service message: chat added to a Community */
+  box<CommunityChatAdded> community_chat_added;
+  /* Optional. Service message: chat removed from a Community */
+  box<CommunityChatRemoved> community_chat_removed;
   /* Optional. Service message: the price for paid messages in the corresponding direct messages chat of a
    * channel has changed */
   box<DirectMessagePriceChanged> direct_message_price_changed;

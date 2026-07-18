@@ -6,8 +6,7 @@
 namespace tgbm::api {
 
 struct get_chat_gifts_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target channel in the format @username */
   int_or_str chat_id;
   /* Pass True to exclude gifts that aren't saved to the chat's profile page. Always True, unless the bot has
    * the can_post_messages administrator right in the channel. */
@@ -33,7 +32,7 @@ struct get_chat_gifts_request {
   /* Offset of the first entry to return as received from the previous request; use an empty string to get the
    * first chunk of results */
   optional<String> offset;
-  /* The maximum number of gifts to be returned; 1-100. Defaults to 100 */
+  /* The maximum number of gifts to be returned; 1-100. Defaults to 100. */
   optional<Integer> limit;
 
   using return_type = OwnedGifts;

@@ -8,8 +8,8 @@
 namespace tgbm::api {
 
 struct send_dice_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target bot, supergroup or channel in the format
+   * @username */
   int_or_str chat_id;
   /* Unique identifier of the business connection on behalf of which the message will be sent */
   optional<String> business_connection_id;
@@ -21,14 +21,14 @@ struct send_dice_request {
   optional<Integer> direct_messages_topic_id;
   /* Emoji on which the dice throw animation is based. Currently, must be one of “”, “”, “”, “”, “”, or “”.
    * Dice can have values 1-6 for “”, “” and “”, values 1-5 for “” and “”, and values 1-64 for “”. Defaults to
-   * “” */
+   * “”. */
   optional<String> emoji;
   /* Sends the message silently. Users will receive a notification with no sound. */
   optional<bool> disable_notification;
   /* Protects the contents of the sent message from forwarding */
   optional<bool> protect_content;
   /* Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram
-   * Stars per message. The relevant Stars will be withdrawn from the bot's balance */
+   * Stars per message. The relevant Stars will be withdrawn from the bot's balance. */
   optional<bool> allow_paid_broadcast;
   /* Unique identifier of the message effect to be added to the message; for private chats only */
   optional<String> message_effect_id;
@@ -39,7 +39,7 @@ struct send_dice_request {
   /* Description of the message to reply to */
   box<ReplyParameters> reply_parameters;
   /* Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard,
-   * instructions to remove a reply keyboard or to force a reply from the user */
+   * instructions to remove a reply keyboard or to force a reply from the user. */
   optional<reply_markup_t> reply_markup;
 
   using return_type = Message;

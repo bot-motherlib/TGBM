@@ -1,6 +1,7 @@
 #pragma once
 
 #include <tgbm/api/types/all_fwd.hpp>
+#include <tgbm/api/types/InputPaidMediaLivePhoto.hpp>
 #include <tgbm/api/types/InputPaidMediaPhoto.hpp>
 #include <tgbm/api/types/InputPaidMediaVideo.hpp>
 
@@ -8,9 +9,10 @@ namespace tgbm::api {
 
 /*This object describes the paid media to be sent. Currently, it can be one of*/
 struct InputPaidMedia {
-  oneof<InputPaidMediaPhoto, InputPaidMediaVideo> data;
+  oneof<InputPaidMediaLivePhoto, InputPaidMediaPhoto, InputPaidMediaVideo> data;
   static constexpr std::string_view discriminator = "type";
   enum struct type_e {
+    k_livephoto,
     k_photo,
     k_video,
     nothing,
@@ -19,6 +21,12 @@ struct InputPaidMedia {
   static constexpr size_t variant_size = size_t(type_e::nothing);
   type_e type() const {
     return static_cast<type_e>(data.index());
+  }
+  InputPaidMediaLivePhoto* get_livephoto() noexcept {
+    return data.get_if<InputPaidMediaLivePhoto>();
+  }
+  const InputPaidMediaLivePhoto* get_livephoto() const noexcept {
+    return data.get_if<InputPaidMediaLivePhoto>();
   }
   InputPaidMediaPhoto* get_photo() noexcept {
     return data.get_if<InputPaidMediaPhoto>();
@@ -34,12 +42,15 @@ struct InputPaidMedia {
   }
   static constexpr type_e discriminate(std::string_view val) {
     return string_switch<type_e>(val)
+        .case_("live_photo", type_e::k_livephoto)
         .case_("photo", type_e::k_photo)
         .case_("video", type_e::k_video)
         .or_default(type_e::nothing);
   }
 
   static constexpr decltype(auto) discriminate(std::string_view val, auto&& visitor) {
+    if (val == "live_photo")
+      return visitor.template operator()<InputPaidMediaLivePhoto>();
     if (val == "photo")
       return visitor.template operator()<InputPaidMediaPhoto>();
     if (val == "video")
@@ -50,6 +61,8 @@ struct InputPaidMedia {
   std::string_view discriminator_now() const noexcept {
     using enum InputPaidMedia::type_e;
     switch (type()) {
+      case k_livephoto:
+        return "live_photo";
       case k_photo:
         return "photo";
       case k_video:

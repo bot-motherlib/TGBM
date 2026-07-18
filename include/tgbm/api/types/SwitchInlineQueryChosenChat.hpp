@@ -8,7 +8,7 @@ namespace tgbm::api {
  * an optional default inline query.*/
 struct SwitchInlineQueryChosenChat {
   /* Optional. The default inline query to be inserted in the input field. If left empty, only the bot's
-   * username will be inserted */
+   * username will be inserted. */
   optional<String> query;
   /* Optional. True, if private chats with users can be chosen */
   optional<bool> allow_user_chats;

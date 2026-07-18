@@ -24,9 +24,16 @@ struct Poll {
   bool allows_multiple_answers;
   /* True, if the poll allows to change the chosen answer options */
   bool allows_revoting;
+  /* True if voting is limited to users who have been members of the chat where the poll was originally sent
+   * for more than 24 hours */
+  bool members_only;
   /* Optional. Special entities that appear in the question. Currently, only custom emoji entities are allowed
    * in poll questions */
   optional<arrayof<MessageEntity>> question_entities;
+  /* Optional. A list of two-letter ISO 3166-1 alpha-2 country codes indicating the countries from which users
+   * can vote in the poll. The country code “FT” is used for users with anonymous numbers. If omitted, then
+   * users from any country can participate in the poll. */
+  optional<arrayof<String>> country_codes;
   /* Optional. Array of 0-based identifiers of the correct answer options. Available only for polls in quiz
    * mode which are closed or were sent (not forwarded) by the bot or to the private chat with the bot. */
   optional<arrayof<Integer>> correct_option_ids;
@@ -35,6 +42,8 @@ struct Poll {
   optional<String> explanation;
   /* Optional. Special entities like usernames, URLs, bot commands, etc. that appear in the explanation */
   optional<arrayof<MessageEntity>> explanation_entities;
+  /* Optional. Media added to the quiz explanation */
+  box<PollMedia> explanation_media;
   /* Optional. Amount of time in seconds the poll will be active after creation */
   optional<Integer> open_period;
   /* Optional. Point in time (Unix timestamp) when the poll will be automatically closed */
@@ -43,6 +52,8 @@ struct Poll {
   optional<String> description;
   /* Optional. Special entities like usernames, URLs, bot commands, etc. that appear in the description */
   optional<arrayof<MessageEntity>> description_entities;
+  /* Optional. Media added to the poll description; for polls inside the Message object only */
+  box<PollMedia> media;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name)
@@ -55,6 +66,7 @@ struct Poll {
         .case_("type", true)
         .case_("allows_multiple_answers", true)
         .case_("allows_revoting", true)
+        .case_("members_only", true)
         .or_default(false);
   }
 };

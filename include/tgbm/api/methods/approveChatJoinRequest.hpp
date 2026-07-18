@@ -5,8 +5,7 @@
 namespace tgbm::api {
 
 struct approve_chat_join_request_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername)
-   */
+  /* Unique identifier for the target chat or username of the target channel in the format @username */
   int_or_str chat_id;
   /* Unique identifier of the target user */
   Integer user_id;

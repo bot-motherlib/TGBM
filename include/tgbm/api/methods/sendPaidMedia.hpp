@@ -10,13 +10,13 @@
 namespace tgbm::api {
 
 struct send_paid_media_request {
-  /* Unique identifier for the target chat or username of the target channel (in the format @channelusername).
-   * If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's
-   * balance. Otherwise, they will be credited to the bot's balance. */
+  /* Unique identifier for the target chat or username of the target bot, supergroup or channel in the format
+   * @username. If the chat is a channel, all Telegram Star proceeds from this media will be credited to the
+   * chat's balance. Otherwise, they will be credited to the bot's balance. */
   int_or_str chat_id;
   /* The number of Telegram Stars that must be paid to buy access to the media; 1-25000 */
   Integer star_count;
-  /* A JSON-serialized array describing the media to be sent; up to 10 items */
+  /* A JSON-serialized Array describing the media to be sent; up to 10 items */
   arrayof<InputPaidMedia> media;
   /* Unique identifier of the business connection on behalf of which the message will be sent */
   optional<String> business_connection_id;
@@ -36,14 +36,14 @@ struct send_paid_media_request {
   /* A JSON-serialized list of special entities that appear in the caption, which can be specified instead of
    * parse_mode */
   optional<arrayof<MessageEntity>> caption_entities;
-  /* Pass True, if the caption must be shown above the message media */
+  /* Pass True if the caption must be shown above the message media */
   optional<bool> show_caption_above_media;
   /* Sends the message silently. Users will receive a notification with no sound. */
   optional<bool> disable_notification;
   /* Protects the contents of the sent message from forwarding and saving */
   optional<bool> protect_content;
   /* Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram
-   * Stars per message. The relevant Stars will be withdrawn from the bot's balance */
+   * Stars per message. The relevant Stars will be withdrawn from the bot's balance. */
   optional<bool> allow_paid_broadcast;
   /* A JSON-serialized object containing the parameters of the suggested post to send; for direct messages
    * chats only. If the message is sent as a reply to another suggested post, then that suggested post is
@@ -52,7 +52,7 @@ struct send_paid_media_request {
   /* Description of the message to reply to */
   box<ReplyParameters> reply_parameters;
   /* Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard,
-   * instructions to remove a reply keyboard or to force a reply from the user */
+   * instructions to remove a reply keyboard or to force a reply from the user. */
   optional<reply_markup_t> reply_markup;
 
   using return_type = Message;

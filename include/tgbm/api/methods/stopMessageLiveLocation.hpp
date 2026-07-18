@@ -10,13 +10,13 @@ struct stop_message_live_location_request {
   /* Unique identifier of the business connection on behalf of which the message to be edited was sent */
   optional<String> business_connection_id;
   /* Required if inline_message_id is not specified. Unique identifier for the target chat or username of the
-   * target channel (in the format @channelusername) */
+   * target bot, supergroup or channel in the format @username. */
   optional<int_or_str> chat_id;
-  /* Required if inline_message_id is not specified. Identifier of the message with live location to stop */
+  /* Required if inline_message_id is not specified. Identifier of the message with live location to stop. */
   optional<Integer> message_id;
-  /* Required if chat_id and message_id are not specified. Identifier of the inline message */
+  /* Required if chat_id and message_id are not specified. Identifier of the inline message. */
   optional<String> inline_message_id;
-  /* A JSON-serialized object for a new inline keyboard. */
+  /* A JSON-serialized object for a new inline keyboard */
   box<InlineKeyboardMarkup> reply_markup;
 
   using return_type = oneof<bool, Message>;
