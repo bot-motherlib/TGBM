@@ -26,20 +26,20 @@ struct Chat {
   bool operator==(const Chat& other) const = default;
 };
 
-struct maybe {
+struct MaybeType {
   tgbm::box<std::string> type;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return false;
   }
 
-  bool operator==(const maybe& other) const = default;
+  bool operator==(const MaybeType& other) const = default;
 };
 
 struct Channel {
   tgbm::api::Integer id;
   std::string name;
-  tgbm::box<maybe> maybe;
+  tgbm::box<MaybeType> maybe;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return name == "id" || name == "name";

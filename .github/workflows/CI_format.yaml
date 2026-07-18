@@ -9,7 +9,6 @@ permissions:
   push:
     branches:
       - master
-
 env:
   UBSAN_OPTIONS: print_stacktrace=1
 
