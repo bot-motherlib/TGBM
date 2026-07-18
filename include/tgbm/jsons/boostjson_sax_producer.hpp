@@ -9,6 +9,8 @@
 
 #include <zal/zal.hpp>
 
+#include <deque>
+
 namespace tgbm {
 using io_error_code = boost::system::error_code;
 }
@@ -28,15 +30,17 @@ struct boostjson_sax_producer {
   dd::stack_resource resource;
   sax_consumer_t gen;
   sax_token event{};
-  // must be outside unite generator for string view
-  std::string partbuf;
+  // must be outside unite_generate for string view
+  // deque guarantees that string_view to parts are always valid (while parsing)
+  // in normal case there are not much parts
+  std::deque<std::string> parts;
   bool ended = false;
   bool part = false;
 
   sax_consumer_t unite_generate(sax_consumer_t old_gen, dd::with_stack_resource r) {
     event.expect(event.part);
     part = true;
-    partbuf.clear();
+    auto& partbuf = parts.emplace_back();
     on_scope_failure(destroy_gen) {
       // guarantee order of deallocactions for resources, firstly this generator, then old_gen
       gen = std::move(old_gen);

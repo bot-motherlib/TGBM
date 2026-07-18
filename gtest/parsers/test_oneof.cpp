@@ -26,12 +26,23 @@ struct Chat {
   bool operator==(const Chat& other) const = default;
 };
 
+struct maybe {
+  tgbm::box<std::string> type;
+
+  consteval static bool is_mandatory_field(std::string_view name) {
+    return false;
+  }
+
+  bool operator==(const maybe& other) const = default;
+};
+
 struct Channel {
   tgbm::api::Integer id;
   std::string name;
+  tgbm::box<maybe> maybe;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return true;
+    return name == "id" || name == "name";
   }
 
   bool operator==(const Channel& other) const = default;
@@ -75,7 +86,7 @@ struct MessageOriginChannel {
   tgbm::box<Channel> sender_channel;
 
   consteval static bool is_mandatory_field(std::string_view name) {
-    return true;
+    return name == "date" || name == "sender_channel";
   }
 
   bool operator==(const MessageOriginChannel& other) const = default;
@@ -427,11 +438,11 @@ TEST(fails3, injson) {
 [
    {
       "date":1630454400,
-      "type":"channel",
       "sender_channel":{
          "id":13579,
          "name":"News Channel"
       },
+      "type":"channel",
    }
 ])";
   std::vector<MessageOrigin> res;
@@ -442,6 +453,41 @@ TEST(fails3, injson) {
   } catch (tgbm::json::parse_error& e) {
     EXPECT_TRUE(std::string(e.what()).find(json) != std::string::npos);
     EXPECT_TRUE(std::string(e.what()).find("syntax error") != std::string::npos);
+  }
+}
+
+TEST(discriminated_oneof, oneof) {
+  // проверяет что дискриминатор "type" лежащий ближе по токенам чем настоящий дискриминатор игнорируется
+  std::string_view json = R"(
+   {
+      "date":1630454400,
+      "sender_channel":{
+         "id":13579,
+         "name":"News Channel",
+         "maybe": {
+          "type": "invalid_discriminator"
+         }
+      },
+      "type":"channel"
+   })";
+  {
+    MessageOrigin res;
+    tgbm::json::stream_parser parser(res);
+    parser.feed(json, /*end=*/true);
+    auto* m = res.data.get_if<MessageOriginChannel>();
+    EXPECT_TRUE(m && m->sender_channel->maybe && m->sender_channel->maybe->type == "invalid_discriminator");
+  }
+  // parts
+  {
+    MessageOrigin res;
+    tgbm::json::stream_parser parser(res);
+    std::string_view j = json;
+    while (!j.empty()) {
+      parser.feed(j.substr(0, 1), /*end=*/j.size() == 1);
+      j = j.substr(1);
+    }
+    auto* m = res.data.get_if<MessageOriginChannel>();
+    EXPECT_TRUE(m && m->sender_channel->maybe && m->sender_channel->maybe->type == "invalid_discriminator");
   }
 }
 

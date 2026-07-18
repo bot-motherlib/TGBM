@@ -25,7 +25,7 @@ struct sax_parser<T> {
 
     assert(tok.got != key || tok.str_m != T::discriminator);
 
-    std::vector<sax_token_value> buf_toks;
+    std::vector<sax_token> buf_toks;
     buf_toks.reserve(10);
     {
       sax_token token;
@@ -33,19 +33,33 @@ struct sax_parser<T> {
       buf_toks.emplace_back(token);
     }
 
+    size_t depth = 1;
     do {
+      switch (tok.got) {
+        case sax_token::array_begin:
+        case sax_token::object_begin:
+          ++depth;
+          break;
+        case sax_token::array_end:
+        case sax_token::object_end:
+          --depth;
+          [[fallthrough]];
+        default:
+          break;
+      }
       buf_toks.emplace_back(tok);
       co_yield {};
-    } while (tok.got != key || tok.str_m != T::discriminator);
+    } while (!(depth == 1 && tok.got == key && tok.str_m == T::discriminator));
 
     co_yield {};
     tok.expect(string);
 
-    auto gen_suboneof = get_generator_suboneof(tok.str_m, out, tok, r);
+    sax_consumer_t gen_suboneof = get_generator_suboneof(tok.str_m, out, tok, r);
     auto it = gen_suboneof.cur_iterator();
     for (auto& buf_tok : buf_toks) {
-      assert(it != gen_suboneof.end());
-      tok = buf_tok.to_view();
+      if (it == gen_suboneof.end())
+        throw parse_error("oneof parsing reached end while tokens are not");
+      tok = buf_tok;
       ++it;
     }
 
