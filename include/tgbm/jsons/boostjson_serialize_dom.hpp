@@ -10,6 +10,8 @@
 #include <tgbm/jsons/errors.hpp>
 #include <tgbm/utils/api_utils.hpp>
 
+#include "tgbm/utils/meta.hpp"
+
 namespace boost::json {
 
 template <typename T>
@@ -31,6 +33,12 @@ void tag_invoke(value_from_tag, value& jv, const tgbm::box<T>& val) {
   if (val) {
     jv = boost::json::value_from(*val);
   }
+}
+
+template <typename... Types>
+void tag_invoke(value_from_tag, value& j, const tgbm::box_union<Types...>& v) {
+  v.visit(::tgbm::matcher{[&](tgbm::nothing_t) { j = nullptr; },
+                          [&]<typename T>(const T& x) { j = boost::json::value_from(x); }});
 }
 
 inline void tag_invoke(value_from_tag, value& jv, tgbm::api::True val) {

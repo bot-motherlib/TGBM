@@ -1,5 +1,7 @@
 #include <parsers/fixtures.hpp>
 
+#include <tgbm/api/types/all.hpp>
+
 namespace test_oneof {
 
 struct User {
@@ -488,6 +490,41 @@ TEST(discriminated_oneof, oneof) {
     }
     auto* m = res.data.get_if<MessageOriginChannel>();
     EXPECT_TRUE(m && m->sender_channel->maybe && m->sender_channel->maybe->type == "invalid_discriminator");
+  }
+}
+
+TEST(input_media, oneof) {
+  // all ways to parse/serialize it
+  std::string j = R"({
+  "media": "BAADBAADXwIAAssHAAHqZ-ABCDEFGHIJKLMN",
+  "caption": "Watch this video!",
+  "width": 1920,
+  "height": 1080,
+  "duration": 120,
+  "supports_streaming": true
+})";
+
+  auto test_value = [] {
+    tgbm::api::input_media_t m;
+    auto& v = m.emplace<tgbm::api::InputMediaVideo>();
+    v.media = "BAADBAADXwIAAssHAAHqZ-ABCDEFGHIJKLMN";
+    v.caption = "Watch this video!";
+    v.width = 1920;
+    v.height = 1080;
+    v.duration = 120;
+    v.supports_streaming = true;
+    return m;
+  };
+  {
+    boost::json::value out;
+    tgbm::to_json(test_value(), out);
+    EXPECT_EQ(boost::json::parse(j), out);
+  }
+  {
+    tgbm::bytes_t bytes;
+    tgbm::to_json(test_value(), bytes);
+    std::string_view b((const char*)bytes.data(), bytes.size());
+    EXPECT_EQ(boost::json::parse(j), boost::json::parse(b));
   }
 }
 
