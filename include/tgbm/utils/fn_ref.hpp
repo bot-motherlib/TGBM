@@ -1,13 +1,13 @@
 #pragma once
 
-#include <http2/utils/fn_ref.hpp>
+#include <hidi/utils/fn_ref.hpp>
 
 namespace tgbm {
 
-using http2::fn_cptr;
-using http2::fn_cref;
-using http2::fn_ptr;
-using http2::fn_ref;
-using http2::move_only_fn;
+using hidi::fn_cptr;
+using hidi::fn_cref;
+using hidi::fn_ptr;
+using hidi::fn_ref;
+using hidi::move_only_fn;
 
 }  // namespace tgbm

@@ -1,16 +1,18 @@
 #include "tgbm/net/tcp_starters.hpp"
 
+#include "tgbm/utils/deadline.hpp"
+
 #include <array>
 #include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <vector>
 
-#include <http2/asio/awaiters.hpp>
+#include <hidi/asio/awaiters.hpp>
 
 namespace ip = boost::asio::ip;
-using http2::byte_t;
-using http2::net;
+using hidi::byte_t;
+using hidi::net;
 
 namespace tgbm {
 
@@ -78,8 +80,8 @@ static std::vector<byte_t> make_connection_request(const std::string& target_hos
 }
 
 dd::task<void> start_socks5(boost::asio::ip::tcp::socket& socket, std::string target_host,
-                            uint16_t target_port, http2::deadline_t deadline) {
-  http2::io_error_code ec;
+                            uint16_t target_port, deadline_t deadline) {
+  hidi::io_error_code ec;
   bool timed_out = false;
   boost::asio::steady_timer timer(socket.get_executor());
   timer.expires_at(deadline.tp);
@@ -150,7 +152,7 @@ dd::task<void> start_socks5(boost::asio::ip::tcp::socket& socket, std::string ta
 }
 
 [[nodiscard]] starter_t socks5_starter(std::string target_host, uint16_t target_port) {
-  return [=](boost::asio::ip::tcp::socket& socket, http2::deadline_t deadline) {
+  return [=](boost::asio::ip::tcp::socket& socket, deadline_t deadline) {
     return start_socks5(socket, target_host, target_port, deadline);
   };
 }

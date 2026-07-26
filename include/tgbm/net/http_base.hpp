@@ -1,31 +1,28 @@
 #pragma once
 
-#include <http2/http_body.hpp>
-#include "http2/errors.hpp"
-#include "http2/http2_client_options.hpp"
-#include "http2/http_base.hpp"
-#include "http2/utils/deadline.hpp"
+#include <hidi/http_body.hpp>
+#include <hidi/errors.hpp>
+#include <hidi/h2client_options.hpp>
+#include <hidi/http_base.hpp>
+#include <hidi/utils/deadline.hpp>
 
 namespace tgbm {
 
-using http2::byte_t;
-using http2::deadline_after;
-using http2::deadline_t;
-using http2::duration_t;
-using http2::e2str;
-using http2::enum_from_string;
-using http2::http2_client_options;
-using http2::http_header_t;
-using http2::http_method_e;
-using http2::http_request;
-using http2::http_response;
-using http2::io_error_code;
-using http2::network_exception;
-using http2::on_data_part_fn_ptr;
-using http2::on_header_fn_ptr;
-using http2::reqerr_e;
-using http2::scheme_e;
-using http2::timeout_exception;
+using hidi::byte_t;
+using hidi::e2str;
+using hidi::efromstr;
+using http2_client_options = hidi::h2client_options;
+using hidi::http_header_t;
+using hidi::http_method_e;
+using hidi::http_request;
+using hidi::http_response;
+using hidi::io_error_code;
+using hidi::network_exception;
+using hidi::on_data_part_fn_ptr;
+using hidi::on_header_fn_ptr;
+using hidi::reqerr_e;
+using hidi::scheme_e;
+using hidi::timeout_exception;
 using on_data_part_fn_ref = decltype(*on_data_part_fn_ptr{});
 
 // does nothing for good status, rethrows error (timeout, http_exception etc) for bad status

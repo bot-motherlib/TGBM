@@ -20,7 +20,7 @@ struct http_client;
 // postcondition: client != nullptr
 std::unique_ptr<http_client> default_http_client(std::string_view host,
                                                  std::filesystem::path additional_ssl_cert = {},
-                                                 http2::log_context logctx = {});
+                                                 hidi::log_context logctx = {});
 
 struct bot_commands {
   using on_command_handler_t = move_only_fn<void(api::Message&& text) const>;
@@ -46,7 +46,7 @@ struct bot_options {
   uint16_t dstport = 443;
   std::filesystem::path additional_ssl_cert = {};
   // allows override where/what/how to log
-  http2::log_context logctx = {};
+  hidi::log_context logctx = {};
   // invoked after TCP handshake, before TLS handshake
   starter_t starter = {};
 };
@@ -67,7 +67,7 @@ struct bot {
 
   // uses default http client
   explicit bot(std::string_view bottoken, std::string_view host = "api.telegram.org",
-               std::filesystem::path additional_ssl_cert = {}, http2::log_context logctx = {})
+               std::filesystem::path additional_ssl_cert = {}, hidi::log_context logctx = {})
       : client(default_http_client(host, std::move(additional_ssl_cert), std::move(logctx))),
         api(*client, bottoken),
         commands(),

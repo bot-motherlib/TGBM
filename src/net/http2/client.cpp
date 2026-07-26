@@ -1,6 +1,6 @@
 #include "tgbm/net/http2/client.hpp"
 
-#include <http2/asio/factory.hpp>
+#include <hidi/asio/io_impl.hpp>
 
 namespace tgbm {
 
@@ -13,13 +13,14 @@ http2_client::http2_client(std::string_view host, http2_client_options opts, asi
       }) {
 }
 
+static hidi::any_io_context make_client_ssl_context(hidi::tcp_connection_options tcp_options, starter_t s) {
+  return aa::inplaced{
+      [&] { return hidi::asio_tls_io(hidi::make_ssl_context_for_client({}), tcp_options, std::move(s)); }};
+}
+
 http2_client::http2_client(http2_client_init init)
-    : impl(http2::endpoint(init.dst, init.dstport), std::move(init.options),
-           [s = std::move(init.starter),
-            tcpopts = std::move(init.tcp_options)](asio::io_context& ctx) mutable {
-             return http2::any_transport_factory(
-                 new http2::asio_tls_factory(ctx, std::move(tcpopts), std::move(s)));
-           }),
+    : impl(hidi::endpoint(init.dst, init.dstport), std::move(init.options),
+           make_client_ssl_context(init.tcp_options, std::move(init.starter))),
       host(init.host) {
 }
 

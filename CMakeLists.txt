@@ -10,14 +10,6 @@ option(TGBM_USE_CPM "Set to ON to enable use CPM for get dependencies" ON)
 set (TGBM_CLANG_FORMAT "clang-format" CACHE STRING "Used only by api generator")
 set (TGBM_PYTHON       "python"       CACHE STRING "Used only by api generator")
 
-# if setted, all SSL connections print their keys to provided file.
-# this allows debug SSL connection via Wireshark. Disabled by default.
-# Do not use in production ofc
-set(TGBM_SSL_KEYS_FILE "" CACHE FILEPATH "")
-
-if (TGBM_SSL_KEYS_FILE)
-  message (STATUS "[TGBM] TGBM_SSL_KEYS_FILE: ${TGBM_SSL_KEYS_FILE}")
-endif()
 message (STATUS "[TGBM] TGBM_ENABLE_BENCHS: ${TGBM_ENABLE_BENCHS}")
 message (STATUS "[TGBM] TGBM_ENABLE_GEN: ${TGBM_ENABLE_GEN}")
 message (STATUS "[TGBM] TGBM_ENABLE_TESTING: ${TGBM_ENABLE_TESTING}")
@@ -66,7 +58,7 @@ target_link_libraries(tgbmlib PUBLIC
     anyanylib
     kelcorolib
     zallib
-    http2lib
+    hidilib
     Boost::system
     Boost::asio
     Boost::pfr
