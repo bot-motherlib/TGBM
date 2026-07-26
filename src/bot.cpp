@@ -20,7 +20,7 @@ static std::unique_ptr<http_client> make_http2_client(bot_options options) {
 
 std::unique_ptr<http_client> default_http_client(std::string_view host,
                                                  std::filesystem::path additional_ssl_cert,
-                                                 http2::log_context logctx) {
+                                                 hidi::log_context logctx) {
   bot_options opts;
   opts.host = host;
   opts.dst = host;
@@ -116,7 +116,7 @@ dd::task<int> download_file(api::telegram api, api::String file_path, on_data_pa
 
 dd::task<int> download_file_by_id(
     api::telegram api, api::String fileid,
-    fn_ref<void(std::span<const http2::byte_t>, bool is_last_chunk)> on_data_part, deadline_t deadline) {
+    fn_ref<void(std::span<const hidi::byte_t>, bool is_last_chunk)> on_data_part, deadline_t deadline) {
   api::File info = co_await api.getFile({.file_id = std::move(fileid)}, deadline);
   if (!info.file_path)
     co_return 404;

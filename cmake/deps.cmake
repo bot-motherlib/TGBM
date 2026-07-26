@@ -1,6 +1,6 @@
 include(cmake/get_cpm.cmake)
 
-set(BOOST_INCLUDE_LIBRARIES system asio pfr json)
+set(BOOST_INCLUDE_LIBRARIES system asio pfr json stacktrace)
 CPMAddPackage(
   NAME BOOST
   VERSION 1.87.0
@@ -20,7 +20,7 @@ CPMAddPackage(
 CPMAddPackage(
   NAME ANYANY
   GIT_REPOSITORY https://github.com/kelbon/AnyAny
-  GIT_TAG v1.1.0
+  GIT_TAG v1.2.1
 )
 
 CPMAddPackage(
@@ -65,11 +65,10 @@ if (NOT DEFINED TELEGRAM_BOT_API_HTML_SOURCE_DIR)
 endif()
 
 CPMAddPackage(
-  NAME HTTP2
-  GIT_REPOSITORY https://github.com/kelbon/http2
-  GIT_TAG v0.9.7
-  OPTIONS "KELHTTP2_USE_CPM ON"
-          "KELHTTP2_DEBUG_SSL_KEYS_FILE ${TGBM_SSL_KEYS_FILE}"
+  NAME HIDI
+  GIT_REPOSITORY https://github.com/kelbon/hidi
+  GIT_TAG v0.11.0
+  OPTIONS "HIDI_USE_CPM ON"
 )
 
 set(TGBM_APIFILE ${TELEGRAM_BOT_API_HTML_SOURCE_DIR}/telegram_bot_api.html)

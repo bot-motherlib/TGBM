@@ -7,7 +7,7 @@ namespace tgbm {
 
 [[noreturn]] static void throw_bad_status(int status) {
   assert(status < 0);
-  using enum http2::reqerr_e::values_e;
+  using enum hidi::reqerr_e::values_e;
   switch (reqerr_e::values_e(status)) {
     case DONE:
       unreachable();
@@ -16,7 +16,7 @@ namespace tgbm {
     case NETWORK_ERR:
       throw network_exception{""};
     case PROTOCOL_ERR:
-      throw http2::protocol_error{};
+      throw hidi::protocol_error{};
     case CANCELLED:
       throw std::runtime_error("HTTP client: request was canceled");
     case SERVER_CANCELLED_REQUEST:

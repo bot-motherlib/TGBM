@@ -1,14 +1,17 @@
 #pragma once
 
-#include <http2/http2_client.hpp>
-#include <http2/http2_client_options.hpp>
+#include <hidi/h2client.hpp>
+#include <hidi/h2client_options.hpp>
+#include <hidi/asio/awaiters.hpp>
+#include <hidi/asio/io_impl.hpp>
 
-#include "http2/asio/awaiters.hpp"
 #include "tgbm/net/http_base.hpp"
 #include "tgbm/net/http_client.hpp"
 #include "tgbm/net/tcp_starters.hpp"
 
 namespace tgbm {
+
+namespace asio = boost::asio;
 
 struct http2_client_init {
   // each request :authority
@@ -17,13 +20,13 @@ struct http2_client_init {
   std::string dst = "api.telegram.org";
   uint16_t dstport = 443;
   http2_client_options options = {};
-  http2::tcp_connection_options tcp_options = {};
+  hidi::tcp_connection_options tcp_options = {};
   starter_t starter = {};
 };
 
 struct http2_client : http_client {
  protected:
-  http2::http2_client impl;
+  hidi::h2client impl;
   std::string host;
 
  public:
@@ -60,8 +63,8 @@ struct http2_client : http_client {
   }
 
   dd::task<void> sleep(duration_t d, io_error_code& ec) override {
-    asio::steady_timer timer(get_ioctx());
-    co_await http2::net.sleep(timer, d, ec);
+    hidi::any_timer timer = get_ioctx().create_timer();
+    co_await hidi::net.sleep(timer, d, ec);
   }
 
   void run() override {
@@ -70,17 +73,17 @@ struct http2_client : http_client {
     impl.ioctx().run();
   }
 
-  bool run_one(duration_t timeout) override {
+  bool poll_one() override {
     if (impl.ioctx().stopped())
       impl.ioctx().restart();
-    return impl.ioctx().run_one_for(timeout) != 0;
+    return impl.ioctx().poll_one();
   }
 
   void stop() override {
     impl.cancel_all();
   }
 
-  asio::io_context& get_ioctx() noexcept {
+  hidi::any_io_context& get_ioctx() noexcept {
     return impl.ioctx();
   }
 };

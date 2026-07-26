@@ -31,7 +31,7 @@ template <typename T>
 rj_refbuffer_t(T&) -> rj_refbuffer_t<T>;
 
 struct rj_urlencoded_refbuffer_t {
-  http2::http_body_bytes& buf;
+  hidi::http_body_bytes& buf;
 
   using Ch = char;
 
@@ -43,7 +43,7 @@ struct rj_urlencoded_refbuffer_t {
 };
 // TODO PutReserve etc
 struct rj_byvalue_buffer_t {
-  http2::http_body_bytes buf;
+  hidi::http_body_bytes buf;
 
   using Ch = char;
 
@@ -81,7 +81,7 @@ struct application_json_body {
 
 struct application_x_www_form_urlencoded {
  private:
-  http2::http_body_bytes body;
+  hidi::http_body_bytes body;
 
  public:
   application_x_www_form_urlencoded() = default;
@@ -118,7 +118,7 @@ struct application_x_www_form_urlencoded {
 struct application_multipart_form_data {
  private:
   std::string boundary;
-  http2::http_body_bytes body;
+  hidi::http_body_bytes body;
 
  public:
   explicit application_multipart_form_data(size_t reserve = 0) {
