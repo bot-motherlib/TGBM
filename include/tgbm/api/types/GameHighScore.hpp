@@ -20,6 +20,9 @@ struct GameHighScore {
         .case_("score", true)
         .or_default(false);
   }
+
+  bool operator==(const GameHighScore&) const;
+  std::strong_ordering operator<=>(const GameHighScore&) const;
 };
 
 }  // namespace tgbm::api

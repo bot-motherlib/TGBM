@@ -16,6 +16,9 @@ struct StoryAreaTypeSuggestedReaction {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("reaction_type", true).or_default(false);
   }
+
+  bool operator==(const StoryAreaTypeSuggestedReaction&) const;
+  std::strong_ordering operator<=>(const StoryAreaTypeSuggestedReaction&) const;
 };
 
 }  // namespace tgbm::api

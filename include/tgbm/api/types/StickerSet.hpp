@@ -25,6 +25,9 @@ struct StickerSet {
         .case_("stickers", true)
         .or_default(false);
   }
+
+  bool operator==(const StickerSet&) const;
+  std::strong_ordering operator<=>(const StickerSet&) const;
 };
 
 }  // namespace tgbm::api

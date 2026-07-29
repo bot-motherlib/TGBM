@@ -14,6 +14,9 @@ struct RevenueWithdrawalStateSucceeded {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("date", true).case_("url", true).or_default(false);
   }
+
+  bool operator==(const RevenueWithdrawalStateSucceeded&) const;
+  std::strong_ordering operator<=>(const RevenueWithdrawalStateSucceeded&) const;
 };
 
 }  // namespace tgbm::api

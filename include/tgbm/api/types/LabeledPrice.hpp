@@ -16,6 +16,9 @@ struct LabeledPrice {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("label", true).case_("amount", true).or_default(false);
   }
+
+  bool operator==(const LabeledPrice&) const;
+  std::strong_ordering operator<=>(const LabeledPrice&) const;
 };
 
 }  // namespace tgbm::api

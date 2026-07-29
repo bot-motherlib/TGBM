@@ -17,6 +17,9 @@ struct ChecklistTasksDone {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
+
+  bool operator==(const ChecklistTasksDone&) const;
+  std::strong_ordering operator<=>(const ChecklistTasksDone&) const;
 };
 
 }  // namespace tgbm::api

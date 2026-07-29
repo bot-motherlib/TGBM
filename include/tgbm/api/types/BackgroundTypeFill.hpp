@@ -14,6 +14,9 @@ struct BackgroundTypeFill {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("fill", true).case_("dark_theme_dimming", true).or_default(false);
   }
+
+  bool operator==(const BackgroundTypeFill&) const;
+  std::strong_ordering operator<=>(const BackgroundTypeFill&) const;
 };
 
 }  // namespace tgbm::api

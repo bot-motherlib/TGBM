@@ -22,6 +22,9 @@ struct MessageOriginChannel {
         .case_("message_id", true)
         .or_default(false);
   }
+
+  bool operator==(const MessageOriginChannel&) const;
+  std::strong_ordering operator<=>(const MessageOriginChannel&) const;
 };
 
 }  // namespace tgbm::api

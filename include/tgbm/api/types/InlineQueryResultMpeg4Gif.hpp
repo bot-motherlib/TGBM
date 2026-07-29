@@ -45,6 +45,9 @@ struct InlineQueryResultMpeg4Gif {
         .case_("thumbnail_url", true)
         .or_default(false);
   }
+
+  bool operator==(const InlineQueryResultMpeg4Gif&) const;
+  std::strong_ordering operator<=>(const InlineQueryResultMpeg4Gif&) const;
 };
 
 }  // namespace tgbm::api

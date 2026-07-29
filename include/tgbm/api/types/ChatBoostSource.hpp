@@ -73,6 +73,8 @@ struct ChatBoostSource {
         unreachable();
     }
   }
+  bool operator==(const ChatBoostSource&) const;
+  std::strong_ordering operator<=>(const ChatBoostSource&) const;
 };
 
 }  // namespace tgbm::api

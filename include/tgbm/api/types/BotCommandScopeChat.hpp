@@ -14,6 +14,9 @@ struct BotCommandScopeChat {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("chat_id", true).or_default(false);
   }
+
+  bool operator==(const BotCommandScopeChat&) const;
+  std::strong_ordering operator<=>(const BotCommandScopeChat&) const;
 };
 
 }  // namespace tgbm::api

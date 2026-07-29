@@ -25,6 +25,9 @@ struct ChatShared {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("request_id", true).case_("chat_id", true).or_default(false);
   }
+
+  bool operator==(const ChatShared&) const;
+  std::strong_ordering operator<=>(const ChatShared&) const;
 };
 
 }  // namespace tgbm::api

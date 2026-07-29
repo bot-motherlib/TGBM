@@ -19,6 +19,9 @@ struct InlineQueryResultCachedSticker {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("id", true).case_("sticker_file_id", true).or_default(false);
   }
+
+  bool operator==(const InlineQueryResultCachedSticker&) const;
+  std::strong_ordering operator<=>(const InlineQueryResultCachedSticker&) const;
 };
 
 }  // namespace tgbm::api

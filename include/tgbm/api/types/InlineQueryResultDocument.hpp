@@ -43,6 +43,9 @@ struct InlineQueryResultDocument {
         .case_("mime_type", true)
         .or_default(false);
   }
+
+  bool operator==(const InlineQueryResultDocument&) const;
+  std::strong_ordering operator<=>(const InlineQueryResultDocument&) const;
 };
 
 }  // namespace tgbm::api

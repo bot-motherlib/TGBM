@@ -23,6 +23,9 @@ struct ChatBoostRemoved {
         .case_("source", true)
         .or_default(false);
   }
+
+  bool operator==(const ChatBoostRemoved&) const;
+  std::strong_ordering operator<=>(const ChatBoostRemoved&) const;
 };
 
 }  // namespace tgbm::api

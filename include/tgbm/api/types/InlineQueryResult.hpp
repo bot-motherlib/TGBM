@@ -301,6 +301,8 @@ struct InlineQueryResult {
         unreachable();
     }
   }
+  bool operator==(const InlineQueryResult&) const;
+  std::strong_ordering operator<=>(const InlineQueryResult&) const;
 };
 
 }  // namespace tgbm::api

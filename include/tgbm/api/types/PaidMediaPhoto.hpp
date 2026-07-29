@@ -12,6 +12,9 @@ struct PaidMediaPhoto {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("photo", true).or_default(false);
   }
+
+  bool operator==(const PaidMediaPhoto&) const;
+  std::strong_ordering operator<=>(const PaidMediaPhoto&) const;
 };
 
 }  // namespace tgbm::api

@@ -129,6 +129,8 @@ struct TransactionPartner {
         unreachable();
     }
   }
+  bool operator==(const TransactionPartner&) const;
+  std::strong_ordering operator<=>(const TransactionPartner&) const;
 };
 
 }  // namespace tgbm::api

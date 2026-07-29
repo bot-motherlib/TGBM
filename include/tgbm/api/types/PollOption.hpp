@@ -32,6 +32,9 @@ struct PollOption {
         .case_("voter_count", true)
         .or_default(false);
   }
+
+  bool operator==(const PollOption&) const;
+  std::strong_ordering operator<=>(const PollOption&) const;
 };
 
 }  // namespace tgbm::api

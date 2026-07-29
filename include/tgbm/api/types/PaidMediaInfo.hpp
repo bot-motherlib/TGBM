@@ -14,6 +14,9 @@ struct PaidMediaInfo {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("star_count", true).case_("paid_media", true).or_default(false);
   }
+
+  bool operator==(const PaidMediaInfo&) const;
+  std::strong_ordering operator<=>(const PaidMediaInfo&) const;
 };
 
 }  // namespace tgbm::api

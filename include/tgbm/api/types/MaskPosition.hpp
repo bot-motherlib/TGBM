@@ -26,6 +26,9 @@ struct MaskPosition {
         .case_("scale", true)
         .or_default(false);
   }
+
+  bool operator==(const MaskPosition&) const;
+  std::strong_ordering operator<=>(const MaskPosition&) const;
 };
 
 }  // namespace tgbm::api

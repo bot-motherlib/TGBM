@@ -10,6 +10,9 @@ struct BotCommandScopeAllGroupChats {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
+
+  bool operator==(const BotCommandScopeAllGroupChats&) const;
+  std::strong_ordering operator<=>(const BotCommandScopeAllGroupChats&) const;
 };
 
 }  // namespace tgbm::api

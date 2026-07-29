@@ -13,6 +13,9 @@ struct PaidMessagePriceChanged {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("paid_message_star_count", true).or_default(false);
   }
+
+  bool operator==(const PaidMessagePriceChanged&) const;
+  std::strong_ordering operator<=>(const PaidMessagePriceChanged&) const;
 };
 
 }  // namespace tgbm::api

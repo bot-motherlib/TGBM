@@ -42,6 +42,9 @@ struct InlineQueryResultPhoto {
         .case_("thumbnail_url", true)
         .or_default(false);
   }
+
+  bool operator==(const InlineQueryResultPhoto&) const;
+  std::strong_ordering operator<=>(const InlineQueryResultPhoto&) const;
 };
 
 }  // namespace tgbm::api

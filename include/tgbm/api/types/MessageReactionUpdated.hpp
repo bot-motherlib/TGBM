@@ -30,6 +30,9 @@ struct MessageReactionUpdated {
         .case_("new_reaction", true)
         .or_default(false);
   }
+
+  bool operator==(const MessageReactionUpdated&) const;
+  std::strong_ordering operator<=>(const MessageReactionUpdated&) const;
 };
 
 }  // namespace tgbm::api

@@ -15,6 +15,9 @@ struct UsersShared {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("request_id", true).case_("users", true).or_default(false);
   }
+
+  bool operator==(const UsersShared&) const;
+  std::strong_ordering operator<=>(const UsersShared&) const;
 };
 
 }  // namespace tgbm::api

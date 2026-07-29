@@ -30,6 +30,9 @@ struct InputVenueMessageContent {
         .case_("address", true)
         .or_default(false);
   }
+
+  bool operator==(const InputVenueMessageContent&) const;
+  std::strong_ordering operator<=>(const InputVenueMessageContent&) const;
 };
 
 }  // namespace tgbm::api

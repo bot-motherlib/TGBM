@@ -37,6 +37,9 @@ struct Animation {
         .case_("duration", true)
         .or_default(false);
   }
+
+  bool operator==(const Animation&) const;
+  std::strong_ordering operator<=>(const Animation&) const;
 };
 
 }  // namespace tgbm::api

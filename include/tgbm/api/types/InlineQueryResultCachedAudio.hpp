@@ -26,6 +26,9 @@ struct InlineQueryResultCachedAudio {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("id", true).case_("audio_file_id", true).or_default(false);
   }
+
+  bool operator==(const InlineQueryResultCachedAudio&) const;
+  std::strong_ordering operator<=>(const InlineQueryResultCachedAudio&) const;
 };
 
 }  // namespace tgbm::api

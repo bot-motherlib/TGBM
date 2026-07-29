@@ -29,6 +29,9 @@ struct Game {
         .case_("photo", true)
         .or_default(false);
   }
+
+  bool operator==(const Game&) const;
+  std::strong_ordering operator<=>(const Game&) const;
 };
 
 }  // namespace tgbm::api

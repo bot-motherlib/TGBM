@@ -17,6 +17,9 @@ struct SuggestedPostApproved {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("send_date", true).or_default(false);
   }
+
+  bool operator==(const SuggestedPostApproved&) const;
+  std::strong_ordering operator<=>(const SuggestedPostApproved&) const;
 };
 
 }  // namespace tgbm::api

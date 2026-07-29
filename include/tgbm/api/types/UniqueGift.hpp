@@ -45,6 +45,9 @@ struct UniqueGift {
         .case_("backdrop", true)
         .or_default(false);
   }
+
+  bool operator==(const UniqueGift&) const;
+  std::strong_ordering operator<=>(const UniqueGift&) const;
 };
 
 }  // namespace tgbm::api

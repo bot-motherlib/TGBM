@@ -16,6 +16,9 @@ struct StoryAreaTypeLocation {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("latitude", true).case_("longitude", true).or_default(false);
   }
+
+  bool operator==(const StoryAreaTypeLocation&) const;
+  std::strong_ordering operator<=>(const StoryAreaTypeLocation&) const;
 };
 
 }  // namespace tgbm::api

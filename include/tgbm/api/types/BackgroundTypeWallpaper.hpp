@@ -22,6 +22,9 @@ struct BackgroundTypeWallpaper {
         .case_("dark_theme_dimming", true)
         .or_default(false);
   }
+
+  bool operator==(const BackgroundTypeWallpaper&) const;
+  std::strong_ordering operator<=>(const BackgroundTypeWallpaper&) const;
 };
 
 }  // namespace tgbm::api

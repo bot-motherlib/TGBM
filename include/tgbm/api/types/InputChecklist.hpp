@@ -24,6 +24,9 @@ struct InputChecklist {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("title", true).case_("tasks", true).or_default(false);
   }
+
+  bool operator==(const InputChecklist&) const;
+  std::strong_ordering operator<=>(const InputChecklist&) const;
 };
 
 }  // namespace tgbm::api
