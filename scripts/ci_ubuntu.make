@@ -16,6 +16,11 @@ format:
 	$(make_r) add-eol P=scripts
 	$(make_r) add-eol-root
 
+.PHONY: check-generation
+check-generation:
+	cmake -B build_gen -DTGBM_ENABLE_GEN=ON -DTGBM_CLANG_FORMAT=clang-format-19 -DTGBM_PYTHON=python3 -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+	$(make_r) check-git-status
+
 .PHONY: add-eol
 add-eol:
 	@find $(P) -type f | while read file; do \
