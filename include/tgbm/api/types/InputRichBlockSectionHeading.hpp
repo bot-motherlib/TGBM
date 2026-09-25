@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents a block in a rich formatted message to be sent. Currently, it can be any of the
- * following types:*/
+/*A section heading, corresponding to the HTML tags <h1>, <h2>, <h3>, <h4>, <h5>, or <h6>.*/
 struct InputRichBlockSectionHeading {
   /* Text of the block */
   box<RichText> text;

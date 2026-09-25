@@ -4,8 +4,8 @@
 
 namespace tgbm::api {
 
-/*This object represents an error in the Telegram Passport element which was submitted that should be resolved
- * by the user. It should be one of:*/
+/*Represents an issue with the reverse side of a document. The error is considered resolved when the file with
+ * reverse side of the document changes.*/
 struct PassportElementErrorReverseSide {
   /* The section of the user's Telegram Passport which has the issue, one of “driver_license”, “identity_card”
    */

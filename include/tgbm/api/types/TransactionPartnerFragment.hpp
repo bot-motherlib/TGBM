@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the source of a transaction, or its recipient for outgoing transactions. Currently, it
- * can be one of*/
+/*Describes a withdrawal transaction with Fragment.*/
 struct TransactionPartnerFragment {
   /* Optional. State of the transaction if the transaction is outgoing */
   box<RevenueWithdrawalState> withdrawal_state;

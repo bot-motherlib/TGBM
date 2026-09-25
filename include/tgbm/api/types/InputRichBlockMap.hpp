@@ -4,8 +4,8 @@
 
 namespace tgbm::api {
 
-/*This object represents a block in a rich formatted message to be sent. Currently, it can be any of the
- * following types:*/
+/*A block with a map, corresponding to the custom HTML tag <tg-map>. The map's width and height must not
+ * exceed 10000 in total. The width and height ratio must be at most 20.*/
 struct InputRichBlockMap {
   /* Location of the center of the map */
   box<Location> location;

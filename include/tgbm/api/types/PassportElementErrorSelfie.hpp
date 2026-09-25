@@ -4,8 +4,8 @@
 
 namespace tgbm::api {
 
-/*This object represents an error in the Telegram Passport element which was submitted that should be resolved
- * by the user. It should be one of:*/
+/*Represents an issue with the selfie with a document. The error is considered resolved when the file with the
+ * selfie changes.*/
 struct PassportElementErrorSelfie {
   /* The section of the user's Telegram Passport which has the issue, one of “passport”, “driver_license”,
    * “identity_card”, “internal_passport” */

@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents a block in a rich formatted message. Currently, it can be any of the following
- * types:*/
+/*A footer, corresponding to the HTML tag <footer>.*/
 struct RichBlockFooter {
   /* Text of the block */
   box<RichText> text;

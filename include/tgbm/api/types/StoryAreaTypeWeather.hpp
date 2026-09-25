@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*Describes the type of a clickable area on a story. Currently, it can be one of*/
+/*Describes a story area containing weather information. Currently, a story can have up to 3 weather areas.*/
 struct StoryAreaTypeWeather {
   /* Temperature, in degree Celsius */
   Double temperature;

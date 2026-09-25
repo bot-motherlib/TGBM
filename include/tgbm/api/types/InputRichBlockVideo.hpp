@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents a block in a rich formatted message to be sent. Currently, it can be any of the
- * following types:*/
+/*A block with a video, corresponding to the HTML tag <video>.*/
 struct InputRichBlockVideo {
   /* The video. Caption is ignored. */
   box<InputMediaVideo> video;

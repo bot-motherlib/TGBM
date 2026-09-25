@@ -4,7 +4,8 @@
 
 namespace tgbm::api {
 
-/*This object describes the source of a chat boost. It can be one of*/
+/*The boost was obtained by subscribing to Telegram Premium or by gifting a Telegram Premium subscription to
+ * another user.*/
 struct ChatBoostSourcePremium {
   /* User that boosted the chat */
   box<User> user;

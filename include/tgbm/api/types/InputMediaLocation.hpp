@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents the content of a poll description or a quiz explanation to be sent. It should be one
- * of*/
+/*Represents a location to be sent.*/
 struct InputMediaLocation {
   /* Latitude of the location */
   Double latitude;

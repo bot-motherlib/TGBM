@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents the scope to which bot commands are applied. Currently, the following 7 scopes are
- * supported:*/
+/*Represents the scope of bot commands, covering a specific member of a group or supergroup chat.*/
 struct BotCommandScopeChatMember {
   /* Unique identifier for the target chat or username of the target supergroup in the format @username.
    * Channel direct messages chats and channel chats aren't supported. */

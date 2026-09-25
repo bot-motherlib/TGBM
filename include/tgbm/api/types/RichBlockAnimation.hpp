@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents a block in a rich formatted message. Currently, it can be any of the following
- * types:*/
+/*A block with an animation, corresponding to the HTML tag <video>.*/
 struct RichBlockAnimation {
   /* The animation */
   box<Animation> animation;

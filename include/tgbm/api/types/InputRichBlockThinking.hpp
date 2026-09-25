@@ -4,8 +4,9 @@
 
 namespace tgbm::api {
 
-/*This object represents a block in a rich formatted message to be sent. Currently, it can be any of the
- * following types:*/
+/*A block with a “Thinking…” placeholder, corresponding to the custom HTML tag <tg-thinking>. The block may be
+ * used only in sendRichMessageDraft, therefore it can't be received in messages. See
+ * https://t.me/addemoji/AIActions for examples of custom emoji that are recommended for usage in the block.*/
 struct InputRichBlockThinking {
   /* Text of the block. See https://t.me/addemoji/AIActions for examples of custom emoji that are recommended
    * for usage in the block. */

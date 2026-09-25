@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents a block in a rich formatted message. Currently, it can be any of the following
- * types:*/
+/*A list of blocks, corresponding to the HTML tag <ul> or <ol> with multiple nested tags <li>.*/
 struct RichBlockList {
   /* Items of the list */
   arrayof<RichBlockListItem> items;

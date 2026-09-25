@@ -4,7 +4,8 @@
 
 namespace tgbm::api {
 
-/*This object describes the type of a background. Currently, it can be one of*/
+/*The background is a .PNG or .TGV (gzipped subset of SVG with MIME type “application/x-tgwallpattern”)
+ * pattern to be combined with the background fill chosen by the user.*/
 struct BackgroundTypePattern {
   /* Document with the pattern */
   box<Document> document;

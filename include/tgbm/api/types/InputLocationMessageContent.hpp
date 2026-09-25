@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents the content of a message to be sent as a result of an inline query. Telegram clients
- * currently support the following types:*/
+/*Represents the content of a location message to be sent as the result of an inline query.*/
 struct InputLocationMessageContent {
   /* Longitude of the location in degrees */
   Double longitude;

@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the way a background is filled based on the selected colors. Currently, it can be one
- * of*/
+/*The background is filled using the selected color.*/
 struct BackgroundFillSolid {
   /* The color of the background fill in the RGB24 format */
   Integer color;

@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object contains information about one member of a chat. Currently, the following 6 types of chat
- * members are supported:*/
+/*Represents a chat member that owns the chat and has all administrator privileges.*/
 struct ChatMemberOwner {
   /* Information about the user */
   box<User> user;

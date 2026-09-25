@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the origin of a message. It can be one of*/
+/*The message was originally sent by a known user.*/
 struct MessageOriginUser {
   /* Date the message was sent originally in Unix time */
   Integer date;

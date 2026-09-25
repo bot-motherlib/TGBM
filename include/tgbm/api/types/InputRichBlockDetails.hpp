@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents a block in a rich formatted message to be sent. Currently, it can be any of the
- * following types:*/
+/*An expandable block for details disclosure, corresponding to the HTML tag <details>.*/
 struct InputRichBlockDetails {
   /* Always shown summary of the block */
   box<RichText> summary;

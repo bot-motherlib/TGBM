@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents a block in a rich formatted message. Currently, it can be any of the following
- * types:*/
+/*A collage, corresponding to the custom HTML tag <tg-collage>.*/
 struct RichBlockCollage {
   /* Elements of the collage */
   arrayof<RichBlock> blocks;

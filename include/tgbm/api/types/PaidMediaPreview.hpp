@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes paid media. Currently, it can be one of*/
+/*The paid media isn't available before the payment.*/
 struct PaidMediaPreview {
   /* Optional. Media width as defined by the sender */
   optional<Integer> width;

@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents an error in the Telegram Passport element which was submitted that should be resolved
- * by the user. It should be one of:*/
+/*Represents an issue in an unspecified place. The error is considered resolved when new data is added.*/
 struct PassportElementErrorUnspecified {
   /* Type of element of the user's Telegram Passport which has the issue */
   String type;

@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes a gift received and owned by a user or a chat. Currently, it can be one of*/
+/*Describes a unique gift received and owned by a user or a chat.*/
 struct OwnedGiftUnique {
   /* Information about the unique gift */
   box<UniqueGift> gift;

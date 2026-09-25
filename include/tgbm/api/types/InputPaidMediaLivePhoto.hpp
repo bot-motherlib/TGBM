@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the paid media to be sent. Currently, it can be one of*/
+/*The paid media to send is a live photo.*/
 struct InputPaidMediaLivePhoto {
   /* Video of the live photo to send. Pass a file_id to send a file that exists on the Telegram servers
    * (recommended) or pass “attach://<file_attach_name>” to upload a new one using multipart/form-data under

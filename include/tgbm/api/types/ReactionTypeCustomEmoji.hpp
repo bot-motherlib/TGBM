@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the type of a reaction. Currently, it can be one of*/
+/*The reaction is based on a custom emoji.*/
 struct ReactionTypeCustomEmoji {
   /* Custom emoji identifier */
   String custom_emoji_id;

@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the source of a transaction, or its recipient for outgoing transactions. Currently, it
- * can be one of*/
+/*Describes a transaction with payment for paid broadcasting.*/
 struct TransactionPartnerTelegramApi {
   /* The number of successful requests that exceeded regular limits and were therefore billed */
   Integer request_count;

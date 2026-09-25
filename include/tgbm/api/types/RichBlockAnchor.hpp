@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents a block in a rich formatted message. Currently, it can be any of the following
- * types:*/
+/*A block with an anchor, corresponding to the HTML tag <a> with the attribute name.*/
 struct RichBlockAnchor {
   /* The name of the anchor */
   String name;

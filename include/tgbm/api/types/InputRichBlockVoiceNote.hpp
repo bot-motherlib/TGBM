@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents a block in a rich formatted message to be sent. Currently, it can be any of the
- * following types:*/
+/*A block with a voice note, corresponding to the HTML tag <audio>.*/
 struct InputRichBlockVoiceNote {
   /* The voice note. Caption is ignored. */
   box<InputMediaVoiceNote> voice_note;

@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the bot's menu button in a private chat. It should be one of*/
+/*Represents a menu button, which opens the bot's list of commands.*/
 struct MenuButtonCommands {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
