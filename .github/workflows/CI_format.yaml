@@ -38,6 +38,17 @@ jobs:
 
       - name: Check if all files are committed to git
         run: >
-          sudo make 
-          -f scripts/ci_ubuntu.make 
+          sudo make
+          -f scripts/ci_ubuntu.make
           check-git-status
+
+      - name: Install python dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-bs4
+
+      - name: Regenerate API bindings
+        run: >
+          sudo make
+          -f scripts/ci_ubuntu.make
+          check-generation

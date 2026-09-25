@@ -9,13 +9,18 @@ function(TGBM_GENERATE_API)
     # formats all files in directory
     macro(TGBM_FORMAT_DIR DIRPATH)
         message(STATUS "[TGBM] formatting ${DIRPATH}\n")
-        execute_process(
-            COMMAND ${TGBM_CLANG_FORMAT} -i --style=file:${CMAKE_SOURCE_DIR}/.clang-format ./*
-            WORKING_DIRECTORY ${DIRPATH}
-            RESULT_VARIABLE result
-            OUTPUT_VARIABLE output
-            ERROR_VARIABLE error_output
-        )
+        file(GLOB TGBM_FILES_TO_FORMAT "${DIRPATH}/*pp")
+        if(TGBM_FILES_TO_FORMAT)
+            execute_process(
+                COMMAND ${TGBM_CLANG_FORMAT} -i --style=file:${CMAKE_SOURCE_DIR}/.clang-format ${TGBM_FILES_TO_FORMAT}
+                RESULT_VARIABLE result
+                OUTPUT_VARIABLE output
+                ERROR_VARIABLE error_output
+            )
+            if(NOT result EQUAL 0)
+                message(FATAL_ERROR "fail while formatting ${DIRPATH}: [${result}]. Error output: [${error_output}]")
+            endif()
+        endif()
     endmacro(TGBM_FORMAT_DIR)
 
     # generate types into tgbm/api/types
