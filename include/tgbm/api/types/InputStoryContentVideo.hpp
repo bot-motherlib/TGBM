@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the content of a story to post. Currently, it can be one of*/
+/*Describes a video to post as a story.*/
 struct InputStoryContentVideo {
   /* The video to post as a story. The video must be of the size 720x1280, streamable, encoded with H.265
    * codec, with key frames added each second in the MPEG4 format, and must not exceed 30 MB. The video can't

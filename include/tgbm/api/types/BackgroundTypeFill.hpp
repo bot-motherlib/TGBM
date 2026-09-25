@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the type of a background. Currently, it can be one of*/
+/*The background is automatically filled based on the selected colors.*/
 struct BackgroundTypeFill {
   /* The background fill */
   box<BackgroundFill> fill;

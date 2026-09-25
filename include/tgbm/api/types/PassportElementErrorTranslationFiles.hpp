@@ -4,8 +4,8 @@
 
 namespace tgbm::api {
 
-/*This object represents an error in the Telegram Passport element which was submitted that should be resolved
- * by the user. It should be one of:*/
+/*Represents an issue with the translated version of a document. The error is considered resolved when a file
+ * with the document translation change.*/
 struct PassportElementErrorTranslationFiles {
   /* Type of element of the user's Telegram Passport which has the issue, one of “passport”, “driver_license”,
    * “identity_card”, “internal_passport”, “utility_bill”, “bank_statement”, “rental_agreement”,

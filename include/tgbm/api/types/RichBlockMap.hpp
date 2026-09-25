@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents a block in a rich formatted message. Currently, it can be any of the following
- * types:*/
+/*A block with a map, corresponding to the custom HTML tag <tg-map>.*/
 struct RichBlockMap {
   /* Location of the center of the map */
   box<Location> location;

@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*Describes the type of a clickable area on a story. Currently, it can be one of*/
+/*Describes a story area pointing to a location. Currently, a story can have up to 10 location areas.*/
 struct StoryAreaTypeLocation {
   /* Location latitude in degrees */
   Double latitude;

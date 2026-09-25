@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the type of a reaction. Currently, it can be one of*/
+/*The reaction is paid.*/
 struct ReactionTypePaid {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);

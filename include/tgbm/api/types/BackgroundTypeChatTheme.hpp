@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the type of a background. Currently, it can be one of*/
+/*The background is taken directly from a built-in chat theme.*/
 struct BackgroundTypeChatTheme {
   /* Name of the chat theme, which is usually an emoji */
   String theme_name;

@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the state of a revenue withdrawal operation. Currently, it can be one of*/
+/*The withdrawal succeeded.*/
 struct RevenueWithdrawalStateSucceeded {
   /* Date the withdrawal was completed in Unix time */
   Integer date;

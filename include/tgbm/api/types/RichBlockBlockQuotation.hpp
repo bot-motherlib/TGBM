@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents a block in a rich formatted message. Currently, it can be any of the following
- * types:*/
+/*A block quotation, corresponding to the HTML tag <blockquote>.*/
 struct RichBlockBlockQuotation {
   /* Content of the block */
   arrayof<RichBlock> blocks;

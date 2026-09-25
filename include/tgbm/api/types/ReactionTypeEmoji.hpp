@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the type of a reaction. Currently, it can be one of*/
+/*The reaction is based on an emoji.*/
 struct ReactionTypeEmoji {
   /* Reaction emoji. Currently, it can be one of "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",
    * "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",

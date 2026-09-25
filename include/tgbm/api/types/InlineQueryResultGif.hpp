@@ -4,8 +4,9 @@
 
 namespace tgbm::api {
 
-/*This object represents one result of an inline query. Telegram clients currently support results of the
- * following 20 types:*/
+/*Represents a link to an animated GIF file. By default, this animated GIF file will be sent by the user with
+ * optional caption. Alternatively, you can use input_message_content to send a message with the specified
+ * content instead of the animation.*/
 struct InlineQueryResultGif {
   /* Unique identifier for this result, 1-64 bytes */
   String id;

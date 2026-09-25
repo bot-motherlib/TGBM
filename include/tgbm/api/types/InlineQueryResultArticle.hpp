@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents one result of an inline query. Telegram clients currently support results of the
- * following 20 types:*/
+/*Represents a link to an article or web page.*/
 struct InlineQueryResultArticle {
   /* Unique identifier for this result, 1-64 Bytes */
   String id;

@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the type of a background. Currently, it can be one of*/
+/*The background is a wallpaper in the JPEG format.*/
 struct BackgroundTypeWallpaper {
   /* Document with the wallpaper */
   box<Document> document;

@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents the content of a poll option to be sent. It should be one of*/
+/*Represents a venue to be sent.*/
 struct InputMediaVenue {
   /* Latitude of the location */
   Double latitude;

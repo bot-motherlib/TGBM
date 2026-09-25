@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents the content of a poll option to be sent. It should be one of*/
+/*Represents a sticker file to be sent.*/
 struct InputMediaSticker {
   /* File to send. Pass a file_id to send a file that exists on the Telegram servers (recommended), pass an
    * HTTP URL for Telegram to get a .WEBP sticker from the Internet, or pass “attach://<file_attach_name>” to

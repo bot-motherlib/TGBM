@@ -4,8 +4,9 @@
 
 namespace tgbm::api {
 
-/*This object represents one result of an inline query. Telegram clients currently support results of the
- * following 20 types:*/
+/*Represents a link to a file stored on the Telegram servers. By default, this file will be sent by the user
+ * with an optional caption. Alternatively, you can use input_message_content to send a message with the
+ * specified content instead of the file.*/
 struct InlineQueryResultCachedDocument {
   /* Unique identifier for this result, 1-64 bytes */
   String id;

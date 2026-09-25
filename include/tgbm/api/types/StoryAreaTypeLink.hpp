@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*Describes the type of a clickable area on a story. Currently, it can be one of*/
+/*Describes a story area pointing to an HTTP or tg:// link. Currently, a story can have up to 3 link areas.*/
 struct StoryAreaTypeLink {
   /* HTTP or tg:// URL to be opened when the area is clicked */
   String url;

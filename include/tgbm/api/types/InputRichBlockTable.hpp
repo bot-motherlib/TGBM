@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents a block in a rich formatted message to be sent. Currently, it can be any of the
- * following types:*/
+/*A table, corresponding to the HTML tag <table>.*/
 struct InputRichBlockTable {
   /* Cells of the table */
   arrayof<arrayof<RichBlockTableCell>> cells;

@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the bot's menu button in a private chat. It should be one of*/
+/*Represents a menu button, which launches a Web App.*/
 struct MenuButtonWebApp {
   /* Text on the button */
   String text;

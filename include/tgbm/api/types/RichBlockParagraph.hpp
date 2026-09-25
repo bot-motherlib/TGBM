@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents a block in a rich formatted message. Currently, it can be any of the following
- * types:*/
+/*A text paragraph, corresponding to the HTML tag <p>.*/
 struct RichBlockParagraph {
   /* Text of the block */
   box<RichText> text;

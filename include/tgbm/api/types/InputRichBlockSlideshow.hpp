@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents a block in a rich formatted message to be sent. Currently, it can be any of the
- * following types:*/
+/*A slideshow, corresponding to the custom HTML tag <tg-slideshow>.*/
 struct InputRichBlockSlideshow {
   /* Elements of the slideshow */
   arrayof<InputRichBlock> blocks;

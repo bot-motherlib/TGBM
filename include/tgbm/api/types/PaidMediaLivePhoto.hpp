@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes paid media. Currently, it can be one of*/
+/*The paid media is a live photo.*/
 struct PaidMediaLivePhoto {
   /* The photo */
   box<LivePhoto> live_photo;

@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the source of a transaction, or its recipient for outgoing transactions. Currently, it
- * can be one of*/
+/*Describes a transaction with a chat.*/
 struct TransactionPartnerChat {
   /* Information about the chat */
   box<Chat> chat;

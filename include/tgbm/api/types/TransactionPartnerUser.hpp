@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the source of a transaction, or its recipient for outgoing transactions. Currently, it
- * can be one of*/
+/*Describes a transaction with a user.*/
 struct TransactionPartnerUser {
   /* Type of the transaction, currently one of “invoice_payment” for payments via invoices,
    * “paid_media_payment” for payments for paid media, “gift_purchase” for gifts sent by the bot,

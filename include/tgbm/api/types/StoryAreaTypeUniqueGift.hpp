@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*Describes the type of a clickable area on a story. Currently, it can be one of*/
+/*Describes a story area pointing to a unique gift. Currently, a story can have at most 1 unique gift area.*/
 struct StoryAreaTypeUniqueGift {
   /* Unique name of the gift */
   String name;

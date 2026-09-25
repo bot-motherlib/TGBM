@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents a rich formatted text. Currently, it can be either a String for plain text, an Array
- * of RichText, or any of the following types:*/
+/*A monowidth text.*/
 struct RichTextCode {
   /* The text */
   box<RichText> text;

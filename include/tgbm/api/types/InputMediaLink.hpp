@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents the content of a poll option to be sent. It should be one of*/
+/*Represents an HTTP link to be sent.*/
 struct InputMediaLink {
   /* HTTP URL of the link */
   String url;

@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the source of a transaction, or its recipient for outgoing transactions. Currently, it
- * can be one of*/
+/*Describes the affiliate program that issued the affiliate commission received via this transaction.*/
 struct TransactionPartnerAffiliateProgram {
   /* The number of Telegram Stars received by the bot for each 1000 Telegram Stars received by the affiliate
    * program sponsor from referred users */

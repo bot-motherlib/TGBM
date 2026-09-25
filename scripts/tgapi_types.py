@@ -175,7 +175,7 @@ def parse_oneof_type(name: str, description: str, fieldtable) -> oneof_info_t:
         table_node = description_node.find_next('table')
         assert table_node is not None
 
-        tmptype: type_info_t = parse_compound_type(alt, description, table_node)
+        tmptype: type_info_t = parse_compound_type(alt, alt_description, table_node)
 
         if name not in TYPES_WITHOUT_DISCRIMINATOR:
             if discriminator_name is None:

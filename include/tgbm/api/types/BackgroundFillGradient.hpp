@@ -4,8 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object describes the way a background is filled based on the selected colors. Currently, it can be one
- * of*/
+/*The background is a gradient fill.*/
 struct BackgroundFillGradient {
   /* Top color of the gradient in the RGB24 format */
   Integer top_color;

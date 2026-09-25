@@ -4,8 +4,9 @@
 
 namespace tgbm::api {
 
-/*This object represents one result of an inline query. Telegram clients currently support results of the
- * following 20 types:*/
+/*Represents a link to a voice recording in an .OGG container encoded with OPUS. By default, this voice
+ * recording will be sent by the user. Alternatively, you can use input_message_content to send a message with
+ * the specified content instead of the the voice message.*/
 struct InlineQueryResultVoice {
   /* Unique identifier for this result, 1-64 bytes */
   String id;

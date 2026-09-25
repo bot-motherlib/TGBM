@@ -4,7 +4,8 @@
 
 namespace tgbm::api {
 
-/*Describes the type of a clickable area on a story. Currently, it can be one of*/
+/*Describes a story area pointing to a suggested reaction. Currently, a story can have up to 5 suggested
+ * reaction areas.*/
 struct StoryAreaTypeSuggestedReaction {
   /* Type of the reaction */
   box<ReactionType> reaction_type;
