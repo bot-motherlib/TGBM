@@ -217,8 +217,9 @@ def parse_types(tgapi_html: str):
             continue
         description = description_tag.text.strip()
 
-        if 'Currently holds no information.' in description:
+        if 'currently holds no information' in description.lower():
             types.append(type_info_t(type_name, description, []))
+            continue
 
         table_or_list = description_tag.find_next()
 
