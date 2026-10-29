@@ -36,6 +36,9 @@ struct Giveaway {
         .case_("winner_count", true)
         .or_default(false);
   }
+
+  bool operator==(const Giveaway&) const;
+  std::strong_ordering operator<=>(const Giveaway&) const;
 };
 
 }  // namespace tgbm::api

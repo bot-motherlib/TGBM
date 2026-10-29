@@ -101,6 +101,8 @@ struct StoryAreaType {
         unreachable();
     }
   }
+  bool operator==(const StoryAreaType&) const;
+  std::strong_ordering operator<=>(const StoryAreaType&) const;
 };
 
 }  // namespace tgbm::api

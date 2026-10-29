@@ -20,6 +20,9 @@ struct PassportElementErrorUnspecified {
         .case_("message", true)
         .or_default(false);
   }
+
+  bool operator==(const PassportElementErrorUnspecified&) const;
+  std::strong_ordering operator<=>(const PassportElementErrorUnspecified&) const;
 };
 
 }  // namespace tgbm::api

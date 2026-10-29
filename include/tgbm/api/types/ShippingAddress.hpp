@@ -29,6 +29,9 @@ struct ShippingAddress {
         .case_("post_code", true)
         .or_default(false);
   }
+
+  bool operator==(const ShippingAddress&) const;
+  std::strong_ordering operator<=>(const ShippingAddress&) const;
 };
 
 }  // namespace tgbm::api

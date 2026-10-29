@@ -26,6 +26,9 @@ struct PhotoSize {
         .case_("height", true)
         .or_default(false);
   }
+
+  bool operator==(const PhotoSize&) const;
+  std::strong_ordering operator<=>(const PhotoSize&) const;
 };
 
 }  // namespace tgbm::api

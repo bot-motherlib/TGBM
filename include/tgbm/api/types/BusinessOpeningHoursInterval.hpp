@@ -19,6 +19,9 @@ struct BusinessOpeningHoursInterval {
         .case_("closing_minute", true)
         .or_default(false);
   }
+
+  bool operator==(const BusinessOpeningHoursInterval&) const;
+  std::strong_ordering operator<=>(const BusinessOpeningHoursInterval&) const;
 };
 
 }  // namespace tgbm::api

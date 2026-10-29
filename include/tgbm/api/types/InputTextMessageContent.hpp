@@ -17,6 +17,9 @@ struct InputTextMessageContent {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).or_default(false);
   }
+
+  bool operator==(const InputTextMessageContent&) const;
+  std::strong_ordering operator<=>(const InputTextMessageContent&) const;
 };
 
 }  // namespace tgbm::api

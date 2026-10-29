@@ -25,6 +25,9 @@ struct PassportFile {
         .case_("file_date", true)
         .or_default(false);
   }
+
+  bool operator==(const PassportFile&) const;
+  std::strong_ordering operator<=>(const PassportFile&) const;
 };
 
 }  // namespace tgbm::api

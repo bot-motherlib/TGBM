@@ -23,6 +23,9 @@ struct PassportElementErrorTranslationFiles {
         .case_("message", true)
         .or_default(false);
   }
+
+  bool operator==(const PassportElementErrorTranslationFiles&) const;
+  std::strong_ordering operator<=>(const PassportElementErrorTranslationFiles&) const;
 };
 
 }  // namespace tgbm::api

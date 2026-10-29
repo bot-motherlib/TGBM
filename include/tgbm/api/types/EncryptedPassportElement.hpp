@@ -46,6 +46,9 @@ struct EncryptedPassportElement {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("type", true).case_("hash", true).or_default(false);
   }
+
+  bool operator==(const EncryptedPassportElement&) const;
+  std::strong_ordering operator<=>(const EncryptedPassportElement&) const;
 };
 
 }  // namespace tgbm::api

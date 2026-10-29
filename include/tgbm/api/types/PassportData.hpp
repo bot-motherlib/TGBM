@@ -15,6 +15,9 @@ struct PassportData {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("data", true).case_("credentials", true).or_default(false);
   }
+
+  bool operator==(const PassportData&) const;
+  std::strong_ordering operator<=>(const PassportData&) const;
 };
 
 }  // namespace tgbm::api

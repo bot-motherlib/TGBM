@@ -29,6 +29,9 @@ struct InputSticker {
         .case_("emoji_list", true)
         .or_default(false);
   }
+
+  bool operator==(const InputSticker&) const;
+  std::strong_ordering operator<=>(const InputSticker&) const;
 };
 
 }  // namespace tgbm::api

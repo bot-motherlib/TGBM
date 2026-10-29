@@ -21,6 +21,9 @@ struct TextQuote {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("text", true).case_("position", true).or_default(false);
   }
+
+  bool operator==(const TextQuote&) const;
+  std::strong_ordering operator<=>(const TextQuote&) const;
 };
 
 }  // namespace tgbm::api

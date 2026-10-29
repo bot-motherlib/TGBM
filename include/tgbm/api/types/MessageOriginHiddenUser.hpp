@@ -14,6 +14,9 @@ struct MessageOriginHiddenUser {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("date", true).case_("sender_user_name", true).or_default(false);
   }
+
+  bool operator==(const MessageOriginHiddenUser&) const;
+  std::strong_ordering operator<=>(const MessageOriginHiddenUser&) const;
 };
 
 }  // namespace tgbm::api

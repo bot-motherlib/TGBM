@@ -22,6 +22,9 @@ struct SuggestedPostPaid {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("currency", true).or_default(false);
   }
+
+  bool operator==(const SuggestedPostPaid&) const;
+  std::strong_ordering operator<=>(const SuggestedPostPaid&) const;
 };
 
 }  // namespace tgbm::api

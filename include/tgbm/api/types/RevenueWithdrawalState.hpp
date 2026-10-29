@@ -73,6 +73,8 @@ struct RevenueWithdrawalState {
         unreachable();
     }
   }
+  bool operator==(const RevenueWithdrawalState&) const;
+  std::strong_ordering operator<=>(const RevenueWithdrawalState&) const;
 };
 
 }  // namespace tgbm::api

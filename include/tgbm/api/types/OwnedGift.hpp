@@ -60,6 +60,8 @@ struct OwnedGift {
         unreachable();
     }
   }
+  bool operator==(const OwnedGift&) const;
+  std::strong_ordering operator<=>(const OwnedGift&) const;
 };
 
 }  // namespace tgbm::api

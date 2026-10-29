@@ -21,6 +21,9 @@ struct ProximityAlertTriggered {
         .case_("distance", true)
         .or_default(false);
   }
+
+  bool operator==(const ProximityAlertTriggered&) const;
+  std::strong_ordering operator<=>(const ProximityAlertTriggered&) const;
 };
 
 }  // namespace tgbm::api

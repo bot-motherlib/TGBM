@@ -50,6 +50,9 @@ struct InlineQueryResultVideo {
         .case_("title", true)
         .or_default(false);
   }
+
+  bool operator==(const InlineQueryResultVideo&) const;
+  std::strong_ordering operator<=>(const InlineQueryResultVideo&) const;
 };
 
 }  // namespace tgbm::api

@@ -12,6 +12,9 @@ struct VideoChatScheduled {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("start_date", true).or_default(false);
   }
+
+  bool operator==(const VideoChatScheduled&) const;
+  std::strong_ordering operator<=>(const VideoChatScheduled&) const;
 };
 
 }  // namespace tgbm::api

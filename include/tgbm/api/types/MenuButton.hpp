@@ -73,6 +73,8 @@ struct MenuButton {
         unreachable();
     }
   }
+  bool operator==(const MenuButton&) const;
+  std::strong_ordering operator<=>(const MenuButton&) const;
 };
 
 }  // namespace tgbm::api

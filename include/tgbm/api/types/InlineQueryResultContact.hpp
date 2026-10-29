@@ -35,6 +35,9 @@ struct InlineQueryResultContact {
         .case_("first_name", true)
         .or_default(false);
   }
+
+  bool operator==(const InlineQueryResultContact&) const;
+  std::strong_ordering operator<=>(const InlineQueryResultContact&) const;
 };
 
 }  // namespace tgbm::api

@@ -86,6 +86,8 @@ struct PaidMedia {
         unreachable();
     }
   }
+  bool operator==(const PaidMedia&) const;
+  std::strong_ordering operator<=>(const PaidMedia&) const;
 };
 
 }  // namespace tgbm::api

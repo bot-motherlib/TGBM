@@ -114,6 +114,8 @@ struct InputMedia {
         unreachable();
     }
   }
+  bool operator==(const InputMedia&) const;
+  std::strong_ordering operator<=>(const InputMedia&) const;
 };
 
 }  // namespace tgbm::api

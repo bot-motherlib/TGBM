@@ -14,6 +14,9 @@ struct Story {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("chat", true).case_("id", true).or_default(false);
   }
+
+  bool operator==(const Story&) const;
+  std::strong_ordering operator<=>(const Story&) const;
 };
 
 }  // namespace tgbm::api

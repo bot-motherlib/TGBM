@@ -20,6 +20,9 @@ struct UniqueGiftBackdrop {
         .case_("rarity_per_mille", true)
         .or_default(false);
   }
+
+  bool operator==(const UniqueGiftBackdrop&) const;
+  std::strong_ordering operator<=>(const UniqueGiftBackdrop&) const;
 };
 
 }  // namespace tgbm::api

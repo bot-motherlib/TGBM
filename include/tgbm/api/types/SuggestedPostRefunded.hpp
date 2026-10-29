@@ -17,6 +17,9 @@ struct SuggestedPostRefunded {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("reason", true).or_default(false);
   }
+
+  bool operator==(const SuggestedPostRefunded&) const;
+  std::strong_ordering operator<=>(const SuggestedPostRefunded&) const;
 };
 
 }  // namespace tgbm::api

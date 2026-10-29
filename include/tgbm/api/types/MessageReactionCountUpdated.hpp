@@ -23,6 +23,9 @@ struct MessageReactionCountUpdated {
         .case_("reactions", true)
         .or_default(false);
   }
+
+  bool operator==(const MessageReactionCountUpdated&) const;
+  std::strong_ordering operator<=>(const MessageReactionCountUpdated&) const;
 };
 
 }  // namespace tgbm::api

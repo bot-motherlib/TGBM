@@ -16,6 +16,9 @@ struct SuggestedPostApprovalFailed {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("price", true).or_default(false);
   }
+
+  bool operator==(const SuggestedPostApprovalFailed&) const;
+  std::strong_ordering operator<=>(const SuggestedPostApprovalFailed&) const;
 };
 
 }  // namespace tgbm::api
