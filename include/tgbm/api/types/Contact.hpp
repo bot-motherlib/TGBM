@@ -23,6 +23,9 @@ struct Contact {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("phone_number", true).case_("first_name", true).or_default(false);
   }
+
+  bool operator==(const Contact&) const;
+  std::strong_ordering operator<=>(const Contact&) const;
 };
 
 }  // namespace tgbm::api

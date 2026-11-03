@@ -32,6 +32,9 @@ struct InlineQueryResultArticle {
         .case_("input_message_content", true)
         .or_default(false);
   }
+
+  bool operator==(const InlineQueryResultArticle&) const;
+  std::strong_ordering operator<=>(const InlineQueryResultArticle&) const;
 };
 
 }  // namespace tgbm::api

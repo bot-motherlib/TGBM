@@ -22,6 +22,9 @@ struct PassportElementErrorSelfie {
         .case_("message", true)
         .or_default(false);
   }
+
+  bool operator==(const PassportElementErrorSelfie&) const;
+  std::strong_ordering operator<=>(const PassportElementErrorSelfie&) const;
 };
 
 }  // namespace tgbm::api

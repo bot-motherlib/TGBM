@@ -12,6 +12,9 @@ struct ReactionTypeCustomEmoji {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("custom_emoji_id", true).or_default(false);
   }
+
+  bool operator==(const ReactionTypeCustomEmoji&) const;
+  std::strong_ordering operator<=>(const ReactionTypeCustomEmoji&) const;
 };
 
 }  // namespace tgbm::api

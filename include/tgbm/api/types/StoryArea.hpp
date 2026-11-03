@@ -14,6 +14,9 @@ struct StoryArea {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("position", true).case_("type", true).or_default(false);
   }
+
+  bool operator==(const StoryArea&) const;
+  std::strong_ordering operator<=>(const StoryArea&) const;
 };
 
 }  // namespace tgbm::api

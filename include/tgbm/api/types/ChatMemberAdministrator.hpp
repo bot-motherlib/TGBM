@@ -77,6 +77,9 @@ struct ChatMemberAdministrator {
         .case_("can_send_welcome_messages", true)
         .or_default(false);
   }
+
+  bool operator==(const ChatMemberAdministrator&) const;
+  std::strong_ordering operator<=>(const ChatMemberAdministrator&) const;
 };
 
 }  // namespace tgbm::api

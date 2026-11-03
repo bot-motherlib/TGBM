@@ -37,6 +37,9 @@ struct WebhookInfo {
         .case_("pending_update_count", true)
         .or_default(false);
   }
+
+  bool operator==(const WebhookInfo&) const;
+  std::strong_ordering operator<=>(const WebhookInfo&) const;
 };
 
 }  // namespace tgbm::api

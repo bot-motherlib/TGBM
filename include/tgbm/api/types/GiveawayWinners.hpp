@@ -42,6 +42,9 @@ struct GiveawayWinners {
         .case_("winners", true)
         .or_default(false);
   }
+
+  bool operator==(const GiveawayWinners&) const;
+  std::strong_ordering operator<=>(const GiveawayWinners&) const;
 };
 
 }  // namespace tgbm::api

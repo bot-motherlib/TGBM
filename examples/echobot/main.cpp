@@ -9,7 +9,11 @@ dd::task<void> start_main_task(tgbm::bot& bot) {
     // stop bot on failure
     bot.stop();
   };
-  fmt::println("launching echobot, info: {}", co_await bot.api.getMe());
+  tgbm::api::User me = co_await bot.api.getMe();
+  if (me != me)
+    assert(false);
+  me <=> me;
+  fmt::println("launching echobot, info: {}", me);
 
   co_foreach(tgbm::api::Update && u, bot.updates()) {
     tgbm::api::Message* m = u.get_message();

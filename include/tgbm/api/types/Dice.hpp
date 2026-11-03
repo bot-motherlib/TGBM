@@ -15,6 +15,9 @@ struct Dice {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("emoji", true).case_("value", true).or_default(false);
   }
+
+  bool operator==(const Dice&) const;
+  std::strong_ordering operator<=>(const Dice&) const;
 };
 
 }  // namespace tgbm::api

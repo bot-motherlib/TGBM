@@ -34,6 +34,9 @@ struct InlineQueryResultCachedVoice {
         .case_("title", true)
         .or_default(false);
   }
+
+  bool operator==(const InlineQueryResultCachedVoice&) const;
+  std::strong_ordering operator<=>(const InlineQueryResultCachedVoice&) const;
 };
 
 }  // namespace tgbm::api

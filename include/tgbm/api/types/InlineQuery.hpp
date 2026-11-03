@@ -31,6 +31,9 @@ struct InlineQuery {
         .case_("offset", true)
         .or_default(false);
   }
+
+  bool operator==(const InlineQuery&) const;
+  std::strong_ordering operator<=>(const InlineQuery&) const;
 };
 
 }  // namespace tgbm::api

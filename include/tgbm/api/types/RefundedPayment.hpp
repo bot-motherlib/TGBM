@@ -27,6 +27,9 @@ struct RefundedPayment {
         .case_("telegram_payment_charge_id", true)
         .or_default(false);
   }
+
+  bool operator==(const RefundedPayment&) const;
+  std::strong_ordering operator<=>(const RefundedPayment&) const;
 };
 
 }  // namespace tgbm::api

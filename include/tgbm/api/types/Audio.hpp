@@ -35,6 +35,9 @@ struct Audio {
         .case_("duration", true)
         .or_default(false);
   }
+
+  bool operator==(const Audio&) const;
+  std::strong_ordering operator<=>(const Audio&) const;
 };
 
 }  // namespace tgbm::api

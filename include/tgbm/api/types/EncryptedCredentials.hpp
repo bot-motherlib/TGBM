@@ -22,6 +22,9 @@ struct EncryptedCredentials {
         .case_("secret", true)
         .or_default(false);
   }
+
+  bool operator==(const EncryptedCredentials&) const;
+  std::strong_ordering operator<=>(const EncryptedCredentials&) const;
 };
 
 }  // namespace tgbm::api

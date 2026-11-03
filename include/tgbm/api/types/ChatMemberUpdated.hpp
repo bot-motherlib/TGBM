@@ -34,6 +34,9 @@ struct ChatMemberUpdated {
         .case_("new_chat_member", true)
         .or_default(false);
   }
+
+  bool operator==(const ChatMemberUpdated&) const;
+  std::strong_ordering operator<=>(const ChatMemberUpdated&) const;
 };
 
 }  // namespace tgbm::api

@@ -46,6 +46,9 @@ struct InlineQueryResultVenue {
         .case_("address", true)
         .or_default(false);
   }
+
+  bool operator==(const InlineQueryResultVenue&) const;
+  std::strong_ordering operator<=>(const InlineQueryResultVenue&) const;
 };
 
 }  // namespace tgbm::api

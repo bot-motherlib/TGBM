@@ -35,6 +35,9 @@ struct InlineQueryResultCachedDocument {
         .case_("document_file_id", true)
         .or_default(false);
   }
+
+  bool operator==(const InlineQueryResultCachedDocument&) const;
+  std::strong_ordering operator<=>(const InlineQueryResultCachedDocument&) const;
 };
 
 }  // namespace tgbm::api

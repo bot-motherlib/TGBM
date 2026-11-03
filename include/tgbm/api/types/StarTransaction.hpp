@@ -33,6 +33,9 @@ struct StarTransaction {
         .case_("date", true)
         .or_default(false);
   }
+
+  bool operator==(const StarTransaction&) const;
+  std::strong_ordering operator<=>(const StarTransaction&) const;
 };
 
 }  // namespace tgbm::api

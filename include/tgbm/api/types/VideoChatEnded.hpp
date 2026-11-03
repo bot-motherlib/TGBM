@@ -12,6 +12,9 @@ struct VideoChatEnded {
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("duration", true).or_default(false);
   }
+
+  bool operator==(const VideoChatEnded&) const;
+  std::strong_ordering operator<=>(const VideoChatEnded&) const;
 };
 
 }  // namespace tgbm::api

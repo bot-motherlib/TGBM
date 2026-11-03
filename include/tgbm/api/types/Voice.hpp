@@ -27,6 +27,9 @@ struct Voice {
         .case_("duration", true)
         .or_default(false);
   }
+
+  bool operator==(const Voice&) const;
+  std::strong_ordering operator<=>(const Voice&) const;
 };
 
 }  // namespace tgbm::api

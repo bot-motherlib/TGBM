@@ -115,6 +115,8 @@ struct ChatMember {
         unreachable();
     }
   }
+  bool operator==(const ChatMember&) const;
+  std::strong_ordering operator<=>(const ChatMember&) const;
 };
 
 }  // namespace tgbm::api

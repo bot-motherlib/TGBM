@@ -156,6 +156,8 @@ struct PassportElementError {
         unreachable();
     }
   }
+  bool operator==(const PassportElementError&) const;
+  std::strong_ordering operator<=>(const PassportElementError&) const;
 };
 
 }  // namespace tgbm::api

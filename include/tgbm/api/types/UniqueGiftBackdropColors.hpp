@@ -23,6 +23,9 @@ struct UniqueGiftBackdropColors {
         .case_("text_color", true)
         .or_default(false);
   }
+
+  bool operator==(const UniqueGiftBackdropColors&) const;
+  std::strong_ordering operator<=>(const UniqueGiftBackdropColors&) const;
 };
 
 }  // namespace tgbm::api

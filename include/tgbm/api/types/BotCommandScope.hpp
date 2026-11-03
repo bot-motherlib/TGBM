@@ -129,6 +129,8 @@ struct BotCommandScope {
         unreachable();
     }
   }
+  bool operator==(const BotCommandScope&) const;
+  std::strong_ordering operator<=>(const BotCommandScope&) const;
 };
 
 }  // namespace tgbm::api

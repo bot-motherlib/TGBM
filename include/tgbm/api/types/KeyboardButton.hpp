@@ -21,24 +21,36 @@ struct KeyboardButton {
   };
   struct request_users {
     KeyboardButtonRequestUsers value;
+    bool operator==(const request_users&) const = default;
+    std::strong_ordering operator<=>(const request_users&) const = default;
   };
   struct request_chat {
     KeyboardButtonRequestChat value;
+    bool operator==(const request_chat&) const = default;
+    std::strong_ordering operator<=>(const request_chat&) const = default;
   };
   struct request_managed_bot {
     KeyboardButtonRequestManagedBot value;
   };
   struct request_poll {
     KeyboardButtonPollType value;
+    bool operator==(const request_poll&) const = default;
+    std::strong_ordering operator<=>(const request_poll&) const = default;
   };
   struct web_app {
     WebAppInfo value;
+    bool operator==(const web_app&) const = default;
+    std::strong_ordering operator<=>(const web_app&) const = default;
   };
   struct request_contact {
     bool value;
+    bool operator==(const request_contact&) const = default;
+    std::strong_ordering operator<=>(const request_contact&) const = default;
   };
   struct request_location {
     bool value;
+    bool operator==(const request_location&) const = default;
+    std::strong_ordering operator<=>(const request_location&) const = default;
   };
   oneof<icon_custom_emoji_id, style, request_users, request_chat, request_managed_bot, request_poll, web_app,
         request_contact, request_location>
@@ -200,6 +212,8 @@ struct KeyboardButton {
         unreachable();
     }
   }
+  bool operator==(const KeyboardButton&) const;
+  std::strong_ordering operator<=>(const KeyboardButton&) const;
 };
 
 }  // namespace tgbm::api
