@@ -10,8 +10,8 @@ static std::unique_ptr<http_client> make_http2_client(bot_options options) {
   init.dst = options.dst;
   init.dstport = options.dstport;
   if (!options.additional_ssl_cert.empty()) {
-    init.tcp_options.additional_ssl_certificates.push_back(std::move(options.additional_ssl_cert));
-    init.tcp_options.host_for_name_verification.emplace(options.host);
+    init.additional_ssl_cert = std::move(options.additional_ssl_cert);
+    init.options.tcp.host_for_name_verification.emplace(options.host);
   }
   init.options.logctx = std::move(options.logctx);
   init.starter = std::move(options.starter);

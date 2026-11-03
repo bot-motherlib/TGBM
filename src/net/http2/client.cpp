@@ -13,14 +13,17 @@ http2_client::http2_client(std::string_view host, http2_client_options opts, asi
       }) {
 }
 
-static hidi::any_io_context make_client_ssl_context(hidi::tcp_connection_options tcp_options, starter_t s) {
-  return aa::inplaced{
-      [&] { return hidi::asio_tls_io(hidi::make_ssl_context_for_client({}), tcp_options, std::move(s)); }};
+static hidi::any_io_context make_client_io_context(starter_t s) {
+  return aa::inplaced{[&] { return hidi::asio_io(std::move(s)); }};
 }
 
+using span_t = std::span<const std::filesystem::path>;
+
 http2_client::http2_client(http2_client_init init)
-    : impl(hidi::endpoint(init.dst, init.dstport), std::move(init.options),
-           make_client_ssl_context(init.tcp_options, std::move(init.starter))),
+    : impl(hidi::endpoint(init.dst, init.dstport),
+           hidi::make_ssl_context_for_client(
+               init.additional_ssl_cert.empty() ? span_t{} : span_t(&init.additional_ssl_cert, 1)),
+           std::move(init.options), make_client_io_context(std::move(init.starter))),
       host(init.host) {
 }
 
