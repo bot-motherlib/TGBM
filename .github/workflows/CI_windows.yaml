@@ -37,6 +37,9 @@ jobs:
       - name: Verify clang version
         run: clang --version
 
+      - name: Install nasm
+        run: choco install nasm -y
+
       - name: Setup ccache (optional)
         run: |
           choco install ccache -y
