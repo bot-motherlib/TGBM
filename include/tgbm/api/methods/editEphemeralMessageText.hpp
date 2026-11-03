@@ -2,6 +2,7 @@
 
 #include <tgbm/api/common.hpp>
 #include <tgbm/api/types/InlineKeyboardMarkup.hpp>
+#include <tgbm/api/types/InputRichMessage.hpp>
 #include <tgbm/api/types/LinkPreviewOptions.hpp>
 #include <tgbm/api/types/MessageEntity.hpp>
 
@@ -14,13 +15,16 @@ struct edit_ephemeral_message_text_request {
   Integer receiver_user_id;
   /* Identifier of the ephemeral message to edit */
   Integer ephemeral_message_id;
-  /* New text of the message, 1-4096 characters after entity parsing */
-  String text;
+  /* New text of the message, 1-4096 characters after entity parsing; required if rich_message isn't specified
+   */
+  optional<String> text;
   /* Mode for parsing entities in the message text. See formatting options for more details. */
   optional<String> parse_mode;
   /* A JSON-serialized list of special entities that appear in message text, which can be specified instead of
    * parse_mode */
   optional<arrayof<MessageEntity>> entities;
+  /* New rich content of the message; required if text isn't specified */
+  box<InputRichMessage> rich_message;
   /* Link preview generation options for the message */
   box<LinkPreviewOptions> link_preview_options;
   /* A JSON-serialized object for an inline keyboard */
@@ -35,11 +39,14 @@ struct edit_ephemeral_message_text_request {
     body.arg("chat_id", chat_id);
     body.arg("receiver_user_id", receiver_user_id);
     body.arg("ephemeral_message_id", ephemeral_message_id);
-    body.arg("text", text);
+    if (text)
+      body.arg("text", *text);
     if (parse_mode)
       body.arg("parse_mode", *parse_mode);
     if (entities)
       body.arg("entities", *entities);
+    if (rich_message)
+      body.arg("rich_message", *rich_message);
     if (link_preview_options)
       body.arg("link_preview_options", *link_preview_options);
     if (reply_markup)

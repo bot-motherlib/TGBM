@@ -9,7 +9,7 @@ struct send_message_draft_request {
   /* Unique identifier for the target private chat */
   Integer chat_id;
   /* Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are
-   * animated. */
+   * animated. Otherwise, the draft is replaced without animation. */
   Integer draft_id;
   /* Unique identifier for the target message thread */
   optional<Integer> message_thread_id;
@@ -21,6 +21,13 @@ struct send_message_draft_request {
   /* A JSON-serialized list of special entities that appear in message text, which can be specified instead of
    * parse_mode */
   optional<arrayof<MessageEntity>> entities;
+  /* Pass True to show the user a button to stop further drafts. The bot will receive an Update
+   * “stopped_message_generation” if the user presses the button. */
+  optional<bool> can_stop;
+  /* Pass True to keep the draft in the chat when the button is pressed. The draft will still disappear after
+   * a short time or if the bot sends a message. To fully preserve the partial draft, the bot should send it
+   * as a new message. */
+  optional<bool> keep_on_stop;
 
   using return_type = bool;
   static constexpr file_info_e file_info = file_info_e::no;
@@ -38,6 +45,10 @@ struct send_message_draft_request {
       body.arg("parse_mode", *parse_mode);
     if (entities)
       body.arg("entities", *entities);
+    if (can_stop)
+      body.arg("can_stop", *can_stop);
+    if (keep_on_stop)
+      body.arg("keep_on_stop", *keep_on_stop);
   }
 };
 

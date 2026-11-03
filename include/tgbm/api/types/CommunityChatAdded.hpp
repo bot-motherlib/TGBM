@@ -4,9 +4,9 @@
 
 namespace tgbm::api {
 
-/*Describes a service message about a chat being added to a community.*/
+/*Describes a service message about a chat or a bot being added to a community.*/
 struct CommunityChatAdded {
-  /* The new community to which the chat belongs */
+  /* The new community to which the chat or the bot belongs */
   box<Community> community;
 
   consteval static bool is_mandatory_field(std::string_view name) {

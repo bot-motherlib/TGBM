@@ -28,6 +28,9 @@ struct ReplyKeyboardMarkup {
    * bot's language, bot replies to the request with a keyboard to select the new language. Other users in the
    * group don't see the keyboard. */
   optional<bool> selective;
+  /* Optional. Pass True if the reply interface must be shown to the user, as if they had manually selected
+   * the bot's message and tapped 'Reply' */
+  optional<bool> force_reply;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("keyboard", true).or_default(false);

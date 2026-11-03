@@ -37,6 +37,8 @@ struct ChatMemberAdministrator {
   bool can_edit_stories;
   /* True, if the administrator can delete stories posted by other users */
   bool can_delete_stories;
+  /* True, if the administrator can manage chat welcome messages or directly send them in the case of bots */
+  bool can_send_welcome_messages;
   /* Optional. Custom title for this user */
   optional<String> custom_title;
   /* Optional. True, if the administrator can post messages in the channel, approve suggested posts, or access
@@ -54,7 +56,7 @@ struct ChatMemberAdministrator {
    * posts; for channels only */
   optional<bool> can_manage_direct_messages;
   /* Optional. True, if the administrator can edit the tags of regular members; for groups and supergroups
-   * only. If omitted, defaults to the value of can_pin_messages. */
+   * only */
   optional<bool> can_manage_tags;
 
   consteval static bool is_mandatory_field(std::string_view name) {
@@ -72,6 +74,7 @@ struct ChatMemberAdministrator {
         .case_("can_post_stories", true)
         .case_("can_edit_stories", true)
         .case_("can_delete_stories", true)
+        .case_("can_send_welcome_messages", true)
         .or_default(false);
   }
 };

@@ -12,6 +12,7 @@
 #include <tgbm/api/types/InlineQuery.hpp>
 #include <tgbm/api/types/ManagedBotUpdated.hpp>
 #include <tgbm/api/types/Message.hpp>
+#include <tgbm/api/types/MessageGenerationStopped.hpp>
 #include <tgbm/api/types/MessageReactionCountUpdated.hpp>
 #include <tgbm/api/types/MessageReactionUpdated.hpp>
 #include <tgbm/api/types/PaidMediaPurchased.hpp>
@@ -108,11 +109,15 @@ struct Update {
   struct subscription {
     BotSubscriptionUpdated value;
   };
+  struct stopped_message_generation {
+    MessageGenerationStopped value;
+  };
   oneof<message, edited_message, channel_post, edited_channel_post, business_connection, business_message,
         edited_business_message, deleted_business_messages, guest_message, message_reaction,
         message_reaction_count, inline_query, chosen_inline_result, callback_query, shipping_query,
         pre_checkout_query, purchased_paid_media, poll, poll_answer, my_chat_member, chat_member,
-        chat_join_request, chat_boost, removed_chat_boost, managed_bot, subscription>
+        chat_join_request, chat_boost, removed_chat_boost, managed_bot, subscription,
+        stopped_message_generation>
       data;
   enum struct type_e {
     /* Optional. New incoming message of any kind - text, photo, sticker, etc. */
@@ -187,6 +192,8 @@ struct Update {
     k_managed_bot,
     /* Optional. User payment subscription has changed */
     k_subscription,
+    /* Optional. A user asked the bot to stop the generation of a message */
+    k_stopped_message_generation,
     nothing,
   };
   static constexpr size_t variant_size = size_t(type_e::nothing);
@@ -401,6 +408,14 @@ struct Update {
     auto* p = data.get_if<subscription>();
     return p ? &p->value : nullptr;
   }
+  MessageGenerationStopped* get_stopped_message_generation() noexcept {
+    auto* p = data.get_if<stopped_message_generation>();
+    return p ? &p->value : nullptr;
+  }
+  const MessageGenerationStopped* get_stopped_message_generation() const noexcept {
+    auto* p = data.get_if<stopped_message_generation>();
+    return p ? &p->value : nullptr;
+  }
   static constexpr decltype(auto) discriminate_field(std::string_view val, auto&& visitor) {
     if (val == "message")
       return visitor.template operator()<message>();
@@ -454,6 +469,8 @@ struct Update {
       return visitor.template operator()<managed_bot>();
     if (val == "subscription")
       return visitor.template operator()<subscription>();
+    if (val == "stopped_message_generation")
+      return visitor.template operator()<stopped_message_generation>();
     return visitor.template operator()<void>();
   }
 
@@ -512,6 +529,8 @@ struct Update {
         return "managed_bot";
       case k_subscription:
         return "subscription";
+      case k_stopped_message_generation:
+        return "stopped_message_generation";
       case nothing:
         return "";
       default:

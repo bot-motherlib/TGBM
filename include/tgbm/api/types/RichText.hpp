@@ -22,6 +22,7 @@
 #include <tgbm/api/types/RichTextHashtag.hpp>
 #include <tgbm/api/types/RichTextCashtag.hpp>
 #include <tgbm/api/types/RichTextBotCommand.hpp>
+#include <tgbm/api/types/RichTextButton.hpp>
 #include <tgbm/api/types/RichTextAnchor.hpp>
 #include <tgbm/api/types/RichTextAnchorLink.hpp>
 #include <tgbm/api/types/RichTextReference.hpp>
@@ -36,7 +37,8 @@ struct RichText {
         RichTextDateTime, RichTextTextMention, RichTextSubscript, RichTextSuperscript, RichTextMarked,
         RichTextCode, RichTextCustomEmoji, RichTextMathematicalExpression, RichTextUrl, RichTextEmailAddress,
         RichTextPhoneNumber, RichTextBankCardNumber, RichTextMention, RichTextHashtag, RichTextCashtag,
-        RichTextBotCommand, RichTextAnchor, RichTextAnchorLink, RichTextReference, RichTextReferenceLink>
+        RichTextBotCommand, RichTextButton, RichTextAnchor, RichTextAnchorLink, RichTextReference,
+        RichTextReferenceLink>
       data;
   static constexpr std::string_view discriminator = "type";
   enum struct type_e {
@@ -61,6 +63,7 @@ struct RichText {
     k_hashtag,
     k_cashtag,
     k_botcommand,
+    k_button,
     k_anchor,
     k_anchorlink,
     k_reference,
@@ -198,6 +201,12 @@ struct RichText {
   const RichTextBotCommand* get_botcommand() const noexcept {
     return data.get_if<RichTextBotCommand>();
   }
+  RichTextButton* get_button() noexcept {
+    return data.get_if<RichTextButton>();
+  }
+  const RichTextButton* get_button() const noexcept {
+    return data.get_if<RichTextButton>();
+  }
   RichTextAnchor* get_anchor() noexcept {
     return data.get_if<RichTextAnchor>();
   }
@@ -245,6 +254,7 @@ struct RichText {
         .case_("hashtag", type_e::k_hashtag)
         .case_("cashtag", type_e::k_cashtag)
         .case_("bot_command", type_e::k_botcommand)
+        .case_("button", type_e::k_button)
         .case_("anchor", type_e::k_anchor)
         .case_("anchor_link", type_e::k_anchorlink)
         .case_("reference", type_e::k_reference)
@@ -295,6 +305,8 @@ struct RichText {
       return visitor.template operator()<RichTextCashtag>();
     if (val == "bot_command")
       return visitor.template operator()<RichTextBotCommand>();
+    if (val == "button")
+      return visitor.template operator()<RichTextButton>();
     if (val == "anchor")
       return visitor.template operator()<RichTextAnchor>();
     if (val == "anchor_link")
@@ -351,6 +363,8 @@ struct RichText {
         return "cashtag";
       case k_botcommand:
         return "bot_command";
+      case k_button:
+        return "button";
       case k_anchor:
         return "anchor";
       case k_anchorlink:

@@ -2,6 +2,7 @@
 
 #include <tgbm/api/types/CallbackGame.hpp>
 #include <tgbm/api/types/CopyTextButton.hpp>
+#include <tgbm/api/types/DisabledButton.hpp>
 #include <tgbm/api/types/LoginUrl.hpp>
 #include <tgbm/api/types/SwitchInlineQueryChosenChat.hpp>
 #include <tgbm/api/types/WebAppInfo.hpp>
@@ -45,11 +46,15 @@ struct InlineKeyboardButton {
   struct callback_game {
     CallbackGame value;
   };
+  struct disabled {
+    DisabledButton value;
+  };
   struct pay {
     bool value;
   };
   oneof<icon_custom_emoji_id, style, url, callback_data, web_app, login_url, switch_inline_query,
-        switch_inline_query_current_chat, switch_inline_query_chosen_chat, copy_text, callback_game, pay>
+        switch_inline_query_current_chat, switch_inline_query_chosen_chat, copy_text, callback_game, disabled,
+        pay>
       data;
   enum struct type_e {
     /* Optional. Unique identifier of the custom emoji shown before the text of the button. Can only be used
@@ -71,7 +76,7 @@ struct InlineKeyboardButton {
        of a business account. */
     k_web_app,
     /* Optional. An HTTPS URL used to automatically authorize the user. Can be used as a replacement for the
-       Telegram Login Widget. */
+       Telegram Login Widget. Not supported for ephemeral messages. */
     k_login_url,
     /* Optional. If set, pressing the button will prompt the user to select one of their chats, open that chat
        and insert the bot's username and the specified inline query in the input field. May be empty, in which
@@ -94,6 +99,8 @@ struct InlineKeyboardButton {
     /* Optional. Description of the game that will be launched when the user presses the button.NOTE: This
        type of button must always be the first button in the first row. */
     k_callback_game,
+    /* Optional. If set, then the button is disabled and does nothing */
+    k_disabled,
     /* Optional. Specify True, to send a Pay button. Substrings “” and “XTR” in the buttons's text will be
        replaced with a Telegram Star icon.NOTE: This type of button must always be the first button in the
        first row and can only be used in invoice messages. */
@@ -192,6 +199,14 @@ struct InlineKeyboardButton {
     auto* p = data.get_if<callback_game>();
     return p ? &p->value : nullptr;
   }
+  DisabledButton* get_disabled() noexcept {
+    auto* p = data.get_if<disabled>();
+    return p ? &p->value : nullptr;
+  }
+  const DisabledButton* get_disabled() const noexcept {
+    auto* p = data.get_if<disabled>();
+    return p ? &p->value : nullptr;
+  }
   bool* get_pay() noexcept {
     auto* p = data.get_if<pay>();
     return p ? &p->value : nullptr;
@@ -223,6 +238,8 @@ struct InlineKeyboardButton {
       return visitor.template operator()<copy_text>();
     if (val == "callback_game")
       return visitor.template operator()<callback_game>();
+    if (val == "disabled")
+      return visitor.template operator()<disabled>();
     if (val == "pay")
       return visitor.template operator()<pay>();
     return visitor.template operator()<void>();
@@ -253,6 +270,8 @@ struct InlineKeyboardButton {
         return "copy_text";
       case k_callback_game:
         return "callback_game";
+      case k_disabled:
+        return "disabled";
       case k_pay:
         return "pay";
       case nothing:

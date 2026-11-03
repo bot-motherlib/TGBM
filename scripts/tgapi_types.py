@@ -26,7 +26,7 @@ G_TYPE_MAPPING = {
     "float": "Double",
     "inputfileorstring": 'file_or_str',
     "inputfile": "InputFile",
-    unify("InputMediaAnimation or InputMediaAudio or InputMediaPhoto or InputMediaVideo or InputMediaVoiceNote"): "input_media_t",
+    unify("InputMediaAnimation or InputMediaAudio or InputMediaDocument or InputMediaPhoto or InputMediaVideo or InputMediaVoiceNote"): "input_media_t",
 }
 
 PARSED_TYPES = {}

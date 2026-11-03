@@ -74,8 +74,6 @@ if (WIN32)
     target_compile_definitions(tgbmlib PUBLIC _WIN32_WINNT=${TGBM_WINDOWS_VERSION})
 endif()
 
-target_compile_definitions(tgbmlib PUBLIC OPENSSL_NO_HEARTBEATS)
-
 set_target_properties(tgbmlib PROPERTIES
 	CMAKE_CXX_EXTENSIONS OFF
 	LINKER_LANGUAGE CXX

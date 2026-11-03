@@ -117,7 +117,7 @@ G_TYPE_MAPPING = {
     "inputfileorstring": G_FILEORSTR,
     "inputfile": "InputFile",
     "inlinekeyboardmarkuporreplykeyboardmarkuporreplykeyboardremoveorforcereply": "reply_markup_t",
-    "InputMediaAnimation or InputMediaAudio or InputMediaPhoto or InputMediaVideo or InputMediaVoiceNote".strip().lower().replace(' ', '') : "input_media_t",
+    "InputMediaAnimation or InputMediaAudio or InputMediaDocument or InputMediaPhoto or InputMediaVideo or InputMediaVoiceNote".strip().lower().replace(' ', '') : "input_media_t",
 }
 
 # takes compound part from cpptype (array or not)

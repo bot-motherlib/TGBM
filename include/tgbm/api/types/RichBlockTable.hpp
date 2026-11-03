@@ -14,6 +14,8 @@ struct RichBlockTable {
   optional<True> is_bordered;
   /* Optional. True, if the table is striped */
   optional<True> is_striped;
+  /* Optional. True, if table cells have smaller indents */
+  optional<True> is_compact;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("cells", true).or_default(false);

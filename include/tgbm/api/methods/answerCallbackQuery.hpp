@@ -18,7 +18,7 @@ struct answer_callback_query_request {
    * a parameter. */
   optional<String> url;
   /* The maximum amount of time in seconds that the result of the callback query may be cached client-side.
-   * Telegram apps will support caching starting in version 3.14. Defaults to 0. */
+   * Defaults to 0. */
   optional<Integer> cache_time;
 
   using return_type = bool;

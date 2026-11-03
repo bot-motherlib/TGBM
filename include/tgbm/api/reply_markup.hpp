@@ -16,8 +16,9 @@ struct InputMediaAudio;
 struct InputMediaPhoto;
 struct InputMediaVideo;
 struct InputMediaVoiceNote;
+struct InputMediaDocument;
 
-using input_media_t =
-    box_union<InputMediaAnimation, InputMediaAudio, InputMediaPhoto, InputMediaVideo, InputMediaVoiceNote>;
+using input_media_t = box_union<InputMediaAnimation, InputMediaAudio, InputMediaDocument, InputMediaPhoto,
+                                InputMediaVideo, InputMediaVoiceNote>;
 
 }  // namespace tgbm::api

@@ -15,7 +15,7 @@ struct InputRichMessage {
    * formatting options for more details. Use media field to specify the media used in the message. */
   optional<String> markdown;
   /* Optional. List of media that are specified in the markdown or html fields using tg://photo?id=,
-   * tg://video?id=, and tg://audio?id= links */
+   * tg://video?id=, tg://document?id=, and tg://audio?id= links */
   optional<arrayof<InputRichMessageMedia>> media;
   /* Optional. Pass True if the rich message must be shown right-to-left */
   optional<bool> is_rtl;

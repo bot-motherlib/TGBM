@@ -1,6 +1,7 @@
 #pragma once
 
 #include <tgbm/api/common.hpp>
+#include <tgbm/api/types/EphemeralMessageParameters.hpp>
 #include <tgbm/api/types/InputRichMessage.hpp>
 #include <tgbm/api/types/Message.hpp>
 #include <tgbm/api/types/ReplyParameters.hpp>
@@ -23,6 +24,8 @@ struct send_rich_message_request {
   /* Identifier of the direct messages topic to which the message will be sent; required if the message is
    * sent to a direct messages chat */
   optional<Integer> direct_messages_topic_id;
+  /* A JSON-serialized object containing the parameters of the ephemeral message to send */
+  box<EphemeralMessageParameters> ephemeral_message_parameters;
   /* Sends the message silently. Users will receive a notification with no sound. */
   optional<bool> disable_notification;
   /* Protects the contents of the sent message from forwarding and saving */
@@ -55,6 +58,8 @@ struct send_rich_message_request {
       body.arg("message_thread_id", *message_thread_id);
     if (direct_messages_topic_id)
       body.arg("direct_messages_topic_id", *direct_messages_topic_id);
+    if (ephemeral_message_parameters)
+      body.arg("ephemeral_message_parameters", *ephemeral_message_parameters);
     body.arg("rich_message", rich_message);
     if (disable_notification)
       body.arg("disable_notification", *disable_notification);

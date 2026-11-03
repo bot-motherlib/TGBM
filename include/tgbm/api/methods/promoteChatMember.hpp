@@ -53,6 +53,9 @@ struct promote_chat_member_request {
   optional<bool> can_manage_direct_messages;
   /* Pass True if the administrator can edit the tags of regular members; for groups and supergroups only */
   optional<bool> can_manage_tags;
+  /* Pass True if the administrator can manage chat welcome messages or directly send them in the case of bots
+   */
+  optional<bool> can_send_welcome_messages;
 
   using return_type = bool;
   static constexpr file_info_e file_info = file_info_e::no;
@@ -96,6 +99,8 @@ struct promote_chat_member_request {
       body.arg("can_manage_direct_messages", *can_manage_direct_messages);
     if (can_manage_tags)
       body.arg("can_manage_tags", *can_manage_tags);
+    if (can_send_welcome_messages)
+      body.arg("can_send_welcome_messages", *can_send_welcome_messages);
   }
 };
 

@@ -13,8 +13,7 @@ struct edit_ephemeral_message_media_request {
   Integer receiver_user_id;
   /* Identifier of the ephemeral message to edit */
   Integer ephemeral_message_id;
-  /* A JSON-serialized object for the new media content of the message. A new file can't be uploaded; use a
-   * previously uploaded file via its file_id or specify a URL. */
+  /* A JSON-serialized object for the new media content of the message */
   box<InputMedia> media;
   /* A JSON-serialized object for an inline keyboard */
   box<InlineKeyboardMarkup> reply_markup;

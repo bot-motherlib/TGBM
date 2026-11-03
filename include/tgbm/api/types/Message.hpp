@@ -209,9 +209,11 @@ struct Message {
   box<ChecklistTasksDone> checklist_tasks_done;
   /* Optional. Service message: tasks were added to a checklist */
   box<ChecklistTasksAdded> checklist_tasks_added;
-  /* Optional. Service message: chat added to a Community */
+  /* Optional. Service message: chat or bot added to a Community */
   box<CommunityChatAdded> community_chat_added;
-  /* Optional. Service message: chat removed from a Community */
+  /* Optional. Service message: chat was joined by a user from a Community */
+  box<CommunityChatJoined> community_chat_joined;
+  /* Optional. Service message: chat or bot removed from a Community */
   box<CommunityChatRemoved> community_chat_removed;
   /* Optional. Service message: the price for paid messages in the corresponding direct messages chat of a
    * channel has changed */

@@ -20,6 +20,9 @@ struct edit_ephemeral_message_caption_request {
   /* A JSON-serialized list of special entities that appear in the caption, which can be specified instead of
    * parse_mode */
   optional<arrayof<MessageEntity>> caption_entities;
+  /* Pass True if the caption must be shown above the message media. Supported only for animation, photo and
+   * video messages. */
+  optional<bool> show_caption_above_media;
   /* A JSON-serialized object for an inline keyboard */
   box<InlineKeyboardMarkup> reply_markup;
 
@@ -38,6 +41,8 @@ struct edit_ephemeral_message_caption_request {
       body.arg("parse_mode", *parse_mode);
     if (caption_entities)
       body.arg("caption_entities", *caption_entities);
+    if (show_caption_above_media)
+      body.arg("show_caption_above_media", *show_caption_above_media);
     if (reply_markup)
       body.arg("reply_markup", *reply_markup);
   }

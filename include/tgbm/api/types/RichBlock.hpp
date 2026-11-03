@@ -10,14 +10,17 @@
 #include <tgbm/api/types/RichBlockAnchor.hpp>
 #include <tgbm/api/types/RichBlockList.hpp>
 #include <tgbm/api/types/RichBlockBlockQuotation.hpp>
+#include <tgbm/api/types/RichBlockExpandableBlockQuotation.hpp>
 #include <tgbm/api/types/RichBlockPullQuotation.hpp>
 #include <tgbm/api/types/RichBlockCollage.hpp>
 #include <tgbm/api/types/RichBlockSlideshow.hpp>
 #include <tgbm/api/types/RichBlockTable.hpp>
 #include <tgbm/api/types/RichBlockDetails.hpp>
 #include <tgbm/api/types/RichBlockMap.hpp>
+#include <tgbm/api/types/RichBlockButtons.hpp>
 #include <tgbm/api/types/RichBlockAnimation.hpp>
 #include <tgbm/api/types/RichBlockAudio.hpp>
+#include <tgbm/api/types/RichBlockDocument.hpp>
 #include <tgbm/api/types/RichBlockPhoto.hpp>
 #include <tgbm/api/types/RichBlockVideo.hpp>
 #include <tgbm/api/types/RichBlockVoiceNote.hpp>
@@ -30,9 +33,9 @@ namespace tgbm::api {
 struct RichBlock {
   oneof<RichBlockParagraph, RichBlockSectionHeading, RichBlockPreformatted, RichBlockFooter, RichBlockDivider,
         RichBlockMathematicalExpression, RichBlockAnchor, RichBlockList, RichBlockBlockQuotation,
-        RichBlockPullQuotation, RichBlockCollage, RichBlockSlideshow, RichBlockTable, RichBlockDetails,
-        RichBlockMap, RichBlockAnimation, RichBlockAudio, RichBlockPhoto, RichBlockVideo, RichBlockVoiceNote,
-        RichBlockThinking>
+        RichBlockExpandableBlockQuotation, RichBlockPullQuotation, RichBlockCollage, RichBlockSlideshow,
+        RichBlockTable, RichBlockDetails, RichBlockMap, RichBlockButtons, RichBlockAnimation, RichBlockAudio,
+        RichBlockDocument, RichBlockPhoto, RichBlockVideo, RichBlockVoiceNote, RichBlockThinking>
       data;
   static constexpr std::string_view discriminator = "type";
   enum struct type_e {
@@ -45,14 +48,17 @@ struct RichBlock {
     k_anchor,
     k_list,
     k_blockquotation,
+    k_expandableblockquotation,
     k_pullquotation,
     k_collage,
     k_slideshow,
     k_table,
     k_details,
     k_map,
+    k_buttons,
     k_animation,
     k_audio,
+    k_document,
     k_photo,
     k_video,
     k_voicenote,
@@ -118,6 +124,12 @@ struct RichBlock {
   const RichBlockBlockQuotation* get_blockquotation() const noexcept {
     return data.get_if<RichBlockBlockQuotation>();
   }
+  RichBlockExpandableBlockQuotation* get_expandableblockquotation() noexcept {
+    return data.get_if<RichBlockExpandableBlockQuotation>();
+  }
+  const RichBlockExpandableBlockQuotation* get_expandableblockquotation() const noexcept {
+    return data.get_if<RichBlockExpandableBlockQuotation>();
+  }
   RichBlockPullQuotation* get_pullquotation() noexcept {
     return data.get_if<RichBlockPullQuotation>();
   }
@@ -154,6 +166,12 @@ struct RichBlock {
   const RichBlockMap* get_map() const noexcept {
     return data.get_if<RichBlockMap>();
   }
+  RichBlockButtons* get_buttons() noexcept {
+    return data.get_if<RichBlockButtons>();
+  }
+  const RichBlockButtons* get_buttons() const noexcept {
+    return data.get_if<RichBlockButtons>();
+  }
   RichBlockAnimation* get_animation() noexcept {
     return data.get_if<RichBlockAnimation>();
   }
@@ -165,6 +183,12 @@ struct RichBlock {
   }
   const RichBlockAudio* get_audio() const noexcept {
     return data.get_if<RichBlockAudio>();
+  }
+  RichBlockDocument* get_document() noexcept {
+    return data.get_if<RichBlockDocument>();
+  }
+  const RichBlockDocument* get_document() const noexcept {
+    return data.get_if<RichBlockDocument>();
   }
   RichBlockPhoto* get_photo() noexcept {
     return data.get_if<RichBlockPhoto>();
@@ -201,14 +225,17 @@ struct RichBlock {
         .case_("anchor", type_e::k_anchor)
         .case_("list", type_e::k_list)
         .case_("blockquote", type_e::k_blockquotation)
+        .case_("expandable_blockquote", type_e::k_expandableblockquotation)
         .case_("pullquote", type_e::k_pullquotation)
         .case_("collage", type_e::k_collage)
         .case_("slideshow", type_e::k_slideshow)
         .case_("table", type_e::k_table)
         .case_("details", type_e::k_details)
         .case_("map", type_e::k_map)
+        .case_("buttons", type_e::k_buttons)
         .case_("animation", type_e::k_animation)
         .case_("audio", type_e::k_audio)
+        .case_("document", type_e::k_document)
         .case_("photo", type_e::k_photo)
         .case_("video", type_e::k_video)
         .case_("voice_note", type_e::k_voicenote)
@@ -235,6 +262,8 @@ struct RichBlock {
       return visitor.template operator()<RichBlockList>();
     if (val == "blockquote")
       return visitor.template operator()<RichBlockBlockQuotation>();
+    if (val == "expandable_blockquote")
+      return visitor.template operator()<RichBlockExpandableBlockQuotation>();
     if (val == "pullquote")
       return visitor.template operator()<RichBlockPullQuotation>();
     if (val == "collage")
@@ -247,10 +276,14 @@ struct RichBlock {
       return visitor.template operator()<RichBlockDetails>();
     if (val == "map")
       return visitor.template operator()<RichBlockMap>();
+    if (val == "buttons")
+      return visitor.template operator()<RichBlockButtons>();
     if (val == "animation")
       return visitor.template operator()<RichBlockAnimation>();
     if (val == "audio")
       return visitor.template operator()<RichBlockAudio>();
+    if (val == "document")
+      return visitor.template operator()<RichBlockDocument>();
     if (val == "photo")
       return visitor.template operator()<RichBlockPhoto>();
     if (val == "video")
@@ -283,6 +316,8 @@ struct RichBlock {
         return "list";
       case k_blockquotation:
         return "blockquote";
+      case k_expandableblockquotation:
+        return "expandable_blockquote";
       case k_pullquotation:
         return "pullquote";
       case k_collage:
@@ -295,10 +330,14 @@ struct RichBlock {
         return "details";
       case k_map:
         return "map";
+      case k_buttons:
+        return "buttons";
       case k_animation:
         return "animation";
       case k_audio:
         return "audio";
+      case k_document:
+        return "document";
       case k_photo:
         return "photo";
       case k_video:

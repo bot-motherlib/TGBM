@@ -8,7 +8,7 @@ namespace tgbm::api {
 struct RichBlockMap {
   /* Location of the center of the map */
   box<Location> location;
-  /* Map zoom level; 13-20 */
+  /* Map zoom level */
   Integer zoom;
   /* Expected width of the map */
   Integer width;
