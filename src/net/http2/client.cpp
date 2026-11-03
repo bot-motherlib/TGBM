@@ -14,7 +14,7 @@ http2_client::http2_client(std::string_view host, http2_client_options opts, asi
 }
 
 static hidi::any_io_context make_client_io_context(starter_t s) {
-  return aa::inplaced{[&] { return hidi::asio_io(std::move(s)); }};
+  return hidi::any_io_context(std::in_place_type<hidi::asio_io>, std::move(s));
 }
 
 using span_t = std::span<const std::filesystem::path>;
