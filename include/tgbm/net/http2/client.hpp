@@ -19,8 +19,9 @@ struct http2_client_init {
   // destination to connect (usually equal to `host`)
   std::string dst = "api.telegram.org";
   uint16_t dstport = 443;
+  // contains tcp options too
   http2_client_options options = {};
-  hidi::tcp_connection_options tcp_options = {};
+  std::filesystem::path additional_ssl_cert = {};
   starter_t starter = {};
 };
 

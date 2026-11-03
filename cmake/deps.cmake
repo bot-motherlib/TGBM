@@ -1,5 +1,9 @@
 include(cmake/get_cpm.cmake)
 
+# см. то же самое в hidi
+if (WIN32)
+  set(BOOST_CONTEXT_IMPLEMENTATION winfib CACHE STRING "Boost.Context implementation (fcontext, ucontext, winfib)" FORCE)
+endif()
 set(BOOST_INCLUDE_LIBRARIES system asio pfr json stacktrace)
 CPMAddPackage(
   NAME BOOST
@@ -14,13 +18,13 @@ CPMAddPackage("gh:fmtlib/fmt#11.2.0")
 CPMAddPackage(
   NAME KELCORO
   GIT_REPOSITORY https://github.com/kelbon/kelcoro
-  GIT_TAG v1.4.3
+  GIT_TAG v1.4.7
 )
 
 CPMAddPackage(
   NAME ANYANY
   GIT_REPOSITORY https://github.com/kelbon/AnyAny
-  GIT_TAG v1.2.1
+  GIT_TAG v1.3.0
 )
 
 CPMAddPackage(
@@ -67,7 +71,7 @@ endif()
 CPMAddPackage(
   NAME HIDI
   GIT_REPOSITORY https://github.com/kelbon/hidi
-  GIT_TAG v0.11.0
+  GIT_TAG v0.15.0
   OPTIONS "HIDI_USE_CPM ON"
 )
 
