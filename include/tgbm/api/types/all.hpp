@@ -13,6 +13,7 @@
 #include <tgbm/api/types/TextQuote.hpp>
 #include <tgbm/api/types/ExternalReplyInfo.hpp>
 #include <tgbm/api/types/ReplyParameters.hpp>
+#include <tgbm/api/types/EphemeralMessageParameters.hpp>
 #include <tgbm/api/types/MessageOrigin.hpp>
 #include <tgbm/api/types/MessageOriginUser.hpp>
 #include <tgbm/api/types/MessageOriginHiddenUser.hpp>
@@ -66,6 +67,7 @@
 #include <tgbm/api/types/ManagedBotCreated.hpp>
 #include <tgbm/api/types/ManagedBotUpdated.hpp>
 #include <tgbm/api/types/BotSubscriptionUpdated.hpp>
+#include <tgbm/api/types/MessageGenerationStopped.hpp>
 #include <tgbm/api/types/PollOptionAdded.hpp>
 #include <tgbm/api/types/PollOptionDeleted.hpp>
 #include <tgbm/api/types/ChatBoostAdded.hpp>
@@ -82,6 +84,7 @@
 #include <tgbm/api/types/ChecklistTasksDone.hpp>
 #include <tgbm/api/types/ChecklistTasksAdded.hpp>
 #include <tgbm/api/types/CommunityChatAdded.hpp>
+#include <tgbm/api/types/CommunityChatJoined.hpp>
 #include <tgbm/api/types/CommunityChatRemoved.hpp>
 #include <tgbm/api/types/ForumTopicCreated.hpp>
 #include <tgbm/api/types/ForumTopicClosed.hpp>
@@ -129,6 +132,7 @@
 #include <tgbm/api/types/LoginUrl.hpp>
 #include <tgbm/api/types/SwitchInlineQueryChosenChat.hpp>
 #include <tgbm/api/types/CopyTextButton.hpp>
+#include <tgbm/api/types/DisabledButton.hpp>
 #include <tgbm/api/types/CallbackQuery.hpp>
 #include <tgbm/api/types/ForceReply.hpp>
 #include <tgbm/api/types/Community.hpp>
@@ -241,6 +245,7 @@
 #include <tgbm/api/types/RichMessage.hpp>
 #include <tgbm/api/types/InputRichMessage.hpp>
 #include <tgbm/api/types/InputRichMessageMedia.hpp>
+#include <tgbm/api/types/RichMessageButton.hpp>
 #include <tgbm/api/types/RichText.hpp>
 #include <tgbm/api/types/RichTextBold.hpp>
 #include <tgbm/api/types/RichTextItalic.hpp>
@@ -263,6 +268,7 @@
 #include <tgbm/api/types/RichTextHashtag.hpp>
 #include <tgbm/api/types/RichTextCashtag.hpp>
 #include <tgbm/api/types/RichTextBotCommand.hpp>
+#include <tgbm/api/types/RichTextButton.hpp>
 #include <tgbm/api/types/RichTextAnchor.hpp>
 #include <tgbm/api/types/RichTextAnchorLink.hpp>
 #include <tgbm/api/types/RichTextReference.hpp>
@@ -280,14 +286,17 @@
 #include <tgbm/api/types/RichBlockAnchor.hpp>
 #include <tgbm/api/types/RichBlockList.hpp>
 #include <tgbm/api/types/RichBlockBlockQuotation.hpp>
+#include <tgbm/api/types/RichBlockExpandableBlockQuotation.hpp>
 #include <tgbm/api/types/RichBlockPullQuotation.hpp>
 #include <tgbm/api/types/RichBlockCollage.hpp>
 #include <tgbm/api/types/RichBlockSlideshow.hpp>
 #include <tgbm/api/types/RichBlockTable.hpp>
 #include <tgbm/api/types/RichBlockDetails.hpp>
 #include <tgbm/api/types/RichBlockMap.hpp>
+#include <tgbm/api/types/RichBlockButtons.hpp>
 #include <tgbm/api/types/RichBlockAnimation.hpp>
 #include <tgbm/api/types/RichBlockAudio.hpp>
+#include <tgbm/api/types/RichBlockDocument.hpp>
 #include <tgbm/api/types/RichBlockPhoto.hpp>
 #include <tgbm/api/types/RichBlockVideo.hpp>
 #include <tgbm/api/types/RichBlockVoiceNote.hpp>
@@ -303,14 +312,17 @@
 #include <tgbm/api/types/InputRichBlockAnchor.hpp>
 #include <tgbm/api/types/InputRichBlockList.hpp>
 #include <tgbm/api/types/InputRichBlockBlockQuotation.hpp>
+#include <tgbm/api/types/InputRichBlockExpandableBlockQuotation.hpp>
 #include <tgbm/api/types/InputRichBlockPullQuotation.hpp>
 #include <tgbm/api/types/InputRichBlockCollage.hpp>
 #include <tgbm/api/types/InputRichBlockSlideshow.hpp>
 #include <tgbm/api/types/InputRichBlockTable.hpp>
 #include <tgbm/api/types/InputRichBlockDetails.hpp>
 #include <tgbm/api/types/InputRichBlockMap.hpp>
+#include <tgbm/api/types/InputRichBlockButtons.hpp>
 #include <tgbm/api/types/InputRichBlockAnimation.hpp>
 #include <tgbm/api/types/InputRichBlockAudio.hpp>
+#include <tgbm/api/types/InputRichBlockDocument.hpp>
 #include <tgbm/api/types/InputRichBlockPhoto.hpp>
 #include <tgbm/api/types/InputRichBlockVideo.hpp>
 #include <tgbm/api/types/InputRichBlockVoiceNote.hpp>

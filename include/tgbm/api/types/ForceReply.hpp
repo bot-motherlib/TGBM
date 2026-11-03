@@ -9,7 +9,8 @@ namespace tgbm::api {
  * to create user-friendly step-by-step interfaces without having to sacrifice privacy mode. Not supported in
  * channels and for messages sent on behalf of a user account.*/
 struct ForceReply {
-  /* Shows reply interface to the user, as if they manually selected the bot's message and tapped 'Reply' */
+  /* Shows reply interface to the user, as if they had manually selected the bot's message and tapped 'Reply'
+   */
   True force_reply;
   /* Optional. The placeholder to be shown in the input field when the reply is active; 1-64 characters */
   optional<String> input_field_placeholder;

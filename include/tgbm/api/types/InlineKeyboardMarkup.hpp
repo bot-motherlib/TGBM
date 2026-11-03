@@ -8,6 +8,10 @@ namespace tgbm::api {
 struct InlineKeyboardMarkup {
   /* Array of button rows, each represented by an Array of InlineKeyboardButton objects */
   arrayof<arrayof<InlineKeyboardButton>> inline_keyboard;
+  /* Optional. Pass True if the reply interface must be shown to the user, as if they had manually selected
+   * the bot's message and tapped 'Reply'. The value of the field can't be changed when the inline keyboard is
+   * edited. */
+  optional<bool> force_reply;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("inline_keyboard", true).or_default(false);

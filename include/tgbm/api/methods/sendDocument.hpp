@@ -1,6 +1,7 @@
 #pragma once
 
 #include <tgbm/api/common.hpp>
+#include <tgbm/api/types/EphemeralMessageParameters.hpp>
 #include <tgbm/api/types/Message.hpp>
 #include <tgbm/api/types/MessageEntity.hpp>
 #include <tgbm/api/types/ReplyParameters.hpp>
@@ -24,12 +25,8 @@ struct send_document_request {
   /* Identifier of the direct messages topic to which the message will be sent; required if the message is
    * sent to a direct messages chat */
   optional<Integer> direct_messages_topic_id;
-  /* For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group
-   * and supergroup chats only. It is not guaranteed that the user will receive the message, especially if
-   * they are offline. See ephemeral message sending for more details. */
-  optional<Integer> receiver_user_id;
-  /* For outgoing ephemeral messages, identifier of the callback query which triggered the message if any */
-  optional<String> callback_query_id;
+  /* A JSON-serialized object containing the parameters of the ephemeral message to send */
+  box<EphemeralMessageParameters> ephemeral_message_parameters;
   /* Thumbnail of the file sent; can be ignored if thumbnail generation for the file is supported server-side.
    * The thumbnail should be in JPEG format and less than 200 kB in size. A thumbnail's width and height
    * should not exceed 320. Ignored if the file is not uploaded using multipart/form-data. Thumbnails can't be
@@ -79,10 +76,8 @@ struct send_document_request {
       body.arg("message_thread_id", *message_thread_id);
     if (direct_messages_topic_id)
       body.arg("direct_messages_topic_id", *direct_messages_topic_id);
-    if (receiver_user_id)
-      body.arg("receiver_user_id", *receiver_user_id);
-    if (callback_query_id)
-      body.arg("callback_query_id", *callback_query_id);
+    if (ephemeral_message_parameters)
+      body.arg("ephemeral_message_parameters", *ephemeral_message_parameters);
     if (const auto* str = document.get_str())
       body.arg("document", *str);
     if (thumbnail)

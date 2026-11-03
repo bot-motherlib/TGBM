@@ -66,7 +66,7 @@ struct telegram {
 
   /* Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages,
    * giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the
-   * value of the field correct_option_id is known to the bot. The method is analogous to the method
+   * value of the field correct_option_ids is known to the bot. The method is analogous to the method
    * forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId
    * of the sent message on success. */
   dd::task<MessageId> copyMessage(api::copy_message_request, deadline_t deadline = deadline_t::never()) const;
@@ -74,7 +74,7 @@ struct telegram {
   /* Use this method to copy messages of any kind. If some of the specified messages can't be found or copied,
    * they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages,
    * and invoice messages can't be copied. A quiz poll can be copied only if the value of the field
-   * correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the
+   * correct_option_ids is known to the bot. The method is analogous to the method forwardMessages, but the
    * copied messages don't have a link to the original message. Album grouping is kept for copied messages. On
    * success, an Array of MessageId of the sent messages is returned. */
   dd::task<arrayof<MessageId>> copyMessages(api::copy_messages_request,
@@ -114,8 +114,8 @@ struct telegram {
    */
   dd::task<Message> sendVoice(api::send_voice_request, deadline_t deadline = deadline_t::never()) const;
 
-  /* As of v.4.0, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method
-   * to send video messages. On success, the sent Message is returned. */
+  /* Use this method to send a rounded square MPEG4 video of up to 1 minute long. On success, the sent Message
+   * is returned. */
   dd::task<Message> sendVideoNote(api::send_video_note_request,
                                   deadline_t deadline = deadline_t::never()) const;
 
@@ -764,8 +764,8 @@ struct telegram {
   /* Use this method to stop a poll which was sent by the bot. On success, the stopped Poll is returned. */
   dd::task<Poll> stopPoll(api::stop_poll_request, deadline_t deadline = deadline_t::never()) const;
 
-  /* Use this method to edit an ephemeral text message. Note that it is not guaranteed that the user will
-   * receive the message edit event, especially if they are offline. On success, True is returned. */
+  /* Use this method to edit an ephemeral text or rich message. Note that it is not guaranteed that the user
+   * will receive the message edit event, especially if they are offline. On success, True is returned. */
   dd::task<bool> editEphemeralMessageText(api::edit_ephemeral_message_text_request,
                                           deadline_t deadline = deadline_t::never()) const;
 

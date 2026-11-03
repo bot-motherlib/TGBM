@@ -4,7 +4,7 @@
 
 namespace tgbm::api {
 
-/*This object represents a video message (available in Telegram apps as of v.4.0).*/
+/*This object represents a video message.*/
 struct VideoNote {
   /* Identifier for this file, which can be used to download or reuse the file */
   String file_id;

@@ -29,8 +29,8 @@ struct edit_message_text_request {
   optional<arrayof<MessageEntity>> entities;
   /* Link preview generation options for the message */
   box<LinkPreviewOptions> link_preview_options;
-  /* New rich content of the message; required if text isn't specified. Direct upload of new files isn't
-   * supported when an inline message is edited. */
+  /* New rich content of the message; required if text isn't specified. Direct upload of new files and
+   * explicit upload of files by a URL isn't supported when an inline message is edited. */
   box<InputRichMessage> rich_message;
   /* A JSON-serialized object for an inline keyboard */
   box<InlineKeyboardMarkup> reply_markup;

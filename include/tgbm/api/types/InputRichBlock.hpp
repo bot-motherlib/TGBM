@@ -10,14 +10,17 @@
 #include <tgbm/api/types/InputRichBlockAnchor.hpp>
 #include <tgbm/api/types/InputRichBlockList.hpp>
 #include <tgbm/api/types/InputRichBlockBlockQuotation.hpp>
+#include <tgbm/api/types/InputRichBlockExpandableBlockQuotation.hpp>
 #include <tgbm/api/types/InputRichBlockPullQuotation.hpp>
 #include <tgbm/api/types/InputRichBlockCollage.hpp>
 #include <tgbm/api/types/InputRichBlockSlideshow.hpp>
 #include <tgbm/api/types/InputRichBlockTable.hpp>
 #include <tgbm/api/types/InputRichBlockDetails.hpp>
 #include <tgbm/api/types/InputRichBlockMap.hpp>
+#include <tgbm/api/types/InputRichBlockButtons.hpp>
 #include <tgbm/api/types/InputRichBlockAnimation.hpp>
 #include <tgbm/api/types/InputRichBlockAudio.hpp>
+#include <tgbm/api/types/InputRichBlockDocument.hpp>
 #include <tgbm/api/types/InputRichBlockPhoto.hpp>
 #include <tgbm/api/types/InputRichBlockVideo.hpp>
 #include <tgbm/api/types/InputRichBlockVoiceNote.hpp>
@@ -30,10 +33,11 @@ namespace tgbm::api {
 struct InputRichBlock {
   oneof<InputRichBlockParagraph, InputRichBlockSectionHeading, InputRichBlockPreformatted,
         InputRichBlockFooter, InputRichBlockDivider, InputRichBlockMathematicalExpression,
-        InputRichBlockAnchor, InputRichBlockList, InputRichBlockBlockQuotation, InputRichBlockPullQuotation,
-        InputRichBlockCollage, InputRichBlockSlideshow, InputRichBlockTable, InputRichBlockDetails,
-        InputRichBlockMap, InputRichBlockAnimation, InputRichBlockAudio, InputRichBlockPhoto,
-        InputRichBlockVideo, InputRichBlockVoiceNote, InputRichBlockThinking>
+        InputRichBlockAnchor, InputRichBlockList, InputRichBlockBlockQuotation,
+        InputRichBlockExpandableBlockQuotation, InputRichBlockPullQuotation, InputRichBlockCollage,
+        InputRichBlockSlideshow, InputRichBlockTable, InputRichBlockDetails, InputRichBlockMap,
+        InputRichBlockButtons, InputRichBlockAnimation, InputRichBlockAudio, InputRichBlockDocument,
+        InputRichBlockPhoto, InputRichBlockVideo, InputRichBlockVoiceNote, InputRichBlockThinking>
       data;
   static constexpr std::string_view discriminator = "type";
   enum struct type_e {
@@ -46,14 +50,17 @@ struct InputRichBlock {
     k_anchor,
     k_list,
     k_blockquotation,
+    k_expandableblockquotation,
     k_pullquotation,
     k_collage,
     k_slideshow,
     k_table,
     k_details,
     k_map,
+    k_buttons,
     k_animation,
     k_audio,
+    k_document,
     k_photo,
     k_video,
     k_voicenote,
@@ -119,6 +126,12 @@ struct InputRichBlock {
   const InputRichBlockBlockQuotation* get_blockquotation() const noexcept {
     return data.get_if<InputRichBlockBlockQuotation>();
   }
+  InputRichBlockExpandableBlockQuotation* get_expandableblockquotation() noexcept {
+    return data.get_if<InputRichBlockExpandableBlockQuotation>();
+  }
+  const InputRichBlockExpandableBlockQuotation* get_expandableblockquotation() const noexcept {
+    return data.get_if<InputRichBlockExpandableBlockQuotation>();
+  }
   InputRichBlockPullQuotation* get_pullquotation() noexcept {
     return data.get_if<InputRichBlockPullQuotation>();
   }
@@ -155,6 +168,12 @@ struct InputRichBlock {
   const InputRichBlockMap* get_map() const noexcept {
     return data.get_if<InputRichBlockMap>();
   }
+  InputRichBlockButtons* get_buttons() noexcept {
+    return data.get_if<InputRichBlockButtons>();
+  }
+  const InputRichBlockButtons* get_buttons() const noexcept {
+    return data.get_if<InputRichBlockButtons>();
+  }
   InputRichBlockAnimation* get_animation() noexcept {
     return data.get_if<InputRichBlockAnimation>();
   }
@@ -166,6 +185,12 @@ struct InputRichBlock {
   }
   const InputRichBlockAudio* get_audio() const noexcept {
     return data.get_if<InputRichBlockAudio>();
+  }
+  InputRichBlockDocument* get_document() noexcept {
+    return data.get_if<InputRichBlockDocument>();
+  }
+  const InputRichBlockDocument* get_document() const noexcept {
+    return data.get_if<InputRichBlockDocument>();
   }
   InputRichBlockPhoto* get_photo() noexcept {
     return data.get_if<InputRichBlockPhoto>();
@@ -202,14 +227,17 @@ struct InputRichBlock {
         .case_("anchor", type_e::k_anchor)
         .case_("list", type_e::k_list)
         .case_("blockquote", type_e::k_blockquotation)
+        .case_("expandable_blockquote", type_e::k_expandableblockquotation)
         .case_("pullquote", type_e::k_pullquotation)
         .case_("collage", type_e::k_collage)
         .case_("slideshow", type_e::k_slideshow)
         .case_("table", type_e::k_table)
         .case_("details", type_e::k_details)
         .case_("map", type_e::k_map)
+        .case_("buttons", type_e::k_buttons)
         .case_("animation", type_e::k_animation)
         .case_("audio", type_e::k_audio)
+        .case_("document", type_e::k_document)
         .case_("photo", type_e::k_photo)
         .case_("video", type_e::k_video)
         .case_("voice_note", type_e::k_voicenote)
@@ -236,6 +264,8 @@ struct InputRichBlock {
       return visitor.template operator()<InputRichBlockList>();
     if (val == "blockquote")
       return visitor.template operator()<InputRichBlockBlockQuotation>();
+    if (val == "expandable_blockquote")
+      return visitor.template operator()<InputRichBlockExpandableBlockQuotation>();
     if (val == "pullquote")
       return visitor.template operator()<InputRichBlockPullQuotation>();
     if (val == "collage")
@@ -248,10 +278,14 @@ struct InputRichBlock {
       return visitor.template operator()<InputRichBlockDetails>();
     if (val == "map")
       return visitor.template operator()<InputRichBlockMap>();
+    if (val == "buttons")
+      return visitor.template operator()<InputRichBlockButtons>();
     if (val == "animation")
       return visitor.template operator()<InputRichBlockAnimation>();
     if (val == "audio")
       return visitor.template operator()<InputRichBlockAudio>();
+    if (val == "document")
+      return visitor.template operator()<InputRichBlockDocument>();
     if (val == "photo")
       return visitor.template operator()<InputRichBlockPhoto>();
     if (val == "video")
@@ -284,6 +318,8 @@ struct InputRichBlock {
         return "list";
       case k_blockquotation:
         return "blockquote";
+      case k_expandableblockquotation:
+        return "expandable_blockquote";
       case k_pullquotation:
         return "pullquote";
       case k_collage:
@@ -296,10 +332,14 @@ struct InputRichBlock {
         return "details";
       case k_map:
         return "map";
+      case k_buttons:
+        return "buttons";
       case k_animation:
         return "animation";
       case k_audio:
         return "audio";
+      case k_document:
+        return "document";
       case k_photo:
         return "photo";
       case k_video:

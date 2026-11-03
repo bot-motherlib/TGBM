@@ -13,6 +13,10 @@ struct UniqueGiftInfo {
    * “gifted_upgrade” for upgrades purchased after the gift was sent, or “offer” for gifts bought or sold
    * through gift purchase offers. */
   String origin;
+  /* Optional. Text of the message that was added to the gift */
+  optional<String> text;
+  /* Optional. Special entities that appear in the text */
+  optional<arrayof<MessageEntity>> entities;
   /* Optional. For gifts bought from other users, the currency in which the payment for the gift was done.
    * Currently, one of “XTR” for Telegram Stars or “TON” for TON grams. */
   optional<String> last_resale_currency;
@@ -28,6 +32,9 @@ struct UniqueGiftInfo {
   /* Optional. Point in time (Unix timestamp) when the gift can be transferred. If it is in the past, then the
    * gift can be transferred now. */
   optional<Integer> next_transfer_date;
+  /* Optional. True, if the sender and gift text are shown only to the gift receiver; otherwise, everyone will
+   * be able to see them */
+  optional<True> is_private;
 
   consteval static bool is_mandatory_field(std::string_view name) {
     return string_switch<bool>(name).case_("gift", true).case_("origin", true).or_default(false);
